@@ -1,0 +1,2726 @@
+<!--========================================================================================================
+
+    NO-BN-SignalObjects.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--========================================================================================================
+	sig - 
+	Global Lua formulas for signaling objects (for signals: see other DNA file).
+	Domain-specific Lua functions, stored in Global Extension Dictionary (not in each object),
+	such that several ObjectType declarations may use theses functions.
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_sig_getCabinetName()" ReturnType="String"
+		Description="Returns a string for each cabinet variant, concatenated with the object's Code." >
+        <Constructor>String NOBN_sig_getCabinetName()</Constructor>
+        <Formula>
+function NOBN_sig_getCabinetName()
+	if string.find(Variant, "apparat") then
+		return "As."..code
+	elseif string.find(Variant, "Nøkkel") then 
+		return "Ns."..code
+	elseif string.find(Variant, "Sveiv") then
+		return "Ss."..code
+	elseif string.find(Variant, "Kabel") then
+		return "Kabelboks "..code
+	else
+		return "Unknown variant",_warning
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+	 
+	 
+    <LuaFunction Name="NOBN_sig_getAxleCounterCode()" ReturnType="String"
+		Description="Returns a text string 'DownSection/UpSection' for an axle counter sensor." >
+        <Constructor>NOBN_sig_getAxleCounterCode()</Constructor>
+		<Formula>
+function NOBN_sig_getAxleCounterCode()
+    first = "-"
+    shortestDistanceSoFar = math.huge
+    for i = 0, DownSections.count-1 do
+        obj = DownSections[i]
+        if obj.Visible then
+            dist = RC__getDistance2D(obj)
+            if dist &lt; shortestDistanceSoFar then
+                first = DownSections[i].code
+                shortestDistanceSoFar = dist
+            end
+        end
+    end
+    second = "-"
+    shortestDistanceSoFar = math.huge
+    for i = 0, UpSections.count-1 do
+        obj = UpSections[i]
+        if obj.Visible then 
+            dist = RC__getDistance2D(obj)
+            if dist &lt; shortestDistanceSoFar then
+                second = UpSections[i].code
+                shortestDistanceSoFar = dist
+            end
+        end
+    end
+    if (MileageIncreasesTowardsLeft == 'True') then first,second = second,first end
+	if first == "-" and second == "-" then
+		return first.."/"..second,_info("UNFINISHED - Create axle counter Section object(s) to obtain the section numbers 'a/b' for the sensor.")
+	else
+		return first.."/"..second
+	end
+end
+        </Formula>
+    </LuaFunction>
+	
+
+
+<!--========================================================================================================
+	Signaling - ATP (automatic train protection)
+=========================================================================================================-->
+	<!-- NB The following balise functions will not work if balise belongs to several groups (different stages)-->
+    <LuaFunction Name="NOBN_sig_getBaliseGroupId()" ReturnType="String" 
+		Description="Returns balise group object ID (7 chars) (Ref Signal-Prosj-ATC-7.11-Baliseidentitet)." >
+        <Constructor>String NOBN_sig_getBaliseGroupId()</Constructor>
+        <Formula>
+function NOBN_sig_getBaliseGroupId()
+	local RM = ReferenceMileage
+	local a
+	if Variant == "Hastighetsbalisegruppe" then
+		a = "-H"
+	elseif Variant == "Signalhøyningsbalisegruppe" then
+		a = "-S"
+	elseif Variant == "Lenkingsbalisegruppe" then
+		a = "-L"
+	elseif Variant == "Sporvekselbalisegruppe" then
+		a = "-V"
+	elseif Variant == "ETCS L2 balisegruppe" then 
+		a = "!"
+	elseif Variant == "Hovedsignalbalisegruppe" then 
+		a = "_"
+	elseif Variant == "Forsignalbalisegruppe" then
+		a = "F"
+	elseif Variant == "Repeterbalisegruppe" then
+		local s = "Henter ATC styringsinformasjon fra signal/sporveksel"
+		local r,n = RC__getCollectionOfRelatedObjects(s)
+		if n == 0 then
+			-- Balise group has no relation to a signal yet:
+			return "UNFINISHED - Relate with '"..s.."'."
+		else
+			sig = r[0] --should be a signal here, repeater groups don't repeat switches directly
+			t = "Avgir ATC styringsinformasjon til balisegruppe"
+			bg = sig.Relations[t] --contains at least a relation to myself
+			bg = bg:filter(function (x) return x.Variant == "Repeterbalisegruppe" and x.visible end)
+			nbg = getCollectionLength(bg)
+			if nbg == 0 then
+				--I am here, so n *must* be greater than zero:
+				return "Should not happen - bad relation loop." 
+			elseif nbg == 1 then
+				-- I am the only repeater group:
+				a = "R"
+			elseif nbg == 2 then
+				-- Assign 'U' to the one farthest away, 'R' to the one closest to signal: 
+				b1 = bg[0]
+				b2 = bg[1]
+				if distance(b1,sig) &gt; distance(b2,sig) then
+					b1,b2 = b2,b1
+					--Now b1 is closest to signal
+				end
+				if this.id == b1.id then
+					--I am the closest repeater group:
+					a = "R"
+				else
+					--I am the farthest repeater group:
+					a = "U"
+				end
+			elseif nbg == 3 then
+				-- Assign 'V' to the one farthest away, then 'U' and then 'R' to the one closest to signal:
+				b1 = bg[0]
+				b2 = bg[1]
+				b3 = bg[2]
+				-- Three pairwise swaps and they're sorted:
+				if distance(b1,sig) &gt; distance(b2,sig) then b1,b2 = b2,b1 end
+				if distance(b2,sig) &gt; distance(b3,sig) then b2,b3 = b3,b2 end
+				if distance(b1,sig) &gt; distance(b2,sig) then b1,b2 = b2,b1 end
+				if this.id == b1.id then
+					--I am the closest repeater group:
+					a = "R"
+				elseif this.id == b2.id then
+					--I am the middle repeater group:
+					a = "U"
+				else 
+					a = "V"
+				end
+			end
+		end
+	end
+
+	ocpMsg = "Create an Operation / Control Point (OCP) area around your object and refresh it to replace '???' with the relevant OCP's codes."
+
+	if Variant == "Hastighetsbalisegruppe" then
+		r,n = RC__getCollectionOfRelatedObjects("Har bremsekurve målpunkt i balisegruppe")
+		if n == 0 then
+			--Group is braking curve target:
+			ocp = RC_com_getOcpCode(getObjectFromId(id))
+		else
+			--Warning board, use target's ocp:
+			ocp = RC_com_getOcpCode(r[0])
+		end
+		return ocp..a..string.format("%02d",seq)
+
+	elseif Variant == "Signalhøyningsbalisegruppe" or Variant == "Sporvekselbalisegruppe" then
+		ocp = RC_com_getOcpCode(this)
+		if seq == 0 then
+			return ocp..a.."UNFINISHED - Set balise group's 'seq' property to the required balise group number (01..99), use '100' for '0'."
+		else
+			return ocp..a..string.format("%02d",seq%100)
+		end
+
+	elseif Variant =="Lenkingsbalisegruppe" then
+		r,n = RC__getCollectionOfRelatedObjects("Lenker til balisegruppe")
+		if n == 0 then
+			ocp = RC_com_getOcpCode(getObjectFromId(id))
+		else
+			ocp = RC_com_getOcpCode(r[0])
+		end
+		if seq == 0 then
+			return ocp..a.."UNFINISHED - Set balise group's 'seq' property to the required balise group number (01..99), use '100' for '0'."
+		else
+			return ocp..a..string.format("%02d",seq%100)
+		end
+
+	else
+		r,n = RC__getCollectionOfRelatedObjects("Henter ATC styringsinformasjon fra signal/sporveksel")
+		if n == 0 then
+			return "UNFINISHED - Relate with 'Henter ATC styringsinformasjon fra signal/sporveksel'."
+		else
+			--Assume r[0] holds object dictating the group's number:
+			ocp = RC_com_getOcpCode(r[0])
+			if r[0].code == nil then 
+				return ocp..a.."???",_info(ocpMsg)
+			elseif tostring(r[0].code):match("%d+") == nil then
+				return ocp..a.."???",_info(ocpMsg)
+			else
+				return ocp..a..tostring(r[0].code):match("%d+"):sub(-3) 
+			end 
+		end
+		return ocp..a..code:match("%d+"):sub(-3)
+	end
+end
+        </Formula>
+    </LuaFunction> 
+
+	
+	
+    <LuaFunction Name="NOBN_sig_getBaliseId()" ReturnType="String" 
+		Description="Returns balise object Id (8 chars) from the 7-char balise group ID and the P/A/B/C balise type (Ref Signal-Prosj-ATC-7.11-Baliseidentitet)." >
+        <Constructor>String NOBN_sig_getBaliseId()</Constructor>
+        <Formula>
+function NOBN_sig_getBaliseId()
+	r,n = RC__getCollectionOfRelatedObjects("Tilhører balisegruppe")
+	if n == 0 then  
+		return "UNFINISHED - Relate with '".."Tilhører balisegruppe".."' to balise group.",
+				_info("Balises derive their ID (code property) from their balise group's code, direction, and the balise's relative position within the balise group. The 'A' balise must be related to the balise group using the relation for position defining balise.")
+	else
+		bg = r[0]
+	end
+	if bg.dir ~= "up" and bg.dir ~= "down" then 
+		return "Bad direction ["..bg.dir.."]",_warning 
+	end
+	
+	q,nq = RC__getCollectionOfRelatedObjects("Har posisjonsdefinerende balise",bg)
+	if nq == 0 then 
+		return "UNFINISHED - No A-balise in balise group - relate to balise group with relation 'Definerer posisjon for balisegruppe'."
+	else
+		Abalise = q[0]
+		qq,nqq = RC__getCollectionOfRelatedObjects("Definerer posisjon for balisegruppe")
+		isA = (nqq == 1) --it's me...
+		siblings,nsiblings = RC__getCollectionOfRelatedObjects("Inneholder balise",bg)
+	end
+
+	if isA == true then
+		suffix = "A"
+	else
+		if nsiblings == 2 then
+			suffix = "B"            
+		elseif nsiblings &gt; 2 then
+			Pbalise={id=0, diff=math.huge}
+			Bbalise={id=0, diff=math.huge}
+			Cbalise={id=0, diff=math.huge}
+			for i = 0, nsiblings-1 do
+				diff = (bg.dir == "up") and (siblings[i].ReferenceMileage - Abalise.ReferenceMileage) or (Abalise.ReferenceMileage - siblings[i].ReferenceMileage)
+				if (diff &lt; 0) then
+					if Pbalise.id == 0 then
+						Pbalise.id = siblings[i].id
+						Pbalise.diff = diff
+					elseif Pbalise.diff &gt; diff then
+						Pbalise.id = siblings[i].id
+						Pbalise.diff = diff
+					end                
+				elseif (diff &gt; 0) then
+					if Bbalise.id == 0 then
+						Bbalise.id = siblings[i].id
+						Bbalise.diff = diff
+					elseif Bbalise.diff &gt; diff then
+						Cbalise.id = Bbalise.id
+						Cbalise.diff = Bbalise.diff
+						Bbalise.id = siblings[i].id
+						Bbalise.diff = diff                    
+					elseif Cbalise.diff &gt; diff then
+						Cbalise.id = siblings[i].id
+						Cbalise.diff = diff                    
+					end                        
+				else
+					--diff==0: Do nothing
+				end
+			end    
+			if this.id == Bbalise.id then 
+				suffix = "B"
+			elseif this.id == Cbalise.id then
+				suffix = "C"
+			elseif this.id == Pbalise.id then
+				suffix = "P"
+			else
+				suffix = "WARNING - Bad balise group configuration - cannot determine PABC type.",_warning
+			end
+		end
+	end
+	groupId = RC__identify(bg)
+	return groupId:sub(1,2):lower():match("unfinished") and suffix or groupId..suffix
+end 
+		</Formula>
+     </LuaFunction>
+
+	 
+	 
+    <LuaFunction Name="NOBN_sig_getBaliseTextAboveSymbol()" ReturnType="String"
+		Description="Returns text over the 2D balise symbol (Ref Signal-Prosj.-ATC-7.1/7.2-Enkeltrettede/Dobbeltrettede balisegrupper)." >
+        <Constructor>String NOBN_sig_getBaliseTextAboveSymbol()</Constructor>
+        <Formula>
+function NOBN_sig_getBaliseTextAboveSymbol()
+	s = "Tilhører balisegruppe"
+	r,n = RC__getCollectionOfRelatedObjects(s)
+	if n == 0 then
+		return "UNFINISHED - Relate with '"..s.."' to balise group."
+	else
+		bg = r[0]
+		t = code:sub(-1)
+		if bg.Variant == "Hastighetsbalisegruppe" then
+			if t == "A" then
+				return "H"
+			elseif t == "B" then
+				if Variant:match("Fylt") then
+					return "H"
+				else
+					return ""
+				end
+			elseif t == "C" then
+				return ""
+			else
+				return "WARNING - Cannot determine text above balise symbol.",_warning,_info("Balise is neither A, B or C balise.")
+			end
+		elseif bg.Variant == "ET-balisegruppe" then
+			if t == "A" then
+				return "EH"
+			elseif t == "B" then
+				if Variant:match("Fylt") then
+					return "EH"
+				else
+					return ""
+				end
+			elseif t == "C" then
+				return ""
+			else
+				return "?",_warning,_info("Cannot determine text above balise symbol (neither A, B nor C balise).")
+			end
+		elseif code:sub(-1) == "P" then
+			return "P"
+		else
+			return ""
+		end
+	end
+end
+		</Formula>
+     </LuaFunction>
+
+
+	 
+    <LuaFunction Name="NOBN_sig_getBaliseTextBelowSymbol()" ReturnType="String"
+		Description="Returns text below the 2D balise symbol (Ref Signal-Prosj.-ATC-7.1/7.2-Enkeltrettede/Dobbeltrettede balisegrupper)." >
+        <Constructor>String NOBN_sig_getBaliseTextBelowSymbol()</Constructor>
+        <Formula>
+function NOBN_sig_getBaliseTextBelowSymbol()
+	r,n = RC__getCollectionOfRelatedObjects("Definerer posisjon for balisegruppe")
+	if n > 0 then
+		return RC__identify(r[0])
+	else
+		return ""
+	end
+end
+		</Formula>
+     </LuaFunction>
+
+	 
+	 
+    <LuaFunction Name="NOBN_sig_getBaliseGroupDirection()" ReturnType="String"
+		Description="Returns the source object balise's balise group direction [up/down/unknown]." >
+        <Constructor>String NOBN_sig_getBaliseGroupDirection([Reference balise])</Constructor>
+        <Formula>
+function NOBN_sig_getBaliseGroupDirection(balise)
+	--TODO: Replace with a function which finds out where the closest cable duct is, and rotates the balise with the cable towards that duct.
+	balise = (balise == nil) and this or balise
+	r,n = RC__getCollectionOfRelatedObjects("Tilhører balisegruppe")
+	if n == 0 then
+		return "unknown",_info("UNFINISHED - Relate balise with 'Tilhører balisegruppe' to a balise group to inherit direction.")
+	else
+		return r[0].Dir
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_sig_chkBaliseDistanceToPreviousBalise()" ReturnType="String"
+		Description="Checks distance to previous balise. Error if too close (2.35) or not far enough (10.5), warning if (2.35 - 2.8) or (3.2 - 3.5) or (10.5 11.8)." >
+		<Constructor>String NOBN_sig_chkBaliseDistanceToPreviousBalise()</Constructor>
+		<Formula>
+function NOBN_sig_chkBaliseDistanceToPreviousBalise()
+	searchDir = "down"
+	if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+	obj = getDownObject(RcType)
+	if obj == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.", _ok end
+	dist = distance(obj)
+	t = string.format("%.3f", dist)
+
+	if (dist &lt; 2.35 ) then
+		return t..": ERROR - Balise magnetic fields may merge - increase distance.",{obj},_error
+	elseif (dist &gt;= 2.35 and dist &lt; 2.8) then
+		return t..": WARNING - Outside recommended tolerance - increase distance.",{obj},_warning
+	elseif (dist &gt;= 2.8 and dist &lt; 3.2) then
+		return t..": OK - The train will treat the balises as belonging to the same group.",{obj},_ok
+	elseif (dist &gt;= 3.2 and dist &lt; 3.5) then
+		return t..": WARNING - Outside recommended tolerance - decrease distance.",{obj},_warning
+	elseif (dist &gt;= 3.5 and dist &lt; 10.5) then
+		return t..": ERROR - The train cannot determine which balise group the balise belongs to.",{obj},_error
+	elseif (dist &gt;= 10.5 and dist &lt; 11.8) then
+		return t..": WARNING - Outside recommended tolerance - increase distance.",{obj},_warning
+	elseif (dist &gt; 11.8) then
+		return t..": OK - The train will treat the balises as belonging to different balise groups.",{obj},_ok
+	else
+		return "ERROR - Bad calculation of distance to neighbour object.",_error,
+			_info("DNA error - please notify your DNA agent company - send to support@railcomplete.no.")
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_sig_chkBaliseDistanceToNextBalise()" ReturnType="String"
+		Description="Checks distance to next balise. Error if too close (2.35) or not far enough (10.5), warning if (2.35 - 2.8) or (3.2 - 3.5) or (10.5 11.8)." >
+		<Constructor>String NOBN_sig_chkBaliseDistanceToNextBalise()</Constructor>
+		<Formula>
+function NOBN_sig_chkBaliseDistanceToNextBalise()
+	searchDir = "up"
+	if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+	obj = getUpObject(RcType)
+	if obj == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.", _ok end
+	dist = distance(obj)
+	t = string.format("%.3f", dist)
+
+	if (dist &lt; 2.35 ) then
+		return t..": ERROR - Balise magnetic fields may merge - increase distance.",{obj},_error
+	elseif (dist &gt;= 2.35 and dist &lt; 2.8) then
+		return t..": WARNING - Outside recommended tolerance - increase distance.",{obj},_warning
+	elseif (dist &gt;= 2.8 and dist &lt; 3.2) then
+		return t..": OK - The train will treat the balises as belonging to the same group.",{obj},_ok
+	elseif (dist &gt;= 3.2 and dist &lt; 3.5) then
+		return t..": WARNING - Outside recommended tolerance - decrease distance.",{obj},_warning
+	elseif (dist &gt;= 3.5 and dist &lt; 10.5) then
+		return t..": ERROR - The train cannot determine which balise group the balise belongs to.",{obj},_error
+	elseif (dist &gt;= 10.5 and dist &lt; 11.8) then
+		return t..": WARNING - Outside recommended tolerance - increase distance.",{obj},_warning
+	elseif (dist &gt; 11.8) then
+		return t..": OK - The train will treat the balises as belonging to different balise groups.",{obj},_ok
+	else
+		return "ERROR - Bad calculation of distance to neighbour object.",_error,
+			_info("DNA error - please notify your DNA agent company - send to support@railcomplete.no.")
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_sig_chkBaliseDistanceToTrackVertically()" ReturnType="String"
+		Description="Checks vertical distance to track above or below balise." >
+		<Constructor>String NOBN_sig_chkBaliseDistanceToTrackVertically()</Constructor>
+		<Formula>
+function NOBN_sig_chkBaliseDistanceToTrackVertically()
+	if (Alignment == nil) then return "ERROR - Balise does not belong to any alignment.", _error end
+	nearestAlignments = getClosestAlignments("KO-SPO Spor")
+	nearestId = ""
+	nearestDist = math.huge
+	i = 0
+	while (nearestAlignments[i]) do
+		local aId = nearestAlignments[i].id
+		local sDist = math.abs(getAlignmentInfo(aId).DistanceToAlignment)
+		if (Alignment.id ~= aId and sDist &lt; nearestDist) then
+			nearestId = aId
+			nearestDist = sDist
+		else
+			i = i + 1
+		end
+	end
+	-- Consider only other alignments being no more than 5 meter sideways apart from balise 
+	if (nearestDist &gt; 5.0) then return "OK - No conflicting tracks within 5 meters sideways.", _ok end
+	hDiff = math.abs(getAlignmentInfo().Elevation - getAlignmentInfo(nearestId).Elevation)
+	if (hDiff &lt;= 0.8) then
+		-- Assume that closest other track is part of a point or crossing, but still accept 80 cm difference for diverging track profiles
+		return string.format("%.3f",hDiff)..": OK - Balise is close to another track, which we assume to represent the same elevation.", _ok
+	elseif (hDiff &gt; 0.8 and hDiff &lt;= 7.0) then 
+		return string.format("%.3f",hDiff)..": ERROR - Balise may be read by a train running in a track above/under us - increase vertical track separation or move balise.",_error
+	elseif (distance &lt;= 8.0) then 
+		return string.format("%.3f",hDiff)..": WARNING - Outside recommended tolerance - increase vertical track separation or move balise.",_warning
+	else 
+		return string.format("%.3f",hDiff)..": OK - A Train in a track above/under us will pass without reading the balise.", _ok 
+	end
+end
+		</Formula>
+	</LuaFunction>
+	
+	<LuaFunction Name="NOBN_sig_chkBaliseDistanceToTrackSideways()" ReturnType="String"
+		Description="Checks distance from balise to neighbour tracks" >
+		<Constructor>String NOBN_sig_chkBaliseDistanceToTrackSideways()</Constructor>
+		<Formula>
+function NOBN_sig_chkBaliseDistanceToTrackSideways()
+	if (Alignment == nil) then return "ERROR - Balise does not belong to any alignment.", _error end
+	nearestAlignments = getClosestAlignments("KO-SPO Spor")
+	nearestId = ""
+	i = 0
+	while (nearestAlignments[i]) do
+		if (Alignment.id ~= nearestAlignments[i].id) then
+			nearestId = nearestAlignments[i].id
+			break
+		else
+			i = i+1
+		end
+	end
+	if (nearestId == "") then return "OK - No neighbouring track(s).", _ok end
+	sDist = math.abs(getAlignmentInfo(nearestId).DistanceToAlignment)
+	if RC__isNan(sDist) then return "No sideways distance found.", _noSymbol end
+	if (sDist &lt; 2.0) then 
+		return string.format("%.3f",sDist)..": ERROR – Balise may be read by a train in the neighbouring track – increase distance.",_error
+	elseif (sDist &gt; 2.0 and sDist &lt; 2.6) then 
+		return string.format("%.3f",sDist)..": WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 meter from neighbouring track (large balise) resp. 2.3 meter (minibalise) – increase distance.",_warning
+	else
+		return string.format("%.3f",sDist)..": OK – a Train in neighbouring track will pass without reading the balise.", _ok
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_sig_getBaliseModel3DName()" ReturnType="String"
+		Description="Returns the name of a standard 3D object model. The BaliseModel argument is either 'Large' (default), 'Mini' or 'Euro'." >
+        <Constructor>String NOBN_sig_getBaliseModel3DName(BaliseModel)</Constructor>
+        <Formula>
+function NOBN_sig_getBaliseModel3DName(BaliseModel)
+	if BaliseModel == nil then BaliseModel = "Large" end
+	s = "NO-BN-3D-SA-ATB-BALISE"
+	if BaliseModel:lower():match("large") then s = s.."-STOR"
+	elseif BaliseModel:lower():match("mini") then s = s.."-MINI"
+	elseif BaliseModel:lower():match("euro") then s = s.."-LITEN"
+	else return "Unknown BaliseModel ["..BaliseModel.."].",_warning
+	end
+	if Variant:lower():match("fast") then s = s.."-FAST"
+	elseif Variant:lower():match("styrt") then s = s.."-STYRT"
+	else return "Unknown Variant ["..Variant.."].",_warning
+	end
+	return s,_info(Variant.." "..BaliseModel.." balise.")
+end
+		</Formula>
+	</LuaFunction>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	KABLER
+	SI-KAB Signalkabel
+	TODO: Modelleres ferdig, krever ny funksjonalitet
+ =========================================================================================================>
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="SA-KAB Signalkabel" 
+				Layer="JBTSI_SA_KAB" Color="ByLayer" 
+				Group="Signal/Kabler"
+				>
+TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.banenor.no/wiki/Vedlegg_b_Skj%C3%B8ting_og_terminering_av_kabel"
+
+		<RelationSourceSpace>signalkabel</RelationSourceSpace>
+		
+		<Variants DefaultValue="EESI">
+			<Variant Objektinfo="EEBI" >
+			</Variant>
+			<Variant Objektinfo="EESI" >
+			</Variant>
+			<Variant Objektinfo="IFSI" >
+			</Variant>
+		</Variants>
+				
+		(...diverse makroer med standard-stæsj...)
+		
+		<CustomAttribute DataType="Enumeration" Name="Wiring" DisplayName="Lederantall" DefaultValue="4A1,5">
+			<Values>
+				<Value>4A1,5</Value>
+				<Value>3</Value>
+				<Value>7</Value>
+				<Value>12</Value>
+				<Value>19</Value>
+				<Value>27</Value>
+				<Value>37</Value>
+				<Value>48</Value>
+				<Value>65</Value>
+				<Value>80</Value>
+			</Values>
+		</CustomAttribute>
+
+		<LuaExpression Name="name">
+			<Formula>"Kab."..code</Formula>
+		</LuaExpression>
+	
+	</ObjectType>
+-->	
+	
+	
+	
+	
+<!--========================================================================================================
+	SIGNAL
+	DIVERSE
+	SA-SAM Samlelås
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-SAM S-lås"
+				Layer="JBTSI_SA_SAM" Color="ByLayer"
+				Group="Signal/Diverse"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+<!-- TODO: Add element: Description="Se også SA-FUN Stolpe for S-lås / https://trv.banenor.no/wiki/Signal/Prosjektering/Andre_anlegg#L.C3.A5sanlegg / https://trv.banenor.no/wiki/Signal/Vedlikehold/Annet_teknisk_utstyr#S-l.C3.A5s" -->
+
+		<RelationSourceSpace>s_lås</RelationSourceSpace>
+		<AttachmentCategory Name="s_lås" />
+		<AttachTo Category="montasjeelement3" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="S-lås" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SAM-SAMLELÅS"/>
+				<SetValue Key="Offset3D.Z" Value="1.25" />
+			</Variant>
+			<!--<Variant Name="Overdragstrafo" />-->
+		</Variants>
+
+		<LuaExpression Name="name"><Formula>"S-lås."..code</Formula></LuaExpression>
+
+		<!-- Note: The pole to which the S-lock is screwed firmly will provide earth, i.e. change to EarthingMethod == 'None'. -->
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+		
+		<!--TODO lage 2D-symbol JBTSI-SA-SAM for denne, bruk symbol fra skjematisk plan. Kun enkel S-lås. Sett inn 2 stk på 
+		stolpen for dobbel S-lås om den skal være dobbel. Skap med mange S-låser i har vi ikke modellert.-->
+		<InsertSymbol VariantName="S-lås" DisplayBlockName="NO-BN-2D-JBTSI-SAMLELAAS"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SAMLELAAS" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>
+				{% if Variant == 'S-lås' %}NO-BN-2D-JBTSI-SAMLELAAS{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{code}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="montasjeelement3" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	DIVERSE
+	SA-FUN Stolpe for S-lås, Lok. og mindre signaler
+	Stolper for S-LÅS, lokalstiller og Ø76 / Ø127 rørmast for lyssignal og for frittstående signalskap og bokser.
+	For selve S-låsen, se over
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-FUN Stolpe for S-lås, Lok. og mindre signaler"
+				Layer="JBTSI_SA_FUN" Color="ByLayer"
+				Group="Signal/Montasjeelementer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>montasjeelement3</RelationSourceSpace>
+		<AttachmentCategory Name="montasjeelement3" PassAttachmentToTarget="true" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<SetValue Key="SupplierName" Value="Bane NOR" />
+		<SetValue Key="SupplierArchive" Value="SIGNAL" />
+
+		<!-- Note: If present, the S-lock or local control panel switch should be earthed through the mounting screws, i.e. 'None'. -->
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<Variants>
+			<Variant Name="Stolpe for enkel S-lås" >
+				<SetValue Key="name" Value="Stolpe, S-lås" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-STOLPE-FOR-SAMLELÅS-ENKEL" />
+			</Variant>
+			<Variant Name="Stolpe for dobbel S-lås" >
+				<SetValue Key="name" Value="Stolpe, S-lås x2" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-STOLPE-FOR-SAMLELÅS-DOBBEL" />
+			</Variant>
+			<Variant Name="Stolpe for lokalstiller" >
+				<SetValue Key="name" Value="Stolpe, Lok." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-STOLPE-FOR-LOKALSTILLER" />
+			</Variant>								
+
+			<!-- Ø76 rørmaster S.002347 med L-jern S.005382 -->
+			<Variant Name="Rørmast Ø76 for kryssvekselsignal, 1.6m" >
+				<SetValue Key="name" Value="Stolpe Ø76, 1.6m" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-1600-MED-LJERN-FOR-KRYSSVEKSELSIGNAL" /> 
+				<SetValue Key="SupplierModelName" Value="Rørmast for kryssvekselsignal, med L-jern S.005382/S.030065" />
+				<SetValue Key="SupplierPartName" Value="Pos.4,5,6" />
+				<SetValue Key="SupplierDrawingNumber" Value="S.004463-000" />
+				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Kryssvekselsignal; Sammenstilling" />
+			</Variant>
+			<Variant Name="Rørmast Ø76 for togsporsignal og dvergsignal, 2m" >
+				<SetValue Key="name" Value="Stolpe Ø76, 2m" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-2000-MED-LJERN-FOR-TOGSPOR-OG-DVERGSIGNAL" /> 
+				<SetValue Key="SupplierModelName" Value="Rørmast for dverg- og togsporsignal, normal høyde med L-jern S.005382/S.030065" />
+				<SetValue Key="SupplierPartName" Value="Pos.2,3,4" />
+				<SetValue Key="SupplierDrawingNumber" Value="S.022896-014" />
+				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Togsporsignal, sammenstilling" />
+			</Variant>
+			<Variant Name="Rørmast Ø76 for togsporsignal og dvergsignal, 3m" >
+				<SetValue Key="name" Value="Stolpe Ø76, 3m" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-3000-MED-LJERN-FOR-TOGSPOR-OG-DVERGSIGNAL" /> 
+				<SetValue Key="SupplierModelName" Value="Rørmast for dverg- og togsporsignal, høy med L-jern S.005382/S.030065" />
+				<SetValue Key="SupplierPartName" Value="Pos.2,3,4" />
+				<SetValue Key="SupplierDrawingNumber" Value="S.022896-014" />
+				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Togsporsignal, sammenstilling" />
+			</Variant>	
+			<!-- Ø127 rørmast S.013354 med L-jern S.005382 -->
+			<Variant Name="Rørmast Ø127 for jernbanesignal, 3.2m" >
+				<SetValue Key="name" Value="Rørmast Ø127, 3.2m" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø127-3200-MED-LJERN" /> 
+				<SetValue Key="SupplierModelName" Value="Rørmast for jernbanesignal, lav med L-jern S.005382/S.030065" />
+				<SetValue Key="SupplierPartName" Value="" />
+				<SetValue Key="SupplierDrawingNumber" Value="S.013354-000" />
+				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Rørmast for jernbanesignal; Lavt, uten fundament; F.nr.708.215.540" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Stolpe for enkel S-lås" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-STOLPE-S-LAAS-ENKEL"
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Stolpe for dobbel S-lås" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-STOLPE-S-LAAS-DOBBEL"
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Stolpe for lokalstiller" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-STOLPE-LOKALSTILLER"
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Rørmast Ø76 for kryssvekselsignal, 1.6m" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN"	 
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Rørmast Ø76 for togsporsignal og dvergsignal, 2m" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN"	
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Rørmast Ø76 for togsporsignal og dvergsignal, 3m" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN"	
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Rørmast Ø127 for jernbanesignal, 3.2m" DisplayBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN"	 
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN" AllowSymbolMove="true" >
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>
+				{% if Variant == 'Stolpe for enkel S-lås' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-STOLPE-S-LAAS-ENKEL
+				{% elsif Variant == 'Stolpe for dobbel S-lås' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-STOLPE-S-LAAS-DOBBEL
+				{% elsif Variant == 'Stolpe for lokalstiller' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-STOLPE-LOKALSTILLER
+				{% elsif Variant == 'Rørmast Ø76 for kryssvekselsignal, 1.6m' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN
+				{% elsif Variant == 'Rørmast Ø76 for togsporsignal og dvergsignal, 2m' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN
+				{% elsif Variant == 'Rørmast Ø76 for togsporsignal og dvergsignal, 3m' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN
+				{% elsif Variant == 'Rørmast Ø127 for jernbanesignal, 3.2m' %}NO-BN-2D-JBTSI-MONTASJEELEMENT-ROERMAST-MED-LJERN
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<!-- TODO Hmmm det er så mange ulike objekttyper å tilby snapping for at vi lar det stå åpent for alle inntil videre -->
+				<SnapPoint X="0" Y="0" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	DIVERSE
+	SA-AVI Avsporingsindikator
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-AVI Avsporingsindikator"
+				Layer="JBTSI_SA_AVI" Color="ByLayer"
+				Group="Signal/Diverse"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>avsporingsindikator</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<LuaExpression Name="DistanceToAlignment"><Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 4e-4 or -4e-4)</Formula></LuaExpression>
+		
+		<Variants>
+			<Variant Name="Avsporingsindikator" >
+				<SetValue Key="name" Value="Ai." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-AVI-AVSPORINGSINDIKATOR" />
+			</Variant>
+		</Variants>	
+		
+		<InsertSymbol VariantName="Avsporingsindikator" DisplayBlockName="NO-BN-2D-JBTSI-DIVERSE-AVSPORINGSINDIKATOR"
+                DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="true"/>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-DIVERSE-AVSPORINGSINDIKATOR" AllowSymbolMove="true" >
+			<Rotation RotateDirection="true" />	
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	SPORSPERRER
+	SA-SSP Sporsperre
+	NB! SSP er et SA Signalobjekt! Ref epost Bjarne Green til CLFEY, 2016-12-15
+	TODO 2018-07-06: Uvisst hvor avsporingstunger skal høre hjemme, vi legger dem inntil videre også på SA-SSP.
+=========================================================================================================-->
+	<!--SPORSPERRE-->
+	<!--TODO modellere enkel og dobbel avsporingstunge-->
+	<!--TODO modellere 3D for Sp. CLFEY 2020-02-24: Enkel modell med to røde plater er laget, ENKEL-HSIDE/VSIDE og DOBBEL-HSIDE/VSIDE. -->
+	<!--TODO Modellere normalstilling AVLAGT eller PÅLAGT, med tilhørende 2D-symbolfor avlagt stilling (ingen pil, men må vise likevel)-->
+	<ObjectType DataType="tDerailer" Class="RailwayPlacedObject" Name="SA-SSP Sporsperre"
+				Layer="JBTSI_SA_SSP" Color="ByLayer"
+				Group="Signal/Sporsperrer"
+				>
+				
+		<ObjectTypeAttribute 
+			Key="quadrant" 
+			Value="{% if dir == 'up' and LeftSided == 'True' %}1{% elsif dir == 'down' and LeftSided == 'True' %}2{% elsif dir == 'down' and RightSided == 'True' %}3{% elsif dir== 'up' and RightSided == 'True' %}4{% endif %}"
+		/>
+
+		<RelationSourceSpace>sporsperre</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="name"><Formula>return "Sp."..code</Formula></LuaExpression>
+
+		<LuaExpression Name="DistanceToAlignment"><Formula>_SA_SSP_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_SSP_DistanceToAlignment()" ReturnType="Double"
+			Description="Returns the XY plane distance to alignment for a derailer or catch points (cant taken into consideration)." >
+			<Constructor>Double _SA_SSP_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _SA_SSP_DistanceToAlignment()
+					return NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 0.75 or -0.75)
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="DerailerState" DisplayName="SporsperreStilling" DefaultValue="derailing" 
+			Description="The 'DerailingState' custom attribute [open | closed] reflects the activation state of the derailer.">
+			<Values>
+				<Value DisplayName="Avlagt">passive</Value>
+				<Value DisplayName="Pålagt">derailing</Value>
+			</Values>
+		</CustomAttribute>
+
+		<LuaExpression Name="derailSide"><Formula>((dir == 'up' and LeftSided) or (dir == 'down' and RightSided)) and "left" or "right"</Formula></LuaExpression>
+
+		<LuaExpression Name="Model3DName"><Formula>_SA_SSP_Model3dName()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_SSP_Model3dName()" 
+			ReturnType="String"
+			Description="Returns the 3D model name for a derailer object (we have no catch points in 3D yet)." >
+			<Constructor>String _SA_SSP_Model3dName()</Constructor>
+			<Formula>
+				function _SA_SSP_Model3dName()
+					--Ignore the DerailerState property - always draw  in the derailing state.
+					local t = "NO-BN-3D-SA-SSP"
+					if Variant:upper():match("ENKEL") then t = t.."-ENKEL" 
+					elseif Variant:upper():match("DOBBEL") then t = t.."-DOBBEL" 
+					else t = t.."-BAD_VARIANT"
+					end
+					if derailSide == 'left' then t = t.."-VSIDE"
+					elseif derailSide == 'right' then t = t.."-HSIDE"
+					else t = t.."-BAD_DERAILSIDE"
+					end
+					return t
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<Variants DefaultValue="Enkel sporsperre">
+			<Variant Name="Enkel sporsperre" Description="Single-sided derailer">
+				<SetValue Key="kind" Value="blockDerail" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Dobbel sporsperre" Description="Double-sided derailer">
+				<SetValue Key="kind" Value="blockDerail" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Enkel avsporingstunge" Description="Single catch points">
+				<SetValue Key="kind" Value="singleCatchPoints" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Dobbel avsporingstunge" Description="Double catch points">
+				<SetValue Key="kind" Value="doubleCatchPoints" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+		</Variants>
+		
+		<InsertSymbol VariantName="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSPERRE-ENKEL-1" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" MirrorIfRightSideOfAlignment="true" />
+			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSPERRE-DOBBEL-1" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" MirrorIfRightSideOfAlignment="true" />
+			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
+		</InsertSymbol>
+		
+		<!-- TODO Mangler 2D-symbol for avsporingstunger enkel og dobbel (EAT, DAT) -->
+		<InsertSymbol VariantName="Enkel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-AVSPORINGSTUNGE-ENKEL-1" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" MirrorIfRightSideOfAlignment="true" />
+			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Dobbel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-AVSPORINGSTUNGE-DOBBEL-1"
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" MirrorIfRightSideOfAlignment="true" />
+			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSPERRE-ENKEL-1" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="0" />
+			<BlockNameFormat JoinBy="-" >
+			NO-BN-2D-JBTOB-SPOROBJEKT
+			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-ENKEL
+			{% elsif Variant == 'Dobbel sporsperre' %}SPORSPERRE-DOBBEL
+			{% elsif Variant == 'Enkel avsporingstunge' %}AVSPORINGSTUNGE-ENKEL
+			{% elsif Variant == 'Dobbel avsporingstunge' %}AVSPORINGSTUNGE-DOBBEL
+			{% endif %}
+			{{quadrant}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT"/>
+
+		<SnapPointsDefinitions>
+			<!-- Note: We account for the derailer being inserted at 0.75 from its track: -->
+			<SnapPoints MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}"
+						MirrorAboutAlignmentTangent="{% if RightSided == 'true' %}true{% else %}false{% endif %}" >
+				<SnapPoint X="-1.0" Y="1.0" TargetSpace="lokalstiller"/>
+				<SnapPoint X="-1.0" Y="-2.5" TargetSpace="lokalstiller"/>
+			</SnapPoints>
+			<SnapPoints MirrorAboutAlignmentTangent="{% if RightSided == 'true' %}true{% else %}false{% endif %}">
+				<SnapPoint X="0.0" Y="1.0" TargetSpace="sporsperredrivmaskin"/>
+				<SnapPoint X="0.0" Y="-2.5" TargetSpace="sporsperredrivmaskin"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+		
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	APPARATSKAP
+	SA-APS Apparatskap
+	Innvendig og utvendig sikringsanlegg (ikke bokser)
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-APS Apparatskap"
+				Layer="JBTSI_SA_APS" Color="ByLayer"
+				Group="Signal/Apparatskap"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+
+		<!-- TODO (2018-11-06) The Insert Jig code handles only 2 directions. After inserting the symbol the first time, -->
+		<!-- the default direction is defined using the SetValue element in the InsertSymbol element. -->
+		<!-- After insertion, the SymbolDefinition code translates strict directions (up, down) or lax directions  -->
+		<!-- (up, down, none, both, unknown) into rotations, using DotLiquid code. -->
+		<RelationSourceSpace>apparatskap</RelationSourceSpace>
+
+		<AttachmentCategory Name="signalskap" />
+		<AttachTo Category="apparatskapfundament" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="Stort apparatskap, venstrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Stort apparatskap, høyrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Stort apparatskap, dobbeldør" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-APS-APPARATSKAP-STORT-1200x1200x400-MED-SOKKEL" />
+			</Variant>
+			<Variant Name="Lite apparatskap, venstrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Lite apparatskap, høyrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+		</Variants>
+	
+		<LuaExpression Name="name"><Formula>NOBN_sig_getCabinetName()</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<LuaExpression Name="Offset3D.Z"><Formula>if Variant:find("stort") ~= 0 then return -0.1 else return 0.95 end</Formula></LuaExpression>
+	
+		<InsertSymbol VariantName="Stort apparatskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-VHENGSLET" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Stort apparatskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-HHENGSLET" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Stort apparatskap, dobbeldør" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-DOBBEL" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Lite apparatskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-LITE-VHENGSLET" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Lite apparatskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-LITE-HHENGSLET" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-VHENGSLET" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>
+				{% if Variant == 'Stort apparatskap, venstrehengslet' %}NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-VHENGSLET
+				{% elsif Variant == 'Stort apparatskap, høyrehengslet' %}NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-HHENGSLET
+				{% elsif Variant == 'Stort apparatskap, dobbeldør' %}NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-DOBBEL
+				{% elsif Variant == 'Lite apparatskap, venstrehengslet' %}NO-BN-2D-JBTSI-SKAP-APPARATSKAP-LITE-VHENGSLET
+				{% elsif Variant == 'Lite apparatskap, høyrehengslet' %}NO-BN-2D-JBTSI-SKAP-APPARATSKAP-LITE-HHENGSLET
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{Name}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="apparatskapfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+	
+
+<!--========================================================================================================
+	SIGNAL
+	SKAP OG BOKSER
+	SA-APS Skap og boks
+	Innvendig og utvendig sikringsanlegg (nøkkelskap, sveivskap, bokser på vegg eller stolpe)
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-APS Lite skap og boks"
+				Layer="JBTSI_SA_APS" Color="ByLayer"
+				Group="Signal/Skap og bokser"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+
+		<RelationSourceSpace>kabelboks</RelationSourceSpace>
+
+		<AttachmentCategory Name="kabelboks" />
+		<AttachTo Category="signalfundament" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="Offset3D.Z"><Formula>(Variant:find("Nøkkelskap") or Variant:find("Sveivskap")) and 1.50 or 1.20</Formula></LuaExpression>
+		<LuaExpression Name="PoleRouting3D"><Formula>"Vertical"</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>NOBN_sig_getCabinetName()</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<Variants>
+			<Variant Name="Nøkkelskap, venstrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-NØK-NØKKELSKAP-250x350x230-Ø76" />
+			</Variant>
+			<Variant Name="Nøkkelskap, høyrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-NØK-NØKKELSKAP-250x350x230-Ø76" />
+			</Variant>
+			<Variant Name="Sveivskap, venstrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SVB-SVEIVSKAP-500x760x320-Ø76" />
+			</Variant>
+			<Variant Name="Sveivskap, høyrehengslet" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SVB-SVEIVSKAP-500x760x320-Ø76" />
+				
+			</Variant>
+			<Variant Name="Kabelboks 280x190x100 på Ø76 rørmast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x100-Ø76" />
+			</Variant>
+			<Variant Name="Kabelboks 280x190x100 på Ø127 rørmast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x100-Ø127" />
+			</Variant>
+			<Variant Name="Kabelboks 280x190x165 på Ø76 rørmast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x165-Ø76" />
+			</Variant>
+			<Variant Name="Kabelboks 280x190x165 på Ø127 rørmast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x165-Ø127" />
+			</Variant>
+			<!--TODO: <Variant Name=Kabelboks for overdragstrafo" />-->
+		</Variants>
+	
+		<InsertSymbol VariantName="Nøkkelskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-NOEKKELSKAP-VHENGSLET" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-NØK-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Nøkkelskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-NOEKKELSKAP-HHENGSLET" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-NØK-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Sveivskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-SVEIVSKAP-VHENGSLET"  
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-SVB-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Sveivskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-SVEIVSKAP-HHENGSLET"  
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" AddAngle="0" Direction="false"/>
+			<SetValue Key="Tag" Value="SA-SVB-nnnnnn" />
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Kabelboks 280x190x100 på Ø76 rørmast" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-KABELBOKS"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" AddAngle="-90" />
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Kabelboks 280x190x100 på Ø127 rørmast" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-KABELBOKS"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" AddAngle="-90" />
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Kabelboks 280x190x165 på Ø76 rørmast" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-KABELBOKS"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" AddAngle="-90" />
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Kabelboks 280x190x165 på Ø127 rørmast" DisplayBlockName="NO-BN-2D-JBTSI-SKAP-KABELBOKS"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" AddAngle="-90" />
+			<SetValue Key="Tag" Value="SA-APS-nnnnnn" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-VHENGSLET" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>
+				{% if Variant == 'Nøkkelskap, venstrehengslet' %}NO-BN-2D-JBTSI-SKAP-NOEKKELSKAP-VHENGSLET
+				{% elsif Variant == 'Nøkkelskap, høyrehengslet' %}NO-BN-2D-JBTSI-SKAP-NOEKKELSKAP-HHENGSLET
+				{% elsif Variant == 'Sveivskap, venstrehengslet' %}NO-BN-2D-JBTSI-SKAP-SVEIVSKAP-VHENGSLET
+				{% elsif Variant == 'Sveivskap, høyrehengslet' %}NO-BN-2D-JBTSI-SKAP-SVEIVSKAP-HHENGSLET
+				{% elsif Variant == 'Kabelboks 280x190x100 på Ø76 rørmast' %}NO-BN-2D-JBTSI-SKAP-KABELBOKS
+				{% elsif Variant == 'Kabelboks 280x190x100 på Ø127 rørmast' %}NO-BN-2D-JBTSI-SKAP-KABELBOKS
+				{% elsif Variant == 'Kabelboks 280x190x165 på Ø76 rørmast' %}NO-BN-2D-JBTSI-SKAP-KABELBOKS
+				{% elsif Variant == 'Kabelboks 280x190x165 på Ø127 rørmast' %}NO-BN-2D-JBTSI-SKAP-KABELBOKS
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{Name}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	TEKNISKE BYGNINGER
+	SA-TER Tekniske bygninger og rom
+	Relerom, signalkiosk, container med signalanlegg med mer.
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-TER Tekniske bygninger og rom"
+				Layer="JBTSI_SA_TER" Color="ByLayer"
+				Group="Signal/Tekniske Bygninger"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>teknisk_bygg</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<SetValue Key="name" Value="Relerom" />
+		<SetValue Key="Tag" Value="SA-TER-nnnnnn" />
+		<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+
+		<!-- Connect earth to "jordspyd" typically: -->
+		<LuaExpression Name="EarthingMethod"><Formula>"Object"</Formula></LuaExpression>
+
+		<Variants>
+			<Variant Name="Relerom" >
+				<SetValue Key="name" Value="Relerom" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+		</Variants>
+		
+		<InsertSymbol VariantName="Relerom" DisplayBlockName="NO-BN-2D-JBTSI-TEKNISK-BEBYGGELSE-RELEROM" 
+				DefaultSnapMode="None" SnapToAlignment="true" SnapDistance="15" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-TEKNISK-BEBYGGELSE-RELEROM" AllowSymbolMove="true">
+			<Rotation RotateDirection="true" AddAngle="{% if RightSided %}0{% else %}180{% endif %}" />	
+			<BlockNameFormat>
+			NO-BN-2D-JBTSI-TEKNISK-BEBYGGELSE-RELEROM
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+		
+	</ObjectType>
+
+	
+
+<!--========================================================================================================
+    SIGNAL
+	TOGDETEKSJON
+	SA-SPF Tellepunktavsnitt
+	TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for akseltellere = tellepunktavsnitt
+	Dette er et fiktivt objekt, ringen med avsnitt-nummeret i. Akseltellerne søker etter dem for å tilegne seg nr.
+	TODO: Avklare med Bane NOR om vi kan benytte SA-TVD for "tellepunktavsnitt" som ny objekt-type for Banedata.
+=========================================================================================================-->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="SA-SPF Tellepunktavsnitt"
+				Layer="JBTSI_SA_SPF" Color="ByLayer"
+				Group="Signal/Togdeteksjon"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+	>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+
+		<!-- Ikke ISY beskrivelse - fiktivt objekt -->
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AxleCountersToBeRefreshed" 
+			DisplayName="Axle counters to be refreshed" 
+			Description="When this section object is refreshed, then the nearest limiting object on each side is refreshed as well."/>
+		<LuaExpression Name="SymbolFrame"><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+		<LuaExpression Name="mc_AxleCountersToBeRefreshed" IsModelCheck="true"><Formula>NOBN_sig_chkTriggerNeighbourAxleCounters()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_sig_chkTriggerNeighbourAxleCounters()" ReturnType="String"
+			Description="Triggers modelchecking in neighbour axle counters." >
+			<Constructor>NOBN_sig_chkTriggerNeighbourAxleCounters()</Constructor>
+			<Formula>
+				function NOBN_sig_chkTriggerNeighbourAxleCounters()
+					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+					local n = 0
+					local t = {}
+					prevAc = getDownObject("SA-TEL Tellepunkt") --Axle counter
+					if prevAc ~= nil then 
+						n = n + 1
+						table.insert(t,prevAc)
+					end
+					nextAc = getUpObject("SA-TEL Tellepunkt") --Axle counter
+					if nextAc ~= nil then 
+						n = n + 1
+						table.insert(t,nextAc)
+					end
+					return n,t,_info(n.." axle counters have been refreshed.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name"><Formula>"Ta("..code..")"</Formula></LuaExpression>	
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<!-- Snap-distance 1.6 means that the snap-function with argument '3' snaps it to dist 3 from track, snapping to the correct track. -->
+		<InsertSymbol VariantName="Togdeteksjonsavsnitt for akseltellere" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.6" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true" />
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<SetValue Key="DelimiterType" Value="SA-TEL Tellepunkt" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true">
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<SymbolAttribute Tag="X">
+				<Value>{{code}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	TOGDETEKSJON
+	SA-TEL Tellepunkt
+	railML:	2.3
+	Element:	<trainDetector>
+	Parent: 	<trainDetectionElements>
+	Children: <additionalName> (introduced with version 2.1), <any>, <geoCoord>, <states>
+=========================================================================================================-->
+<!-- Note: If cant has been exaggerated, then the axle counter sensors will move with the superelevated rails and may come closer to the -->
+<!-- track / alignment axis than expected, and a model check for XY-plane distance less than 5e-3 to own alignment will flag the axle counter as misplaced... -->
+<!-- if (math.abs(math.abs(DistanceToAlignment) - NOBN_trk_RAILSEPARATION()/2) &gt; 5e-3) then -->
+<!-- 	return string.format("%.3f",DistanceToAlignment)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
+<!-- end -->
+	<LuaFunction Name="NOBN_sig_chkAxleCounterDistanceToPreviousAxleCounter()" ReturnType="String"
+		Description="Checks distance to previous axle counter. Error if below 21 m, warning if below 23 m." >
+		<Constructor>String NOBN_sig_chkAxleCounterDistanceToPreviousAxleCounter()</Constructor>
+		<Formula>
+			function NOBN_sig_chkAxleCounterDistanceToPreviousAxleCounter()
+				searchDir = "down"
+				if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+				r,n = RC__getCollectionOfRelatedObjects("Har akseltellersopp")
+				if n == 0 then tps = nil else tps = r[0] end --tps (tellepunktsopp) is nil if no tuning unit connected yet (used to trigger check of related object)
+				ac = getDownObject(RcType)
+				if ac == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
+				dist = distance(ac)
+				t = string.format("%.3f", dist)
+				Etol = 21
+				Wtol = Etol + 2
+				if dist &lt; Etol then 
+					return string.format("%.03f: ERROR - %s too close in '"..searchDir.."' direction, outside tolerance %0.3f m.",dist,ac.name,Etol),{ac,tps},_error
+				elseif dist &lt; Wtol then 
+					return string.format("%.03f: WARNING - %s close in '"..searchDir.."' direction, but within tolerance %0.3f m.",dist,ac.name,Etol),{ac,tps},_warning
+				else
+					return string.format("%.03f: OK - %s is nearest axle counter in '"..searchDir.."' direction, farther away than tolerance %0.3f m.",dist,ac.name,Etol),{ac,tps},_ok
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_sig_chkAxleCounterDistanceToNextAxleCounter()" ReturnType="String"
+		Description="Checks distance to next axle counter. Error if below 21 m, warning if below 23 m." >
+		<Constructor>String NOBN_sig_chkAxleCounterDistanceToNextAxleCounter()()</Constructor>
+		<Formula>
+			function NOBN_sig_chkAxleCounterDistanceToNextAxleCounter()
+				searchDir = "up"
+				if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+				r,n = RC__getCollectionOfRelatedObjects("Har akseltellersopp")
+				if n == 0 then tps = nil else tps = r[0] end --tps (tellepunktsopp) is nil if no tuning unit connected yet (used to trigger check of related object)
+				ac = getUpObject(RcType)
+				if ac == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
+				dist = distance(ac)
+				t = string.format("%.3f", dist)
+				Etol = 21
+				Wtol = Etol + 2
+				if dist &lt; Etol then 
+					return string.format("%.03f: ERROR - %s too close in '"..searchDir.."' direction, outside tolerance %0.3f m.",dist,ac.name,Etol),{ac,tps},_error
+				elseif dist &lt; Wtol then 
+					return string.format("%.03f: WARNING - %s close in '"..searchDir.."' direction, but within tolerance %0.3f m.",dist,ac.name,Etol),{ac,tps},_warning
+				else
+					return string.format("%.03f: OK - %s is nearest axle counter in '"..searchDir.."' direction, farther away than tolerance %0.3f m.",dist,ac.name,Etol),{ac,tps},_ok
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" Name="SA-TEL Tellepunkt"
+				Layer="JBTSI_SA_TEL" Color="ByLayer"
+				Group="Signal/Togdeteksjon"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>tellepunkt</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and .75 or -.75)</Formula>
+		</LuaExpression>
+
+		<Variants>
+			<Variant Name="Tellepunkt">
+				<SetValue Key="controllerRef" Value="" />  <!--This refers to the id attribute of the associated <controller> element-->
+				<SetValue Key="detectionObject" Value="axle" />  <!--wheel axle train endOfTrain obstacle other:anything--> 
+				<SetValue Key="medium" Value="magnetic" />	<!--mechanical hydraulic pneumatic magnetic inductive optical radio other:anything-->
+				<SetValue Key="directionDetection" Value="false" />	<!--boolean-->
+				<SetValue Key="model" Value="" />	<!--string-->
+				<SetValue Key="axleCounting" Value="true" />	<!--Boolean-->
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-TEL-THALES-TELLEPUNKT-SK30K" />
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="code"><Formula>NOBN_sig_getAxleCounterCode()</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>"Tp("..code..")"</Formula></LuaExpression>	
+		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>	
+		
+		<!-- Set railML properties: -->
+		<LuaExpression Name="posInTrack"><Formula>RightSided and "leftRail" or "rightRail"</Formula></LuaExpression>	
+
+		<!-- Model checks -->
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousAxleCounter" DisplayName="Avstand til forrige tellepunkt" 
+				Description="Axle counters need at least 21 m between any two consecutive sensors, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextAxleCounter" DisplayName="Avstand til neste tellepunkt" 
+				Description="Axle counters need at least 21 m between any two consecutive sensors, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
+		<LuaExpression Name="SymbolFrame"><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToPreviousAxleCounter" IsModelCheck="true"><Formula>NOBN_sig_chkAxleCounterDistanceToPreviousAxleCounter()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToNextAxleCounter" IsModelCheck="true"><Formula>NOBN_sig_chkAxleCounterDistanceToNextAxleCounter()</Formula></LuaExpression>
+			
+		<InsertSymbol VariantName="Tellepunkt" DisplayBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SENSOR" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SENSOR" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SENSOR</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="3.0" TargetSpace="akseltellersopp"/>
+				<SnapPoint X="0.0" Y="4.5" TargetSpace="akseltellersopp"/>
+				<SnapPoint X="0.0" Y="-3.0" TargetSpace="akseltellersopp"/>
+				<SnapPoint X="0.0" Y="-4.5" TargetSpace="akseltellersopp"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	TOGDETEKSJON
+	SA-TPS Tellepunkt sopp
+	Dette er tuningenhet eller evalueringsenhet for akseltellerens svake sensorsignaler, plassert ved sporet.
+	TODO: Avklare med Bane NOR om vi får innføre SA-TPS for Tellepunkt sopp
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-TPS Tellepunkt sopp"
+				Layer="JBTSI_SA_TPS" Color="ByLayer"
+				Group="Signal/Togdeteksjon"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>akseltellersopp</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="Sopp for enkelt tellepunkt">
+				<SetValue Key="name" Value="Tp-sopp, enkel" />
+			</Variant>
+			<Variant Name="Sopp for dobbelt tellepunkt">
+				<SetValue Key="name" Value="Tp-sopp, dobbel" />
+			</Variant>
+		</Variants>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromMushroomToAxleCounter" 
+						DisplayName="Kabelavstand fra sopp til tellepunkt" 
+						Description="Axle counters send very weak signals to the nearby tuning box, using impedance-matched coaxial cables of predefined lengths, typically from 3 to 7 meters."/>
+		<LuaExpression Name="SymbolFrame"><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+		<LuaExpression Name="mc_CableDistanceFromMushroomToAxleCounter" IsModelCheck="true"><Formula>NOBN_sig_chkCableDistanceFromTunerToAxleCounter()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_sig_chkCableDistanceFromTunerToAxleCounter()" ReturnType="String"
+			Description="Checks 'grid distance' (from track + along track), from axle counter tuner (mushroom) to its axle counter. Error if outside (1.0 - 7.5), warning if outside (3.0 - 3.4) meter." >
+			<Constructor>String NOBN_sig_chkCableDistanceFromTunerToAxleCounter()</Constructor>
+			<Formula>
+				function NOBN_sig_chkCableDistanceFromTunerToAxleCounter()
+					--Assume mushroom has same own alignment and approximate position as the axle counter it belongs to:
+					s = "Er akseltellersopp for tellepunkt"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
+					else
+						tol = RC__EPSILON() * 1.0 -- meter
+						ac = r[0]
+						gridDistancePerpendicular = math.abs(distanceToAlignment - ac.distanceToAlignment)
+						gridDistanceColinear = math.abs(mileage - ac.mileage)
+						-- Their sum is a cool metric:
+						gridDistance = gridDistancePerpendicular + gridDistanceColinear
+						msg = "Grid distance is the sum of "..RC__round(gridDistancePerpendicular,1).." (perpendicular to alignment) and "..RC__round(gridDistanceColinear,1).." (colinear to alignment)"
+						gt = string.format("%.1f=%.03f+%.03f",gridDistance,gridDistancePerpendicular,gridDistanceColinear)
+						if (gridDistance &lt; tol) then return gridDistance..": ERROR - Tuner is located too close to axle counter wrt minimum tolerance 1m.",{ac},_error,_info(msg)
+						elseif (gridDistance &gt;= 1.0 and gridDistance &lt; 3.0) then return gt..": WARNING - Tuner is located close to axle counter but above min 1m - try increase to 3.0.",{ac},_warning,_info(msg)
+						elseif (gridDistance &gt;= 3.0 and gridDistance &lt; 3.4) then return gt..": OK - Distance from tuner to axle counter is suitable for standard cabling 3m to 3.4m.",{ac},_ok,_info(msg)
+						elseif (gridDistance &gt;= 3.4 and gridDistance &lt;= 7.5) then return gt..": WARNING - Tuner is located far from axle counter, but below max 7.5m - try reduce to 3.4.",{ac},_warning,_info(msg)
+						else return gt..": ERROR - Tuner is located too far from axle counter, reduce distance.",{ac},_error,_info(msg) end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
+		
+		<LuaExpression Name="code"><Formula>_SA_TPS_code()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_TPS_code()" ReturnType="String"
+			Description="Obtains the 'code' for axle counter tuning unit (mushroom). Uses relation 'Er akseltellersopp for tellepunkt' to , the related object's data." >
+			<Constructor>String _SA_TPS_code()</Constructor>
+			<Formula>
+				function _SA_TPS_code()
+					s = "Er akseltellersopp for tellepunkt"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
+					else
+						return r[0].code
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name"><Formula>"Tps("..code..")"</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<LuaExpression Name="Mileage"><Formula>RC__getMileageFromRelatedObject("Er akseltellersopp for tellepunkt")</Formula></LuaExpression>
+
+		<InsertSymbol VariantName="Sopp for enkelt tellepunkt" DisplayBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SOPP" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="true">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Sopp for dobbelt tellepunkt" DisplayBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SOPP" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="true">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SOPP" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SOPP</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+	</ObjectType>
+
+	
+
+<!--========================================================================================================
+    SIGNAL (og OVERBYGNING)
+	TOGDETEKSJON
+	KO-SKJ Isolert skjøt
+	Isolerte skinneskjøt. Tilhører Overbygningsfaget, som har sporet. Brukes også i returstrømkretsen.
+	TODO: Vurder om den skal bytte Group i CratePointObject innsettingsdialogen og i Object Manager.
+=========================================================================================================-->
+	<ObjectType DataType="tTrackCircuitBorder" Class="RailwayPlacedObject" Name="KO-SKJ Isolert skjøt"
+				Layer="JBTSI_SA_SKJ" Color="ByLayer"
+				Group="Signal/Togdeteksjon"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>isolert skjøt</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+		
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and .75 or -.75)</Formula>
+		</LuaExpression>
+		
+		<CustomAttribute DataType="Boolean" Name="UpSectionLeftRailDetection" DisplayName="Deteksjon venstreskinne i stigende kilometerretning" DefaultValue="false"/>
+		<CustomAttribute DataType="Boolean" Name="DownSectionLeftRailDetection" DisplayName="Deteksjon venstreskinne i synkende kilometerretning" DefaultValue="false"/>
+		<CustomAttribute DataType="Boolean" Name="DownSectionRightRailDetection" DisplayName="Deteksjon høyreskinne i synkende kilometerretning" DefaultValue="false"/>
+		<CustomAttribute DataType="Boolean" Name="UpSectionRightRailDetection" DisplayName="Deteksjon høyreskinne i stigende kilometerretning" DefaultValue="false"/>
+
+		<LuaExpression Name="name"><Formula>"Iso."..code</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<!-- TODO: Lage 3D-modell for isolasjon med sporfelttilkoblinger -->
+		<SetValue Key="Model3DName" Value="" />
+
+		<LuaExpression Name="UpSectionLeftRailDetection">		   
+			<Formula>UpSections.Count ~= 0 and UpSections[0].LeftRailDetection or false</Formula>
+		</LuaExpression>
+		<LuaExpression Name="DownSectionLeftRailDetection">		   
+			<Formula>DownSections.Count ~= 0 and DownSections[0].LeftRailDetection or false</Formula>
+		</LuaExpression>
+		<LuaExpression Name="DownSectionRightRailDetection">		   
+			<Formula>DownSections.Count ~= 0 and DownSections[0].RightRailDetection or false</Formula>
+		</LuaExpression>
+		<LuaExpression Name="UpSectionRightRailDetection">		   
+			<Formula>UpSections.Count ~= 0 and UpSections[0].RightRailDetection or false</Formula>
+		</LuaExpression>
+			
+		<InsertSymbol VariantName="Isolert skjøt" DisplayBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-EN-STREK-ISOLERT-SKJOET"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-EN-STREK-ISOLERT-SKJOET" AllowSymbolMove="true">
+			<Rotation AddAngle="{% if RightSided %}180{% else %}0{% endif %}"/>
+		</SymbolDefinition>
+		
+		<SymbolDefinition X="0.0" Y="0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB_KO_SKJ">
+			<Rotation AddAngle="{% if RightSided %}180{% else %}0{% endif %}"/>
+			<BlockNameFormat JoinBy="-">
+			{% if UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}NO-BN-2D-JBTSI-SIGNAL-TOGDETEKSJON-EN-STREK-ISOLERT-SKJOET{% endif %}
+			{% if UpSectionRightRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
+			{% if DownSectionRightRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
+			{% if DownSectionLeftRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
+			{% if UpSectionLeftRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	TOGDETEKSJON
+	SA-???
+	TODO: Halemagnet
+=========================================================================================================-->
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	TOGDETEKSJON
+	SA-SPF Sporfelt
+	TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for isolerte skinneskjøter
+=========================================================================================================-->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="SA-SPF Sporfelt"
+				Layer="JBTSI_SA_SPF" Color="ByLayer"
+				Group="Signal/Togdeteksjon"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+	>
+				
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+
+		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
+		
+		<CustomAttribute DataType="Enumeration" Name="LeftRailDetection" DisplayName="Deteksjon venstreskinne" DefaultValue="false">
+			<Values>
+				<Value>true</Value>
+				<Value>false</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<CustomAttribute DataType="Enumeration" Name="RightRailDetection" DisplayName="Deteksjon høyreskinne" DefaultValue="false">
+			<Values>
+				<Value>true</Value>
+				<Value>false</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<InsertSymbol VariantName="Togdeteksjonsavsnitt for isolerte skjøter" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75" />
+			<SetValue Key="DelimiterType" Value="KO-SKJ Isolert skjøt" />
+		</InsertSymbol>
+	
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true">
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<SymbolAttribute Tag="X">
+				<Value>{{code}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	SIKRINGSANLEGG
+	SA-??? 
+	TODO: Lage Veibomdrivmaskin
+=========================================================================================================-->
+	
+	
+
+<!--========================================================================================================
+    SIGNAL
+	SIKRINGSANLEGG
+	SA-DRV Drivmaskin
+	Drivmaskin for sporveksler, til tunger og bevegelig kryss
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-DRV Sporvekseldrivmaskin"
+				Layer="JBTSI_SA_DRV" Color="ByLayer"
+				Group="Signal/Sikringsanlegg"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>sporvekseldrivmaskin</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+		
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
+		</LuaExpression>
+
+		<CustomAttribute DataType="Boolean" Name="HasHeatingElement" DisplayName="Har varmeelement" DefaultValue="false">
+			<Values>
+				<Value>true</Value>
+				<Value>false</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<Variants DefaultValue="Alstom MET">
+			<Variant Name="Alstom MET" >
+			</Variant>
+			<Variant Name="Siemens Bsg9" >
+			</Variant>
+			<Variant Name="Siemens ELS 710" >
+			</Variant>
+		</Variants>
+		
+		<LuaExpression Name="code"><Formula>_SA_DRV_code()</Formula></LuaExpression>	
+		<LuaFunction Name="_SA_DRV_code()" ReturnType="String"
+				Description="Obtains the code for a point machine, derived from the switch it is related to with 'Driver sporveksel'." >
+			<Constructor>String _SA_DRV_code()</Constructor>
+			<Formula>
+				function _SA_DRV_code()
+					local s,i,sw,n,d,j
+					s = "Driver sporveksel"
+					sw,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "Relate with '"..s.."' to switch object (turnout).",
+							_info("Point machines derive their code from the switch they are related to with '"..s.."'.")
+					else    
+						pm,npm = RC__getCollectionOfRelatedObjects("Har sporvekseldrivmaskin",sw[0])
+						j = 0
+						for i = 0, npm-1 do 
+							d = (sw[0].dir == "up") and 1 or -1
+							if ((ReferenceMileage - pm[i].ReferenceMileage)*d &gt;= 0) then 
+								j = j + 1 
+							end
+						end
+						return sw[0].code.."_"..j
+					end
+				end	
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name"><Formula>"Drv."..code</Formula></LuaExpression>	
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+		
+		<LuaExpression Name="dir"><Formula>_SA_DRV_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_DRV_dir()" ReturnType="String"
+				Description="Obtains the direction (dir) for a point machine, derived from the switch it is related to with 'Driver sporveksel'." >
+			<Constructor>String _SA_DRV_dir()</Constructor>
+			<Formula>
+				function _SA_DRV_dir()
+					local s,sw,n
+					s = "Driver sporveksel"
+					sw,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "unknown",_info("Point machines derive their direction from the switch they are related to with '"..s.."'.")
+					else
+						return sw[0].dir
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DName"><Formula>_SA_DRV_Model3DName()</Formula></LuaExpression>	
+		<LuaFunction Name="_SA_DRV_Model3DName()" ReturnType="String"
+				Description="Obtains the 3D model name (Model3DName) for a point machine, derived from its Variant, direction (dir) and side of alignment (distanceToAlignment)." >
+			<Constructor>String _SA_DRV_Model3DName()</Constructor>
+			<Formula>
+				function _SA_DRV_Model3DName()
+					local t
+					if Variant == "Alstom MET" then 
+						t = "NO-BN-3D-SA-DRV-ALSTOM-MET-KASSESVILLE-"
+					elseif Variant == "Siemens Bsg9" then
+						t = "NO-BN-3D-SA-DRV-SIEMENS-BSG9-"
+					elseif Variant == "Siemens ELS 710" then
+						t = "NO-BN-3D-SA-DRV-SIEMENS-ELS710-"
+					else
+						return "NO-BN-3D-UKJENT",_error,_info("Bad Variant ["..Variant.."].")
+					end
+					if ((dir == "up" and RightSided) or (dir == "down" and LeftSided)) then 
+						return t.."HSIDE"
+					elseif ((dir == "up" and LeftSided) or (dir == "down" and RightSided)) then 
+						return t.."VSIDE"
+					else
+						return "Cannot determine side of track for point machine.",_error
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<InsertSymbol VariantName="Alstom MET" DisplayBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORVEKSEL" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Siemens Bsg9" DisplayBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORVEKSEL" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Siemens ELS 710" DisplayBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORVEKSEL" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORVEKSEL" AllowSymbolMove="true">
+			<Rotation RotateDirection="true" />
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{code}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	SIKRINGSANLEGG
+	SA-SPD Sporsperredrivmaskin
+	Drivmaskin for sporsperre
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-SPD Sporsperredrivmaskin"
+				Layer="JBTSI_SA_SPD" Color="ByLayer"
+				Group="Signal/Sikringsanlegg"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>sporsperredrivmaskin</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="code"><Formula>_SA_SPD_code()</Formula></LuaExpression>	
+		<LuaFunction Name="_SA_SPD_code()" ReturnType="String"
+				Description="Obtains the code for a derailer machine, derived from the derailer it is related to with 'Driver sporsperre'." >
+			<Constructor>String _SA_SPD_code()</Constructor>
+			<Formula>
+				function _SA_SPD_code()
+					s = "Driver sporsperre"
+					derailer,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Missing relation '"..s.."' to derailer object.",_warning
+					else
+						return derailer[0].code
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="name"><Formula>return "Spd."..code</Formula></LuaExpression>	
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<SetValue Key="dir" Value="both" />
+
+		<Variants DefaultValue="Sporsperredrivmaskin">
+			<Variant Name="Sporsperredrivmaskin" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SPD-SPORSPERREDRIVMASKIN" /> 
+			</Variant>
+		</Variants>
+
+		<!-- Merk: Samme 2d-symbol som sporvekseldivmaskin  -->
+		<InsertSymbol VariantName="Sporsperredrivmaskin" DisplayBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORSPERRE" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1.75">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<!--Benytter samme 2D-symbol som sporvekseldrivmaskin-->
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORSPERRE" AllowSymbolMove="true">
+			<Rotation RotateDirection="true" />
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{code}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNAL
+	SIKRINGSANLEGG
+	SA-LOK Lokalstiller
+	Trykknapp for lokal omlegging av sporveksel/sporsperre eller koblede sporveksler/sporsperre
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-LOK Lokalstiller"
+				Layer="JBTSI_SA_LOK" Color="ByLayer"
+				Group="Signal/Sikringsanlegg"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>lokalstiller</RelationSourceSpace>
+
+		<AttachmentCategory Name="lokalstiller" />
+		<AttachTo Category="montasjeelement3" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<LuaExpression Name="Offset3D.Z">
+			<Formula>Variant:find("vegg") and 1.25 or 0</Formula>
+		</LuaExpression>
+	
+		<LuaExpression Name="PoleRouting3D">
+			<Formula>Variant:find("vegg") and "Vertical" or "None"</Formula>
+		</LuaExpression>
+	
+		<Variants DefaultValue="Lokalstiller, 1 knapp/enkel veksel, på stolpe">
+			<Variant Name="Lokalstiller, 1 knapp/enkel veksel, på stolpe" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-ENKEL-VEKSEL-PÅ-STOLPE" />
+			</Variant>
+			<Variant Name="Lokalstiller, 1 knapp/enkel veksel, på vegg" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-ENKEL-VEKSEL-PÅ-VEGG" />
+			</Variant>
+			<Variant Name="Lokalstiller, 1 knapp/koblet veksel, på stolpe" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-KOBLET-VEKSEL-PÅ-STOLPE" />
+			</Variant>
+			<Variant Name="Lokalstiller, 1 knapp/koblet veksel, på vegg" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-KOBLET-VEKSEL-PÅ-VEGG" />
+			</Variant>
+			<Variant Name="Lokalstiller, 2 knapper/enkel veksel, på stolpe" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-ENKEL-VEKSEL-PÅ-STOLPE" />
+			</Variant>
+			<Variant Name="Lokalstiller, 2 knapper/enkel veksel, på vegg" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-ENKEL-VEKSEL-PÅ-VEGG" />
+			</Variant>
+			<Variant Name="Lokalstiller, 2 knapper/koblet veksel, på stolpe" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-KOBLET-VEKSEL-PÅ-STOLPE" />
+			</Variant>
+			<Variant Name="Lokalstiller, 2 knapper/koblet veksel, på vegg" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-KOBLET-VEKSEL-PÅ-VEGG" />
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="code"><Formula>_SA_LOK_code()</Formula></LuaExpression>	
+		<LuaFunction Name="_SA_LOK_code()" ReturnType="String"
+				Description="Obtains the code for a local control panel, derived from the switch or derailer it is related to with 'Driver sporveksel' or 'Driver sporsperre'." >
+			<Constructor>String _SA_LOK_code()</Constructor>
+			<Formula>
+				function _SA_LOK_code()
+					s = "Omstiller sporveksel/sporsperre"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Missing relation '"..s.."' to switch object or derailer object.",_warning,
+						_info("A local control panel derives its code property from the switch or derailer which it is related to.")
+					elseif n == 1 then
+						if r[0].RcType == "KO-SPV Sporveksel" then 
+							coupledSwitch,ncsw = RC__getCollectionOfRelatedObjects("Er koblet med sporveksel",sw[0])
+							if ncsw == 0 then
+								return r[0].code
+							else
+								return coupledSwitch[0].code.."/"..r[0].code
+							end
+						elseif r[0].RcType == "SA-SSP Sporsperre" then
+							return r[0].code
+						else
+							return "ERROR - Bad RcType ["..r[0].RcType.."] for object related to Local control panel.",_error
+						end
+					else
+						return "ERROR - More than 1 ["..n.."] object related to Local control panel.",_error
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name"><Formula>"Lok."..code</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+		
+		<!-- 2D symbol is circular symmetric, so no need to specify any rotation during insertion jig -->
+		<InsertSymbol VariantName="Lokalstiller, 1 knapp/enkel veksel, på stolpe" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 1 knapp/enkel veksel, på vegg" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 1 knapp/koblet veksel, på stolpe" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 1 knapp/koblet veksel, på vegg" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 2 knapper/enkel veksel, på stolpe" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 2 knapper/enkel veksel, på vegg" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 2 knapper/koblet veksel, på stolpe" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		<InsertSymbol VariantName="Lokalstiller, 2 knapper/koblet veksel, på vegg" DisplayBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{code}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" >
+			<Rotation />
+		</SymbolDefinition>
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<!-- Stolpe for montasje -->
+				<SnapPoint X="0" Y="0" TargetSpace="montasjeelement3"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+		<DisplayPointsDefinitions>
+			<SnapPoints>
+				<!-- Visuell Lok relativt til dock point (0, +/-2.5) i sporveksel, skal vises litt før SS (og spv har fire kvadranter) -->
+				<SnapPoint X="-1.75" Y="0.75"/>
+				<SnapPoint X="-1.75" Y="-0.75"/>
+				<SnapPoint X="1.75" Y="0.75"/>
+				<SnapPoint X="1.75" Y="-0.75"/>
+			</SnapPoints>
+		</DisplayPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	ATC
+	SA-ATC Balisegruppe
+
+	Balisegruppen kan kobles til signal(er), sporveksel(ler), radioområder, RBC-områder, sikringsanleggområder, 
+	stasjonsområder osv o.a. 
+	Noen tilkobinger arver posisjon fra sin forelder (signal), andre ikke (sporveksel, annen balisegruppe).
+	Lenkingsgrupper: Kobles til annen balisegruppe.
+	Signaler og forsignaler, evt dvergsignaler, fiktive osv: Balisegruppen kobles til signalet.
+=========================================================================================================-->
+	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" Name="SA-ATC Balisegruppe" 
+				Layer="JBTSI_SA_ATC" Color="ByLayer"
+				Group="Signal/ATC"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>balisegruppe</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		
+		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
+
+		<!-- TODO: Inkluder alle disse properties for å kunne generere kodetabeller automatisk -->
+		<!--	
+		<CustomAttribute DataType="String" Name="Retning" DisplayName="Retning" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Sign_Type" DisplayName="Sign_Type" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="BaliseID" DisplayName="BaliseID" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Signalbilde_1H" DisplayName="Signal_1H" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Signalbilde_1F2H" DisplayName="Signalbilde_1F2H" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Signalbilde_2F" DisplayName="Signalbilde_2F" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Kjørhastighet" DisplayName="Kjørhastighet" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Venthastighet" DisplayName="Venthastighet" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="P-avstand" DisplayName="P-avstand" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="B-avstand" DisplayName="B-avstand" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Fall" DisplayName="Fall" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Frislipphastighet" DisplayName="Frislipphastighet" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="MotrettetType" DisplayName="MotrettetType" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="MotrettetHastighet" DisplayName="MotrettetHastighet" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Togveier" DisplayName="Togveier" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Pxyz" DisplayName="Pxyz" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Axyz" DisplayName="Axyz" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Bxyz" DisplayName="Bxyz" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="Cxyz" DisplayName="Cxyz" DefaultValue="" />
+		-->
+		<CustomAttribute DataType="Enumeration" Name="Balisetype" DefaultValue="ATC2 parallellbaliser">
+			<Values>
+				<Value>ATC2 parallellbaliser</Value>
+				<Value>ATC2 seriebaliser, store</Value>
+				<Value>ATC2 seriebaliser, små</Value>
+				<Value>Eurobaliser, store</Value>
+				<Value>Eurobaliser, små</Value>
+				<Value>Annen balisetype</Value>
+			</Values>
+		</CustomAttribute>
+				   
+		<Variants DefaultValue="ETCS L2 balisegruppe">
+			<Variant Name="ETCS L2 balisegruppe"/>
+			<Variant Name="Hovedsignalbalisegruppe"/>
+			<Variant Name="Forsignalbalisegruppe"/>
+			<Variant Name="Repeterbalisegruppe"/>
+			<Variant Name="Sporvekselbalisegruppe"/>
+			<Variant Name="Hastighetsbalisegruppe"/>
+			<Variant Name="Lenkingsbalisegruppe"/>
+			<Variant Name="Signalhøyningsbalisegruppe"/>
+			<Variant Name="ET-balisegruppe"/>
+			<Variant Name="Grensebalisegruppe"/>
+			<Variant Name="Radioområdebalisegruppe"/>
+			<Variant Name="Diversebalisegruppe"/>
+		</Variants>
+
+		<LuaExpression Name="code"><Formula>NOBN_sig_getBaliseGroupId()</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
+		<LuaExpression Name="ObjectInfo"><Formula>Variant</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<!--TODO: ETCS-grupper  må trolig raffineres videre-->
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="ETCS L2 balisegruppe" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<!--Hovedsignal alene og kombinertsignal (Hs+Fs) balisegruppe-->
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Hovedsignalbalisegruppe" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Forsignalbalisegruppe" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Repeterbalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Sporvekselbalisegruppe" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Hastighetsbalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Lenkingsbalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Signalhøyningsbalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="ET-balisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Grensebalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Radioområdebalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<InsertSymbol DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" VariantName="Diversebalisegruppe"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation /> 
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE" AllowSymbolMove="true">
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
+		</SymbolDefinition>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	ATC
+	SA-ATB Balise
+	TODO Er ikke "switchable" allerede en railML-attributt? Da skal vi vel bruke den, ikke vår egen customattribute?
+=========================================================================================================-->
+	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" Name="SA-ATB Balise"
+				Layer="JBTSI_SA_ATB" Color="ByLayer"
+				Group="Signal/ATC"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>balise</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+		
+		<CustomAttribute DataType="String" Name="TekstOver" DisplayName="Tekst over" DefaultValue="" 
+			Description="Text above balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC tables 7.1 and 7.2."
+			ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" IncludeIn3DExport="true" />
+		
+		<CustomAttribute DataType="String" Name="TekstUnder" DisplayName="Tekst under" DefaultValue=""
+			Description="Text below  balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC table 7.11."
+			ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" IncludeIn3DExport="true" />
+	
+		<!-- Bruke code ikke name siden baliser ikke har tekst som vises i tegningen (vanligvis) -->
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>code</Formula></LuaExpression> 
+
+		<LuaExpression Name="DistanceToAlignment">		  
+			<!-- Give balises a slightly visible offset - balises will be turned in 3D so that the cable extends to the side-of-track bias. -->
+			<Formula>RightSided and 0.01 or -0.01</Formula>
+		</LuaExpression>
+
+		<Variants DefaultValue="Balise fylt/fast">
+			<Variant Name="Fylt/fast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-ATB-BALISE-STOR-FAST" />
+			</Variant>
+			<Variant Name="Fylt/styrt" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-ATB-BALISE-STOR-STYRT" />
+			</Variant>
+			<Variant Name="Tom/fast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-ATB-BALISE-STOR-FAST" />
+			</Variant>
+			<Variant Name="Tom/styrt" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-ATB-BALISE-STOR-STYRT" />
+			</Variant>
+		</Variants>
+
+		<!--Hos BN skal symbolet for første balise i gyldighetsretning være "fylt"-->
+		<CustomAttribute DataType="Boolean" Name="FirstInGroup" DisplayName="Første i gruppe"
+		DotLiquidExpression="
+         {% if Variant == 'Fylt/fast' %}True
+         {% elsif Variant == 'Fylt/styrt' %}True
+         {% elsif Variant == 'Tom/fast' %}False
+         {% elsif Variant == 'Tom/styrt' %}False
+         {% endif %}"
+		/>    
+
+		<!--Styrte baliser skal ha kabel, og BN 2D-symbolet har en strek over seg. TODO Finnes "switchable" allerede i railML for baliseobjektet deres???-->
+		<CustomAttribute DataType="Boolean" Name="Switchable" DisplayName="Styrt" 
+			DotLiquidExpression="
+				{% if Variant == 'Fylt/fast' %}False
+				{% elsif Variant == 'Fylt/styrt' %}True
+				{% elsif Variant == 'Tom/fast' %}False
+				{% elsif Variant == 'Tom/styrt' %}True
+				{% endif %}"
+		/>
+
+		<LuaExpression Name="Model3DName"><Formula>NOBN_sig_getBaliseModel3DName('Large')</Formula></LuaExpression>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextBalise" DisplayName="Avstand til neste balise" 
+			Description="
+			Below 2.35 meter: ERROR - Balise magnetic fields may merge - increase distance\n
+			2.35-2.8 meter: WARNING - Outside recommended tolerance - increase distance\n
+			2.8-3.2 meter: OK - The train will treat the balises as in the same group\n
+			3.2-3.5 meter: WARNING - Outside recommended tolerance - decrease distance\n
+			3.5-10.5 meter: ERROR - The train cannot determine balise group assignment\n
+			10.5-11.8 meter: WARNING - Outside recommended tolerance - Increase distance\n
+			Above 11.8 meter: OK - The train will treat the balises as belonging to different groups"/>
+			
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousBalise" DisplayName="Avstand til forrige balise"
+			Description="
+			Below 2.35 meter: ERROR - Balise magnetic fields may merge - increase distance\n
+			2.35-2.8 meter: WARNING - Outside recommended tolerance - increase distance\n
+			2.8-3.2 meter: OK - The train will treat the balises as in the same group\n
+			3.2-3.5 meter: WARNING - Outside recommended tolerance - decrease distance\n
+			3.5-10.5 meter: ERROR - The train cannot determine balise group assignment\n
+			10.5-11.8 meter: WARNING - Outside recommended tolerance - Increase distance\n
+			Above 11.8 meter: OK - The train will treat the balises as belonging to different groups"/>
+			
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackVertically" DisplayName="Avstand til spor i høyden"
+			Description="
+			Below 2 meter: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
+			2-2.6 meter: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 meter from neighbouring track (large balise) resp. 2.3 meter (minibalise) – increase distance\n
+			Over 2.6 meter: OK – Train in neighbouring track will pass without reading the balise"/>
+			
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackSideways" DisplayName="Avstand til nabospor"
+			Description="
+			Below 2 meter: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
+			2-2.6 meter: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 meter from neighbouring track (large balise) resp. 2.3 meter (minibalise) – increase distance\n
+			Over 2.6 meter: OK – Train in neighbouring track will pass without reading the balise"/>
+		
+		<LuaExpression Name="TekstOver"><Formula>NOBN_sig_getBaliseTextAboveSymbol()</Formula></LuaExpression>
+		<LuaExpression Name="TekstUnder"><Formula>NOBN_sig_getBaliseTextBelowSymbol()</Formula></LuaExpression>
+
+		<LuaExpression Name="code"><Formula>NOBN_sig_getBaliseId()</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>code:lower():match("unfinished") and code or ""</Formula> </LuaExpression>
+		<LuaExpression Name="dir"><Formula>NOBN_sig_getBaliseGroupDirection()</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+		
+		<LuaExpression Name="mc_DistanceToNextBalise" IsModelCheck ="true"><Formula>NOBN_sig_chkBaliseDistanceToNextBalise()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToPreviousBalise" IsModelCheck ="true"><Formula>NOBN_sig_chkBaliseDistanceToPreviousBalise()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToTrackVertically" IsModelCheck ="true"><Formula>NOBN_sig_chkBaliseDistanceToTrackVertically()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToTrackSideways" IsModelCheck ="true"><Formula>NOBN_sig_chkBaliseDistanceToTrackSideways()</Formula></LuaExpression>
+		<LuaExpression Name="SymbolFrame"><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+			
+		<!--TODO Fjerne oppførsel med at balisespissen peker ned (i forhold til current UCS y-akse) ved innsetting, den skal ALLTID peke opp langs UCS-Y -->
+		<!--cosisnegative: true hvis kvadrant I eller IV (høyre side av enhetssirkelen)-->
+		<InsertSymbol VariantName="Fylt/fast" DisplayName="Balise fylt/fast" DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISE-FYLT-FAST" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateWithUcs="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Fylt/styrt" DisplayName="Balise fylt/styrt" DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISE-FYLT-STYRT" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateWithUcs="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Tom/fast" DisplayName="Balise tom/fast" DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISE-TOM-FAST" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateWithUcs="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Tom/styrt" DisplayName="Balise tom/styrt" DisplayBlockName="NO-BN-2D-JBTSI-ATC-BALISE-TOM-STYRT" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateWithUcs="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ATC-BALISE-TOM-FAST" AllowSymbolMove="true">
+			<!--Note: cosisnegative (RC built-in filter for DotLiquid) returns 'True' with an uppercase T-->
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-ATC-BALISE
+				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
+				{% else %}TOM
+				{% endif %}
+				{% if Variant == 'Fylt/styrt' or Variant == 'Tom/styrt' %}STYRT
+				{% else %}FAST
+				{% endif %}
+			</BlockNameFormat>
+			<SymbolAttribute Tag="TEKSTOVER">
+				<Value>{{TekstOver}}</Value>
+			</SymbolAttribute>
+			<SymbolAttribute Tag="TEKSTUNDER">
+				<Value>{{TekstUnder}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+
+		<Model3DDefinition>
+			<Attribute Tag="T01">
+				<Value>{{code}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+	</ObjectType>
+
+
+
+<!--=======================================================================================================
+	SIGNAL
+	FORRIGLING
+	Default options for eksport av forriglingstabeller
+========================================================================================================-->
+	<DefaultInterlockingExportOptions>
+		<TrainRoutesStartPointFilter>if (RcType == "SA-SIG Signal" and Hovedsignal == 'Hs2' or Hovedsignal == 'Hs3') then
+	return NOBN_sig_getSignalShortName()
+elseif RcType == "SA-SIG ERTMS" then
+	return NOBN_sig_getSignalShortName()
+end</TrainRoutesStartPointFilter>
+		<TrainRoutesEndPointFilter>if ((RcType == "SA-SIG Signal" and (Hovedsignal == 'Hs1'or Hovedsignal == 'Hs2' or Hovedsignal == 'Hs3'))
+	or (RcType == "SA-SIG Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
+	or (RcType == "SA-SIG Togvei slutt"))
+then
+	return NOBN_sig_getSignalShortName()
+elseif RcType == "SA-SIG ERTMS" then
+	return NOBN_sig_getSignalShortName()
+end</TrainRoutesEndPointFilter>
+		<ShuntingRoutesStartPointFilter>if (RcType == "SA-SIG Signal" and Dvergsignal == "Ja") then return NOBN_sig_getSignalNumber() end</ShuntingRoutesStartPointFilter>
+		<ShuntingRoutesEndPointFilter>if (RcType == "SA-SIG Signal" and Dvergsignal == "Ja") then 
+	return NOBN_sig_getSignalNumber()
+elseif ((RcType == "SA-SIG Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "SA-SIG Togvei slutt")) then
+
+	return code
+end</ShuntingRoutesEndPointFilter>
+		<ViaPointFilter>if (RcType == "SA-SIG Fiktivt punkt" and Variant == "Viapunkt for betjeningsanlegg") then
+    return "(v"..code..")"
+end</ViaPointFilter>
+		<ExtendedTrainRoutesExcludedStartPointFilter>Function == "blocking"</ExtendedTrainRoutesExcludedStartPointFilter>
+		<ExtendedRoutePartFormatScript>base = StartName .. "-" .. EndName
+if ViaPoints.Count > 0 then
+    via = ViaPoints[0].Value
+    for i=1, ViaPoints.Count-1 do
+      via = via .. "-" .. ViaPoints[i].Value
+    end
+    return base .. " via " .. via
+else
+    return base
+end</ExtendedRoutePartFormatScript>
+		<SwitchNameScript>dir = (position == "left") and "V" or "H"
+return switchObj.code .. dir</SwitchNameScript>
+	</DefaultInterlockingExportOptions>
+	
+	
+	
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>

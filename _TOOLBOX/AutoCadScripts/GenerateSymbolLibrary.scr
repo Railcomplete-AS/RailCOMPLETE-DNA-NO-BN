@@ -1,0 +1,53 @@
+;
+; GenerateSymbolLibrary.scr
+;
+; Generate a 2D symbol library for RailCOMPLETE software.
+;
+; NOTE: Cannot use special national characters in filenmames - LISP 'findfile' command will fail!
+; NOTE: Close old symbol file before running this script - otherwise your file will not be saved.
+;
+; Copyright RailCOMPLETE (r) 2016-2019. All rights reserved.
+;
+;
+; ********************************************************************************************************
+; *** This script works as long as your files are organized as follows:
+; ***
+; *** Github\RailCOMPLETE\Customization\XX-XX\2D\_SRC 	AutoCAD home folder when starting script
+; *** ...\_SRC\Fonts									General AutoCAD fonts to be used
+; *** ...\_SRC\Utilities								General Lisp utilities to be used
+; *** ...\_SRC\Symbols									Specific Lisp code for XX-XX. There must be ONE 
+; *** 													instance of C:MAIN() in this folder.
+; ***
+; ********************************************************************************************************
+;
+; *** Retrieve Windows environent variables set from the calling batch file:
+(setq administration (getenv "ADM"))
+(setq releaseName (getenv "RELEASE"))
+; RELEASE may be the empty string, but ADM must hold a valid administration abbreviation 'XX-XX' etc.
+;
+; *** Set root folder for AutoCAD:
+; We require that the calling batch file starts AutoCAD from the Github\RailCOMPLETE\Customization\XX-XX\_SRC folder where XX-XX is
+; the administration in question, as held in the Windows environment variable 'ADM'
+(setvar "SECURELOAD" 0)
+(setq RootFolder (getvar "dwgprefix"))
+(setenv "RC_ROOTFOLDER" Rootfolder)
+;
+; *** Add folders to AutoCAD search paths, Load Lisp resource routines:
+(load (strcat RootFolder "Utilities\\SymbolLibraryHelpers.lsp"))
+(addSupportPath RootFolder)
+(addSupportPath (findfile "Fonts"))
+(addSupportPath (findfile "Symbols"))
+(loadFolder "Utilities")
+(loadFolder "Symbols")
+;
+; *** Make the 2D library - Run the main LISP file, starting with a callable routine "C:MAIN()":
+; ****************************************************
+MAIN
+; ****************************************************
+;
+; *** MAIN ends with saving the resulting symbol library to "2D.DWG" in the _SRC folder.
+; *** NB! Save fails if that DWG file is currently in use, close it first!
+;
+; ****************************************************
+; *** Expect result here: ...\%ADM%\2D\_SRC\2D.dwg ***
+; ****************************************************

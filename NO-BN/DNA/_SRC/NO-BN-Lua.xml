@@ -1,0 +1,563 @@
+<!--========================================================================================================
+
+    NO-BN-Lua.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--========================================================================================================
+	Common - Other general Lua functions, not related to railways in particular
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_com_STAGEPATTERN()" ReturnType="String"
+		Description="Constant: Returns the default Bane NOR pattern to be used for extracting stage info from CAD system layer names." >
+		<Constructor>String NOBN_com_STAGEPATTERN()</Constructor>
+		<Formula>
+function NOBN_com_STAGEPATTERN()
+	return "%d%d%d%d%-%d%d%d%d"
+end
+		</Formula>
+    </LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_com_DEFAULTSTAGE()" ReturnType="String"
+		Description="Constant: Returns the default Bane NOR stage [0000-99999 to be used if stage is unknown or unspecified." >
+		<Constructor>String NOBN_com_DEFAULTSTAGE()</Constructor>
+		<Formula>
+function NOBN_com_DEFAULTSTAGE()
+	return "0000-9999"
+end
+		</Formula>
+    </LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN__setSymbolFrame()" ReturnType="String"
+		Description="Checks object model check attributes for warnings and errors, turns on the corresponding symbol frame (_error/_warning/[no frame])." >
+		<Constructor>String NOBN__setSymbolFrame()</Constructor>
+		<Formula>
+function NOBN__setSymbolFrame()
+	modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
+	-- Historic object? By convention, historic layers have names starting with the 'at' character '@':
+	if (layer:sub(1,1) == '@') then 
+		return "History"
+	elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count > 0) then
+		return "Error"
+	elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count > 0) then
+		return "Warning"
+	elseif RcType == "SA-SPF Tellepunktavsnitt" then 
+		return "TvdSectionFrame-2.75"
+	else 
+		return ""
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+	
+		
+<!--========================================================================================================
+	Track - general position issues, relative to track alignments, used by all objects
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_trk_RAILSEPARATION()" ReturnType="Double"
+		Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." >
+		<Constructor>Double NOBN_trk_RAILSEPARATION()</Constructor>
+		<Formula>function NOBN_trk_RAILSEPARATION() return 1.5 end</Formula>
+	</LuaFunction>
+
+
+	
+	<LuaFunction Name="NOBN_trk_getLiftFromCant()" ReturnType="Double"
+		Description="Returns a track-bound object's Z-coordinate offset above TopOfRail [m], consistent with own alignment's local cant. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
+		<Constructor>Double NOBN_trk_getLiftFromCant([_position])</Constructor>
+		<Formula>
+function NOBN_trk_getLiftFromCant(where)
+	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
+	--'where' is a data structure, if present, consisting of .Pos and .Ref
+	if where == nil then
+		-- can be called from point objects:
+		ai = getAlignmentInfo()
+	else
+		-- can be called from anywhere, including an alignment, as a sampled formula:
+	    ai = getAlignmentInfo(where)
+	end
+	if RcAlignment == nil then 
+		-- 'this' is a point object:
+		cg = Alignment.AlignmentSystem.CantGauge
+		lwc = Alignment.AlignmentSystem.QuickMode3DLiftWithCant
+		dta = DistanceToAlignment
+	else 
+		-- 'this' is an alignment:
+		cg = AlignmentSystem.CantGauge
+		lwc = AlignmentSystem.QuickMode3DLiftWithCant
+		dta = 0 --DistanceToAlignment
+	end
+	if not lwc then 
+		return 0,_info("Alignment system does not lift with cant.")
+	end
+	c = ai.Cant
+    if c == nil or RC__isNan(c) then
+        return 0,_info("UNFINISHED - No cant data in alignment, assuming zero cant.")
+	elseif c == 0 then
+		return 0
+    else
+        -- Cant is measured in millimeter superelevation
+        -- Ask alignment system whether cant leads to lift or not:
+	    h = c/1000.0 --[m]
+		if h &gt; cg then 
+			h = cg - 0.001 -- Almost 90 degrees roll...
+			msg = "Cant truncated to max, "..RC__round(1000*h).." mm."
+		else
+			msg = RC__round(1000*h).." mm cant."
+		end
+		railSeparationXY = math.sqrt(cg^2 - h^2)
+		if h == 0 then
+			return 0,_info(msg)
+		else
+			cr = ai.CantRotation
+			if cr == "CCW" then
+				-- Right rail lifted above left rail
+				return h/2 + h/2 * dta / (railSeparationXY / 2)
+			elseif cr == "CW" then
+				-- Left rail lifted above right rail
+				return h/2 - h/2 * dta / (railSeparationXY / 2)
+			else
+				return 0,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming zero lift.")
+			end
+		end
+	end
+end
+		</Formula>		
+	</LuaFunction>
+	
+	
+	
+	<LuaFunction Name="NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance()" ReturnType="Double"
+		Description="Returns a track-bound object's 2D distance to the alignment axis as a function of its track plane distance to own alignment. 'TrackPlaneDistance' is by default set to half of the rail separation. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
+		<Constructor>Double NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance([Double TrackPlaneDistance [,_position]])</Constructor>
+		<Formula>
+function NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(TrackPlaneDistance,where)
+	if TrackPlaneDistance == nil then
+		--No specific distance as input, use side of track and place on rail:
+		TrackPlaneDistance = RightSided and NOBN_trk_RAILSEPARATION()/2 or -NOBN_trk_RAILSEPARATION()/2
+	end
+	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC, sampled along the alignment.
+	if where == nil then
+		ai = getAlignmentInfo()
+	else
+	    ai = getAlignmentInfo(where)
+	end
+	g = ai.Gradient
+	h = ai.Cant/1000.0
+	if RC__isNan(h) then 
+		return TrackPlaneDistance,_info("No cant data in alignment, assuming zero cant.")
+	else
+		-- Scale track plane distance to alignment with effect of cant:
+	 	return TrackPlaneDistance * math.sqrt(1 - (h/NOBN_trk_RAILSEPARATION())^2)
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+	
+	<LuaFunction Name="NOBN_trk_getRollFromCant()" ReturnType="Double"
+		Description="Returns a track-bound object's sideways roll [Decimal Degrees], consistent with own alignment's local cant and object direction up/down. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
+		<Constructor>Double NOBN_trk_getRollFromCant([_position])</Constructor>
+		<Formula>
+function NOBN_trk_getRollFromCant(where)
+	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
+	--'where' is a data structure, if present, consisting of .Pos and .Ref
+	if where == nil then
+		-- can be called from point objects:
+		ai = getAlignmentInfo()
+	else
+		-- can be called from anywhere, including an alignment, as a sampled formula:
+	    ai = getAlignmentInfo(where)
+	end
+	if RcAlignment == nil then 
+		-- 'this' is a point object:
+		cg = Alignment.AlignmentSystem.CantGauge
+	else 
+		-- 'this' is an alignment:
+		cg = AlignmentSystem.CantGauge
+	end
+	c = ai.Cant
+    if c == nil or RC__isNan(c) then
+        return 0,_info("UNFINISHED - No cant data in alignment, assuming zero cant.")
+	elseif c == 0 then
+		return 0
+    else
+        -- Cant is measured in millimeter superelevation, with rotation clockwise or counterclockwise in the track's direction
+        -- Assume that only one rail is lifted at a time.
+	    h = c/1000.0
+        cr = tostring(ai.CantRotation)
+        if  cr:upper() == "CW" then
+            return math.asin(h/cg)*(180/math.pi)
+        elseif cr:upper() == "CCW" then 
+            return -math.asin(h/cg)*(180/math.pi)
+        else
+            return 90,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming 90 degrees roll as a visual warning.")
+        end
+    end
+end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<!-- TODO Lage funksjoner for 3D Offset og Rotation slik at de benytter _position og kan brukes i linjers 3D-eksport også. -->
+	<LuaFunction Name="NOBN_trk_getPitchFromGradient()" ReturnType="Double"
+		Description="Returns a track-bound object's pitch [decimal degrees], consistent with own alignment's local gradient, and object orientation up/down/both/none. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
+		<Constructor>Double NOBN_trk_getPitchFromGradient([_position])</Constructor>
+		<Formula>
+function NOBN_trk_getPitchFromGradient(where)
+	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC, sampled along the alignment.
+	if where == nil then
+		g = getAlignmentInfo().gradient
+	else
+	    g = getAlignmentInfo(where).gradient 
+	end
+    if RC__isNan(g) then
+        return 0,_info("No gradient data in alignment, assuming zero gradient.")
+    else
+        return math.atan(g/1000)*(180/math.pi)
+    end
+end
+		</Formula>
+	</LuaFunction>
+	
+	
+	
+    <LuaFunction Name="NOBN_trk_getYawFromDir()" ReturnType="Double"
+		Description="Returns object's 3D rotation [DD] from its direction property 'dir' (up/down/none/both) and side of alignment, as seen in the direction of increasing mileage. If a non-zero rotation [DD] is provided, then the rotation takes precedence over the 'dir' property. Balises are a special case, assuming cable extends to the right from the 3D model, a slight leftside bias turns the balise around so the cable extends at the left side of the track." >
+        <Constructor>Double NOBN_trk_getYawFromDir([Double rotation])</Constructor>
+		<Formula>
+function NOBN_trk_getYawFromDir(rotation)
+	d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
+	if RcType == "SA-ATB Balise" then 
+		--Special case: Place balise slightly to the right of center track to keep the cable extending to the right
+		--We assume that all balises have cable extending to the right when seen in the 3D object's 'up' direction
+		--(the cable will then be best protected for left-handed normal driving on double track lines).
+		if AngularOffset == nil then 
+			return RightSided and 0 or 180
+		else	
+			return AngularOffset + (RightSided and 0 or 180)
+		end
+	end
+	if rotation == nil and AngularOffset == nil then
+		-- No argument given, and no standard property 'AngularOffset' exists for the current object
+		if d == 'up' then
+			return 0
+		elseif d == 'down' then
+			return 180
+		elseif d == 'both' then
+			return RightSided and -90 or 90
+		elseif d == 'none' then
+			return RightSided and 90 or -90
+		else --d == unknown':
+			return 45,_warning,_info("Direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning.")
+		end
+	else
+		--Modify 'dir' with extra rotation:
+		if rotation == nil then
+			--No arg given, use object's own AngularOffset:
+			rotation = AngularOffset
+		else 
+			if math.abs(rotation) &lt; 4e-4 then 
+				rotation = 0 --remove small inaccuracies
+			end
+		end
+		if d == 'up' then
+			return rotation,_info("'up' with "..rotation.." degrees extra rotation.")
+		elseif d == 'down' then
+			return 180+rotation,_info("'down' with "..rotation.." degrees extra rotation.")
+		elseif d == 'both' then
+			return (RightSided and -90 or 90) + rotation, _info("'both' with "..rotation.." degrees extra rotation.")
+		elseif d == 'none' then
+			return (RightSided and 90 or -90) + rotation, _info("'none' with "..rotation.." degrees extra rotation.")
+		else --d == unknown':
+			return 45,_warning,_info("Direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning .")
+		end
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+<!--========================================================================================================
+	Track - Continuations, switches and crossings
+=========================================================================================================-->
+	<!-- INFO 2019-05-07 CLFEY: OCS Lua functions moved to file for TrackCOnnections / TrackObjects. -->
+
+	
+<!--========================================================================================================
+	Signaling
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_sig_getSignalSightingRequirement()" ReturnType="String"
+		Description="Returns the sighting requirement according to TRV regulations for signals. Speed is extracted from the object's own alignment using getAlignmentInfo().Speed." >
+		<Constructor>Double NOBN_sig_getSignalSightingRequirement()</Constructor>
+		<Formula>
+function NOBN_sig_getSignalSightingRequirement()
+	local aspeed = getAlignmentInfo().Speed
+	local DesignSpeed = (aspeed == nil) and 130 or aspeed --130 km/h assumed if alignment has no design speed available
+
+	if RcType == "SA-SIG Signal" then
+		if (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") and not MainSignal:find("Hs") then
+			return 50,_info("50m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
+	
+		elseif MainSignal:find("Hs") and DistantSignal == "-" then
+			-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
+			if DesignSpeed &gt; 210 then
+				return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+			else 
+				v = math.max(135,math.min(210,DesignSpeed))
+				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+			end
+
+		elseif MainSignal:find("Hs") and DistantSignal == "-" then 
+			-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
+			v = math.max(40,math.min(130,DesignSpeed))
+			return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250m above 130 km/h.")
+
+		else
+			return 0,_info(DesignSpeed.." km/h: Bad SA-SIG signal type [RcType="..RcType..", Variant="..(Variant~=nil and "(void)" or Variant.."."))
+		end
+
+	elseif RcType == "SA-SIG Togvei slutt" then
+		-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
+		if DesignSpeed &gt; 210 then
+			return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+		else 
+			v = math.max(135,math.min(210,DesignSpeed))
+			return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+		end
+	
+	
+	elseif RcType == "SA-SIG Brosignal/Frostportsignal" or RcType == "SA-SIG Rasvarslingsignal" then
+		--TODO: Check requirements with Bane NOR
+		if DesignSpeed &gt; 210 then
+			return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+		else 
+			v = math.max(135,math.min(210,DesignSpeed))
+			return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+		end
+
+	
+	elseif RcType == "SA-SIG Høyt skiftesignal" then
+		return 50,_info("50m fixed sighting requirement during shunting movements.")
+	
+	elseif RcType == "SA-SIG PLO-signal" then
+		-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
+		if DesignSpeed &gt; 210 then
+			return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+		else 
+			v = math.max(135,math.min(210,DesignSpeed))
+			return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+		end
+
+	elseif RcType == "SA-SIG PLO-forsignal" then
+		-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
+		v = math.max(40,math.min(130,DesignSpeed))
+		return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250m above 130 km/h.")
+
+	elseif RcType == "SA-SIG Veisignal" then
+		--Signal mot vei
+		return 30,_info("30m fixed sighting requirement for road traffic towards level crossing signal (To be verified!).")
+
+	elseif RcType == "SA-SIG Brosignal/Frostportsignal" then 
+		--Samme byggeteknikk som for 3-lys Hs (2 røde blink / 1 hvit blink)
+		return 150,_info("150m fixed sighting requirement for bridge / frost gate signal (To be verified!).")
+
+	elseif RcType == "SA-SIG Togsporsignal" then
+		--Ingen spesielle krav, plasseres når lokfører eller ombordansvarlig ikke ser hovedsignal (ikke tillatt i nye anlegg)
+		return 50,_info("50m fixed sighting requirement for Togsporsignal (old type RepHs repeater signal) (To be verified!).")
+
+	elseif RcType == "SA-SIG ERTMS" then
+		-- ERTMS marker board - Fixed 150m requirement?
+		return 150,_info(DesignSpeed.." km/h: 150m fixed sighting requirement for ERTMS boards.")
+	
+	else
+		return 0,_info(DesignSpeed.." km/h: Bad signal type [RcType="..RcType..", Variant="..(Variant~=nil) and "(void)" or Variant..".")
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+	
+<!--========================================================================================================
+	bnp - Boards 'n poles
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_bnp_getBoardOffset3dZ()" ReturnType="String"
+		Description="Returns the default pole 3D offset Z, i.e. the height of the pole." >
+		<Constructor>Double NOBN_bnp_getBoardOffset3dZ()</Constructor>
+		<Formula>
+function NOBN_bnp_getBoardOffset3dZ()
+	-- To be mounted below other board on common pole:
+	if Variant:find("Meterangivelse") then return 2.6 --May be placed under 68F
+	elseif Variant:find("68F") then return 2.8 --Tilleggshastighet, to be placed under 68
+
+	--To be mounted relatively low on NSI63 optical signal's mast:
+	elseif Variant:find("62") then return 2.85 --Ugyldighetssignal på standard Bane NOR signalmast alternativ 2
+	elseif Variant:find("72") then return 2.45 --FJS begynner/slutter
+	elseif Variant:find("73") then return 2.45 --Rasvarsling
+	elseif Variant:find("F-ATC") or Variant:find("D-ATC") then return 2.9
+
+	--To be mounted on front/top of optical light signal's sunscreen:
+	elseif Variant:find("60E") then return 5.80 --ATC Varsel. Remember to adjust Offset3d.Y as well.
+
+	--Close to track, low placement, with pole:
+	elseif Variant:find("Bevegelig kryss") then return 0.5 --Short vertical pole close to track
+	elseif Variant:find("69") then return 1.5 --Temporary speed restriction, to be mounted with horizontal pole to track/sleeper
+
+	--Close to track, low placement, no pole:
+	elseif Variant:find("Baliseskilt") then return 0.0 --Mounted on platform element's side towards track, at A-balise
+
+	--May be hanging from yoke, othwerwise on own pole:
+	elseif Variant:find("Spornummer") then return PoleOrYoke == 'Yoke' and -1 or 3.5
+	elseif Variant:find("E34") then return PoleOrYoke == 'Yoke' and -1 or 3.5 --ERTMS Stedsskilt
+	elseif Variant:find("E35") then return PoleOrYoke == 'Yoke' and -1 or 3.5 --ERTMS Stoppskilt
+
+	--To be read by train driver sitting in train, AND by walking people:
+	elseif Variant:find("1000V") then return 2.5
+	elseif Variant:find("kjedebrudd") then return 2.5
+
+	--To be read by walking people:
+	elseif Variant:find("Nødtelefon") then return 2.00
+	elseif Variant:find("Stopp se og lytt") then return 2.00 --Skilt langs bilvei, for mennesker
+	elseif Variant:find("Arbeidsområde") then return 2.02 --Tenkt montert på et NSI hovedsignal
+
+	-- High relative Elevations, no pole:
+	elseif Variant:find("75B") then return 0.0 --Old km board type, directly on tunnel wall (high RelativeElevation)
+	elseif Variant:find("Rømningsavstand") then return 0.0 --Escape route distance / direction board, directly on tunnel wall
+
+	else 
+		return 3.5
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_bnp_getPoleRoutingDefaultValue()" ReturnType="String"
+		Description="Returns the default pole setting for the board in question, from {'none','vertical','horizontal'}." >
+		<Constructor>enum {'None','Vertical','Horizontal'} NOBN_bnp_getPoleRoutingDefaultValue()</Constructor>
+		<Formula>
+function NOBN_bnp_getPoleRoutingDefaultValue()
+	if Variant:find("Baliseskilt")
+		or Variant:find("60E")
+		or Variant:find("62")
+		or Variant:find("67E")
+		or Variant:find("68F")
+		or Variant:find("70")
+		or Variant:find("72A")
+		or Variant:find("72B")
+		or Variant:find("73")
+		or Variant:find("Arbeidsområde")
+		or Variant:find("138") --Trafikkskilt Andreaskors langs bilvei ved PLO, festes på lyssignal mot vei
+	then 
+		return "None"
+
+	elseif variant:find("69") then
+		return "Horizontal" --Fixed with temporary bracket to closest rail/sleeper
+
+	else 
+		return "Vertical"
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+	
+	<LuaFunction Name="NOBN_bnp_getBoardSightingRequirement()" ReturnType="String"
+		Description="Returns the sighting requirement according to TRV regulations for vegetation clearance towards boards. Speed is extracted from the object's own alignment using getAlignmentInfo().Speed." >
+		<Constructor>Double NOBN_bnp_getBoardSightingRequirement()</Constructor>
+		<Formula>
+function NOBN_bnp_getBoardSightingRequirement()
+	local aspeed = getAlignmentInfo().Speed
+	local DesignSpeed = (aspeed == nil) and 130 or aspeed --130 km/h assumed if alignment has no design speed available
+
+	if 	
+		   Variant:find("Baliseskilt")
+		or Variant:find("Arbeidsområde")
+		or Variant:find("75C") -- 75C: Hev sporrenser
+		or Variant:find("75D") -- 75D: Senk sporrenser
+		or Variant:find("60E") --ATC Varsel - Monteres på Fs eller Hs+Fs
+		or Variant:find("62") --Ugyldighetsskilt - står alltid sammen med Hs, Fs eller enkelt innkjørsignal
+		or Variant:find("64E") --64E: Blå/Hvit Teknisk stolpe
+		or Variant:find("67E") --Orienteringssignal dagtid, unngå å gi signal 83 "Tog kommer" mellom kl 22 og 06
+		or Variant:find("68F") --Tilleggshastighet underskilt - står alltid sammen med signal 68AB
+		or Variant:find("68G") --Krengetoghasighet underskilt - står alltid sammen med signal 68AB
+		or Variant:find("101") --ID-skilt av alle typer
+		or Variant:find("102") --Pilskilt
+		or Variant:find("138") --Trafikkskilt Andreaskors langs bilvei ved PLO, festes på lyssignal mot vei
+	then
+		--No sighting requirement:
+		return 0,_info("No sighting requirement.")
+
+	elseif
+		(Variant:find("60") and not Variant:find("60E")) --60ABCD_FGH: ATC skilt
+		or variant:find("61") --61ABC: Avstandsskilt 1/2/3 (1000/800/250 meter)
+		or variant:find("63") --63AB: Fallviser/Stigningsviser
+		or Variant:find("64A") --64A: Grense-innkoblingsstolpe
+		or Variant:find("64B") --64B: Seksjoneringsstolpe
+		or Variant:find("64C") --64C: Rasvarslingsstolpe
+		or Variant:find("64D") --64D: Bremsestolpe
+		or Variant:find("65") --65ABCDEFG: KL-skilt
+		or Variant:find("66") --66: Togvei slutt
+		or variant:find("68A") --69A: Nedsatt hastighet
+		or variant:find("68B") --69B: Økt hastighet
+		or variant:find("68C") --69C: Avvikende hastighet
+		or variant:find("68D") --69D: Markeringsmerke
+		or variant:find("69") --69AB: Midlertidig hastighet
+		or Variant:find("70") --70: Planovergangsskilt "V"
+		or Variant:find("72") --72AB: FJS begynner/slutter
+		or Variant:find("73") --73: Rasvarsling
+		or Variant:find("74") --74: Toglengdeskilt
+		or Variant:find("75A") --75AB: Kilometerskilt, gammel type
+		or Variant:find("75B") --75AB: Kilometer, ny type
+	then
+		-- Ref TRV Underbygning vedlikehold, 2.1.1 "Sikt til signaler og skilt"
+		v = math.max(40,math.min(130,DesignSpeed))
+		d = RC__round(v/3.6 * 5, 0)
+		return d,_info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m.")
+
+	elseif		
+		--Krav som til dvergsignaler pga kun aktuelle å observere under skifting (40 km/h / 50 meter)
+		   Variant:find("51") --51ABCD: Sporvekselsignal, lysreflekterende. A=tilRettspor, B=fraAvvik, C=tilV, D=tilH
+		or Variant:find("52") --52ABCD: Sporvekselsignal for kryssporveksel. A=fraVtilH, B=fraHtilV, C=fraVtilV, D=fraHtilH.
+		or Variant:find("53") --53: Sporsperresignal, "sporet sperret"
+		or Variant:find("54") --54: Sporsperresignal, "sporet fritt"
+		or Variant:find("64E") --64E: Dvergsignalstolpe
+	then
+		return 50,_info("50m fixed sighting requirement during shunting movements.")
+
+	else
+		return 0,_info(DesignSpeed.." km/h: Bad board type [RcType="..RcType..", Variant="..(Variant~=nil) and "(void)" or Variant..".")
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+
+
+<!--========================================================================================================
+	ocs - Overhead catenary System Lua formulas (including return current and earthing)
+=========================================================================================================-->
+	<!-- INFO 2019-05-07 CLFEY: OCS Lua functions moved to file for OcsObjects. -->
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>

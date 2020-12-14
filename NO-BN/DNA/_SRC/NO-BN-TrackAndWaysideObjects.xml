@@ -1,0 +1,674 @@
+<!--========================================================================================================
+
+    NO-BN-TrackAndWaysideObjects.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--========================================================================================================
+	Global Lua
+=========================================================================================================-->
+	<!-- (Nothing) -->
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	SPORVEKSELRELATERTE OBJEKTER
+	KO-???
+	Objekter i tilknytning til sporveksel
+=========================================================================================================-->
+	<!--TODO Modellere ulike typer tungeruller, glideskoplater, osv??  -->
+	<!--TODO Modellere ulike typer skinner, sviller og skinnebefestigelser -->
+
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	SPOR
+	KO-SPO Spor
+	Kan skapes med import av LandXML, import fra DWG, tegne fra scratch, konvertere fra 2D/3D polyline.
+	TODO: 2019-06-21 Fjerne AlignmentSystem i sin nåværende form.
+=========================================================================================================-->
+	<ObjectType DataType="eTrack" Class="RailwayAlignment" Name="KO-SPO Spor"
+				Layer="JBTOB_KO_SPO" Color="ByLayer"
+				Group="Overbygning/Spor"
+				>
+				
+		<RelationSourceSpace>spor</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+
+		<!-- TODO: Sjekk sporbredder for de som ikke er 1.500 de er tatt ut av lufta av CLFEY... -->
+		<AlignmentSystems DefaultSystemName="Normalspor 1435 mm" >
+			<!-- <AlignmentSystem Name="Smalspor 1067 mm" -->
+				<!-- CantGauge="1.130" -->
+				<!-- AlignmentGauge="1.067" -->
+				<!-- QuickMode3DLiftWithCant="true" -->
+			<!-- /> -->
+			<AlignmentSystem Name="Normalspor 1435 mm"
+				CantGauge="1.500"
+				AlignmentGauge="1.435"
+				QuickMode3DLiftWithCant="true"
+			/>
+			<!-- <AlignmentSystem Name="Bredspor 1524 mm" -->
+				<!-- CantGauge="1.590" -->
+				<!-- AlignmentGauge="1.524" -->
+				<!-- QuickMode3DLiftWithCant="true" -->
+			<!-- /> -->
+			<!-- <AlignmentSystem Name="Bredspor 1674 mm" -->
+				<!-- CantGauge="1.740" -->
+				<!-- AlignmentGauge="1.674" -->
+				<!-- QuickMode3DLiftWithCant="true" -->
+			<!-- /> -->
+		</AlignmentSystems>
+				
+		<!--Kategori "spor" er et geografisk spor med alignment data.-->
+		<!--TODO 2019-09-01 CLFEY Definere en ny klasse for "skjematisk spor", som kan relatere seg til et geografisk spor -->
+
+		<LuaExpression Name="name"><Formula>"["..code.."]"</Formula></LuaExpression>
+
+		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
+		<LuaExpression Name="Rotation3D.X"><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Y"><Formula>NOBN_trk_getRollFromCant(_position)</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Z"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="Offset3D.Z"><Formula>NOBN_trk_getLiftFromCant(_position)</Formula></LuaExpression>
+
+		<!-- If using sweep and formulas, a step size of 8.0 gives a few centimeters error sideways with R190 curves - a reasonable speed/error trade-off -->
+		<SetValue Key="Sweep3D" Value="False"/>
+		<SetValue Key="QuickMode3D" Value="True"/>
+		<LuaExpression Name="Model3DName"><Formula>Sweep3D and "NO-BN-SWEEP-KO-SVI-SLEEPER-AND-RAILS" or "NO-BN-3D-KO-SVI-SLEEPER-AND-RAILS"</Formula></LuaExpression>
+		<LuaExpression Name="Model3DSeparation"><Formula>Sweep3D and RC__getNearest3DStep(8.0) or 0.60</Formula></LuaExpression>
+		<LuaExpression Name="Model3DOffset"><Formula>Sweep3D and 0 or Model3DSeparation/2</Formula></LuaExpression>
+
+		<Variants DefaultValue="Normalspor 1435 mm" >
+			<Variant Name="Normalspor 1435 mm" />
+		</Variants>
+
+		<PropertyPrompt Key="code" DefaultValue="Spor" AcceptEmptyValue="false"/>
+
+		<InsertAlignment VariantName="Normalspor 1435 mm" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SPOR" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Normalspor 1435 mm" />
+			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasepunkt"/>
+			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasepunkt"/>
+			<SetValue Key="HorizontalGeometrySectionObjectTypeRef" Value="KO-HOS Horisontal traseseksjon"/>
+			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="KO-VES Vertikal traseseksjon"/>
+		</InsertAlignment>
+
+		<!-- TODO 2019-09-01 CLFEY Fjerne eller omgjøre CoveringLinearAttribute?  Hva betyr det? -->
+		<LinearAttributes>
+			<CoveringLinearAttribute Name="TrackType" DisplayName="Sportype" DefaultValue="Togspor">
+				<Value>Togspor</Value>
+				<Value>Skiftespor</Value>
+			</CoveringLinearAttribute>
+		</LinearAttributes>
+		
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	KARAKTERISTISKE TRASEPUNKTER
+	KO-HOT Horisontaltrasepunkt
+	Karakteristiske trasépunkter for horisontalgeometri, for eksport til Banedata
+=========================================================================================================-->
+	<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-HOT Horisontaltrasepunkt"
+				Layer="JBTOB_KO_HOT" Color="ByLayer"
+				Group="Overbygning/Karakteristiske trasepunkter"
+				AttAddX="0"
+				AttAddY="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}"
+				>
+				
+		<RelationSourceSpace>horisontaltrasepunkt</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		
+		<LuaExpression Name="Mileage"><Formula>NOBN_trk_getMileageForNearestHorizontalVertex()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_trk_getMileageForNearestHorizontalVertex()" ReturnType="Double"
+				Description="Analyzes local alignment geometry and cant and returns nearest vertex' mileage." >
+			<Constructor>Double NOBN_trk_getMileageForNearestHorizontalVertex()</Constructor>
+			<Formula>
+			function NOBN_trk_getMileageForNearestHorizontalVertex()
+				alignmentInfo = getAlignmentInfo()
+				nearest = alignmentInfo.NearestHorizontalVertex
+				-- insert "RE,RB" if cant station is closest
+				nearestCant = alignmentInfo.NearestCantVertex
+				vertexMileage = nearest.Item1 ~= nil and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+				if nearestCant ~= null and math.abs(nearestCant.Mileage - alignmentInfo.Mileage) &lt; math.abs(vertexMileage - alignmentInfo.Mileage)
+										and math.abs(vertexMileage - alignmentInfo.Mileage) &gt; 1 then
+					return nearestCant.Mileage
+				else
+					if nearest.Item2 ~= null then return nearest.Item2.StartMileage end
+					if nearest.Item1 ~= null then return nearest.Item1.EndMileage end
+					return 0,error_info("Bad data for function NOBN_trk_getMileageForNearestHorizontalVertex().")
+				end
+			end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Variant"><Formula>NOBN_trk_getVariantForNearestHorizontalVertex()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_trk_getVariantForNearestHorizontalVertex()" ReturnType="String"
+				Description="Analyzes local alignment geometry and cant and returns nearest vertex' Variant, i.e. type of geometric vertex/cant." >
+			<Constructor>String NOBN_trk_getVariantForNearestHorizontalVertex()</Constructor>
+			<Formula>
+				function NOBN_trk_getVariantForNearestHorizontalVertex()
+-- XXXXXXXXXXXXXXXXXXXXXXXXX TODO CLFEY 2019-08-02 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+					alignmentInfo = getAlignmentInfo()
+					nearest = alignmentInfo.NearestHorizontalVertex
+					nearestCant = alignmentInfo.NearestCantVertex
+					-- insert "RE,RB" if cant station is closest
+					vertexMileage = nearest.Item1 ~= nil and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+					if nearestCant ~= null and math.abs(nearestCant.Mileage - alignmentInfo.Mileage) &lt; math.abs(vertexMileage - alignmentInfo.Mileage)
+										and math.abs(vertexMileage - alignmentInfo.Mileage) &gt; 1 then
+						if math.abs(nearestCant.GradientIn) &gt; 0 and math.abs(nearestCant.GradientOut) &gt; 0 then
+							return "REB"
+						elseif (nearestCant.GradientIn == nil or nearestCant.GradientIn == 0) and math.abs(nearestCant.GradientOut) &gt; 0 then
+							return "RB"
+						elseif (nearestCant.GradientOut == nil or nearestCant.GradientOut == 0) and math.abs(nearestCant.GradientIn) &gt; 0 then
+							return "RE"
+						end
+					end
+					if nearest == nil then return "" end
+					if nearest.Item1 ~= null and nearest.Item1.Type == "Curve" then
+						if nearest.Item2 == nil or nearest.Item2.Type == "Straight" then return "KP" end
+						if nearest.Item2.Type == "Curve" then return "FKP" end
+					end
+					if nearest.Item2 ~= null and nearest.Item2.Type == "Curve" then
+						if nearest.Item1 == nil or nearest.Item1.Type == "Straight" then return "KP" end
+					end
+					if nearest.Item1 ~= null and nearest.Item1.Type == "Clothoid" then
+						if nearest.Item2 ~= null and nearest.Item2.Type == "Clothoid" then 
+							if nearest.Item1.RadiusStart &lt; nearest.Item1.RadiusEnd then return "FOB" else return "FOE" end
+						end
+						if nearest.Item1.RadiusStart &lt; nearest.Item1.RadiusEnd then return "OB" else return "OE" end
+					end
+					if nearest.Item2 ~= null and nearest.Item2.Type == "Clothoid" then 
+						if nearest.Item2.RadiusEnd &lt; nearest.Item2.RadiusStart then return "OB" else return "OE" end
+					end
+					return ""
+				end
+			</Formula>
+		</LuaFunction>
+	
+		<LuaExpression Name="code"><Formula>Variant</Formula></LuaExpression>		
+		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>		
+
+		<Variants>
+			<Variant Name="" />
+			<Variant Name="KP" />
+			<Variant Name="FKP" />
+			<Variant Name="OB" />
+			<Variant Name="OE" />
+			<Variant Name="FOB" />
+			<Variant Name="FOE" />
+			<Variant Name="RB" />
+			<Variant Name="RE" />
+			<Variant Name="REB" />
+		</Variants>
+		
+		<InsertSymbol DisplayName="Horisontalt geometripunkt" VariantName="Horisontalt geometripunkt" 
+				DisplayBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT"
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT" AllowSymbolMove="true"/>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	KARAKTERISTISKE TRASEPUNKTER
+	KO-VET Vertikaltrasepunkt
+	Karakteristiske trasépunkter for vertikalprofil, for eksport til Banedata
+=========================================================================================================-->
+	<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-VET Vertikaltrasepunkt"
+				Layer="JBTOB_KO_VET" Color="ByLayer"
+				Group="Overbygning/Karakteristiske trasepunkter"
+				AttAddX="0"
+				AttAddY="{% assign boolsk = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if boolsk == 'True' %}180{% else %}0{% endif %}"
+				>
+				
+		<RelationSourceSpace>vertikaltrasepunkt</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+	
+		<CustomAttribute DataType="String" Name="Info"/>
+		<LuaExpression Name="Info"><Formula>_KO_VET_info()</Formula></LuaExpression>
+		<LuaFunction Name="_KO_VET_info()" ReturnType="String"
+				Description="Analyzes local alignment profile and returns nearest vertex' 'Variant', i.e. type of geometric vertex/cant." >
+			<Constructor>String _KO_VET_info()</Constructor>
+			<Formula>
+				function _KO_VET_info()
+					nearest = getAlignmentInfo().NearestVerticalVertex
+					if nearest == nil then return "" end
+					str = nearest.Radius &gt; 0 and "Radius=" .. string.format("%.3f", nearest.Radius) .. "\\P" or ""
+					return str .. "Elevation=" .. string.format("%.3f", nearest.Elevation)
+				end
+			</Formula>
+		</LuaFunction>
+		<TextAttribute BindingProperty="Info" CadAttributeTag="INFO" X="0" Y="-3" Justify="MiddleCenter" Height="0.9" MText="true"/>
+		
+		<LuaExpression Name="Mileage"><Formula>NOBN_trk_getMileageForNearestVerticalVertex()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_trk_getMileageForNearestVerticalVertex()" ReturnType="Double"
+				Description="Analyzes local alignment profile and returns nearest vertex' mileage." >
+			<Constructor>Double NOBN_trk_getMileageForNearestVerticalVertex()</Constructor>
+			<Formula>
+				function NOBN_trk_getMileageForNearestVerticalVertex()
+					nearest = getAlignmentInfo().NearestVerticalVertex
+					return nearest == nil and nil or nearest.Mileage
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Variant"><Formula>NOBN_trk_getVariantForNearestVerticalVertex()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_trk_getVariantForNearestVerticalVertex()" ReturnType="String"
+				Description="Analyzes local alignment profile and returns nearest vertex' 'Variant', i.e. type of geometric vertex/cant." >
+			<Constructor>String NOBN_trk_getVariantForNearestVerticalVertex()</Constructor>
+			<Formula>
+				function NOBN_trk_getVariantForNearestVerticalVertex()
+					nearest = getAlignmentInfo().NearestVerticalVertex
+					if nearest == nil then return null end
+					if nearest.Type == "Crest" then return "HBP" end
+					if nearest.Type == "Sag" then return "LBP" end
+					return ""
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="code"><Formula>Variant</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
+		
+		<Variants>
+			<Variant Name="" />
+			<Variant Name="HBP" />
+			<Variant Name="LBP" />
+		</Variants>
+		
+		<InsertSymbol DisplayName="Vertikalt geometripunkt" VariantName="Vertikalt geometripunkt" 
+				DisplayBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT" AllowSymbolMove="true"/>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	</ObjectType> 
+
+	
+	
+<!--========================================================================================================
+	OVERBYGNING
+	TRASESEKSJONER
+	KO-HOS Horisontal traseseksjon
+	Traséseksjoner - horisontal. Benyttes for å annotere sporet og være datakilde for KO-HOT.
+=========================================================================================================-->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="KO-HOS Horisontal traseseksjon"
+				Layer="JBTOB_KO_HOS" Color="ByLayer"
+				Group="Overbygning/Traseseksjoner"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<!--Har ikke RelationSourceSpace-->
+	
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>RC__snap(getPropertyValue("DistanceToAlignment"),3)</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="Variant">		   
+			<Formula>
+				type = getAlignmentInfo().segment.Type
+				if type == "Straight" then return "Rettlinje" end
+				if type == "Curve" then return "Kurve" end
+				if type == "Clothoid" then return "Overgangskurve" end
+			</Formula>
+		</LuaExpression>
+		
+		<Variants>
+			<Variant Name="Rettlinje">
+				<LuaExpression Name="code">
+					<Formula>return "L=" .. string.format("%.3f",getAlignmentInfo().Segment.Length) .. "\\PRL"</Formula>
+				</LuaExpression>
+			</Variant>
+			<Variant Name="Kurve">
+				<LuaExpression Name="code">
+					<Formula>return "L=" .. string.format("%.3f",getAlignmentInfo().Segment.Length) .. "\\PR = " .. string.format("%.3f",getAlignmentInfo().Segment.RadiusStart)</Formula>
+				</LuaExpression>
+			</Variant>
+			<Variant Name="Overgangskurve">
+				<LuaExpression Name="code">
+					<Formula>
+						alignmentInfo = getAlignmentInfo()
+						segment = alignmentInfo.Segment
+						
+						if segment.RadiusStart == math.huge  then 
+							text1 = "RL"
+						else
+							text1 = "R" .. string.format("%.3f",segment.RadiusStart)
+						end
+						
+						if segment.RadiusEnd == math.huge then
+							text2 = "RL"
+						else
+							text2 = "R" .. string.format("%.3f",segment.RadiusEnd)
+						end
+						
+						vector = alignmentInfo.Tangent
+						TangentAngle2D = math.atan2(vector.Y,vector.Z)
+						if (math.cos(getUcsAngle() - TangentAngle2D) &lt; 0) then
+							text = "&lt;" .. text2 .. "-" .. text1 .. "&gt;"
+						else
+							text = "&lt;" .. text1 .. "-" .. text2 .. "&gt;"
+						end
+						
+						return "L=" .. string.format("%.3f",getAlignmentInfo().Segment.Length) .. "\\P" .. text
+					</Formula>
+				</LuaExpression>
+			</Variant>
+		</Variants>
+				
+		<InsertSymbol VariantName="Horisontal Traseseksjon" 
+				DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL"
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75" />
+			<SetValue Key="DelimiterType" Value="KO-HOT Horisontaltrasepunkt" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true">
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<SymbolAttribute Tag="X">
+				<Value>{{code}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+	</ObjectType>
+
+
+	
+<!--========================================================================================================
+	OVERBYGNING
+	TRASESEKSJONER
+	KO-VES Vertikal traseseksjon
+	Traséseksjoner - vertikal. Benyttes for å annotere sporet og være datakilde for KO-VET.
+=========================================================================================================-->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="KO-VES Vertikal traseseksjon"
+				Layer="JBTOB_KO_VES" Color="ByLayer"
+				Group="Overbygning/Traseseksjoner"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+	>
+		<!--Har ikke RelationSourceSpace-->
+	
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		
+		<LuaExpression Name="code">
+			<Formula>string.format("%.1f",getAlignmentInfo().gradient) .. " {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00}"</Formula>
+		</LuaExpression>
+
+		<InsertSymbol VariantName="Vertikal Traseseksjon" 
+				DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75" />
+			<SetValue Key="DelimiterType" Value="KO-VET Vertikaltrasepunkt" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true">
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<SymbolAttribute Tag="X">
+				<Value>{{code}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+	</ObjectType>
+			
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	PLATTFORMER
+	KO-PLF Plattformkant
+=========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KO-PLF Plattformkant"
+				Layer="JBTOB_KO_PLF" Color="ByLayer"
+				Group="Overbygning/Plattformer"
+				>
+
+		<RelationSourceSpace>plattformkant</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+
+		<AlignmentSystems DefaultSystemName="Plattformkant">
+			<AlignmentSystem Name="Plattformkant"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+			/>
+		</AlignmentSystems>
+
+		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
+		<LuaExpression Name="Rotation3D.X"><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Y"><Formula>NOBN_trk_getRollFromCant(_position)</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Z"><Formula>0</Formula></LuaExpression>
+
+		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
+
+		<SetValue Key="QuickMode3D" Value="True"/>
+		<SetValue Key="SweepMode3D" Value="False"/>
+
+		<Variants DefaultValue="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" >
+			<Variant Name="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-PLF-PLATTFORMELEMENT-1000-2000-HSIDE" />
+				<SetValue Key="Model3DSeparation" Value="2.0" />
+				<SetValue Key="Model3DOffset" Value="1.0" />
+			</Variant>
+			<Variant Name="Plattformelementer, betong, 1m bredde, 2m lengde, venstre side" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-PLF-PLATTFORMELEMENT-1000-2000-VSIDE" />
+				<SetValue Key="Model3DSeparation" Value="2.0" />
+				<SetValue Key="Model3DOffset" Value="1.0" />
+			</Variant>
+		</Variants>
+
+		<PropertyPrompt Key="code" DefaultValue="Plattformkant" AcceptEmptyValue="false"/>
+		
+		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" 
+				DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED" 
+				DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		
+		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, venstre side" 
+				DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED" 
+				DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+
+	</ObjectType>
+
+			
+
+<!--========================================================================================================
+	OVERBYGNING
+	SPORSTOPPERE
+	KO-SST Sporstopper
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KO-SST Sporstopper"
+				Layer="JBTOB_KO_SST" Color="ByLayer"
+				Group="Overbygning/Sporstoppere"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>sporstopper</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 4e-4 or -4e-4)</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="name"><Formula>"Sst."..Variant:sub(1,4).."."..code</Formula></LuaExpression>
+		
+		<Variants DefaultValue="Fast">
+			<Variant Name="Fast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SST-SPORSTOPPER-FAST" />
+			</Variant>
+			<Variant Name="Glidbar" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SST-SPORSTOPPER-GLIDBAR" />
+			</Variant>
+			<Variant Name="Hydraulisk" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SST-SPORSTOPPER-HYDRAULISK" />
+			</Variant>
+		</Variants>
+		
+		<InsertSymbol VariantName="Fast" DisplayName="Fast sporstopper" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-FAST" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Glidbar" DisplayName="Glidbar sporstopper" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-GLIDBAR" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Hydraulisk" DisplayName="Hydraulisk sporstopper" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-HYDRAULISK" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-FAST" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER
+			{% if variant == 'Fast' %}FAST
+			{% elsif variant == 'Glidbar' %}GLIDBAR
+			{% elsif variant == 'Hydraulisk' %}HYDRAULISK
+			{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	OPPKJØRSBJELKER
+	KO-MVS Oppkjørsbjelke (Maskinelt Vedlikehold av Spor)
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KO-MVS Oppkjørsbjelke"
+				Layer="JBTOB_KO_MVS" Color="ByLayer"
+				Group="Overbygning/Oppkjørsbjelker"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>oppkjørsbjelke</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+
+		<LuaExpression Name="DistanceToAlignment">		   
+			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 4e-4 or -4e-4)</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="dir"><Formula>"up"</Formula></LuaExpression>
+
+		 <!-- TODO: 3D object model should be adapted to the commonest sleeper and rail type. 60E1 rails are 0.172mm high.  -->
+		<SetValue Key="name" Value="Oppkjørsbjelke" />
+		
+		<Variants>
+			<Variant Name="Oppkjørsbjelke" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-MVS-OPPKJØRSBJELKE" />
+			</Variant>
+		</Variants>
+		
+		<InsertSymbol VariantName="Oppkjørsbjelke" DisplayName="Oppkjørsbjelke" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="false" />
+		</InsertSymbol>
+
+		<!-- Note: LeftSided == RightSided == false whenever DistanceToAlignment is zero - use 4e-4 as DistanceToAlignment. -->
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
