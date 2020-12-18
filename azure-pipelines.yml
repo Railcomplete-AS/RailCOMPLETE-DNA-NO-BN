@@ -9,6 +9,9 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
+variables:
+- group: Code-signing-variables
+
 steps:
 
 - task: PowerShell@2
@@ -32,6 +35,20 @@ steps:
     scriptFile: 'NO-BN\Installer\NOBN_install.nsi'
     justInclude: 'no'
     includeMorePlugins: 'no'
+
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'custom'
+    custom: 'tool'
+    arguments: 'install --global azuresigntool'
+  displayName: Install AzureSignTool
+
+- task: CmdLine@2
+  displayName: 'Sign installer'
+  inputs:
+    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td "SHA256" -v "Solutions/Installer/RailCOMPLETE-$(Build.BuildNumber).install-$(date)-$(buildConfiguration).exe"'
+
 
 - task: PublishPipelineArtifact@1
   inputs:
