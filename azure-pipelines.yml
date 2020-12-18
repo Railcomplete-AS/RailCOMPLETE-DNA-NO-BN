@@ -10,8 +10,27 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+
+
+- task: CmdLine@2
+  displayName: 'Copy contents to tmp folder'
+  inputs:
+    script: '_NO-BN_TransferFilesToTmpFolder.bat'
+    workingDirectory: 'NO-BN\Installer'
+
+
+- task: nsis@1
+  displayName: 'Create installer'
+  inputs:
+    scriptFile: 'NO-BN\Installer\NOBN_install.nsi'
+    justInclude: 'no'
+    includeMorePlugins: 'no'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'Solutions/Installer/BaneNOR.install-$(date).exe'
+    artifact: 'NO-BN Installer'
+    publishLocation: 'pipeline'
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
