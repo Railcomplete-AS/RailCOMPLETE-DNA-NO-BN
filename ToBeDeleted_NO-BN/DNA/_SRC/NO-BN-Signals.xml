@@ -1,0 +1,2447 @@
+<!--========================================================================================================
+
+    NO-BN-Signals.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--========================================================================================================
+	sig - Signaling Lua formulas for signals (for other signaling objects: see other DNA file).
+	Domain-specific Lua functions, stored in Global Extension Dictionary (not in each object).
+=========================================================================================================-->
+    <LuaFunction Name="NOBN_sig_getSignalNumber()" ReturnType="String"
+		Description="Returns the number extracted from the signal's Code, e.g. '4313UL' or 'UL4313' or '4313' => '4313'." >
+        <Constructor>String NOBN_sig_getSignalNumber(tSignal s)</Constructor>
+		<Formula>
+function NOBN_sig_getSignalNumber(s)
+	if s == nil then s = getObjectFromId(id) end -- Assume object really IS a signal...
+	local c = tostring(s.Code)
+	if c == nil then return "" end
+	if c:match("%d+%D+") then
+		-- digits + nondigits:
+		return c:match("%d+%D+"):match("%d+")
+	elseif c:match("%D+%d+") then
+		-- nondigits + digits:
+		return c:match("%D+%d+"):match("%d+")
+	elseif c:match("%d+") then
+		-- just digits:
+		return c:match("%d+")
+	else
+		-- just nondigits, or empty:
+		return ""
+	end
+end
+		</Formula>
+    </LuaFunction>
+    
+
+
+    <LuaFunction Name="NOBN_sig_getSignalLitra()" ReturnType="String"
+		Description="Returns the litra extracted from the signal's Code, e.g. '4313UL' or 'UL4313' or 'UL' => 'UL'." >
+        <Constructor>String NOBN_sig_getSignalLitra(tSignal s)</Constructor>
+        <Formula>
+function NOBN_sig_getSignalLitra(s)
+	if s == nil then s = getObjectFromId(id) end -- Assume object really IS a signal...
+	local c = tostring(s.Code)
+	if c == nil then return "" end
+	if c:match("%d+%D+") then
+		-- digits + nondigits:
+		return c:match("%d+%D+"):match("%D+")
+	elseif c:match("%D+%d+") then
+		-- nondigits + digits:
+		return c:match("%D+%d+"):match("%D+")
+	elseif c:match("%D+") then
+		-- just nondigits:
+		return c:match("%D+")
+	else
+		-- just digits, or empty:
+		return ""
+	end
+end
+		</Formula>
+    </LuaFunction>
+	
+
+	
+	<LuaFunction Name="NOBN_sig_getSignalShortName()" ReturnType="String"
+		Description="Returns the formated short name extracted from a main/distant signal's Code, e.g. '4313UL' or 'UL4313' => '4313(UL)'." >
+        <Constructor>NOBN_sig_getSignalShortName()</Constructor>
+        <Formula>
+function NOBN_sig_getSignalShortName()
+	if NOBN_sig_getSignalLitra() == "" then 
+		return NOBN_sig_getSignalNumber()
+	else
+		return NOBN_sig_getSignalNumber().."("..NOBN_sig_getSignalLitra()..")"
+	end
+end
+		</Formula>
+    </LuaFunction>
+
+
+	 
+    <LuaFunction Name="NOBN_sig_getSignalFullName()" ReturnType="String"
+		Description="Returns the elaborate name of the signal, formated according to Bane NOR standard practice." >
+        <Constructor>String NOBN_sig_getSignalFullName()</Constructor>
+        <Formula>
+function NOBN_sig_getSignalFullName()
+	local t
+	if RcType == "SA-SIG ERTMS" then
+		return "Mb."..NOBN_sig_getSignalShortName()
+
+	elseif RcType == "SA-SIG Signal" then
+		if (MainSignal == "Hs1") then
+			t = "Stopplykt"
+		elseif (MainSignal == "RepHs1" or MainSignal == "RepHs2") then 
+			t = "Rep.Hs."
+		elseif (MainSignal ~= "-") then 
+			t = "Hs."
+		elseif (DistantSignal ~= "-") then
+			t = "Fs."
+		elseif (DwarfSignal ~= "-") then
+			return "Ds.R"..NOBN_sig_getSignalNumber()
+		elseif (HighShuntingSignal ~= "-") then
+			t = "Z."
+		else
+			t = "Sig."
+		end
+		return t..NOBN_sig_getSignalShortName()
+	
+	elseif RcType == "SA-SIG Fiktivt punkt" then
+		t = "Fik."
+		if Variant == "Viapunkt for betjeningsanlegg" then return t..code
+		elseif Variant == "Fiktivt sluttpunkt for togvei" then return t..NOBN_sig_getSignalShortName().." (HTv)"
+		elseif Variant == "Fiktivt sluttpunkt for skiftevei" then return t..NOBN_sig_getSignalShortName().." (DTv)"
+		elseif Variant == "Fiktivt sluttpunkt for togvei og skiftevei" then return t..NOBN_sig_getSignalShortName().." (HTv/DTv)"
+		else return t..NOBN_sig_getSignalShortName().." (Bad variant ["..Variant.."])",_warning  
+		end
+
+	elseif RcType == "SA-SIG Togsporsignal" then
+		s = "Togsporsignal "..code
+	elseif RcType == "SA-SIG Høyt skiftesignal" then 
+		--(Frittstående)
+		s = "Høyt skiftesignal "..code
+	elseif RcType == "SA-SIG Brosignal/Frostportsignal" then
+		s = "Brosignal/Frostportsignal "..code
+	elseif RcType == "SA-SIG Rasvarslingsignal" then
+		s = "Rasvarslingsignal "..code
+	elseif RcType == "SA-SIG Veisignal" then
+		s = "Veisignal "..code
+	elseif RcType == "SA-SIG Planovergangsignal" then
+		s = "Planovergangsignal "..code
+	else
+		s = "Bad signal type ["..RcType.."] (code='"..code.."').",_warning
+	end
+	return s
+end
+		</Formula>
+     </LuaFunction>
+
+
+	 
+    <LuaFunction Name="NOBN_sig_getSignalPartNames()" ReturnType="String"
+		Description="Returns the signal component names, formated according to Bane NOR standard practice." >
+        <Constructor>String NOBN_sig_getSignalPartNames()</Constructor>
+        <Formula>
+function NOBN_sig_getSignalPartNames()
+	local s = ""
+	if RcType == "SA-SIG ERTMS" then
+		if Variant:find("E34") then s = s.."Sted"
+		elseif Variant:find("E35") then s = s.."Stopp"
+		elseif Variant:find("ERTMS Planovergang, forsignal") then s = s.."PLO-Fs"
+		elseif Variant:find("ERTMS Planovergang, signal") then s = s.."PLO"
+		elseif Variant:find("ERTMS Shunting Area begynner") then s = s.."Sh.start"
+		elseif Variant:find("ERTMS Shunting Area slutter") then s = s.."Sh.slutt"
+		elseif Variant:find("ERTMS Supervised Area slutter") then s = s.."Sup.slutt"
+		else s = s.."Bad ERTMS board type ["..Variant.."]."
+		end
+			
+	elseif RcType == "SA-SIG Signal" then
+		if (prop("Hovedsignal") ~= "-") then s = s..prop("Hovedsignal")
+		elseif (prop("Forsignal") == "Ja") then s = s.."-Fs"
+		elseif (prop("Dvergsignal") == "Ja") then s = s.."-Ds"
+		elseif (prop("Middelkontrollampe") == "Ja") then s = s.."-Mk"
+		elseif (prop("Forsiktig kjøring") == "Ja") then s = s.."-FKs"
+		elseif (prop("Hovedlinjesignal") == "Ja") then s = s.."-HLs"
+		elseif (prop("Lysende hastighetssignal") == "Ja") then s = s.."-Hast"
+		elseif (prop("Høyt skiftesignal") == "Ja") then s = s.."-Z"
+		elseif s:sub(1,1) == "-" then s = s:sub(2)
+		else s = s.."Bad Class B signal configuration."
+		end
+	
+	elseif RcType == "SA-SIG Togsporsignal" then
+		s = "Togsporsignal"
+	elseif RcType == "SA-SIG Høyt skiftesignal" then 
+		--Frittstående høyt skiftesignal!
+		s = "Høyt skiftesignal "..code
+	elseif RcType == "SA-SIG Brosignal/Frostportsignal" then
+		s = "Brosignal/Frostportsignal"
+	elseif RcType == "SA-SIG Rasvarslingsignal" then
+		s = "Rasvarslingsignal"
+	elseif RcType == "SA-SIG Veisignal" then
+		s = "Veisignal"   
+	elseif RcType == "SA-SIG Planovergangsignal" then
+		s = "Planovergangsignal"
+
+	elseif RcType == "SA-SIG Fiktivt punkt" then
+		s = "Fiktivt punkt"
+
+	else
+		s = "Bad signal type ["..RcType.."].",_warning
+	end
+	return s:match("%-(%w+)",1) --Strip off leading dash character '-'
+end	 
+		</Formula>
+     </LuaFunction>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	FIKTIVE PUNKTER
+	SA-SIG Fiktivt punkt
+	Begynnelsespunkt / sluttpunkt for tog og skift, viapunkt for togvei og skifteveistilling.
+	Benyttes både i sikringsanlegg, ATC og betjeningsanlegg.
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Fiktivt punkt"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Fiktive punkter"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<Variants>
+			<Variant Name="Viapunkt for betjeningsanlegg" >
+			</Variant>
+			<Variant Name="Fiktivt sluttpunkt for togvei" >
+			</Variant>
+			<Variant Name="Fiktivt sluttpunkt for skiftevei" >
+			</Variant>
+			<Variant Name="Fiktivt sluttpunkt for togvei og skiftevei" >
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Viapunkt for betjeningsanlegg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-VIAPUNKT"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Fiktivt sluttpunkt for togvei" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Fiktivt sluttpunkt for skiftevei" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Fiktivt sluttpunkt for togvei og skiftevei" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation Direction="true"/>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT" AllowSymbolMove="true" >
+				<Rotation RotateDirection="true" /> <!--Kan ha both (toveis viapunkt), up eller down som retning-->
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTSI-SIGNAL
+			{% if Variant == 'Viapunkt for betjeningsanlegg' %}VIAPUNKT
+			{% else %}FIKTIVT-PUNKT
+			{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	KLASSE-B SIGNALER
+	SA-SIG Togvei slutt
+	Signal 66 med symbolsk mastefot, ikke selve skilt-plata, fungerer typisk som sluttpunkt for togvei.
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Togvei slutt"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Klasse-B signaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<!--Denne kan ikke knyttes til et fundament, for det er skilt-plata som skal ha fundament. Sig66 er et fiktivt punkt. -->
+		<RelationSourceSpace>signal</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+					
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<Variants>
+			<Variant Name="Signal 66 Togvei slutt" >
+				<SetValue Key="name" Value="Togvei slutt" />
+				<!-- Tomt modellnavn - det er bare skiltobjektet "Togvei slutt" som skal ut til 3D -->
+				<SetValue Key="Model3DName" Value="" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Signal 66 Togvei slutt" DisplayName="Togvei slutt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-66-TOGVEI-SLUTT"
+				SubGroup="Diverse"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="type" Value="other:togveiSlutt" />
+			<SetValue Key="function" Value="" /> 
+			<SetValue Key="switchable" Value="false" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-66-TOGVEI-SLUTT" AllowSymbolMove="true">
+			<Rotation RotateDirection="true" AddAngle="-90" />
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTSI-SIGNAL-66-TOGVEI-SLUTT
+			{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<!-- Ingen dokkepunkter - dette er kun et målpunkt for togvei, det er skiltplata som er det utvendige objektet -->
+		
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	KLASSE-B SIGNALER
+	SA-SIG Signal
+
+	Lyssignaler på egen mast, mange varianter er mulig.
+	Fungerer typisk som start & sluttpunkt for togveier og skifteveier.
+
+	RailCOMPLETE modellering følger til en viss grad railML, pga eksport til LUKS og OpenTrack.
+	Denne teksten kan SLETTES når vi har gått helt bort fra railML 2.2 klasser og definert våre
+	egne klasser istedet, iht UIC sin RailTopoModel.
+	Og 'switchable' i tSignal er deprecated med railML 2.3, skal settes i sub-elements, som 
+	pr 2017-01-04 ikke er implementert i RC ennå.
+  
+	NB! En lengre tekst, med info om sammenheng RC - railML, ble fjernet herfra ved bygg ca 2018.21.180.
+	Se også: http://www.stellwerke.de/signal/deutsch/ne.html#ne5
+================================================================================--> 
+
+	<!-- Lua Model Check functions for 'SA-SIG Signal' specific to NSI optical signals, with Lua code declared outside user's reach -->
+	<LuaFunction Name="NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()" ReturnType="String"
+		Description="Checks whether Returns the formated short name extracted from a main/distant signal's Code, e.g. '4313UL' or 'UL4313' => '4313(UL)'." >
+        <Constructor>String NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()</Constructor>
+        <Formula>
+function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
+	tolerance = 6 --Tolerance in meters
+
+	if RcType == "SA-SIG Signal" then
+		--Free-standing dwarf signal?
+		if (DwarfSignal == "Ja" and MainSignal == "-") then 
+			return "OK - Free-standing shunting signal - Safety distance to OCS mast not relevant.", _ok 
+		end
+	end
+
+	if RcType == "SA-SIG Togsporsignal" then
+		return "OK - Track signal (togsporsignal) - Safety distance to OCS mast not relevant.", _ok 
+	
+	elseif RcType ~= "SA-SIG Signal"
+			and RcType ~= "SA-SIG Høyt skiftesignal" 
+			and RcType ~= "SA-SIG Veisignal"
+			and RcType ~= "SA-SIG Brosignal/Frostportsignal"
+			and RcType ~= "SA-SIG Planovergang"
+		then return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
+	
+	else
+		c1 = getNearbyPointObjects2D("EH-MAS KL-mast", tolerance)
+		c2 = getNearbyPointObjects2D("EH-MAS Tunnel-hengemast", tolerance)
+		c3 = getNearbyPointObjects2D("EH-MAS Åk-hengemast", tolerance)
+		closeObjects = getUnionOfCollections( getCollectionFromTable({c1,c2,c3}) )
+		count = getCollectionLength(closeObjects)
+		UpdateObjects = {}
+		if(count == 0) then 
+			return "OK - No catenary mast within tolerance "..tolerance.." meters.", _ok
+		else
+			i = 0
+			shortestDistance = math.huge
+			text = ": WARNING - Catenary mast"
+			if (count &gt; 1) then text = text.."s" end
+			text = text.." ["
+			while (i ~= count) do
+				d = RC__getDistance3D(closeObjects[i]) 
+				if d &lt; shortestDistance then shortestDistance = d end
+				text = text..closeObjects[i].code
+				table.insert(UpdateObjects, closeObjects[i])
+				i = i+1
+				if (i ~= count) then text = text..", " end
+			end
+			preamble = string.format("%.3f",shortestDistance)
+			return preamble..text.."] located inside tolerance "..tolerance.." meters.", UpdateObjects,_warning
+		end
+	end
+end		</Formula>
+     </LuaFunction>
+		
+	
+		
+	<LuaFunction Name="NOBN_sig_chkLeftSideDistanceFromSignalToTrack()" ReturnType="String"
+		Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages)." >
+        <Constructor>String NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Constructor>
+        <Formula>
+function NOBN_sig_chkLeftSideDistanceFromSignalToTrack()
+	if (Alignment == nil or getAlignmentInfo().AlignmentName== "") then return "No track(s) found.",_warning end
+	if (DwarfSignal == "Ja" and MainSignal == "-" and PoleOrYoke == "Yoke") then return "WARNING - Shunting signal mounted in yoke. Please do manual check.", _warning end
+	if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.", _warning end
+	tracks = getClosestAlignments("KO-SPO Spor")
+	if (tracks[0] == nil) then return "WARNING - Drawing contains no tracks.", _warning end
+	counter = 0
+	trackToTheLeft = tracks[0]
+	while tracks[counter] do
+		if getAlignmentInfo(tracks[counter].id).DistanceToAlignment &gt; 0 then 
+			trackToTheLeft = tracks[counter] 
+			break
+		end
+		counter = counter + 1
+	end
+	if (getAlignmentInfo(trackToTheLeft.id).DistanceToAlignment &lt;= 0) then return "No tracks to the left of signal.", _ok end
+	alignmentInfo = getAlignmentInfo(trackToTheLeft.id)
+	curveRadius = alignmentInfo.CurveRadius
+	Ki = 0.0
+	Ky = 0.0
+	tolerance = 2.12
+	if (DwarfSignal == "Ja" and MainSignal == "-") then
+		tolerance = tolerance + 0.25
+	else
+		tolerance = tolerance + 0.4
+	end
+	distToAlignment = math.abs(alignmentInfo.DistanceToAlignment)
+	if (curveRadius ~= math.huge) then
+		Ki = 81000.0/(2*curveRadius)
+		Ky = 63000.0/(2*curveRadius)
+	end
+	if (alignmentInfo.CurveRotation == "CCW") then 
+		tolerance = tolerance + (Ky/1000.0)
+	else
+		tolerance = tolerance + (Ki/1000.0)
+	end
+	if (distToAlignment &lt;= tolerance) then
+		return string.format("%.3f: ERROR - Signal too close to track '%s' w.r.t. tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_error
+	elseif (distToAlignment &gt; tolerance and distToAlignment &lt;= (tolerance + 0.4)) then
+		return string.format("%.3f: WARNING - Signal close to track '%s', but within 0.4m from tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_warning
+	else
+		return string.format("%.3f: OK - Signal is far from tracks w.r.t. tolerance %.3f.", distToAlignment,tolerance),_ok
+	end
+end
+		</Formula>
+     </LuaFunction>
+		
+
+		
+	<LuaFunction Name="NOBN_sig_chkRightSideDistanceFromSignalToTrack()" ReturnType="String"
+		Description="Checks lateral distance from signal insertion point to closest track on right side (in the direction of increasing mileages)." >
+        <Constructor>String NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Constructor>
+        <Formula>
+function NOBN_sig_chkRightSideDistanceFromSignalToTrack()
+	if (Alignment == nil or getAlignmentInfo().AlignmentName== "") then return "No track(s) found.",_warning end
+	if (DwarfSignal == "Ja" and MainSignal == "-" and PoleOrYoke == "Yoke") then return "WARNING - Shunting signal mounted in yoke. Please do manual check.", _warning end
+	if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.", _warning end
+	tracks = getClosestAlignments("KO-SPO Spor")
+	if (tracks[0] == nil) then return "WARNING - Drawing contains no tracks.", _warning end
+	counter = 0
+	trackToTheRight = tracks[0]
+	while tracks[counter] do
+		if getAlignmentInfo(tracks[counter].id).DistanceToAlignment &gt; 0 then 
+			trackToTheRight = tracks[counter] 
+			break
+		end
+		counter = counter + 1
+	end
+	if (getAlignmentInfo(trackToTheRight.id).DistanceToAlignment &lt;= 0) then return "No tracks to the right of signal.", _ok end
+	alignmentInfo = getAlignmentInfo(trackToTheRight.id)
+	curveRadius = alignmentInfo.CurveRadius
+	Ki = 0.0
+	Ky = 0.0
+	tolerance = 2.12
+	if (DwarfSignal == "Ja" and MainSignal == "-") then
+		tolerance = tolerance + 0.25
+	else
+		tolerance = tolerance + 0.4
+	end
+	distToAlignment = math.abs(alignmentInfo.DistanceToAlignment)
+	if (curveRadius ~= math.huge) then
+		Ki = 81000.0/(2*curveRadius)
+		Ky = 63000.0/(2*curveRadius)
+	end
+	if (alignmentInfo.CurveRotation == "CCW") then 
+		tolerance = tolerance + (Ky/1000.0)
+	else
+		tolerance = tolerance + (Ki/1000.0)
+	end
+	if (distToAlignment &lt;= tolerance) then
+		return string.format("%.3f: ERROR - Signal too close to track '%s' w.r.t. tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_error
+	elseif (distToAlignment &gt; tolerance and distToAlignment &lt;= (tolerance + 0.4)) then
+		return string.format("%.3f: WARNING - Signal close to track '%s', but within 0.4m from tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_warning
+	else
+		return string.format("%.3f: OK - Signal is far from tracks w.r.t. tolerance %.3f.", distToAlignment,tolerance),_ok
+	end
+end
+		</Formula>
+     </LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_sig_getModel3DName()" ReturnType="String"
+			Description="Returns 3D Model Name for a Bane NOR NSI-63 type signal, based on CustomProperties such as Hovedsignal, Forsignal, Dvergsignal etc." >
+		<Constructor>String NOBN_sig_getModel3DName()</Constructor>
+		<Formula>
+			function NOBN_sig_getModel3DName()
+				local t = "NO-BN-3D-SA-SIG-NSI63"
+				if (MainSignal == "-") then 
+					if (DistantSignal == "-") then
+						--Nothing...
+					else
+						t = t.."-2-LYS"
+					end
+				elseif (MainSignal == "Hs1") and (DistantSignal == "-") then
+					t = t.."-1-LYS"
+				elseif (MainSignal == "RepHs1") and (DistantSignal == "-") then
+					t = t.."-1-LYS"
+				elseif (MainSignal == "RepHs2" or MainSignal == "Hs2") and (DistantSignal == "-") then
+					t = t.."-2-LYS"
+				elseif (MainSignal == "Hs3" and DistantSignal == "-") then 
+					t = t.."-3-LYS" 
+				elseif (MainSignal == "RepHs2" or MainSignal == "Hs2" and DistantSignal ~= "-") then
+					t = t.."-4-LYS"
+				elseif (MainSignal == "Hs3" and DistantSignal ~= "-") then
+					t = t.."-5-LYS"
+				else 
+					return _error,"Bad combination of Rep / Main Signal and DistantSignal."
+				end
+				if (DwarfSignal ~= "-") then t = t.."-DS" end
+				if (CautiousDrivingSignal ~= "-") then t = t.."-FKS32" end
+				if (LineSignal ~= "-") then t = t.."-HLS" end
+				if (PositionLamp ~= "-") then t = t.."-MK" end
+				if (OpticalSpeedSignal ~= "-") then t = t.."-S68E" end
+				if (HighShuntingSignal ~= "-") then t = t.."-Z" end
+				if SunScreen == "-" then t = t.."-UTEN-SKJERM" end
+				if PoleOrYoke == "Yoke" then t = t.."-ÅK" end
+				return t
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Signal"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Klasse-B signaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal</RelationSourceSpace>
+		<AttachmentCategory Name="signal" />
+			
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
+		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalPartNames()</Formula></LuaExpression> 
+
+		<LuaExpression Name="Model3DName"><Formula>NOBN_sig_getModel3DName()</Formula></LuaExpression>
+
+		<CustomAttribute DataType="Enumeration" Name="SunScreen" DisplayName="Bakgrunnsskjerm" DefaultValue="Ja" 
+			Description="The 'Blind' custom property [- | Ja] decides whether the signal has background screen ('Ja') or not ('-').">
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="MainSignal" DisplayName="Hovedsignal" DefaultValue="-"
+			Description="Bane NOR 1/2/3-lantern optical main signal.\n20a=*Red:Stop(entry/block)\n20b=Red:Stop(intermediate/exit)\n21(3-light main)=UpperGreen:Proceed with caution\n21(2-light main)=LowerGreen:Proceed with caution\n21(repeater)=UpperGreen:Proceed with caution\n22=UpperGreen+LowerGreen:Proceed." >
+			<Values>
+				<Value>-</Value>
+				<Value>Hs1</Value>
+				<Value>Hs2</Value>
+				<Value>Hs3</Value>
+				<Value>RepHs1</Value>
+				<Value>RepHs2</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<CustomAttribute DataType="Enumeration" Name="EndOfTrainRoute" DisplayName="Togvei slutt" DefaultValue="-" 
+			Description="Bane NOR S66 black/yellow board:End of train route movement authority (with or without an ensuing main signal).">
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="DistantSignal" DisplayName="Forsignal" DefaultValue="-"  
+			Description="Bane NOR 2-lantern optical distant signal.\n23=*Yellow:Stop ahead\n24=*Yellow/*Green:Reduced speed ahead\n25=*Green:Line speed ahead.">
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="DwarfSignal" DisplayName="Dvergsignal" DefaultValue="-" 
+			Description="Bane NOR optical shunting signal.\n43=TwoHorizontalWhite:Shunting forbidden\n44=TwoSlantedWhite:Cautious shunting\n45=TwoVerticalWhite:Shunting allowed\n46a=OneWhite:local release\n46b=TwoBackslantedWhite:Local release." >
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="PositionLamp" DisplayName="Middelkontrollampe" DefaultValue="-"
+			Description="Bane NOR Position Lamp optical signal.\n.4C=*White:Last axle still occupying turnout section. Off:Trigger section not yet entered, or last axle not occupying turnout section anymore." >
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="CautiousDrivingSignal" DisplayName="Forsiktig kjøring" DefaultValue="-"
+			Description="Bane NOR Cautious Driving optical signal.\n32=White luminescent cross:Proceed with extra caution in train route (main signal shows Hs21, distant signal is shut off (Fs00)." >
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="LineSignal" DisplayName="Hovedlinjesignal" DefaultValue="-"
+			Description="Bane NOR Line optical signal.\n35B=White luminescent letter:The signal shows a distinct letter representing one of several  destination lines." >
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="OpticalSpeedSignal" DisplayName="Lysende hastighetssignal" DefaultValue="-"
+			Description="Bane NOR Deviating Speed optical signal.\n.68C=WhiteDigit(s):Allowed speed over deviating turnout or group of turnouts ahead." >
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="HighShuntingSignal" DisplayName="Høyt skiftesignal" DefaultValue="-"
+			Description="Bane NOR High Shunting optical signal.\n41=SlantedWhiteLine:Cautious shunting with local release\n42=HorizontalWhiteLine:Shunting forbidden." >
+			<Values>
+				<Value>-</Value>
+				<Value>Ja</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_SafetyDistanceFromSignalToOcsMast" DisplayName="Sikkerhetsavstand til KL" 
+			Description="Below 6 meter: Warning – Signal is too close to OCS mast, a potential HVAC hazard for maintenance personnel.\nAbove 6 meter: OK – No known HVAC danger to personnel."/>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_LeftSideDistanceFromSignalToTrack" DisplayName="Avstand til spor venstre"
+			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension."/>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_RightSideDistanceFromSignalToTrack" DisplayName="Avstand til spor høyre"
+			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension."/>
+		<CustomAttribute DataType="String" Name="LineSignalValue" DisplayName="Hovedlinjesignal signaltekst" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="OpticalSpeedSignalValue" DisplayName="Lysende hastighetssignal verdi" DefaultValue="" />
+		
+		<LuaExpression Name="mc_SafetyDistanceFromSignalToOcsMast" IsModelCheck ="true"><Formula>NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()</Formula></LuaExpression>
+		<LuaExpression Name="mc_LeftSideDistanceFromSignalToTrack" IsModelCheck ="true"><Formula>NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Formula></LuaExpression>
+		<LuaExpression Name="mc_RightSideDistanceFromSignalToTrack" IsModelCheck ="true"><Formula>NOBN_sig_chkRightSideDistanceFromSignalToTrack()</Formula></LuaExpression>
+		<LuaExpression Name="SymbolFrame"><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<InsertSymbol VariantName="Frittstående forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-23-FS" 
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="name" Value="Fs." />
+			<SetValue Key="type" Value="distant" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Frittstående Dvergsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-43-DS"
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="type" Value="shunting" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Frittstående Dvergsignal med togvei slutt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-43-DS-66"
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="EndOfTrainRoute" Value="Ja" />
+			<SetValue Key="type" Value="shunting" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Frittstående Dvergsignal med middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-43-DS-MKS"
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="shunting" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Frittstående Dvergsignal med middelkontroll og togvei slutt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-43-DS-MKS-66"
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="EndOfTrainRoute" Value="Ja" />
+			<SetValue Key="type" Value="shunting" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="1-lys stopplykt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS1"
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs1" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="1-lys Rep. hovedsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS1" 
+				SubGroup="Frittstående Signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="RepHs1" />
+			<SetValue Key="type" Value="repeater" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="2-lys hovedsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys Rep. hovedsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2" 
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="RepHs2" />
+			<SetValue Key="type" Value="repeater" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+			<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-HS-2-LYS-REP" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-LHS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg og middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-MKS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg, middelkontroll og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-MKS-LHS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg og forsiktig kjøring" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-FKS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg, forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-FKS-LHS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg, middelkontroll og forsiktig kjøring" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-MKS-FKS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg, middelkontroll, forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-MKS-FKS-LHS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal dverg og hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-HLS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal dverg, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-HLS-LHS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg, middelkontroll og hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-MKS-HLS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="2-lys hovedsignal med dverg, middelkontroll, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-DS-MKS-HLS-LHS"
+				SubGroup="2-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="3-lys hovedsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3"
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-HLS"
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-HLS-LHS"
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-LHS"
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-DS" 
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med dverg og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-DS-LHS" 
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med dverg og middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-DS-MKS" 
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="3-lys hovedsignal med dverg, middelkontroll og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-DS-MKS-LHS" 
+				SubGroup="3-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="main" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="4-lys hovedsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS"
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="4-lys hovedsignal med middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-MKS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med middelkontroll og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-MKS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>	
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-FKS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS"
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-LHS"
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-HLS-LHS"
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>	
+
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg og middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-MKS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, middelkontroll og forsiktig kjøring" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-MKS-FKS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, middelkontroll, forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-MKS-FKS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-FKS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, middelkontroll og hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-MKS-HLS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, middelkontroll og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-MKS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="4-lys hovedsignal med dverg, middelkontroll, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2-FS-DS-MKS-HLS-LHS" 
+				SubGroup="4-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs2" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="5-lys hovedsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med middelkontroll og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-MKS-LHS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-MKS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="5-lys hovedsignal med forsiktig kjøring" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-FKS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-FKS-LHS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="5-lys hovedsignal med hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-HLS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-HLS-LHS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="LineSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-LHS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg og middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-MKS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg og forsiktig kjøring" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-FKS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-LHS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-FKS-LHS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, middelkontroll og forsiktig kjøring" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-MKS-FKS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, middelkontroll og hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-MKS-HLS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="Hovedlinjesignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, middelkontroll og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-MKS-LHS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, middelkontroll, forsiktig kjøring og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-MKS-FKS-LHS" 
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, middelkontroll, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-MKS-HLS-LHS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="PositionLamp" Value="Ja" />
+			<SetValue Key="Hovedlinjesignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, forsiktig kjøring og hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-FKS-HLS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="Hovedlinjesignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, forsiktig kjøring, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-FKS-HLS-LHS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
+			<SetValue Key="Hovedlinjesignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg og hovedlinjesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-HLS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="Hovedlinjesignal" Value="Ja" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="5-lys hovedsignal med dverg, hovedlinjesignal og lysende hastighetssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3-FS-DS-HLS-LHS"
+				SubGroup="5-lys signal"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="MainSignal" Value="Hs3" />
+			<SetValue Key="DistantSignal" Value="Ja" />
+			<SetValue Key="DwarfSignal" Value="Ja" />
+			<SetValue Key="Hovedlinjesignal" Value="Ja" />
+			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
+			<SetValue Key="type" Value="combined" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<!--TODO: Vi mangler Høyt Skiftesignal montert på Hs mast, "Z", i 2D-bibliotek som ny variasjon på felles mast-->
+
+		<!-- Note: Direction=="true" in element InsertSymbol (enable keybd shortcut for direction flipping up/down), so RC adds 180 DD to the 'down' direction: -->
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-MANGLENDE-SYMBOL" AllowSymbolMove="true">
+			<Rotation RotateDirection="true" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTSI-SIGNAL
+			{% if MainSignal == 'Hs1' or MainSignal == 'RepHs1'%}20-HS1
+			{% elsif MainSignal == 'Hs2' or MainSignal == 'RepHs2'%}20-HS2
+			{% elsif MainSignal == 'Hs3' %}20-HS3
+			{% endif %}
+			{% if DistantSignal == 'Ja' and MainSignal == '-' %}23-FS
+			{% elsif DistantSignal == 'Ja'%}FS
+			{% endif %}
+			{% if DwarfSignal == 'Ja' and MainSignal == '-' and DistantSignal == '-' %}43-DS
+			{% elsif DwarfSignal == 'Ja' %}DS	
+			{% endif %}
+			{% if PositionLamp == 'Ja' %}MKS{% endif %}
+			{% if CautiousDrivingSignal == 'Ja' %}FKS{% endif %}
+			{% if LineSignal == 'Ja' %}HLS{% endif %}
+			{% if OpticalSpeedSignal == 'Ja' %}LHS{% endif %}
+			{% if HighShuntingSignal == 'Ja' %}Z{% endif %}
+			{% if EndOfTrainRoute == 'Ja' %}66{% endif %}
+			{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+			</BlockNameFormat>
+			
+			<SymbolAttribute Tag="HLS">
+				<Value>{{LineSignalValue}}</Value>
+			</SymbolAttribute>
+			
+			<SymbolAttribute Tag="S68E">
+				<Value>{{OpticalSpeedSignalValue}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	ERTMS SIGNALER
+	SA-SIG ERTMS
+	ERTMS markerboards med mastefot, begynnelsespunkt / sluttpunkt for tog og skift.
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG ERTMS"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/ERTMS markerboards"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+		<RelationSourceSpace>markerboard</RelationSourceSpace>
+		<AttachmentCategory Name="markerboard" />
+		<AttachTo Category="markerboard" />
+		<AttachTo Category="montasjeelement"/>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_bnp_getBoardOrPoleName().." - "..code</Formula></LuaExpression> 
+
+		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
+		<LuaExpression Name="PoleRouting3D"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
+		<LuaExpression Name="Offset3D.Z"><Formula>NOBN_bnp_getBoardOffset3dZ()</Formula></LuaExpression>
+
+		<CustomAttribute DataType="Enumeration" Name="ArrowDirection" DisplayName="Pilretning" DefaultValue="none">
+			<Values Variant="ERTMS Planovergang, forsignal">
+				<Value>noArrow</Value>
+			</Values>
+			<Values Variant="ERTMS Planovergang, signal">
+				<Value>noArrow</Value>
+			</Values>
+			<Values Variant="ERTMS E34 Stedsskilt, sidestilt">
+				<Value>leftArrow</Value>
+				<Value>rightArrow</Value>
+			</Values>
+			<Values Variant="ERTMS E34 Stedsskilt, nedpil">
+				<Value>downArrow</Value>
+			</Values>
+			<Values Variant="ERTMS E35 Stoppskilt, sidestilt">
+				<Value>leftArrow</Value>
+				<Value>rightArrow</Value>
+			</Values>
+			<Values Variant="ERTMS E35 Stoppskilt, nedpil">
+				<Value>downArrow</Value>
+			</Values>
+			<Values Variant="ERTMS Shunting Area begynner">
+				<Value>noArrow</Value>
+			</Values>
+			<Values Variant="ERTMS Shunting Area slutter">
+				<Value>noArrow</Value>
+			</Values>
+			<Values Variant="ERTMS Supervised Area slutter">
+				<Value>noArrow</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large"
+				Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400).">
+			<Value DisplayName="Lite">Small</Value>
+			<Value DisplayName="Stort">Large</Value>
+		</CustomAttribute>
+
+		<LuaExpression Name="ArrowDirection"><Formula>_SA_SIG_ERTMS_ArrowDirection()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_SIG_ERTMS_ArrowDirection()" ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the arrow direction for ERTMS board (where relevant) [leftArrow | rightArrow | downArrow | noArrow]." >
+			<Constructor>[Enum] _SA_SIG_ERTMS_ArrowDirection()</Constructor>
+			<Formula>
+				function _SA_SIG_ERTMS_ArrowDirection()
+					if Variant:find("sidestilt") then
+						if RightSided then 
+							return dir == 'up' and 'leftArrow' or 'rightArrow'
+						else
+							return dir == 'up' and 'rightArrow' or 'leftArrow'
+						end
+					elseif Variant:find("nedpil") then 
+						return 'downArrow'
+					else	
+						return 'noArrow'
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="Model3DName" ><Formula>NOBN_sig_ERTMS_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_sig_ERTMS_Model3DName()" ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the 3D model name for the current ERTMS board [String]. Covers position/stop markerboards as well as other ERTMS board types." >
+			<Constructor>String NOBN_sig_ERTMS_Model3DName()</Constructor>
+			<Formula>
+				function NOBN_sig_ERTMS_Model3DName()
+					--Board type:
+					t = "NO-BN-3D-KO-SKT-ERTMS"
+					if Variant:find("E34") then 
+						t = t.."-POSITION"
+					elseif Variant:find("E35") then
+						t = t.."-STOP"
+					elseif Variant:find("Planovergang") then 
+						t = t.."-LX" 
+					elseif Variant:find("Shunting") then 
+						t = t.."-SHUNTING-AREA"
+						t = t..(Variant:find("begynner") and "-BEGIN" or "-END")
+					elseif Variant:find("Supervised") then 
+						t = t.."-SUPERVISED-AREA"
+						t = t..(Variant:find("begynner") and "-BEGIN" or "-END")
+					else 
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_error
+					end
+					--Placement Right/Left/Above (relevant only for STOP and POSITION markers):
+					if Variant:find("sidestilt") then
+						if RightSided then
+							t = (dir == 'up') and t.."-RIGHT" or t.."-LEFT"
+						else
+							t = (dir == 'up') and t.."-LEFT" or t.."-RIGHT"
+						end
+					elseif Variant:find("nedpil") then
+						t = t.."-ABOVE"
+					else
+						--Do nothing for boards that don't depend on position)
+					end
+					--Size:
+					if Size == "Large" then
+						t = t.."-700x700"
+					elseif Size == "Small" then
+						t = t.."-400x400"
+					else
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_error
+					end
+					return t
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+
+		<Variants>
+			<Variant Name="ERTMS Planovergang, forsignal" >
+				<SetValue Key="type" Value="other:levelCrossingDistantSignal" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS Planovergang, signal" >
+				<SetValue Key="type" Value="other:levelCrossingSignal" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS E34 Stedsskilt, sidestilt" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Pole" />
+			</Variant>
+			<Variant Name="ERTMS E34 Stedsskilt, nedpil" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Yoke" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, sidestilt" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Pole" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, nedpil" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Yoke" />
+			</Variant>
+			<Variant Name="ERTMS Shunting Area begynner" >
+				<SetValue Key="type" Value="other:shuntingAreaBegin" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS Shunting Area slutter" >
+				<SetValue Key="type" Value="other:shuntingAreaEnd" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS Supervised Area slutter" >
+				<SetValue Key="type" Value="other:supervisedAreaEnd" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="ERTMS Planovergang, forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG-FORSIGNAL" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS Planovergang, signal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS E34 Stedsskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E34-STEDSSKILT-HSIDE" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
+			<SetValue Key="type" Value="main" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS E34 Stedsskilt, nedpil" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E34-STEDSSKILT-OVER" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-STOPPSKILT-HSIDE" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, nedpil" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-STOPPSKILT-OVER" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS Shunting Area begynner" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SHUNTING-AREA-BEGIN"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="ERTMS Shunting Area slutter" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SHUNTING-AREA-END"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="ERTMS Supervised Area slutter" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SUPERVISED-AREA-END"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL-ERTMS
+				{% if Variant == 'ERTMS E34 Stedsskilt, sidestilt' or Variant == 'ERTMS E34 Stedsskilt, nedpil' %}E34-STEDSSKILT
+				{% elsif Variant == 'ERTMS E35 Stoppskilt, sidestilt' or Variant == 'ERTMS E35 Stoppskilt, nedpil' %}E35-STOPPSKILT
+				{% elsif Variant == 'ERTMS Planovergang, forsignal' %}PLANOVERGANG-FORSIGNAL
+				{% elsif Variant == 'ERTMS Planovergang, signal' %}PLANOVERGANG
+				{% elsif Variant == 'ERTMS Shunting Area begynner' %}SHUNTING-AREA-BEGIN
+				{% elsif Variant == 'ERTMS Shunting Area slutter' %}SHUNTING-AREA-END
+				{% elsif Variant == 'ERTMS Supervised Area slutter' %}SUPERVISED-AREA-END
+				{% else %}
+				{% endif %}
+				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+				{% if ArrowDirection == 'leftArrow' %}HSIDE
+				{% elsif ArrowDirection == 'rightArrow' %}VSIDE
+				{% elsif ArrowDirection == 'downArrow' %}OVER
+			pu	{% elsif ArrowDirection == 'noArrow' %}
+				{% else %}
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+				<!-- {% elsif Variant == 'ERTMS Shunting begynner' %}SHUNTING-AREA-BEGIN -->
+				<!-- {% elsif Variant == 'ERTMS Shunting slutter' %}SHUNTING-AREA-END -->
+				<!-- {% elsif Variant == 'ERTMS Supervised Area slutter' %}SUPERVISED-AREA-END -->
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="montasjeelement" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+		<!-- Ingen displaypoints - 2D-symbolet settes der InsertionPoint er -->
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	HJELPESIGNALER
+	SA-SIG Togsporsignal
+	Togsporsignal på egen mast eller på vegg eller i åk
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Togsporsignal"
+				Layer="JBTSI_SA_SIG" Color="ByLayer" 
+				Group="Signal/Hjelpesignaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+
+		<RelationSourceSpace>signal</RelationSourceSpace>
+		<AttachmentCategory Name="signal"/>
+		<AttachTo Category="montasjeelement3" />
+		<AttachTo Category="signal" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<LuaExpression Name="name"><Formula>"Tsp."..code</Formula></LuaExpression>
+
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				local t = "NO-BN-3D-SA-SIG-NSI63-TOGSPORSIGNAL-"
+				if Variant == "Togsporsignal 1-begrep" then
+					return t.."HODE" 
+				elseif Variant == "Togsporsignal 1-begrep, sidestilt" then
+					t = t.."HODE-MED-ARM" 
+					if RightSided then
+						return (dir == 'up') and t.."-HSIDE" or t.."-VSIDE"
+					else
+						return (dir == 'up') and t.."-VSIDE" or t.."-HSIDE"
+					end
+				elseif Variant == "Togsporsignal 2-begrep" then
+					return t.."HODER-MED-ARMER" 
+				elseif Variant == "Togsporsignal 2-begrep, sidestilt" then
+					return t.."HODER-MED-ARMER" 
+				else 
+					return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="Offset3D.Z">
+			<Formula>
+				local a = Attachment
+				local d = (Variant:find("sidestilt") or Variant:find("2%-begrep")) and 0.15 or 0 --juster litt ned hvis signalet har arm(er)
+				if a ~= nil then
+					if a.Variant:find(" 1.6m") then return 0.690 - d
+					elseif a.Variant:find(" 2m") then return 1.090 - d 
+					elseif a.Variant:find(" 3m") then return 2.090 - d
+					elseif a.Variant:find(" 3.2m") then return 2.290 - d
+					else return 1.090 - d
+					end
+				else 
+					return 1.090 - d --Standard Ø76 stolpe er 2m høy
+				end
+			</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<Variants DefaultValue="Togsporsignal">
+			<Variant Name="Togsporsignal 1-begrep" >
+			</Variant>
+			<Variant Name="Togsporsignal 1-begrep, sidestilt" >
+			</Variant>
+			<Variant Name="Togsporsignal 2-begrep" >
+			</Variant>
+			<Variant Name="Togsporsignal 2-begrep, sidestilt" >
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Togsporsignal 1-begrep" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL-1" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="type" Value="other:togsporSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Togsporsignal 2-begrep" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL-2" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="type" Value="other:togsporSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Togsporsignal 1-begrep, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL-3-HSIDE" 
+				AskForAttachment="true"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
+			<SetValue Key="type" Value="other:togsporSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Togsporsignal 2-begrep, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL-4-HSIDE"
+				AskForAttachment="true"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
+			<SetValue Key="type" Value="other:togsporSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+     													    
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-MANGLENDE-SYMBOL" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL
+				{%    if Variant == 'Togsporsignal 1-begrep' %}1
+				{% elsif Variant == 'Togsporsignal 2-begrep' %}2
+				{% elsif Variant == 'Togsporsignal 1-begrep, sidestilt' %}
+					{% if RightSided  %}
+						{% if dir == 'up' %}3-HSIDE
+						{% else %}3-VSIDE
+						{% endif %}
+					{% else  %}
+						{% if dir == 'up' %}3-VSIDE
+						{% else %}3-HSIDE
+						{% endif %}
+					{% endif %}
+				{% elsif Variant == 'Togsporsignal 2-begrep, sidestilt' %}
+					{% if RightSided  %}
+						{% if dir == 'up' %}4-HSIDE
+						{% else %}4-VSIDE
+						{% endif %}
+					{% else  %}
+						{% if dir == 'up' %}4-VSIDE
+						{% else %}4-HSIDE
+						{% endif %}
+					{% endif %}
+				{% endif %}
+				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="montasjeelement3" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+		<DisplayPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="3" Y="3" />
+				<SnapPoint X="3" Y="-3" />
+				<SnapPoint X="-3" Y="3" />
+				<SnapPoint X="-3" Y="-3" />
+			</SnapPoints>
+		</DisplayPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	HJELPESIGNALER
+	SA-SIG Høyt skiftesignal på egen mast
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Høyt skiftesignal,frittstående" 
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Hjelpesignaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal</RelationSourceSpace>
+		<AttachmentCategory Name="signal" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<Variants DefaultValue="Frittstående Høyt Skiftesignal">
+			<Variant Name="Frittstående Høyt Skiftesignal" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-Z-FRITTSTÅENDE-HØYT-SKIFTESIGNAL" />
+			</Variant>
+			<Variant Name="Frittstående Høyt Skiftesignal med Middelkontroll" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-Z-MKS-FRITTSTÅENDE-HØYT-SKIFTESIGNAL-MED-MIDDELKONTROLL" />
+			</Variant>
+			<!--på egen kabelplan se https://trv.jbv.no/wiki/Felles_bestemmelser/Definisjoner,_forkortelser_og_symboler#Symboler_for_Bruer-->
+		</Variants>
+				   
+		<InsertSymbol VariantName="Frittstående Høyt Skiftesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="type" Value="other:høytSkiftesignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Frittstående Høyt Skiftesignal med Middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL-MKS" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="type" Value="other:høytSkiftesignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+			<SetValue Key="PoleOrYoke" Value="Pole" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				{% if Variant == 'Frittstående Høyt Skiftesignal' %}NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL
+				{% else %}NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL-MKS
+				{% endif %}
+				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	HJELPESIGNALER
+	SA-SIG Brosignal/Frostportsignal
+	Bygges som vanlig 3-lys Hs. Signalbilder 20C (2 blinkende røde) og 56D (blinkende midtre hvit).
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Brosignal/Frostportsignal"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Hjelpesignaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal</RelationSourceSpace>
+		<AttachmentCategory Name="signal" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
+		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<Variants DefaultValue="Brosignal/Frostportsignal">
+			<Variant Name="Brosignal/Frostportsignal" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-BROSIGNAL" />
+			</Variant>
+			<!--på egen kabelplan se https://trv.jbv.no/wiki/Felles_bestemmelser/Definisjoner,_forkortelser_og_symboler#Symboler_for_Bruer-->
+		</Variants>
+	
+		<InsertSymbol VariantName="Brosignal/Frostportsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+			<SetValue Key="type" Value="other:broSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL
+				{% if Variant == 'Brosignal/Frostportsignal' %}20-HS3
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	VEIBOMANLEGG
+	SA-SIG Veisignal
+	Frittstående, mot biltrafikk
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Veisignal"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Veibomanlegg"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal_mot_vei</RelationSourceSpace>
+		<AttachmentCategory Name="signal_mot_vei" PassAttachmentToTarget="true" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+
+		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+
+		<Variants DefaultValue="Veisignal">
+			<Variant Name="Veisignal/Enkelt signal mot vei" >
+				<SetValue Key="name" Value="V.(enkeltspor)" />
+				<!-- TODO 3D modell for Veisignal for planovergang -->
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+			</Variant>
+			<Variant Name="Veisignal/Dobbelt signal mot vei" >
+				<!-- TODO 3D modell for Veisignal for planovergang -->
+				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+				<SetValue Key="name" Value="V.(flerspor)" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Veisignal/Enkelt signal mot vei" DisplayName="Planovergang/Enkelt signal mot vei" 
+				DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-1" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Veisignal/Dobbelt signal mot vei" DisplayName="Planovergang/Dobbelt signal mot vei"
+				DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-2" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true"/>
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-1" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL
+				{% if Variant == 'Veisignal/Enkelt signal mot vei' %}1
+				{% elsif Variant == 'Veisignal/Dobbelt signal mot vei' %}2
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	HJELPESIGNALER
+	SA-??? 
+	TODO Definere frittstående bremseprøvesignal, frittstående lysende sporvekselsignal / kryssvekselsignal, frittstående avgangssignal (finnes de??)
+=========================================================================================================-->
+
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>

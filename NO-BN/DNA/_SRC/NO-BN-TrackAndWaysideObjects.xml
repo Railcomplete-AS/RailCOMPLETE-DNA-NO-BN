@@ -2,9 +2,9 @@
 
     NO-BN-TrackAndWaysideObjects.xml
 	
-	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2020. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -33,8 +33,22 @@
 	SPOR
 	KO-SPO Spor
 	Kan skapes med import av LandXML, import fra DWG, tegne fra scratch, konvertere fra 2D/3D polyline.
-	TODO: 2019-06-21 Fjerne AlignmentSystem i sin nåværende form.
+	TODO: 2019-06-21 Fjerne AlignmentSystem i sin nåværende form. 2020-10-14 CLFEY: Check IfcRail def first.
 =========================================================================================================-->
+	<!-- TODO 2020-10-14 CLFEY: Remove deprecated code for NOBN_trk_CANTGAUGE() -->
+	<!-- <LuaFunction Name="NOBN_trk_CANTGAUGE()" ReturnType="Double" -->
+		<!-- Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." > -->
+		<!-- <Constructor>Double NOBN_trk_CANTGAUGE()</Constructor> -->
+		<!-- <Formula>function NOBN_trk_CANTGAUGE() return 1.5 end</Formula> -->
+	<!-- </LuaFunction> -->
+
+	<!-- Note: TrackGauge is needed by KO-SKI functions, which operate on already offset'ed rails which have no sensible cantGauge or trackGauge values -->
+	<LuaFunction Name="NOBN_trk_TRACKGAUGE()" ReturnType="Double"
+		Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." >
+		<Constructor>Double NOBN_trk_TRACKGAUGE()</Constructor>
+		<Formula>function NOBN_trk_TRACKGAUGE() return 1.435 end</Formula>
+	</LuaFunction>
+	
 	<ObjectType DataType="eTrack" Class="RailwayAlignment" Name="KO-SPO Spor"
 				Layer="JBTOB_KO_SPO" Color="ByLayer"
 				Group="Overbygning/Spor"
@@ -42,9 +56,9 @@
 				
 		<RelationSourceSpace>spor</RelationSourceSpace>
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
 
 		<!-- TODO: Sjekk sporbredder for de som ikke er 1.500 de er tatt ut av lufta av CLFEY... -->
 		<AlignmentSystems DefaultSystemName="Normalspor 1435 mm" >
@@ -57,7 +71,7 @@
 				CantGauge="1.500"
 				AlignmentGauge="1.435"
 				QuickMode3DLiftWithCant="true"
-			/>
+			 />
 			<!-- <AlignmentSystem Name="Bredspor 1524 mm" -->
 				<!-- CantGauge="1.590" -->
 				<!-- AlignmentGauge="1.524" -->
@@ -73,6 +87,55 @@
 		<!--Kategori "spor" er et geografisk spor med alignment data.-->
 		<!--TODO 2019-09-01 CLFEY Definere en ny klasse for "skjematisk spor", som kan relatere seg til et geografisk spor -->
 
+		<CustomAttribute DataType="String" Name="InclinedRailProfile" DisplayName="Skråstilt skinneprofil" DefaultValue="1:20"
+			Description="Rails are either upright or inclined 1:20 [ Opprett | 1:20 ]." >
+			<Values>
+				<Value>Opprett</Value>
+				<Value>1:20</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<SetValue Key="QuickMode3D" Value="True" />
+
+		<Variants DefaultValue="Sviller og skinner">
+			<Variant Name="Sviller og skinner" >
+				<SetValue Key="Sweep3D" Value="False" />
+				<SetValue Key="InclinedRailProfile" Value="1:20" />
+			</Variant>
+			<Variant Name="Sviller og skinner med ledeskinner" >
+				<SetValue Key="Sweep3D" Value="False" />
+				<SetValue Key="InclinedRailProfile" Value="1:20" />
+			</Variant>
+			<Variant Name="Kun ledeskinner" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="Opprett" />
+			</Variant>
+			<Variant Name="Skinnestrenger 60E1" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="1:20" />
+			</Variant>
+			<Variant Name="Skinnestrenger 60E1 med 54E3 ledeskinner" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="1:20" />
+			</Variant>
+			<Variant Name="Skinnestrenger 54E3 ledeskinner" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="Opprett" />
+			</Variant>
+			<Variant Name="Skinnestrenger 54E3" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="1:20" />
+			</Variant>
+			<Variant Name="Skinnestrenger 49E1" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="Opprett" />
+			</Variant>
+			<Variant Name="Skinnestrenger 39 Kg" >
+				<SetValue Key="Sweep3D" Value="True" />
+				<SetValue Key="InclinedRailProfile" Value="Opprett" />
+			</Variant>
+		</Variants>
+		
 		<LuaExpression Name="name"><Formula>"["..code.."]"</Formula></LuaExpression>
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
@@ -82,37 +145,251 @@
 		<LuaExpression Name="Offset3D.Z"><Formula>NOBN_trk_getLiftFromCant(_position)</Formula></LuaExpression>
 
 		<!-- If using sweep and formulas, a step size of 8.0 gives a few centimeters error sideways with R190 curves - a reasonable speed/error trade-off -->
-		<SetValue Key="Sweep3D" Value="False"/>
-		<SetValue Key="QuickMode3D" Value="True"/>
-		<LuaExpression Name="Model3DName"><Formula>Sweep3D and "NO-BN-SWEEP-KO-SVI-SLEEPER-AND-RAILS" or "NO-BN-3D-KO-SVI-SLEEPER-AND-RAILS"</Formula></LuaExpression>
+
+		<LuaExpression Name="Model3DName"><Formula>_KO_SPO_Track_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KO_SPO_Track_Model3DName()" 
+			ReturnType="String"
+			Description="Obtains the 'Model3DName' for this track." >
+			<Formula>
+function _KO_SPO_Track_Model3DName()
+	if Variant == "Sviller og skinner" then
+		return Sweep3D and "NO-BN-SWEEP-KO-SPO-SVILLE-MED-SKINNER-ENKEL"
+						or "NO-BN-3D-KO-SPO-SVILLE-MED-SKINNER-ENKEL"
+
+	elseif Variant == "Sviller og skinner med ledeskinner" then
+		return Sweep3D and "NO-BN-SWEEP-KO-SPO-SVILLE-MED-SKINNER-OG-LEDESKINNER-ENKEL"
+						or "NO-BN-3D-KO-SPO-SVILLE-MED-SKINNER-OG-LEDESKINNER-ENKEL"
+
+	elseif Variant == "Kun ledeskinner" then
+		return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-CC536-LEDESKINNER-ENKEL"
+				or "NO-BN-3D-UKJENT"
+
+	elseif Variant == "Skinnestrenger 60E1" then
+		if InclinedRailProfile == "1:20" then
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-1_20"
+				or "NO-BN-3D-KO-SVI-SVILLE-BETONG-JBV60-DETALJERT-MED-SKINNER-60E1-1_20"
+		else
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-OPPRETT"
+				or "NO-BN-3D-UKJENT"
+		end
+
+	elseif Variant == "Skinnestrenger 60E1 med 54E3 ledeskinner" then
+		if InclinedRailProfile == "1:20" then
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-1_20-MED-LEDESKINNER-54E3"
+				or "NO-BN-3D-KO-SVI-SVILLE-BETONG-JBV60-DETALJERT-MED-SKINNER-60E1-1_20"
+		else --Opprett
+			return "NO-BN-3D-UKJENT"
+		end
+
+	elseif Variant == "Skinnestrenger 54E3 ledeskinner" then
+		if InclinedRailProfile == "1:20" then
+			return "NO-BN-3D-UKJENT"
+		else --Opprett
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-CC536-LEDESKINNER-54E3"
+				or "NO-BN-3D-UKJENT"
+		end
+
+	elseif Variant == "Skinnestrenger 54E3" then
+		if InclinedRailProfile == "1:20" then
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-54E3-1_20"
+				or "NO-BN-3D-UKJENT"
+		else --Opprett
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-54E3-OPPRETT"
+				or "NO-BN-3D-UKJENT"
+		end
+
+	elseif Variant == "Skinnestrenger 49E1" then
+		if InclinedRailProfile == "1:20" then
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-49E1-1_20"
+				or "NO-BN-3D-UKJENT"
+		else --Opprett
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-49E1-OPPRETT"
+				or "NO-BN-3D-UKJENT"
+		end
+
+	elseif Variant == "Skinnestrenger 39 Kg" then
+		if InclinedRailProfile == "1:20" then
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-39KG-1_20"
+				or "NO-BN-3D-UKJENT"
+		else --Opprett
+			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-39KG-OPPRETT"
+				or "NO-BN-3D-UKJENT"
+		end
+
+	else
+		return "Ukjent Variant ["..Variant.."]",_warning
+	end
+end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="Model3DSeparation"><Formula>Sweep3D and RC__getNearest3DStep(8.0) or 0.60</Formula></LuaExpression>
 		<LuaExpression Name="Model3DOffset"><Formula>Sweep3D and 0 or Model3DSeparation/2</Formula></LuaExpression>
 
-		<Variants DefaultValue="Normalspor 1435 mm" >
-			<Variant Name="Normalspor 1435 mm" />
-		</Variants>
+		<PropertyPrompt Key="code" DefaultValue="Spor" AcceptEmptyValue="false" />
 
-		<PropertyPrompt Key="code" DefaultValue="Spor" AcceptEmptyValue="false"/>
-
-		<InsertAlignment VariantName="Normalspor 1435 mm" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SPOR" DefaultToTangentContinuity="true">
+		<InsertAlignment VariantName="Sviller og skinner" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SPOR" DefaultToTangentContinuity="true">
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
 			<SetValue Key="AlignmentSystem" Value="Normalspor 1435 mm" />
-			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasepunkt"/>
-			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasepunkt"/>
-			<SetValue Key="HorizontalGeometrySectionObjectTypeRef" Value="KO-HOS Horisontal traseseksjon"/>
-			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="KO-VES Vertikal traseseksjon"/>
+			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasepunkt" />
+			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasepunkt" />
+			<SetValue Key="HorizontalGeometrySectionObjectTypeRef" Value="KO-HOS Horisontal traseseksjon" />
+			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="KO-VES Vertikal traseseksjon" />
+		</InsertAlignment>
+
+		<InsertAlignment VariantName="Sviller og skinner med ledeskinner" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SPOR" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Normalspor 1435 mm" />
+			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasepunkt" />
+			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasepunkt" />
+			<SetValue Key="HorizontalGeometrySectionObjectTypeRef" Value="KO-HOS Horisontal traseseksjon" />
+			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="KO-VES Vertikal traseseksjon" />
 		</InsertAlignment>
 
 		<!-- TODO 2019-09-01 CLFEY Fjerne eller omgjøre CoveringLinearAttribute?  Hva betyr det? -->
-		<LinearAttributes>
-			<CoveringLinearAttribute Name="TrackType" DisplayName="Sportype" DefaultValue="Togspor">
-				<Value>Togspor</Value>
-				<Value>Skiftespor</Value>
-			</CoveringLinearAttribute>
-		</LinearAttributes>
+		<!-- TODO 2020-11-11 CLFEY Fjernet CoveringLinearAttribute - brukes ikke. Vurdér å fjerne fra XSD / C# også. -->
+		<!-- <LinearAttributes> -->
+			<!-- <CoveringLinearAttribute Name="TrackType" DisplayName="Sportype" DefaultValue="Togspor"> -->
+				<!-- <Value>Togspor</Value> -->
+				<!-- <Value>Skiftespor</Value> -->
+			<!-- </CoveringLinearAttribute> -->
+		<!-- </LinearAttributes> -->
 		
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	OVERBYGNING
+	SPOR
+	KO-SKI Kjørekant
+	To be used mainly for insulating rails, dealing with track circuits and return current.
+	May be created through import av LandXML or DWG, converted fra 2D/3D polyline (or drawn from scratch), but
+	will mainly be created as offsets with track gauge 1435/2 (0.717 m) from a track.
+	Usage: 
+	1) First place an insulated joint railML element ('KO-SKJ Skinneskjøt') in the associated track
+	2) Use RC-BreakAlignment and break rails according to the insulated joint objects in the assoc. track. 
+	3) The rails will automatically search for insulation joint objects at their alignment start, and
+	   will set their own code, color and linewidth to reflect the rail's insulation from that point an on,
+	   the railML property 'insulatedRail' then being one of 'left', 'right', 'both' or 'none'. 
+	   0.05/Red = Return current rail = either a dedicated earth rail, the other rail carrying only track
+	              circuit currents (signal rail), OR both rails carry return current and signal currents,
+				  the two currents being separated through suitable filters (impedances) connecting return
+				  current rail(s) to return current rail(s), bridging over a double insulation.
+	   0.20/Green = Track circuit (signal) rail. This rail's potential, within the operating frequency band 
+				  for the track circuit, is allowed to oscillate freely. This means that the rail cannot be
+				  connected directly to earth with a pure ohmic connection, but only through an impedance 
+				  providing a closed circuit at 0 Hz (earthing) as well as at low frequencies (16 2/3 Hz in 
+				  Norway) for return current, but acting as an open circuit (high impedance) at higher 
+				  frequencies where the tack ciruit operates (typically 95 - 105 Hz in Norway).
+	4) Subsequent use of the NOBN-provided earthing assistance functions will search for these rails and use 
+	   their insulation status to decide where to get protective earth (when the object's EarthingMethod has 
+	   been set to 'Rail'). 
+	Note: 
+	The 'KO-SKI Kjørekant' alignment type may also be used as a lateral reference for objects (as with
+	the French SNCF).
+=========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KO-SKI Kjørekant"
+				Layer="JBTOB_KO_SKI_Kjørekant" Color="ByLayer"
+				Group="Overbygning/Spor"
+				>
+
+		<RelationSourceSpace>kjørekant</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+
+		<AlignmentSystems DefaultSystemName="Kjørekant">
+			<AlignmentSystem Name="Kjørekant"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+		 />
+		</AlignmentSystems>
+
+		<Variants DefaultValue="Kjørekant" >
+			<Variant Name="Kjørekant" >
+			</Variant>
+		</Variants>
+		
+		<SetValue Key="Sweep3D" Value="True" />
+		<SetValue Key="QuickMode3D" Value="True" />
+		<LuaExpression Name="Model3DName">
+			<Formula>
+				if Color:upper() == "RED" then
+					--Visualize un-insulated (pure return current) rail:
+					return "NO-BN-SWEEP-FE-WIR-WIRE-RED-DIAMETER-050"
+				else if Color:upper() == "GREEN" then
+					--Visualize insulated (signal) rail:
+					return "NO-BN-SWEEP-FE-WIR-WIRE-GREEN-DIAMETER-050"
+				else
+					return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-005"
+				end
+			</Formula>
+		</LuaExpression>
+		<!-- TODO 2020-03-22 CLFEY Include 3D formulae to place PoC line exactly in 3D-->
+
+		<LuaExpression Name="name"><Formula>"["..code.."]"</Formula></LuaExpression>
+
+		<LuaExpression Name="code"><Formula>_KO_SKI_PointOfContact_code(nil)</Formula></LuaExpression>
+		<LuaFunction Name="_KO_SKI_PointOfContact_code()" ReturnType="String"
+			Description="Obtains the code for a rail point-of-contact alignment, deduced from an insulation in the associated track at the rail's start point." >
+			<Constructor>String _KO_SKI_PointOfContact_code([AlignmentRef alg])</Constructor>
+			<Formula>
+				function _KO_SKI_PointOfContact_code(alg)
+					if alg == nil then alg = this end
+					if alg.RcAlignment == nil then return "*** ERROR - Bad argument ["..RC__identify(alg).."] - has no RcAlignment." end
+					local tol = 0.050 --[m]
+					ps = alg.RcAlignment.StartPoint
+					pe = alg.RcAlignment.EndPoint
+					--Get point near midpoint of rail:
+					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
+					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
+					ts = getClosestTracks(ps.X,ps.Y):
+						filter(function (x)
+								local d = getAlignmentInfo(x.id,ps.X,ps.Y).DistanceToAlignment
+								return math.abs(math.abs(d) - NOBN_trk_TRACKGAUGE()/2.0) &lt; tol
+							end)
+					n = getCollectionLength(ts)
+					if n == 0  then
+						return "UNFINISHED - Did not find a track associated with this rail."
+					elseif n == 1  then
+						ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
+						return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[0].code
+					else
+						--Switch, or continuation in a crossing - more than one
+						--track lies exctly one half track cauge from start of rail.
+						--Note: We cannot use start+end point, since the rail's associated 
+						--track may deviate from the same track axis in both ends.
+						for i=0,n-1 do
+							ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
+							dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
+							if math.abs(ds-dm) &lt; tol then
+								--We have probably found two parallel rails with suitable gauge distance:
+								return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[i].code
+							end
+						end
+						return "UNFINISHED - Could not identify an associated track."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- Not really needed - will be superseded by the code formula anyway: -->
+		<PropertyPrompt Key="code" DefaultValue="Kjørekant" AcceptEmptyValue="false" />
+
+		<InsertAlignment VariantName="Kjørekant" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SKINNE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Kjørekant" />
+		</InsertAlignment>
+
 	</ObjectType>
 
 
@@ -132,12 +409,13 @@
 				
 		<RelationSourceSpace>horisontaltrasepunkt</RelationSourceSpace>
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<LuaExpression Name="Mileage"><Formula>NOBN_trk_getMileageForNearestHorizontalVertex()</Formula></LuaExpression>
 		<LuaFunction Name="NOBN_trk_getMileageForNearestHorizontalVertex()" ReturnType="Double"
@@ -156,7 +434,7 @@
 				else
 					if nearest.Item2 ~= null then return nearest.Item2.StartMileage end
 					if nearest.Item1 ~= null then return nearest.Item1.EndMileage end
-					return 0,error_info("Bad data for function NOBN_trk_getMileageForNearestHorizontalVertex().")
+					return 0.0,error_info("Bad data for function NOBN_trk_getMileageForNearestHorizontalVertex().")
 				end
 			end
 			</Formula>
@@ -228,7 +506,7 @@
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertSymbol>
 
-		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT" AllowSymbolMove="true"/>
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT" AllowSymbolMove="true" />
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
 
@@ -251,14 +529,15 @@
 				
 		<RelationSourceSpace>vertikaltrasepunkt</RelationSourceSpace>
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 	
-		<CustomAttribute DataType="String" Name="Info"/>
+		<CustomAttribute DataType="String" Name="Info" />
 		<LuaExpression Name="Info"><Formula>_KO_VET_info()</Formula></LuaExpression>
 		<LuaFunction Name="_KO_VET_info()" ReturnType="String"
 				Description="Analyzes local alignment profile and returns nearest vertex' 'Variant', i.e. type of geometric vertex/cant." >
@@ -272,7 +551,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-		<TextAttribute BindingProperty="Info" CadAttributeTag="INFO" X="0" Y="-3" Justify="MiddleCenter" Height="0.9" MText="true"/>
+		<TextAttribute BindingProperty="Info" CadAttributeTag="INFO" X="0" Y="-3" Justify="MiddleCenter" Height="0.9" MText="true" />
 		
 		<LuaExpression Name="Mileage"><Formula>NOBN_trk_getMileageForNearestVerticalVertex()</Formula></LuaExpression>
 		<LuaFunction Name="NOBN_trk_getMileageForNearestVerticalVertex()" ReturnType="Double"
@@ -316,7 +595,7 @@
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertSymbol>
 
-		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT" AllowSymbolMove="true"/>
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT" AllowSymbolMove="true" />
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
 	</ObjectType> 
@@ -337,13 +616,14 @@
 				
 		<!--Har ikke RelationSourceSpace-->
 	
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<LuaExpression Name="DistanceToAlignment">		   
 			<Formula>RC__snap(getPropertyValue("DistanceToAlignment"),3)</Formula>
@@ -388,7 +668,7 @@
 						end
 						
 						vector = alignmentInfo.Tangent
-						TangentAngle2D = math.atan2(vector.Y,vector.Z)
+						TangentAngle2D = math.atan(vector.Y,vector.Z)
 						if (math.cos(getUcsAngle() - TangentAngle2D) &lt; 0) then
 							text = "&lt;" .. text2 .. "-" .. text1 .. "&gt;"
 						else
@@ -433,13 +713,14 @@
 	>
 		<!--Har ikke RelationSourceSpace-->
 	
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<LuaExpression Name="code">
 			<Formula>string.format("%.1f",getAlignmentInfo().gradient) .. " {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00}"</Formula>
@@ -476,27 +757,27 @@
 
 		<RelationSourceSpace>plattformkant</RelationSourceSpace>
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
 
 		<AlignmentSystems DefaultSystemName="Plattformkant">
 			<AlignmentSystem Name="Plattformkant"
 				CantGauge="0.000"
 				AlignmentGauge="0.000"
 				QuickMode3DLiftWithCant="false"
-			/>
+			 />
 		</AlignmentSystems>
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X"><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Y"><Formula>NOBN_trk_getRollFromCant(_position)</Formula></LuaExpression>
-		<LuaExpression Name="Rotation3D.Z"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Z"><Formula>NOBN_trk_get </Formula></LuaExpression>
 
 		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
 
-		<SetValue Key="QuickMode3D" Value="True"/>
-		<SetValue Key="SweepMode3D" Value="False"/>
+		<SetValue Key="QuickMode3D" Value="True" />
+		<SetValue Key="SweepMode3D" Value="False" />
 
 		<Variants DefaultValue="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" >
 			<Variant Name="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" >
@@ -511,7 +792,7 @@
 			</Variant>
 		</Variants>
 
-		<PropertyPrompt Key="code" DefaultValue="Plattformkant" AcceptEmptyValue="false"/>
+		<PropertyPrompt Key="code" DefaultValue="Plattformkant" AcceptEmptyValue="false" />
 		
 		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" 
 				DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED" 
@@ -544,12 +825,13 @@
 				
 		<RelationSourceSpace>sporstopper</RelationSourceSpace>
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 
 		<LuaExpression Name="DistanceToAlignment">		   
 			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 4e-4 or -4e-4)</Formula>
@@ -623,12 +905,13 @@
 				
 		<RelationSourceSpace>oppkjørsbjelke</RelationSourceSpace>
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTOB" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 
 		<LuaExpression Name="DistanceToAlignment">		   
 			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 4e-4 or -4e-4)</Formula>
@@ -640,12 +923,15 @@
 		<SetValue Key="name" Value="Oppkjørsbjelke" />
 		
 		<Variants>
-			<Variant Name="Oppkjørsbjelke" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-MVS-OPPKJØRSBJELKE" />
+			<Variant Name="Oppkjørsbjelke, kort" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-MVS-OPPKJØRSBJELKE-KORT" />
+			</Variant>
+			<Variant Name="Oppkjørsbjelke, lang" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-MVS-OPPKJØRSBJELKE-LANG" />
 			</Variant>
 		</Variants>
 		
-		<InsertSymbol VariantName="Oppkjørsbjelke" DisplayName="Oppkjørsbjelke" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE" 
+		<InsertSymbol VariantName="Oppkjørsbjelke, kort" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<Rotation AddAngle="-90" Direction="false" />

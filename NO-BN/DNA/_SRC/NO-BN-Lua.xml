@@ -2,9 +2,9 @@
 
     NO-BN-Lua.xml
 	
-	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2020. All rights reserved.
 
 =========================================================================================================-->
 <xpp:bloc>
@@ -12,29 +12,31 @@
 
 
 <!--========================================================================================================
-	Common - Other general Lua functions, not related to railways in particular
+	'NOBN__xxx': NOBN Lua functions not related to railways in particular.
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_com_STAGEPATTERN()" ReturnType="String"
-		Description="Constant: Returns the default Bane NOR pattern to be used for extracting stage info from CAD system layer names." >
-		<Constructor>String NOBN_com_STAGEPATTERN()</Constructor>
-		<Formula>
-function NOBN_com_STAGEPATTERN()
-	return "%d%d%d%d%-%d%d%d%d"
-end
-		</Formula>
-    </LuaFunction>
+	<!-- TODO Remove XML code for 'stage' handling, when not in use, 'fersure: -->
+	<!-- 2020-03-10 CLFEY Deprecated functions concerning "stage" as a pattern held in each object. Use layer names instead. -->
+	<!-- <LuaFunction Name="NOBN_com_STAGEPATTERN()" ReturnType="String" -->
+		<!-- Description="Constant: Returns the default Bane NOR pattern to be used for extracting stage info from CAD system layer names." > -->
+		<!-- <Constructor>String NOBN_com_STAGEPATTERN()</Constructor> -->
+		<!-- <Formula> -->
+			<!-- function NOBN_com_STAGEPATTERN() -->
+				<!-- return "%d%d%d%d%-%d%d%d%d" -->
+			<!-- end -->
+		<!-- </Formula> -->
+    <!-- </LuaFunction> -->
 
 
 
-	<LuaFunction Name="NOBN_com_DEFAULTSTAGE()" ReturnType="String"
-		Description="Constant: Returns the default Bane NOR stage [0000-99999 to be used if stage is unknown or unspecified." >
-		<Constructor>String NOBN_com_DEFAULTSTAGE()</Constructor>
-		<Formula>
-function NOBN_com_DEFAULTSTAGE()
-	return "0000-9999"
-end
-		</Formula>
-    </LuaFunction>
+	<!-- <LuaFunction Name="NOBN_com_DEFAULTSTAGE()" ReturnType="String" -->
+		<!-- Description="Constant: Returns the default Bane NOR stage [0000-99999 to be used if stage is unknown or unspecified." > -->
+		<!-- <Constructor>String NOBN_com_DEFAULTSTAGE()</Constructor> -->
+		<!-- <Formula> -->
+			<!-- function NOBN_com_DEFAULTSTAGE() -->
+				<!-- return "0000-9999" -->
+			<!-- end -->
+		<!-- </Formula> -->
+    <!-- </LuaFunction> -->
 
 
 
@@ -61,18 +63,358 @@ end
 	</LuaFunction>
 
 	
-		
+
 <!--========================================================================================================
-	Track - general position issues, relative to track alignments, used by all objects
+	'NOBN_com_xxx': NOBN Lua functions common to two or more railway disciplines.
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_trk_RAILSEPARATION()" ReturnType="Double"
-		Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." >
-		<Constructor>Double NOBN_trk_RAILSEPARATION()</Constructor>
-		<Formula>function NOBN_trk_RAILSEPARATION() return 1.5 end</Formula>
+
+
+	<LuaFunction Name="NOBN_com_assignEarthingLabelColor" ReturnType="String"
+		Description="Assigns the color for the permanent marking tag attached to earthing connector, deduced from the object's discipline." >
+        <Constructor>String NOBN_com_assignEarthingLabelColor([ObjRef obj])</Constructor>
+		<Formula>
+function NOBN_com_assignEarthingLabelColor(obj)
+	if obj == nil then obj = this end
+	if obj.Discipline == "Felles" then return "Hvit" 
+	elseif obj.Discipline == "Underbygning" then return "Hvit"
+	elseif obj.Discipline == "Kontaktledning" then return "Rød"
+	elseif obj.Discipline == "Signal" then return "Grønn"
+	elseif obj.Discipline == "Tele" then return "Gul"
+	elseif obj.Discipline == "Lavspent" then return "Blå"
+	elseif obj.Discipline == "Skilt" then return "Hvit"
+	else return "Bad Discipline ["..Discipline.."]."
+	end
+end
+		</Formula>
+	</LuaFunction>
+
+	<LuaFunction Name="NOBN_com_assistAssignEarthingAlignment()" ReturnType="AlignmentRef"
+		Description="Suggests an earthing alignment reference for an object, based on its RcType, its Variant and its surroundings. The function assumes that rails of RcType 'KO-SKI Kjørekant' are present and have been divided already into insulated and non-insulated sections." >
+        <Constructor>AlignmentRef NOBN_com_assistAssignEarthingAlignment([ObjRef obj])</Constructor>
+		<Formula>
+function NOBN_com_assistAssignEarthingAlignment(obj)
+	--TODO: Consider replacing "Red/Green" filter with a downwards search for track insulation with railML property 'left', 'right', 'both', 'none' (in associated track).
+	if obj == nil then obj = this end
+
+	--Gauge tolerance when looking for rails belonging to the same track:
+	gaugeTolerance = 0.030 --[m]
+	--If not too far away, we prefer a dedicated earth rail over double insulated track, where you should consider not earthing to both rails:
+	railDistanceTolerance = 6.000  --[m]
+
+	if EarthingMethod == "None" then 
+		return
+
+	elseif EarthingMethod == "Unknown" then 
+		return _info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingAlignment.")
+		
+	elseif EarthingMethod == "Rail" then
+		r = getClosestAlignments("KO-SKI Kjørekant",obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
+		if getAlignmentInfo(r[0].id,obj).NormalProjectionExists then
+			--Find distance sideways to closest insulated rail:
+			d = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
+		else
+			--No normal projection exists onto insulated rail, so look for  distance to closest start/end of closest insulated rail:
+			d = math.min(RC__getDistance2D(r[0].RcAlignment.StartPoint,obj),RC__getDistance2D(r[0].RcAlignment.EndPoint,obj))
+		end
+		if math.abs(d) &lt;= railDistanceTolerance then
+			--If distance to insulated rail is reasonably short, then use it now...
+			return r[0]
+		else 
+			--...otherwise, check if the two closest *un*insulated rails belong to the same track, asuuming both are (through use of impedances) carrying return current:
+			--Btw, this proceudre fails if the object is between two tracks where insulated rail distances are just above the tolerance, so that the two closest 
+			--return rails belong to two *different* railway tracks.
+			r = getClosestAlignments("KO-SKI Kjørekant"):filter(function (x) return getAlignmentInfo(x.id).NormalProjectionExists and x:prop("Color"):upper() == "GREEN" end)
+			n = getCollectionLength(r)
+			d0 = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
+			d1 = getAlignmentInfo(r[1].id,obj).DistanceToAlignment
+			if math.abs(math.abs(d0-d1) - NOBN_trk_TRACKGAUGE()) &lt; gaugeTolerance then
+				--Pick closest un-insulated rail, although it is 'bad taste' if we thereby end up
+				--with objects earthed to both rails within one double-insulated track circuit:
+				return r[0]
+			else
+				return _info("Search for nearby rails suitable for protective earthing failed (i.e., rails of type 'KO-SKI Kjørekant', carrying return current).")
+			end
+		end
+		r = getClosestAlignments("KO-SKI Kjørekant",obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
+		return r[0]
+
+	elseif EarthingMethod == "Wire" then 
+		r = getClosestAlignments("EH-JOR Jordleder",obj)
+		return r[0]
+		
+	elseif EarthingMethod == "Object" then 
+		--Just return - and let similar Lua code for the 'EarthingObject' reference property do the job:
+		return
+	end
+end
+        </Formula>
+    </LuaFunction>
+
+	<LuaFunction Name="NOBN_com_assistAssignEarthingObject()" ReturnType="ObjectRef"
+		Description="Suggests an earthing object reference for an object, based on its RcType, its Variant and its surroundings. The function assumes that there is an object nearby that can offer protective earth." >
+        <Constructor>AlignmentRef NOBN_com_assistAssignEarthingObject([ObjRef obj])</Constructor>
+		<Formula>
+function NOBN_com_assistAssignEarthingObject(obj)
+	if obj == nil then obj = this end
+	local earthingConnectionMaxLength = 10 --[m]
+
+	if obj.EarthingMethod == "None" then 
+		return _void
+	
+	elseif obj.EarthingMethod == "Unknown" then 
+		return _void,_info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingObject.")
+	
+	elseif obj.EarthingMethod == "Rail" then
+		return _void
+	
+	elseif obj.EarthingMethod == "Wire" then 
+		return _void
+	
+	elseif obj.EarthingMethod == "Object" then 
+		local npo = getNearbyPointObjects2D(earthingConnectionMaxLength,obj):filter
+			(function (x)
+				local em = x:getPropertyValue("EarthingMethod")
+				local ea = x:getPropertyValue("EarthingAlignment")
+				local eo = x:getPropertyValue("EarthingAlignment")
+				return 
+					((em == 'Rail' or em == 'Wire') and (ea ~= nil and ea ~= obj))
+					or
+					((em == 'Object') and (eo ~= nil and eo ~= obj))
+			end)
+		if getCollectionLength(npo) &gt; 0 then
+			return npo[0]
+		else 
+			return _void,_error,_info("UNFINISHED - Earthing method is Object, but no suitable earth providing objects found.")
+		end
+		
+	else
+		-- Should not happen
+		return nil,_info("*** ERROR - Bad Earthing Method.")
+	end
+end
+        </Formula>
+    </LuaFunction>
+		
+	<LuaFunction Name="NOBN_com_assistAssignEarthingLabelText()" ReturnType="String"
+		Description="Suggests an earthing alignment label text for an object, based on its RcType, its Variant and its surroundings. The function assumes that the object already has a defined EarthingMethod and EarthingAlignment/EarthingObject." >
+        <Constructor>String NOBN_com_assistAssignEarthingLabelText([ObjRef obj])</Constructor>
+		<Formula>
+function NOBN_com_assistAssignEarthingLabelText(obj)
+	if obj == nil then obj = this end
+	if obj.EarthingMethod == "None" then 
+		return ""
+	elseif obj.EarthingMethod == "Object" then
+		return RC__identify(obj.EarthingObject).." / "..RC__identify(obj)
+	elseif obj.EarthingMethod == "Wire" then 
+		return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
+	elseif obj.EarthingMethod == "Rail" then 
+		return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
+	elseif obj.EarthingMethod == "Unknown" then 
+		return "(?)".." / "..RC__identify(obj)
+	else
+		return _error,"*** ERROR - Bad Earthing Method ["..obj.EarthingMethod.."]."
+	end
+end
+        </Formula>
+    </LuaFunction>
+
+	<LuaFunction Name="NOBN_com_assistAssignEarthingLabelColor()" ReturnType="String"
+		Description="Suggests an earthing alignment label color for an object, based on its discipline." >
+        <Constructor>String NOBN_com_assistAssignEarthingLabelColor([ObjRef obj])</Constructor>
+		<Formula>
+function NOBN_com_assistAssignEarthingLabelColor(obj)
+	if obj == nil then obj = this end
+	if obj.Discipline == "Felles" then 
+		return "Hvit"
+	elseif obj.Discipline == "Underbygning" then
+		return "Hvit"
+	elseif obj.Discipline == "Overbygning" then
+		return "Hvit"
+	elseif obj.Discipline == "Kontaktledning" then
+		return "Rød"
+	elseif obj.Discipline == "Signal" then
+		return "Grønn"
+	elseif obj.Discipline == "Tele" then
+		return "Gul"
+	elseif obj.Discipline == "Lavspent" then
+		return "Blå"
+	elseif obj.Discipline == "Skilt" then
+		return "Hvit"
+	else 
+		return _error,"*** ERROR - Uncrecognized discipline ["..obj.Discipline.."]."
+	end
+end
+        </Formula>
+    </LuaFunction>
+
+
+	<LuaFunction Name="NOBN_com_assistAssignEarthingPosBias()" ReturnType="Double"
+		Description="Suggests an earthing alignment pos bias for an object, based on its earthing method and its surroundings. A non-zero bias moves the 'earthing landing point' along the earthing alignment." >
+        <Constructor>Double NOBN_com_assistAssignEarthingPosBias([ObjRef obj])</Constructor>
+		<Formula>
+function NOBN_com_assistAssignEarthingPosBias(obj)
+	if obj == nil then obj = this end
+	local offset = 1
+	if obj.EarthingMethod == "Rail" then
+		if getAlignmentInfo(obj.EarthingAlignment.id).NormalProjectionExists then
+			return 0
+		else 
+			--Move earth connection a little past insulation along insulated rail's tangent direction (at start or end of rail): 
+			ps = obj.EarthingAlignment.RcAlignment.StartPoint
+			pe = obj.EarthingAlignment.RcAlignment.EndPoint
+			ds = RC__getDistance2D(ps,obj)
+			de = RC__getDistance2D(pe,obj)
+			if ds &lt; de then
+				u = obj.EarthingAlignment.RcAlignment.StartTangent
+				return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) > 0 and offset or -offset 
+			else
+				u = obj.EarthingAlignment.RcAlignment.EndTangent
+				return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) > 0 and offset or -offset 
+			end
+		end
+	end
+end
+        </Formula>
+    </LuaFunction>
+
+
+
+<!--========================================================================================================
+	Track - general position issues, relative to track alignments, used by all objects.
+	See also the lua source files for track objects and track connections.
+=========================================================================================================-->
+	<!-- Ignore the last boolean argument passed on from the RC engine, (shunting ::= type=='sidingTrack' for both alignments) -->
+	<FoulingPointSetting Name="1 Ny bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceNewTrain" FoulingPointGraphicsType="0" />
+	<FoulingPointSetting Name="2 Ny bane, skift/skift" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceNewShunting" FoulingPointGraphicsType="1" />
+	<FoulingPointSetting Name="3 Eks. bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceExistingTrain" FoulingPointGraphicsType="2" />
+	<FoulingPointSetting Name="4 Eks. bane, skift/skift" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceExistingShunting" FoulingPointGraphicsType="3" />
+	
+	<LuaFunction Name="NOBN_trk_getFoulingPointDistanceNewTrain()" 
+		ReturnType="Double" 
+		Description="Returns fouling point distance for new line's switch when one or both legs carry train traffic."
+		HideFromUser="false">
+		<Constructor>Double NOBN_trk_getFoulingPointDistanceNewTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+		<Formula>
+			function NOBN_trk_getFoulingPointDistanceNewTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(4.000, 2.120 + 1.700 + 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>		
+	</LuaFunction>
+	
+	<LuaFunction Name="NOBN_trk_getFoulingPointDistanceNewShunting()" 
+		ReturnType="Double" 
+		Description="Returns fouling point distance for new line's switch when no legs carry train traffic."
+		HideFromUser="false">
+		<Constructor>Double NOBN_trk_getFoulingPointDistanceNewShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+		<Formula>
+			function NOBN_trk_getFoulingPointDistanceNewShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(4.000, 2.120 + 1.700 - 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>		
+	</LuaFunction>
+	
+	<LuaFunction Name="NOBN_trk_getFoulingPointDistanceExistingTrain()" 
+		ReturnType="Double" 
+		Description="Returns fouling point distance for existing line's switch when one or both legs carry train traffic."
+		HideFromUser="false">
+		<Constructor>Double NOBN_trk_getFoulingPointDistanceExistingTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+		<Formula>
+			function NOBN_trk_getFoulingPointDistanceExistingTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(0.000, 2.120 + 1.700 + 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>		
+	</LuaFunction>
+
+	<LuaFunction Name="NOBN_trk_getFoulingPointDistanceExistingShunting()" 
+		ReturnType="Double" 
+		Description="Returns fouling point distance for existing line's switch when no legs carry train traffic."
+		HideFromUser="false">
+		<Constructor>Double NOBN_trk_getFoulingPointDistanceExistingShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+		<Formula>
+			function NOBN_trk_getFoulingPointDistanceExistingShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(0.000, 2.120 + 1.700 - 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>		
+	</LuaFunction>
+
+	<LuaFunction Name="NOBN_trk_getFoulingPointLocalContribution()" 
+		ReturnType="Double" 
+		Description="Returns the extra coach separation needed due to local curvatures (Kinner=81/2R, Kouter=63/2R) and to local cants (2.3*SignficantCantDifference)."
+		HideFromUser="false">
+		<Constructor>Double NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+		<Formula>
+			function NOBN_trk_getFoulingPointLocalContribution(
+				foulingPointCandidate,	--Point2d: a candidate fouling point, from which we will calculate the instantaneous required FP separation.
+				path1,					--RailwayPath: a structure containing a list of AlignmentIntervals, which is an interval on an alignment represented by the alignment's ObjectId, two positions, and a direction.
+				path2,					--RailwayPath: a structure containing a list of AlignmentIntervals.
+				path1IsLeftOfPath2		--Boolean: true iff path1 is to the left of path2 when vieweing the switch from the WCS positive Z axis, looking into the tip-of-tongues.
+			)
+			
+				function Kinner(R) 
+					--First term of a Taylor series, b^2/2r, assuming b=9 meter (standard Bane NOR assumption for halfAxleSeparation)
+					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
+					return 81.0 / (2*R)
+				end
+
+				function Kouter(R)
+					--First term of a Taylor series, (2bc+c^2)/2r, assuming c=3 meter (standard Bane NOR assumption for tail/nose extension from end/nose axle)
+					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
+					return 63.0 / (2*R)
+				end
+
+				--Retrieve alignment geometry info:
+				local path1Info = getAlignmentInfo(foulingPointCandidate.X, foulingPointCandidate.Y, path1)
+				local path2Info = getAlignmentInfo(foulingPointCandidate.X, foulingPointCandidate.Y, path2)
+				local t1 = path1Info.Segment.Type 
+				local t2 = path2Info.Segment.Type 
+				local cw1 = (path1Info.SignedRadius &gt; 0) --CW (true) or not CW (false)
+				local cw2 = (path2Info.SignedRadius &gt; 0) --CW (true) or not CW (false)
+				local r1 = math.abs(path1Info.SignedRadius) --Note: Reading path1Info.Radius fails for clothoids
+				local r2 = math.abs(path2Info.SignedRadius) --Note: Reading path2Info.Radius fails for clothoids
+
+				--Deduce contributions from inner/outer curves:
+				local curveContribution = 0.0
+				if path1IsLeftOfPath2 then
+					if t1 ~= "Straight" then curveContribution = curveContribution + (cw1 and Kouter(r1) or Kinner(r1)) end
+					if t2 ~= "Straight" then curveContribution = curveContribution + (cw2 and Kinner(r2) or Kouter(r2)) end
+				else
+					--path1 is right of path2
+					if t1 ~= "Straight" then curveContribution = curveContribution + (cw1 and Kinner(r1) or Kouter(r1)) end
+					if t2 ~= "Straight" then curveContribution = curveContribution + (cw2 and Kouter(r2) or Kinner(r2)) end
+				end
+											
+				--Retrieve alignment superelevation info [mm], convert to [m]:
+				local c1 = RC__isNan(path1Info.Cant) and 0.0 or path1Info.Cant/1000.0
+				local c2 = RC__isNan(path2Info.Cant) and 0.0 or path2Info.Cant/1000.0
+				local cr1 = path1Info.CantRotation == nil and "CW" or path1Info.CantRotation --Treat as "CW" if no cant present
+				local cr2 = path2Info.CantRotation == nil and "CW" or path2Info.CantRotation --Treat as "CW" if no cant present
+
+				--Deduce contributions from cant, checking whether the cants lean 'net' towards each other or not.
+				local cantContribution = 0.0
+				if path1IsLeftOfPath2 then 
+					if cr1 == "CW" and cr2 == "CCW" then cantContribution = 2.3 * (c1+c2) --both leaning towards each other
+					elseif cr1 == "CW" and cr2 == "CW" then cantContribution = 2.3 * math.max(0,c1-c2) --both leaning to the right
+					elseif cr1 == "CCW" and cr2 == "CCW" then cantContribution = 2.3 * math.max(0,c2-c1) --both leaning to the left
+					elseif cr1 == "CCW" and cr2 == "CW" then cantContribution = 0.0 --both leaning away from each other
+					else return 98.0 --error
+					end
+				else
+					--path1 is right of path2
+					if cr1 == "CW" and cr2 == "CCW" then cantContribution = 0.0 --both leaning away from each other
+					elseif cr1 == "CW" and cr2 == "CW" then cantContribution = 2.3 * math.max(0,c2-c1) --both leaning to the right
+					elseif cr1 == "CCW" and cr2 == "CCW" then cantContribution = 2.3 * math.max(0,c1-c2) --both leaning to the left
+					elseif cr1 == "CCW" and cr2 == "CW" then cantContribution = 2.3 * (c1+c2) --both leaning towards each other
+					else return 99.0 --error
+					end
+				end
+
+				return curveContribution + cantContribution
+			end
+		</Formula>		
 	</LuaFunction>
 
 
-	
+
 	<LuaFunction Name="NOBN_trk_getLiftFromCant()" ReturnType="Double"
 		Description="Returns a track-bound object's Z-coordinate offset above TopOfRail [m], consistent with own alignment's local cant. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
 		<Constructor>Double NOBN_trk_getLiftFromCant([_position])</Constructor>
@@ -96,16 +438,16 @@ function NOBN_trk_getLiftFromCant(where)
 		-- 'this' is an alignment:
 		cg = AlignmentSystem.CantGauge
 		lwc = AlignmentSystem.QuickMode3DLiftWithCant
-		dta = 0 --DistanceToAlignment
+		dta = 0.0 --DistanceToAlignment
 	end
 	if not lwc then 
-		return 0,_info("Alignment system does not lift with cant.")
+		return 0.0,_info("Alignment system does not lift with cant.")
 	end
 	c = ai.Cant
     if c == nil or RC__isNan(c) then
-        return 0,_info("UNFINISHED - No cant data in alignment, assuming zero cant.")
+        return 0.0,_info("UNFINISHED - No cant data in alignment, assuming zero cant.")
 	elseif c == 0 then
-		return 0
+		return 0.0
     else
         -- Cant is measured in millimeter superelevation
         -- Ask alignment system whether cant leads to lift or not:
@@ -117,8 +459,8 @@ function NOBN_trk_getLiftFromCant(where)
 			msg = RC__round(1000*h).." mm cant."
 		end
 		railSeparationXY = math.sqrt(cg^2 - h^2)
-		if h == 0 then
-			return 0,_info(msg)
+		if h == 0.0 then
+			return 0.0,_info(msg)
 		else
 			cr = ai.CantRotation
 			if cr == "CCW" then
@@ -128,7 +470,7 @@ function NOBN_trk_getLiftFromCant(where)
 				-- Left rail lifted above right rail
 				return h/2 - h/2 * dta / (railSeparationXY / 2)
 			else
-				return 0,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming zero lift.")
+				return 0.0,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming zero lift.")
 			end
 		end
 	end
@@ -139,16 +481,26 @@ end
 	
 	
 	<LuaFunction Name="NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance()" ReturnType="Double"
-		Description="Returns a track-bound object's 2D distance to the alignment axis as a function of its track plane distance to own alignment. 'TrackPlaneDistance' is by default set to half of the rail separation. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
+		Description="Returns a track-bound object's 2D distance to the alignment axis as a function of its track plane distance to own model insertion axis (track axis). 'TrackPlaneDistance' is by default set to half of the rail separation. If called from an alignment object, the reserved identifier '_position' holding a {Pos, Ref} must be provided as an input argument." >
 		<Constructor>Double NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance([Double TrackPlaneDistance [,_position]])</Constructor>
 		<Formula>
 function NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(TrackPlaneDistance,where)
+	local cg
+	if RcAlignment == nil then 
+		-- 'this' is a point object:
+		cg = Alignment.AlignmentSystem.CantGauge
+	else 
+		-- 'this' is an alignment:
+		cg = AlignmentSystem.CantGauge
+	end
 	if TrackPlaneDistance == nil then
 		--No specific distance as input, use side of track and place on rail:
-		TrackPlaneDistance = RightSided and NOBN_trk_RAILSEPARATION()/2 or -NOBN_trk_RAILSEPARATION()/2
+		TrackPlaneDistance = RightSided and cg/2.0 or -cg/2.0
 	end
-	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC, sampled along the alignment.
+	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
+	--'where' is a data structure, if present, consisting of .Pos and .Ref
 	if where == nil then
+		-- Assume function has been called from a point object:
 		ai = getAlignmentInfo()
 	else
 	    ai = getAlignmentInfo(where)
@@ -159,7 +511,7 @@ function NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(TrackPlane
 		return TrackPlaneDistance,_info("No cant data in alignment, assuming zero cant.")
 	else
 		-- Scale track plane distance to alignment with effect of cant:
-	 	return TrackPlaneDistance * math.sqrt(1 - (h/NOBN_trk_RAILSEPARATION())^2)
+	 	return TrackPlaneDistance * math.sqrt(1 - (h/cg)^2)
 	end
 end
 		</Formula>
@@ -175,7 +527,7 @@ function NOBN_trk_getRollFromCant(where)
 	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 	--'where' is a data structure, if present, consisting of .Pos and .Ref
 	if where == nil then
-		-- can be called from point objects:
+		-- Assume function was called from a point object:
 		ai = getAlignmentInfo()
 	else
 		-- can be called from anywhere, including an alignment, as a sampled formula:
@@ -190,9 +542,9 @@ function NOBN_trk_getRollFromCant(where)
 	end
 	c = ai.Cant
     if c == nil or RC__isNan(c) then
-        return 0,_info("UNFINISHED - No cant data in alignment, assuming zero cant.")
+        return 0.0,_info("UNFINISHED - No cant data in alignment, assuming zero cant.")
 	elseif c == 0 then
-		return 0
+		return 0.0
     else
         -- Cant is measured in millimeter superelevation, with rotation clockwise or counterclockwise in the track's direction
         -- Assume that only one rail is lifted at a time.
@@ -203,7 +555,7 @@ function NOBN_trk_getRollFromCant(where)
         elseif cr:upper() == "CCW" then 
             return -math.asin(h/cg)*(180/math.pi)
         else
-            return 90,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming 90 degrees roll as a visual warning.")
+            return 90.0,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming 90 degrees roll as a visual warning.")
         end
     end
 end
@@ -225,7 +577,7 @@ function NOBN_trk_getPitchFromGradient(where)
 	    g = getAlignmentInfo(where).gradient 
 	end
     if RC__isNan(g) then
-        return 0,_info("No gradient data in alignment, assuming zero gradient.")
+        return 0.0,_info("No gradient data in alignment, assuming zero gradient.")
     else
         return math.atan(g/1000)*(180/math.pi)
     end
@@ -246,23 +598,23 @@ function NOBN_trk_getYawFromDir(rotation)
 		--We assume that all balises have cable extending to the right when seen in the 3D object's 'up' direction
 		--(the cable will then be best protected for left-handed normal driving on double track lines).
 		if AngularOffset == nil then 
-			return RightSided and 0 or 180
+			return RightSided and 0.0 or 180.0
 		else	
-			return AngularOffset + (RightSided and 0 or 180)
+			return AngularOffset + (RightSided and 0.0 or 180.0)
 		end
 	end
 	if rotation == nil and AngularOffset == nil then
 		-- No argument given, and no standard property 'AngularOffset' exists for the current object
 		if d == 'up' then
-			return 0
+			return 0.0
 		elseif d == 'down' then
-			return 180
+			return 180.0
 		elseif d == 'both' then
-			return RightSided and -90 or 90
+			return RightSided and -90.0 or 90.0
 		elseif d == 'none' then
-			return RightSided and 90 or -90
+			return RightSided and 90.0 or -90.0
 		else --d == unknown':
-			return 45,_warning,_info("Direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning.")
+			return 45.0,_warning,_info("Direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning.")
 		end
 	else
 		--Modify 'dir' with extra rotation:
@@ -271,19 +623,19 @@ function NOBN_trk_getYawFromDir(rotation)
 			rotation = AngularOffset
 		else 
 			if math.abs(rotation) &lt; 4e-4 then 
-				rotation = 0 --remove small inaccuracies
+				rotation = 0.0 --remove small inaccuracies
 			end
 		end
 		if d == 'up' then
 			return rotation,_info("'up' with "..rotation.." degrees extra rotation.")
 		elseif d == 'down' then
-			return 180+rotation,_info("'down' with "..rotation.." degrees extra rotation.")
+			return 180.0+rotation,_info("'down' with "..rotation.." degrees extra rotation.")
 		elseif d == 'both' then
-			return (RightSided and -90 or 90) + rotation, _info("'both' with "..rotation.." degrees extra rotation.")
+			return (RightSided and -90.0 or 90.0) + rotation,_info("'both' with "..rotation.." degrees extra rotation.")
 		elseif d == 'none' then
-			return (RightSided and 90 or -90) + rotation, _info("'none' with "..rotation.." degrees extra rotation.")
+			return (RightSided and 90.0 or -90.0) + rotation,_info("'none' with "..rotation.." degrees extra rotation.")
 		else --d == unknown':
-			return 45,_warning,_info("Direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning .")
+			return 45.0,_warning,_info("Direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning .")
 		end
 	end
 end
@@ -306,8 +658,7 @@ end
 		<Constructor>Double NOBN_sig_getSignalSightingRequirement()</Constructor>
 		<Formula>
 function NOBN_sig_getSignalSightingRequirement()
-	local aspeed = getAlignmentInfo().Speed
-	local DesignSpeed = (aspeed == nil) and 130 or aspeed --130 km/h assumed if alignment has no design speed available
+	local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
 
 	if RcType == "SA-SIG Signal" then
 		if (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") and not MainSignal:find("Hs") then
@@ -341,7 +692,7 @@ function NOBN_sig_getSignalSightingRequirement()
 		end
 	
 	
-	elseif RcType == "SA-SIG Brosignal/Frostportsignal" or RcType == "SA-SIG Rasvarslingsignal" then
+	elseif RcType == "SA-SIG Brusignal/Frostportsignal" or RcType == "SA-SIG Rasvarslingssignal" then
 		--TODO: Check requirements with Bane NOR
 		if DesignSpeed &gt; 210 then
 			return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
@@ -372,7 +723,7 @@ function NOBN_sig_getSignalSightingRequirement()
 		--Signal mot vei
 		return 30,_info("30m fixed sighting requirement for road traffic towards level crossing signal (To be verified!).")
 
-	elseif RcType == "SA-SIG Brosignal/Frostportsignal" then 
+	elseif RcType == "SA-SIG Brusignal/Frostportsignal" then 
 		--Samme byggeteknikk som for 3-lys Hs (2 røde blink / 1 hvit blink)
 		return 150,_info("150m fixed sighting requirement for bridge / frost gate signal (To be verified!).")
 
@@ -484,11 +835,9 @@ end
 		<Constructor>Double NOBN_bnp_getBoardSightingRequirement()</Constructor>
 		<Formula>
 function NOBN_bnp_getBoardSightingRequirement()
-	local aspeed = getAlignmentInfo().Speed
-	local DesignSpeed = (aspeed == nil) and 130 or aspeed --130 km/h assumed if alignment has no design speed available
+	local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
 
-	if 	
-		   Variant:find("Baliseskilt")
+	if 	   Variant:find("Baliseskilt")
 		or Variant:find("Arbeidsområde")
 		or Variant:find("75C") -- 75C: Hev sporrenser
 		or Variant:find("75D") -- 75D: Senk sporrenser
@@ -499,7 +848,7 @@ function NOBN_bnp_getBoardSightingRequirement()
 		or Variant:find("68F") --Tilleggshastighet underskilt - står alltid sammen med signal 68AB
 		or Variant:find("68G") --Krengetoghasighet underskilt - står alltid sammen med signal 68AB
 		or Variant:find("101") --ID-skilt av alle typer
-		or Variant:find("102") --Pilskilt
+		or Variant:find("102") --PIL
 		or Variant:find("138") --Trafikkskilt Andreaskors langs bilvei ved PLO, festes på lyssignal mot vei
 	then
 		--No sighting requirement:
@@ -555,6 +904,43 @@ end
 	ocs - Overhead catenary System Lua formulas (including return current and earthing)
 =========================================================================================================-->
 	<!-- INFO 2019-05-07 CLFEY: OCS Lua functions moved to file for OcsObjects. -->
+
+
+<!--========================================================================================================
+	sub - Substructure / civil works functions accessible globally
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_sub_getFoundationCode()" ReturnType="String" 
+		Description="Returns the code for a foundation / bolt group / deduced from its associated object (based on RcType and close proximity)." >
+		<Constructor>String NOBN_sub_getFoundationCode([ObjRef obj])</Constructor>
+		<Formula>
+			function NOBN_sub_getFoundationCode(obj)
+				local tol = 0.25 --Look for a matching object close to 'obj'
+				local function fn(obj,objectTypes,errMsg)
+		 			--Check for matching objects in prioritized order.
+					local ot,n,i,o
+					ot = getCollectionFromTable(objectTypes)
+					n = ot.count
+					for i=0,n-1 do
+						o = getNearbyPointObjects2D(tol,ot[i],obj)
+						if getCollectionLength(o) &gt; 0 then return o[0].code end
+					end
+					return errMsg 
+				end
+		
+				if obj == nil then obj = this end
+				if RcType:match("EH%-FUN KL%-fundament") then 
+					return fn(obj,{"EH-MAS KL-mast","EH-BAR Bardun","EH-KLO Strever"},"UNFINISHED - no visible OCS mast or spanner / strecher fastener found at foundation.")
+				elseif RcType:match("KU%-FUN Signalfundament") then 
+					return fn(obj,{"SA-SIG Signal"},"UNFINISHED - no visible signal found at foundation.")
+				elseif RcType:match("KU%-FUN Apparatskapfundament") then 
+					return fn(obj,{"SA-APS Apparatskap"},"UNFINISHED - no visible signal cabinet found at foundation.")
+				elseif RcType:match("KU%-FUN Telefundament") then 
+					return fn(obj,{"TODO: Define telecom objects here :ODOT"},"UNFINISHED - no visible matching telecom object found at foundation.")
+				end
+			end
+		</Formula>
+	</LuaFunction> 
+		
 
 
 <!--========================================================================================================

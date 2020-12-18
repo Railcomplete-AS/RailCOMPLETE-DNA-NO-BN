@@ -2,9 +2,9 @@
 
     NO-BN-Signals.xml
 	
-	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2020. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -126,14 +126,14 @@ function NOBN_sig_getSignalFullName()
 	elseif RcType == "SA-SIG Høyt skiftesignal" then 
 		--(Frittstående)
 		s = "Høyt skiftesignal "..code
-	elseif RcType == "SA-SIG Brosignal/Frostportsignal" then
-		s = "Brosignal/Frostportsignal "..code
-	elseif RcType == "SA-SIG Rasvarslingsignal" then
-		s = "Rasvarslingsignal "..code
+	elseif RcType == "SA-SIG Brusignal/Frostportsignal" then
+		s = "Brusignal/Frostportsignal"..code
+	elseif RcType == "SA-SIG Rasvarslingssignal" then
+		s = "Rasvarslingssignal "..code
 	elseif RcType == "SA-SIG Veisignal" then
 		s = "Veisignal "..code
-	elseif RcType == "SA-SIG Planovergangsignal" then
-		s = "Planovergangsignal "..code
+	elseif RcType == "SA-SIG Planovergangssignal" then
+		s = (Variant:match("forsignal") and "PLO-Fs" or "PLO")..code
 	else
 		s = "Bad signal type ["..RcType.."] (code='"..code.."').",_warning
 	end
@@ -153,8 +153,8 @@ function NOBN_sig_getSignalPartNames()
 	if RcType == "SA-SIG ERTMS" then
 		if Variant:find("E34") then s = s.."Sted"
 		elseif Variant:find("E35") then s = s.."Stopp"
-		elseif Variant:find("ERTMS Planovergang, forsignal") then s = s.."PLO-Fs"
 		elseif Variant:find("ERTMS Planovergang, signal") then s = s.."PLO"
+		elseif Variant:find("ERTMS Planovergang, forsignal") then s = s.."PLO-Fs"
 		elseif Variant:find("ERTMS Shunting Area begynner") then s = s.."Sh.start"
 		elseif Variant:find("ERTMS Shunting Area slutter") then s = s.."Sh.slutt"
 		elseif Variant:find("ERTMS Supervised Area slutter") then s = s.."Sup.slutt"
@@ -162,32 +162,32 @@ function NOBN_sig_getSignalPartNames()
 		end
 			
 	elseif RcType == "SA-SIG Signal" then
-		if (prop("Hovedsignal") ~= "-") then s = s..prop("Hovedsignal")
-		elseif (prop("Forsignal") == "Ja") then s = s.."-Fs"
-		elseif (prop("Dvergsignal") == "Ja") then s = s.."-Ds"
-		elseif (prop("Middelkontrollampe") == "Ja") then s = s.."-Mk"
-		elseif (prop("Forsiktig kjøring") == "Ja") then s = s.."-FKs"
-		elseif (prop("Hovedlinjesignal") == "Ja") then s = s.."-HLs"
-		elseif (prop("Lysende hastighetssignal") == "Ja") then s = s.."-Hast"
-		elseif (prop("Høyt skiftesignal") == "Ja") then s = s.."-Z"
-		elseif s:sub(1,1) == "-" then s = s:sub(2)
-		else s = s.."Bad Class B signal configuration."
+		if prop("Hovedsignal") ~= "-" then s = s..prop("Hovedsignal") end
+		if prop("Forsignal") == "Ja" then s = s.."-Fs" end
+		if (prop("Dvergsignal") == "Ja") then s = s.."-Ds" end
+		if (prop("Middelkontrollampe") == "Ja") then s = s.."-Mk" end
+		if (prop("Forsiktig kjøring") == "Ja") then s = s.."-FKs" end
+		if (prop("Hovedlinjesignal") == "Ja") then s = s.."-HLs" end
+		if (prop("Lysende hastighetssignal") == "Ja") then s = s.."-Hast" end
+		if (prop("Høyt skiftesignal") == "Ja") then s = s.."-Z" end
+		if s:sub(1,1) == "-" then s = s:sub(2) end
+		if s == "" then 
+			return "Bad Class B signal configuration." 
 		end
 	
 	elseif RcType == "SA-SIG Togsporsignal" then
 		s = "Togsporsignal"
-	elseif RcType == "SA-SIG Høyt skiftesignal" then 
+	elseif RcType == "SA-SIG Høyt skiftesignal, frittstående" then 
 		--Frittstående høyt skiftesignal!
 		s = "Høyt skiftesignal "..code
-	elseif RcType == "SA-SIG Brosignal/Frostportsignal" then
-		s = "Brosignal/Frostportsignal"
-	elseif RcType == "SA-SIG Rasvarslingsignal" then
-		s = "Rasvarslingsignal"
+	elseif RcType == "SA-SIG Brusignal/Frostportsignal" then
+		s = "Brusignal/Frostportsignal"
+	elseif RcType == "SA-SIG Rasvarslingssignal" then
+		s = "Rasvarslingssignal"
 	elseif RcType == "SA-SIG Veisignal" then
 		s = "Veisignal"   
-	elseif RcType == "SA-SIG Planovergangsignal" then
-		s = "Planovergangsignal"
-
+	elseif RcType == "SA-SIG Planovergangssignal" then
+		s = "Planovergangssignal"
 	elseif RcType == "SA-SIG Fiktivt punkt" then
 		s = "Fiktivt punkt"
 
@@ -216,14 +216,13 @@ end
 				
 		<RelationSourceSpace>signal</RelationSourceSpace>
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
-		
-		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 
 		<Variants>
 			<Variant Name="Viapunkt for betjeningsanlegg" >
@@ -239,25 +238,25 @@ end
 		<InsertSymbol VariantName="Viapunkt for betjeningsanlegg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-VIAPUNKT"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation Direction="true"/>
+			<Rotation Direction="true" />
 		</InsertSymbol>
 		
 		<InsertSymbol VariantName="Fiktivt sluttpunkt for togvei" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation Direction="true"/>
+			<Rotation Direction="true" />
 		</InsertSymbol>
 		
 		<InsertSymbol VariantName="Fiktivt sluttpunkt for skiftevei" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation Direction="true"/>
+			<Rotation Direction="true" />
 		</InsertSymbol>
 		
 		<InsertSymbol VariantName="Fiktivt sluttpunkt for togvei og skiftevei" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation Direction="true"/>
+			<Rotation Direction="true" />
 		</InsertSymbol>
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT" AllowSymbolMove="true" >
@@ -290,14 +289,13 @@ end
 		<!--Denne kan ikke knyttes til et fundament, for det er skilt-plata som skal ha fundament. Sig66 er et fiktivt punkt. -->
 		<RelationSourceSpace>signal</RelationSourceSpace>
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
-					
-		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 
 		<Variants>
 			<Variant Name="Signal 66 Togvei slutt" >
@@ -311,7 +309,7 @@ end
 				SubGroup="Diverse"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="type" Value="other:togveiSlutt" />
 			<SetValue Key="function" Value="" /> 
 			<SetValue Key="switchable" Value="false" />
@@ -364,29 +362,29 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	if RcType == "SA-SIG Signal" then
 		--Free-standing dwarf signal?
 		if (DwarfSignal == "Ja" and MainSignal == "-") then 
-			return "OK - Free-standing shunting signal - Safety distance to OCS mast not relevant.", _ok 
+			return "OK - Free-standing shunting signal - Safety distance to OCS mast not relevant.",_ok 
 		end
 	end
 
 	if RcType == "SA-SIG Togsporsignal" then
-		return "OK - Track signal (togsporsignal) - Safety distance to OCS mast not relevant.", _ok 
+		return "OK - Track signal (togsporsignal) - Safety distance to OCS mast not relevant.",_ok 
 	
 	elseif RcType ~= "SA-SIG Signal"
 			and RcType ~= "SA-SIG Høyt skiftesignal" 
 			and RcType ~= "SA-SIG Veisignal"
-			and RcType ~= "SA-SIG Brosignal/Frostportsignal"
+			and RcType ~= "SA-SIG Brusignal/Frostportsignal"
 			and RcType ~= "SA-SIG Planovergang"
 		then return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
 	
 	else
 		c1 = getNearbyPointObjects2D("EH-MAS KL-mast", tolerance)
-		c2 = getNearbyPointObjects2D("EH-MAS Tunnel-hengemast", tolerance)
-		c3 = getNearbyPointObjects2D("EH-MAS Åk-hengemast", tolerance)
+		c2 = getNearbyPointObjects2D("EH-MAS Hengemast for bru og tunnel", tolerance)
+		c3 = getNearbyPointObjects2D("EH-MAS Hengemast for åk", tolerance)
 		closeObjects = getUnionOfCollections( getCollectionFromTable({c1,c2,c3}) )
 		count = getCollectionLength(closeObjects)
 		UpdateObjects = {}
 		if(count == 0) then 
-			return "OK - No catenary mast within tolerance "..tolerance.." meters.", _ok
+			return "OK - No catenary mast within tolerance "..tolerance.." meters.",_ok
 		else
 			i = 0
 			shortestDistance = math.huge
@@ -410,110 +408,75 @@ end		</Formula>
 		
 	
 		
-	<LuaFunction Name="NOBN_sig_chkLeftSideDistanceFromSignalToTrack()" ReturnType="String"
-		Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages)." >
-        <Constructor>String NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Constructor>
+	<LuaFunction Name="NOBN_sig_chkDistanceFromSignalToTrack()" ReturnType="String"
+		Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages). Call with argument 'Right' or 'Left'." >
+        <Constructor>String NOBN_sig_chkDistanceFromSignalToTrack("Right" | "Left")</Constructor>
         <Formula>
+			function NOBN_sig_chkDistanceFromSignalToTrack(side)
+				side = side and side:lower() or "(no arg)"				
+				if side ~= "left" and side ~= "right" then return "*** ERROR Function should be called with argument 'right' or 'left' ["..side.."]." end
+				if Alignment == nil then return "UNFINISHED - Signal must first be assigned to an alignment to deduce its own direction." end
+				if (DwarfSignal == "Ja" and MainSignal == "-" and PoleOrYoke == "Yoke") then return "WARNING - Shunting signal mounted in yoke. Please do manual check.",_warning end
+				if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.",_warning end
+				tracks = getClosestAlignments("KO-SPO Spor"):filter(function (x) return (side:upper() == "RIGHT" and 1 or -1) * getAlignmentInfo(x.id).DistanceToAlignment &lt; 0 end)
+				if getCollectionLength(tracks) == 0 then return "OK - No tracks to the "..side..".",_ok end
+				ai = getAlignmentInfo(tracks[0].id)
+				curveRadius = ai.CurveRadius
+				Ki = 0.0
+				Ky = 0.0
+				tolerance = 2.12
+				--Many signals are coverd with these formulas, but not all - use your insight wiesely:
+				if (DwarfSignal ~= "-" and MainSignal == "-") then
+					--Freestanding dwarf signal
+					tolerance = tolerance + 0.25
+				elseif MainSignal ~= "-" or DistantSignal ~= "-" then
+					tolerance = tolerance + 0.4
+				end
+				distToAlignment = math.abs(ai.DistanceToAlignment)
+				if (curveRadius ~= math.huge) then
+					--Std Bane NOR approximation formulae:
+					Ki = 81000.0/(2*curveRadius)
+					Ky = 63000.0/(2*curveRadius)
+				end
+				if (ai.CurveRotation == "CCW") then 
+					tolerance = tolerance + (Ky/1000.0)
+				else
+					tolerance = tolerance + (Ki/1000.0)
+				end
+				if (distToAlignment &lt;= tolerance) then
+					return string.format("%.3f: ERROR - Signal too close to track '%s' w.r.t. tolerance %.3f.",
+						distToAlignment,ai.AlignmentName,tolerance),_error
+				elseif (distToAlignment &gt; tolerance and distToAlignment &lt;= (tolerance + 0.4)) then
+					return string.format("%.3f: WARNING - Signal close to track '%s', less than 0.4 m from tolerance %.3f.",
+						distToAlignment,ai.AlignmentName,tolerance),_warning
+				else
+					return string.format("%.3f: OK - Signal is far from track '%s' w.r.t. tolerance %.3f.",
+						distToAlignment,ai.AlignmentName,tolerance),_ok
+				end
+			end
+		</Formula>
+     </LuaFunction>
+		
+
+	<!-- Included for backwards compatibility: -->
+  <LuaFunction Name="NOBN_sig_chkLeftSideDistanceFromSignalToTrack()" ReturnType="String" Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages)." HideFromUser="false">
+    <Constructor>String NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Constructor>
+    <Formula>
 function NOBN_sig_chkLeftSideDistanceFromSignalToTrack()
-	if (Alignment == nil or getAlignmentInfo().AlignmentName== "") then return "No track(s) found.",_warning end
-	if (DwarfSignal == "Ja" and MainSignal == "-" and PoleOrYoke == "Yoke") then return "WARNING - Shunting signal mounted in yoke. Please do manual check.", _warning end
-	if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.", _warning end
-	tracks = getClosestAlignments("KO-SPO Spor")
-	if (tracks[0] == nil) then return "WARNING - Drawing contains no tracks.", _warning end
-	counter = 0
-	trackToTheLeft = tracks[0]
-	while tracks[counter] do
-		if getAlignmentInfo(tracks[counter].id).DistanceToAlignment &gt; 0 then 
-			trackToTheLeft = tracks[counter] 
-			break
-		end
-		counter = counter + 1
-	end
-	if (getAlignmentInfo(trackToTheLeft.id).DistanceToAlignment &lt;= 0) then return "No tracks to the left of signal.", _ok end
-	alignmentInfo = getAlignmentInfo(trackToTheLeft.id)
-	curveRadius = alignmentInfo.CurveRadius
-	Ki = 0.0
-	Ky = 0.0
-	tolerance = 2.12
-	if (DwarfSignal == "Ja" and MainSignal == "-") then
-		tolerance = tolerance + 0.25
-	else
-		tolerance = tolerance + 0.4
-	end
-	distToAlignment = math.abs(alignmentInfo.DistanceToAlignment)
-	if (curveRadius ~= math.huge) then
-		Ki = 81000.0/(2*curveRadius)
-		Ky = 63000.0/(2*curveRadius)
-	end
-	if (alignmentInfo.CurveRotation == "CCW") then 
-		tolerance = tolerance + (Ky/1000.0)
-	else
-		tolerance = tolerance + (Ki/1000.0)
-	end
-	if (distToAlignment &lt;= tolerance) then
-		return string.format("%.3f: ERROR - Signal too close to track '%s' w.r.t. tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_error
-	elseif (distToAlignment &gt; tolerance and distToAlignment &lt;= (tolerance + 0.4)) then
-		return string.format("%.3f: WARNING - Signal close to track '%s', but within 0.4m from tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_warning
-	else
-		return string.format("%.3f: OK - Signal is far from tracks w.r.t. tolerance %.3f.", distToAlignment,tolerance),_ok
-	end
+	return NOBN_sig_chkDistanceFromSignalToTrack("Left")
 end
 		</Formula>
-     </LuaFunction>
-		
+  </LuaFunction>
 
-		
-	<LuaFunction Name="NOBN_sig_chkRightSideDistanceFromSignalToTrack()" ReturnType="String"
-		Description="Checks lateral distance from signal insertion point to closest track on right side (in the direction of increasing mileages)." >
-        <Constructor>String NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Constructor>
-        <Formula>
+  <!-- Included for backwards compatibility: -->
+  <LuaFunction Name="NOBN_sig_chkRightSideDistanceFromSignalToTrack()" ReturnType="String" Description="Checks lateral distance from signal insertion point to closest track on right side (in the direction of increasing mileages)." HideFromUser="false">
+    <Constructor>String NOBN_sig_chkRightSideDistanceFromSignalToTrack()</Constructor>
+    <Formula>
 function NOBN_sig_chkRightSideDistanceFromSignalToTrack()
-	if (Alignment == nil or getAlignmentInfo().AlignmentName== "") then return "No track(s) found.",_warning end
-	if (DwarfSignal == "Ja" and MainSignal == "-" and PoleOrYoke == "Yoke") then return "WARNING - Shunting signal mounted in yoke. Please do manual check.", _warning end
-	if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.", _warning end
-	tracks = getClosestAlignments("KO-SPO Spor")
-	if (tracks[0] == nil) then return "WARNING - Drawing contains no tracks.", _warning end
-	counter = 0
-	trackToTheRight = tracks[0]
-	while tracks[counter] do
-		if getAlignmentInfo(tracks[counter].id).DistanceToAlignment &gt; 0 then 
-			trackToTheRight = tracks[counter] 
-			break
-		end
-		counter = counter + 1
-	end
-	if (getAlignmentInfo(trackToTheRight.id).DistanceToAlignment &lt;= 0) then return "No tracks to the right of signal.", _ok end
-	alignmentInfo = getAlignmentInfo(trackToTheRight.id)
-	curveRadius = alignmentInfo.CurveRadius
-	Ki = 0.0
-	Ky = 0.0
-	tolerance = 2.12
-	if (DwarfSignal == "Ja" and MainSignal == "-") then
-		tolerance = tolerance + 0.25
-	else
-		tolerance = tolerance + 0.4
-	end
-	distToAlignment = math.abs(alignmentInfo.DistanceToAlignment)
-	if (curveRadius ~= math.huge) then
-		Ki = 81000.0/(2*curveRadius)
-		Ky = 63000.0/(2*curveRadius)
-	end
-	if (alignmentInfo.CurveRotation == "CCW") then 
-		tolerance = tolerance + (Ky/1000.0)
-	else
-		tolerance = tolerance + (Ki/1000.0)
-	end
-	if (distToAlignment &lt;= tolerance) then
-		return string.format("%.3f: ERROR - Signal too close to track '%s' w.r.t. tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_error
-	elseif (distToAlignment &gt; tolerance and distToAlignment &lt;= (tolerance + 0.4)) then
-		return string.format("%.3f: WARNING - Signal close to track '%s', but within 0.4m from tolerance %.3f.", distToAlignment,alignmentInfo.AlignmentName,tolerance),_warning
-	else
-		return string.format("%.3f: OK - Signal is far from tracks w.r.t. tolerance %.3f.", distToAlignment,tolerance),_ok
-	end
+	return NOBN_sig_chkDistanceFromSignalToTrack("Right")
 end
 		</Formula>
-     </LuaFunction>
-
+  </LuaFunction>
 
 
 	<LuaFunction Name="NOBN_sig_getModel3DName()" ReturnType="String"
@@ -544,11 +507,11 @@ end
 					return _error,"Bad combination of Rep / Main Signal and DistantSignal."
 				end
 				if (DwarfSignal ~= "-") then t = t.."-DS" end
-				if (CautiousDrivingSignal ~= "-") then t = t.."-FKS32" end
+				if (CautiousDrivingSignal ~= "-") then t = t.."-FKS" end
 				if (LineSignal ~= "-") then t = t.."-HLS" end
-				if (PositionLamp ~= "-") then t = t.."-MK" end
-				if (OpticalSpeedSignal ~= "-") then t = t.."-S68E" end
-				if (HighShuntingSignal ~= "-") then t = t.."-Z" end
+				if (PositionLamp ~= "-") then t = t.."-MKS" end
+				if (OpticalSpeedSignal ~= "-") then t = t.."-LHS" end --Lysende HastighetsSignal
+				if (HighShuntingSignal ~= "-") then t = t.."-ZS" end
 				if SunScreen == "-" then t = t.."-UTEN-SKJERM" end
 				if PoleOrYoke == "Yoke" then t = t.."-ÅK" end
 				return t
@@ -567,16 +530,17 @@ end
 		<RelationSourceSpace>signal</RelationSourceSpace>
 		<AttachmentCategory Name="signal" />
 			
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
-		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 
-		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<xpp:expand select="NOBN_com_ISY_STK" />
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalPartNames()</Formula></LuaExpression> 
 
 		<LuaExpression Name="Model3DName"><Formula>NOBN_sig_getModel3DName()</Formula></LuaExpression>
@@ -666,11 +630,11 @@ end
 		</CustomAttribute>
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_SafetyDistanceFromSignalToOcsMast" DisplayName="Sikkerhetsavstand til KL" 
-			Description="Below 6 meter: Warning – Signal is too close to OCS mast, a potential HVAC hazard for maintenance personnel.\nAbove 6 meter: OK – No known HVAC danger to personnel."/>
+			Description="Below 6 meter: Warning – Signal is too close to OCS mast, a potential HVAC hazard for maintenance personnel.\nAbove 6 meter: OK – No known HVAC danger to personnel." />
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_LeftSideDistanceFromSignalToTrack" DisplayName="Avstand til spor venstre"
-			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension."/>
+			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension." />
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_RightSideDistanceFromSignalToTrack" DisplayName="Avstand til spor høyre"
-			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension."/>
+			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension." />
 		<CustomAttribute DataType="String" Name="LineSignalValue" DisplayName="Hovedlinjesignal signaltekst" DefaultValue="" />
 		<CustomAttribute DataType="String" Name="OpticalSpeedSignalValue" DisplayName="Lysende hastighetssignal verdi" DefaultValue="" />
 		
@@ -678,13 +642,12 @@ end
 		<LuaExpression Name="mc_LeftSideDistanceFromSignalToTrack" IsModelCheck ="true"><Formula>NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Formula></LuaExpression>
 		<LuaExpression Name="mc_RightSideDistanceFromSignalToTrack" IsModelCheck ="true"><Formula>NOBN_sig_chkRightSideDistanceFromSignalToTrack()</Formula></LuaExpression>
 		<LuaExpression Name="SymbolFrame"><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
-		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
 
 		<InsertSymbol VariantName="Frittstående forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-23-FS" 
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="name" Value="Fs." />
 			<SetValue Key="type" Value="distant" />
@@ -697,7 +660,7 @@ end
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="type" Value="shunting" />
 			<SetValue Key="switchable" Value="true" />
@@ -709,7 +672,7 @@ end
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="EndOfTrainRoute" Value="Ja" />
 			<SetValue Key="type" Value="shunting" />
@@ -722,7 +685,7 @@ end
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
 			<SetValue Key="type" Value="shunting" />
@@ -735,7 +698,7 @@ end
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
 			<SetValue Key="EndOfTrainRoute" Value="Ja" />
@@ -749,7 +712,7 @@ end
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs1" />
 			<SetValue Key="type" Value="main" />
 			<SetValue Key="switchable" Value="true" />
@@ -761,7 +724,7 @@ end
 				SubGroup="Frittstående Signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="RepHs1" />
 			<SetValue Key="type" Value="repeater" />
 			<SetValue Key="switchable" Value="true" />
@@ -773,7 +736,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="type" Value="main" />
 			<SetValue Key="switchable" Value="true" />
@@ -785,7 +748,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="RepHs2" />
 			<SetValue Key="type" Value="repeater" />
 			<SetValue Key="switchable" Value="true" />
@@ -798,7 +761,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="type" Value="main" />
@@ -811,7 +774,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
@@ -825,7 +788,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -839,7 +802,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -854,7 +817,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
@@ -868,7 +831,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
@@ -883,7 +846,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -898,7 +861,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -914,7 +877,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="LineSignal" Value="Ja" />
@@ -928,7 +891,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="LineSignal" Value="Ja" />
@@ -943,7 +906,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -958,7 +921,7 @@ end
 				SubGroup="2-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -974,7 +937,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="type" Value="main" />
 			<SetValue Key="switchable" Value="true" />
@@ -986,7 +949,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="LineSignal" Value="Ja" />
 			<SetValue Key="type" Value="main" />
@@ -999,7 +962,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="LineSignal" Value="Ja" />
 			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
@@ -1013,7 +976,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
 			<SetValue Key="type" Value="main" />
@@ -1026,7 +989,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="type" Value="main" />
@@ -1039,7 +1002,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
@@ -1053,7 +1016,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -1067,7 +1030,7 @@ end
 				SubGroup="3-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -1082,7 +1045,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="type" Value="combined" />
@@ -1095,7 +1058,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -1109,7 +1072,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
@@ -1123,7 +1086,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -1138,7 +1101,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
@@ -1153,7 +1116,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1167,7 +1130,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1182,7 +1145,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1198,7 +1161,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1213,7 +1176,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1229,7 +1192,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1246,7 +1209,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1262,7 +1225,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1278,7 +1241,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1294,7 +1257,7 @@ end
 				SubGroup="4-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs2" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1311,7 +1274,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="type" Value="combined" />
@@ -1324,7 +1287,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -1339,7 +1302,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="PositionLamp" Value="Ja" />
@@ -1353,7 +1316,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
@@ -1367,7 +1330,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="CautiousDrivingSignal" Value="Ja" />
@@ -1382,7 +1345,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="LineSignal" Value="Ja" />
@@ -1396,7 +1359,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="LineSignal" Value="Ja" />
@@ -1411,7 +1374,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="OpticalSpeedSignal" Value="Ja" />
@@ -1425,7 +1388,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1439,7 +1402,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1454,7 +1417,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1469,7 +1432,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1484,7 +1447,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1500,7 +1463,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1516,7 +1479,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1532,7 +1495,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1548,7 +1511,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1565,7 +1528,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1582,7 +1545,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1598,7 +1561,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1615,7 +1578,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1629,7 +1592,7 @@ end
 				SubGroup="5-lys signal"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="MainSignal" Value="Hs3" />
 			<SetValue Key="DistantSignal" Value="Ja" />
 			<SetValue Key="DwarfSignal" Value="Ja" />
@@ -1663,7 +1626,7 @@ end
 			{% elsif DistantSignal == 'Ja'%}FS
 			{% endif %}
 			{% if DwarfSignal == 'Ja' and MainSignal == '-' and DistantSignal == '-' %}43-DS
-			{% elsif DwarfSignal == 'Ja' %}DS	
+			{% elsif DwarfSignal == 'Ja' %}DS
 			{% endif %}
 			{% if PositionLamp == 'Ja' %}MKS{% endif %}
 			{% if CautiousDrivingSignal == 'Ja' %}FKS{% endif %}
@@ -1710,17 +1673,18 @@ end
 		<RelationSourceSpace>markerboard</RelationSourceSpace>
 		<AttachmentCategory Name="markerboard" />
 		<AttachTo Category="markerboard" />
-		<AttachTo Category="montasjeelement"/>
+		<AttachTo Category="skiltfeste" />
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 		
-		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<xpp:expand select="NOBN_com_ISY_STK" />
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_bnp_getBoardOrPoleName().." - "..code</Formula></LuaExpression> 
 
 		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
@@ -1728,10 +1692,10 @@ end
 		<LuaExpression Name="Offset3D.Z"><Formula>NOBN_bnp_getBoardOffset3dZ()</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Enumeration" Name="ArrowDirection" DisplayName="Pilretning" DefaultValue="none">
-			<Values Variant="ERTMS Planovergang, forsignal">
+			<Values Variant="ERTMS Planovergang, signal">
 				<Value>noArrow</Value>
 			</Values>
-			<Values Variant="ERTMS Planovergang, signal">
+			<Values Variant="ERTMS Planovergang, forsignal">
 				<Value>noArrow</Value>
 			</Values>
 			<Values Variant="ERTMS E34 Stedsskilt, sidestilt">
@@ -1759,11 +1723,12 @@ end
 			</Values>
 		</CustomAttribute>
 
-		<CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large"
-				Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400).">
-			<Value DisplayName="Lite">Small</Value>
-			<Value DisplayName="Stort">Large</Value>
-		</CustomAttribute>
+		<!-- 2020-11-05 CLFEY Deprecated - all ERTMS boards are small, see BN document "NS-EN 16494_2015 ERTMS skilt" -->
+		<!-- <CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large" -->
+				<!-- Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400)."> -->
+			<!-- <Value DisplayName="Lite">Small</Value> -->
+			<!-- <Value DisplayName="Stort">Large</Value> -->
+		<!-- </CustomAttribute> -->
 
 		<LuaExpression Name="ArrowDirection"><Formula>_SA_SIG_ERTMS_ArrowDirection()</Formula></LuaExpression>
 		<LuaFunction Name="_SA_SIG_ERTMS_ArrowDirection()" ReturnType="String"
@@ -1836,17 +1801,15 @@ end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="EarthingMethod"><Formula>"None"</Formula></LuaExpression>
-
 		<Variants>
-			<Variant Name="ERTMS Planovergang, forsignal" >
-				<SetValue Key="type" Value="other:levelCrossingDistantSignal" />
+			<Variant Name="ERTMS Planovergang, signal" >
+				<SetValue Key="type" Value="other:levelCrossingSignal" />
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
 			</Variant>
-			<Variant Name="ERTMS Planovergang, signal" >
-				<SetValue Key="type" Value="other:levelCrossingSignal" />
+			<Variant Name="ERTMS Planovergang, forsignal" >
+				<SetValue Key="type" Value="other:levelCrossingDistantSignal" />
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
@@ -1903,16 +1866,16 @@ end
 			</Variant>
 		</Variants>
 
-		<InsertSymbol VariantName="ERTMS Planovergang, forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG-FORSIGNAL" 
+		<InsertSymbol VariantName="ERTMS Planovergang, signal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 		
-		<InsertSymbol VariantName="ERTMS Planovergang, signal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG" 
+		<InsertSymbol VariantName="ERTMS Planovergang, forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG-FORSIGNAL" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 		
 		<InsertSymbol VariantName="ERTMS E34 Stedsskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E34-STEDSSKILT-HSIDE" 
@@ -1925,7 +1888,7 @@ end
 		<InsertSymbol VariantName="ERTMS E34 Stedsskilt, nedpil" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E34-STEDSSKILT-OVER" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 
 		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-STOPPSKILT-HSIDE" 
@@ -1937,25 +1900,25 @@ end
 		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, nedpil" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-STOPPSKILT-OVER" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 		
 		<InsertSymbol VariantName="ERTMS Shunting Area begynner" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SHUNTING-AREA-BEGIN"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 
 		<InsertSymbol VariantName="ERTMS Shunting Area slutter" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SHUNTING-AREA-END"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 
 		<InsertSymbol VariantName="ERTMS Supervised Area slutter" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SUPERVISED-AREA-END"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 
 		<SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="">
@@ -1971,19 +1934,19 @@ end
 				NO-BN-2D-JBTSI-SIGNAL-ERTMS
 				{% if Variant == 'ERTMS E34 Stedsskilt, sidestilt' or Variant == 'ERTMS E34 Stedsskilt, nedpil' %}E34-STEDSSKILT
 				{% elsif Variant == 'ERTMS E35 Stoppskilt, sidestilt' or Variant == 'ERTMS E35 Stoppskilt, nedpil' %}E35-STOPPSKILT
-				{% elsif Variant == 'ERTMS Planovergang, forsignal' %}PLANOVERGANG-FORSIGNAL
 				{% elsif Variant == 'ERTMS Planovergang, signal' %}PLANOVERGANG
+				{% elsif Variant == 'ERTMS Planovergang, forsignal' %}PLANOVERGANG-FORSIGNAL
 				{% elsif Variant == 'ERTMS Shunting Area begynner' %}SHUNTING-AREA-BEGIN
 				{% elsif Variant == 'ERTMS Shunting Area slutter' %}SHUNTING-AREA-END
 				{% elsif Variant == 'ERTMS Supervised Area slutter' %}SUPERVISED-AREA-END
-				{% else %}
+				{% else %}BAD_VARIANT
 				{% endif %}
 				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
 				{% if ArrowDirection == 'leftArrow' %}HSIDE
 				{% elsif ArrowDirection == 'rightArrow' %}VSIDE
 				{% elsif ArrowDirection == 'downArrow' %}OVER
-			pu	{% elsif ArrowDirection == 'noArrow' %}
-				{% else %}
+				{% elsif ArrowDirection == 'noArrow' %}
+				{% else %}BAD_ARROWDIRECTION
 				{% endif %}
 			</BlockNameFormat>
 		</SymbolDefinition>
@@ -1995,7 +1958,7 @@ end
 		<SnapPointsDefinitions>
 			<SnapPoints>
 				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
-				<SnapPoint X="0" Y="0" TargetSpace="montasjeelement" />
+				<SnapPoint X="0" Y="0" TargetSpace="skiltfeste" />
 			</SnapPoints>
 		</SnapPointsDefinitions>
 
@@ -2017,44 +1980,50 @@ end
 				>
 
 		<RelationSourceSpace>signal</RelationSourceSpace>
-		<AttachmentCategory Name="signal"/>
-		<AttachTo Category="montasjeelement3" />
+		<AttachmentCategory Name="signal" />
+		<AttachTo Category="stolpe_med_fot" />
 		<AttachTo Category="signal" />
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 
-		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<xpp:expand select="NOBN_com_ISY_STK" />
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
 
 		<LuaExpression Name="name"><Formula>"Tsp."..code</Formula></LuaExpression>
 
-		<LuaExpression Name="Model3DName" >
+		<LuaExpression Name="Model3DName" ><Formula>_SA_SIG_Togsporsignal_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_SIG_Togsporsignal_Model3DName()" ReturnType="String" HideFromUser="false"
+			Description="">
+			<Constructor>String _SA_SIG_Togsporsignal_Model3DName()</Constructor>
 			<Formula>
-				local t = "NO-BN-3D-SA-SIG-NSI63-TOGSPORSIGNAL-"
-				if Variant == "Togsporsignal 1-begrep" then
-					return t.."HODE" 
-				elseif Variant == "Togsporsignal 1-begrep, sidestilt" then
-					t = t.."HODE-MED-ARM" 
-					if RightSided then
-						return (dir == 'up') and t.."-HSIDE" or t.."-VSIDE"
-					else
-						return (dir == 'up') and t.."-VSIDE" or t.."-HSIDE"
+				function _SA_SIG_Togsporsignal_Model3DName()
+					local t = "NO-BN-3D-SA-SIG-NSI63-TOGSPORSIGNAL-"
+					if Variant == "Togsporsignal 1-begrep" then
+						return t.."HODE" 
+					elseif Variant == "Togsporsignal 1-begrep, sidestilt" then
+						t = t.."HODE-MED-ARM" 
+						if RightSided then
+							return (dir == 'up') and t.."-HSIDE" or t.."-VSIDE"
+						else
+							return (dir == 'up') and t.."-VSIDE" or t.."-HSIDE"
+						end
+					elseif Variant == "Togsporsignal 2-begrep" then
+						return t.."HODER-MED-ARMER" 
+					elseif Variant == "Togsporsignal 2-begrep, sidestilt" then
+						return t.."HODER-MED-ARMER" 
+					else 
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_warning
 					end
-				elseif Variant == "Togsporsignal 2-begrep" then
-					return t.."HODER-MED-ARMER" 
-				elseif Variant == "Togsporsignal 2-begrep, sidestilt" then
-					return t.."HODER-MED-ARMER" 
-				else 
-					return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_warning
 				end
 			</Formula>
-		</LuaExpression>
+		</LuaFunction>
 
 		<LuaExpression Name="Offset3D.Z">
 			<Formula>
@@ -2073,8 +2042,6 @@ end
 			</Formula>
 		</LuaExpression>
 
-		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
-
 		<Variants DefaultValue="Togsporsignal">
 			<Variant Name="Togsporsignal 1-begrep" >
 			</Variant>
@@ -2089,7 +2056,7 @@ end
 		<InsertSymbol VariantName="Togsporsignal 1-begrep" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL-1" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="type" Value="other:togsporSignal" />
 			<SetValue Key="switchable" Value="true" />
 			<SetValue Key="virtual" Value="false" />
@@ -2099,7 +2066,7 @@ end
 		<InsertSymbol VariantName="Togsporsignal 2-begrep" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-36-TOGSPORSIGNAL-2" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="type" Value="other:togsporSignal" />
 			<SetValue Key="switchable" Value="true" />
 			<SetValue Key="virtual" Value="false" />
@@ -2161,6 +2128,7 @@ end
 						{% else %}4-HSIDE
 						{% endif %}
 					{% endif %}
+				{% else %}BAD_VARIANT
 				{% endif %}
 				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
 			</BlockNameFormat>
@@ -2171,7 +2139,7 @@ end
 		<SnapPointsDefinitions>
 			<SnapPoints>
 				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
-				<SnapPoint X="0" Y="0" TargetSpace="montasjeelement3" />
+				<SnapPoint X="0" Y="0" TargetSpace="stolpe_med_fot" />
 			</SnapPoints>
 		</SnapPointsDefinitions>
 
@@ -2192,7 +2160,7 @@ end
 	HJELPESIGNALER
 	SA-SIG Høyt skiftesignal på egen mast
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Høyt skiftesignal,frittstående" 
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Høyt skiftesignal, frittstående" 
 				Layer="JBTSI_SA_SIG" Color="ByLayer"
 				Group="Signal/Hjelpesignaler"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2201,34 +2169,48 @@ end
 		<RelationSourceSpace>signal</RelationSourceSpace>
 		<AttachmentCategory Name="signal" />
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 		
-		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<xpp:expand select="NOBN_com_ISY_STK" />
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
-
-		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
 
 		<Variants DefaultValue="Frittstående Høyt Skiftesignal">
 			<Variant Name="Frittstående Høyt Skiftesignal" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-Z-FRITTSTÅENDE-HØYT-SKIFTESIGNAL" />
 			</Variant>
 			<Variant Name="Frittstående Høyt Skiftesignal med Middelkontroll" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-Z-MKS-FRITTSTÅENDE-HØYT-SKIFTESIGNAL-MED-MIDDELKONTROLL" />
 			</Variant>
 			<!--på egen kabelplan se https://trv.jbv.no/wiki/Felles_bestemmelser/Definisjoner,_forkortelser_og_symboler#Symboler_for_Bruer-->
 		</Variants>
+
+		<LuaExpression Name="Model3DName" ><Formula>_SA_SIG_HoeytSkiftesignal_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_SIG_HoeytSkiftesignal_Model3DName()" ReturnType="String" HideFromUser="false"
+			Description="Returns the 3D model name for a High Shunting signal.">
+			<Constructor>String _SA_SIG_HoeytSkiftesignal_Model3DName()</Constructor>
+			<Formula>
+				function _SA_SIG_HoeytSkiftesignal_Model3DName()
+					if Variant == "Frittstående Høyt Skiftesignal" then
+						return "NO-BN-3D-SA-SIG-NSI63-ZS" --Use ZS2 to show also signals Ss41 (horizontal line)
+					elseif Variant == "Frittstående Høyt Skiftesignal med Middelkontroll" then
+						return "NO-BN-3D-SA-SIG-NSI63-ZS-MK" --Use ZS2 to show also signals Ss41 (horizontal line)
+					else 
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_warning
+					end
+				end
+			</Formula>
+		</LuaFunction>
 				   
 		<InsertSymbol VariantName="Frittstående Høyt Skiftesignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
-			<SetValue Key="type" Value="other:høytSkiftesignal" />
+			<Rotation AddAngle="-90" Direction="true" />
+			<SetValue Key="type" Value="other:hoeytSkifteSignal" />
 			<SetValue Key="switchable" Value="true" />
 			<SetValue Key="virtual" Value="false" />
 			<SetValue Key="ruleCode" Value="" />
@@ -2237,8 +2219,8 @@ end
 		<InsertSymbol VariantName="Frittstående Høyt Skiftesignal med Middelkontroll" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL-MKS" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
-			<SetValue Key="type" Value="other:høytSkiftesignal" />
+			<Rotation AddAngle="-90" Direction="true" />
+			<SetValue Key="type" Value="other:hoeytSkifteSignal" />
 			<SetValue Key="switchable" Value="true" />
 			<SetValue Key="virtual" Value="false" />
 			<SetValue Key="ruleCode" Value="" />
@@ -2259,6 +2241,7 @@ end
 				{% else %}NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL-MKS
 				{% endif %}
 				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+				{% else %}BAD_VARIANT
 			</BlockNameFormat>
 		</SymbolDefinition>
 
@@ -2277,10 +2260,14 @@ end
 <!--========================================================================================================
 	SIGNAL
 	HJELPESIGNALER
-	SA-SIG Brosignal/Frostportsignal
-	Bygges som vanlig 3-lys Hs. Signalbilder 20C (2 blinkende røde) og 56D (blinkende midtre hvit).
+	SA-SIG Rasvarslingssignal (med dobbel 's'...)
+	Bygges som vanlig 3-lys Hs. 
+	Merk: Det er i RC ikke et eget "Rasvarslingssignal" med "R" i ring i firkant. Det forutsettes at et R-skilt attaches til R-signalet.
+	Signalbilder:
+		Signal 59 To blinkende gule oppe/nede = "Rasfare" - Tog skal stoppe ved rasvarslingsstolpen.
+		Signal 56C Blinkende hvit midtre = "Tog kan passere rasfarestrekningen".
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Brosignal/Frostportsignal"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Rasvarslingssignal"
 				Layer="JBTSI_SA_SIG" Color="ByLayer"
 				Group="Signal/Hjelpesignaler"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2289,31 +2276,106 @@ end
 		<RelationSourceSpace>signal</RelationSourceSpace>
 		<AttachmentCategory Name="signal" />
 
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE"/>
-		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 		
-		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<xpp:expand select="NOBN_com_ISY_STK" />
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
 
-		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
+		<Variants DefaultValue="Rasvarslingssignal">
+			<Variant Name="Rasvarslingssignal" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-RVS-RASVARSLINGSIGNAL" />
+			</Variant>
+		</Variants>
+	
+		<InsertSymbol VariantName="Rasvarslingssignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+			<SetValue Key="type" Value="other:rasvarslingsSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
 
-		<Variants DefaultValue="Brosignal/Frostportsignal">
-			<Variant Name="Brosignal/Frostportsignal" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-BROSIGNAL" />
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL
+				{% if Variant == 'Rasvarslingssignal' %}20-HS3
+				{% else %}BAD_VARIANT
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	HJELPESIGNALER
+	SA-SIG Brusignal/Frostportsignal
+	Bygges som vanlig 3-lys Hs. 
+	Signalbilder:
+		Signal 20C To blinkende røde øver/nedre = "Stopp" - Tog og skift skal stoppe foran signalet.
+		Signal 56D Blinkende hvit midtre = "Klar linje" - Tog og skift kan passere signalet og kjører over bevegelig bru eller forbi åpen frostport.
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Brusignal/Frostportsignal"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Hjelpesignaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal</RelationSourceSpace>
+		<AttachmentCategory Name="signal" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
+		
+		<xpp:expand select="NOBN_com_ISY_STK" />
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<Variants DefaultValue="Brusignal/Frostportsignal">
+			<Variant Name="Brusignal/Frostportsignal" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-SIG-NSI63-BRU-OG-FROSTPORTSIGNAL" />
 			</Variant>
 			<!--på egen kabelplan se https://trv.jbv.no/wiki/Felles_bestemmelser/Definisjoner,_forkortelser_og_symboler#Symboler_for_Bruer-->
 		</Variants>
 	
-		<InsertSymbol VariantName="Brosignal/Frostportsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3" 
+		<InsertSymbol VariantName="Brusignal/Frostportsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS3" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 			<SetValue Key="type" Value="other:broSignal" />
 			<SetValue Key="switchable" Value="true" />
 			<SetValue Key="virtual" Value="false" />
@@ -2331,7 +2393,117 @@ end
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSI-SIGNAL
-				{% if Variant == 'Brosignal/Frostportsignal' %}20-HS3
+				{% if Variant == 'Brusignal/Frostportsignal' %}20-HS3
+				{% else %}BAD_VARIANT
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="signalfundament" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNAL
+	HJELPESIGNALER
+	SA-SIG Planovergangssignal (med dobbel 's'...)
+	Bygges som 2-lys signal med vanlig 2-lys ramme men med avrundet bakgrunnsskjerm.
+	Signalbilder:
+		PLO: Signal 55 Rødt blinkende lys øvre = "Stopp foran planovergangen" - Tog og skift skal stoppe foran planovergangen.
+		PLO: Signal 56A Hvitt blinkende lys nedre = "Planovergangen kan passeres" - Tog og skift kan passere planovergangen.
+		PLO-Fs: Signal 57 Fiolett blinkende lys øvre = "Planovergangssignalet viser stopp foran planovergangen"
+			- Toget skal redusere hastigheten slik at toget kan stoppe foran planovergangssignalet. Tilhørende
+			planovergangssignal viser signal 55 «Stopp foran planovergangen".
+		PLO-Fs: Signal 56B Hvitt blinkende lys nedre = "«Planovergangssignalet viser at planovergangen kan passeres»"
+			- Toget kan fortsette med største tillatte hastighet. Tilhørende planovergangssignal viser signal 56 «Planovergangen kan passeres».
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-SIG Planovergangssignal"
+				Layer="JBTSI_SA_SIG" Color="ByLayer"
+				Group="Signal/Veibomanlegg"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signal</RelationSourceSpace>
+		<AttachmentCategory Name="signal" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
+		
+		<xpp:expand select="NOBN_com_ISY_STK" />
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<Variants DefaultValue="Planovergang, signal">
+			<Variant Name="Planovergang, signal" />
+			<Variant Name="Planovergang, forsignal" />
+		</Variants>
+
+		<LuaExpression Name="Model3DName"><Formula>_SA_SIG_Planovergangssignal_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_SIG_Planovergangssignal_Model3DName()" ReturnType="String" HideFromUser="false"
+			Description="Returns the 3D model name for a Level Crossing signal (towards track).">
+			<Constructor>String _SA_SIG_Planovergangssignal_Model3DName()</Constructor>
+			<Formula>
+				function _SA_SIG_Planovergangssignal_Model3DName()
+					local t = "NO-BN-3D-SA-SIG-NSI63-W-PLANOVERGANG"
+					if Variant == "Planovergang, signal" then
+						return t.."-SIGNAL"
+					elseif Variant == "Planovergang, forsignal" then
+						return t.."-FORSIGNAL"
+					else 
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_warning
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<InsertSymbol VariantName="Planovergang, signal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+			<SetValue Key="type" Value="other:planovergangsSignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Planovergang, forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+			<SetValue Key="type" Value="other:planovergangForsignal" />
+			<SetValue Key="switchable" Value="true" />
+			<SetValue Key="virtual" Value="false" />
+			<SetValue Key="ruleCode" Value="" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-20-HS2" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL
+				{% if Variant == 'Planovergang, signal' %}20-HS2
+				{% elsif Variant == 'Planovergang, forsignal' %}20-HS2
+				{% else %}BAD_VARIANT
 				{% endif %}
 			</BlockNameFormat>
 		</SymbolDefinition>
@@ -2363,27 +2535,26 @@ end
 		<RelationSourceSpace>signal_mot_vei</RelationSourceSpace>
 		<AttachmentCategory Name="signal_mot_vei" PassAttachmentToTarget="true" />
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 
-		<xpp:expand select="NOBN_com_ISY_STK"/>
+		<xpp:expand select="NOBN_com_ISY_STK" />
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
-
-		<LuaExpression Name="EarthingMethod"><Formula>"Rail"</Formula></LuaExpression>
 
 		<Variants DefaultValue="Veisignal">
 			<Variant Name="Veisignal/Enkelt signal mot vei" >
 				<SetValue Key="name" Value="V.(enkeltspor)" />
 				<!-- TODO 3D modell for Veisignal for planovergang -->
-				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT" />
 			</Variant>
 			<Variant Name="Veisignal/Dobbelt signal mot vei" >
 				<!-- TODO 3D modell for Veisignal for planovergang -->
-				<SetValue Key="Model3DName" Value="NO-BN-3D-UKJENT" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT" />
 				<SetValue Key="name" Value="V.(flerspor)" />
 			</Variant>
 		</Variants>
@@ -2392,14 +2563,14 @@ end
 				DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-1" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
 			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 
 		<InsertSymbol VariantName="Veisignal/Dobbelt signal mot vei" DisplayName="Planovergang/Dobbelt signal mot vei"
 				DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-2" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
 			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
-			<Rotation AddAngle="-90" Direction="true"/>
+			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-1" AllowSymbolMove="true">
@@ -2415,6 +2586,7 @@ end
 				NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL
 				{% if Variant == 'Veisignal/Enkelt signal mot vei' %}1
 				{% elsif Variant == 'Veisignal/Dobbelt signal mot vei' %}2
+				{% else %}BAD_VARIANT
 				{% endif %}
 			</BlockNameFormat>
 		</SymbolDefinition>

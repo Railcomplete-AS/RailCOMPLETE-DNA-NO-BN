@@ -1,137 +1,155 @@
-;Trig functions in AutoLISP
-;adapted from CADalyst tip 442, by John Howard
 ;
+; trigFunctions.lsp
+;
+; Trig functions in AutoLISP
+; adapted from CADalyst tip 442, by John Howard
+;
+; 2020-08-15 CLFEY added Decimal Degree versions of trig functions.
+;
+;COS
+(defun DDcos ( x / ) (cos (D->R x)))
+
+;SIN
+(defun DDsin ( x / ) (sin (D->R x)))
+
 ;CO-TANGENT
 (defun cot (x)
-(cond
-((equal (sin x) 0.0 1.0e-16)
-(if (minusp x)
--1.0e200
-1.0e200
+	(cond
+		((equal (sin x) 0.0 1.0e-16)
+			(if (minusp x)
+				-1.0e200
+				1.0e200
+			)
+		)
+		(T
+			(/ (cos x) (sin x))
+		)
+	)
 )
-)
-(T
-(/ (cos x) (sin x))
-)
-)
-)
-;
+(defun DDcot ( x / ) (cot (D->R x)))
+
 ;CO-SECANT
 (defun csc (x)
-(cond
-((equal (sin x) 0.0 1.0e-16)
-(if (minusp x)
--1.0e200
-1.0e200
+	(cond
+		((equal (sin x) 0.0 1.0e-16)
+			(if (minusp x)
+				-1.0e200
+				1.0e200
+			)
+		)
+		(T
+			(/ 1.0 (sin x))
+		)
+	)
 )
-)
-(T
-(/ 1.0 (sin x))
-)
-)
-)
-;
+(defun DDcsc ( x / ) (csc (D->R x)))
+
 ;SECANT
 (defun sec (x)
-(cond
-((equal (sin x) 0.0 1.0e-16)
-(if (minusp x)
--1.0e200
-1.0e200
+	(cond
+		((equal (sin x) 0.0 1.0e-16)
+			(if (minusp x)
+				-1.0e200
+				1.0e200
+			)
+		)
+		(T
+			(/ 1.0 (cos x))
+		)
+	)
 )
-)
-(T
-(/ 1.0 (cos x))
-)
-)
-)
-;
+(defun DDsec ( x / ) (sec (D->R x)))
+
 ;TANGENT
 (defun tan (x)
-(cond
-((equal (cos x) 0.0 1.0e-16)
-(if (minusp x)
--1.0e200
-1.0e200
+	(cond
+		((equal (cos x) 0.0 1.0e-16)
+			(if (minusp x)
+				-1.0e200
+				1.0e200
+			)
+		)
+		(T
+			(/ (sin x) (cos x))
+		)
+	)
 )
-)
-(T
-(/ (sin x) (cos x))
-)
-)
-)
-;
+(defun DDtan ( x / ) (tan (D->R x)))
+
 ;ARC COSECANT
 (defun acsc (x)
-(cond
-((equal x 1.0 1.0e-16)
-(* pi 0.5)
+	(cond
+		((equal x 1.0 1.0e-16)
+			(* pi 0.5)
+		)
+		((equal x -1.0 1.0e-16)
+			(* pi -0.5)
+		)
+		((> (abs x) 1.0)
+			(atan (/ (/ 1.0 x) (sqrt (- 1.0 (/ 1.0 (* x x))))))
+		)
+		(T
+			(prompt "\n*ERROR* (abs x) < 1.0 from ACSC function\n")
+		)
+	)
 )
-((equal x -1.0 1.0e-16)
-(* pi -0.5)
-)
-((> (abs x) 1.0)
-(atan (/ (/ 1.0 x) (sqrt (- 1.0 (/ 1.0 (* x x))))))
-)
-(T
-(prompt "\n*ERROR* (abs x) < 1.0 from ACSC function\n")
-)
-)
-)
-;
+(defun DDacsc ( x / ) (acsc (D->R x)))
+
 ;ARC COSINE
 (defun acos (x)
-(cond
-((equal x 1.0 1.0e-16)
-0.0
+	(cond
+		((equal x 1.0 1.0e-16)
+			0.0
+		)
+		((equal x -1.0 1.0e-16)
+			pi
+		)
+		((< (abs x) 1.0)
+			(- (* pi 0.5) (atan (/ x (sqrt (- 1.0 (* x x))))))
+		)
+		(T
+			(prompt "\n*ERROR* (abs x) > 1.0 from ACOS function\n")
+		)
+	)
 )
-((equal x -1.0 1.0e-16)
-pi
-)
-((< (abs x) 1.0)
-(- (* pi 0.5) (atan (/ x (sqrt (- 1.0 (* x x))))))
-)
-(T
-(prompt "\n*ERROR* (abs x) > 1.0 from ACOS function\n")
-)
-)
-)
-;
+(defun DDacos ( x / ) (acos (D->R x)))
+
 ;ARC SECANT
 (defun asec (x)
-(cond
-((equal x 1.0 1.0e-16)
-0.0
+	(cond
+		((equal x 1.0 1.0e-16)
+			0.0
+		)
+		((equal x -1.0 1.0e-16)
+			pi
+		)
+		((> (abs x) 1.0)
+			(- (* pi 0.5) (atan (/ (/ 1.0 x) (sqrt (- 1.0 (/ 1.0 (* x x)))))))
+		)
+		(T
+			(prompt "\n*ERROR* (abs x) < 1.0 from ASEC function\n")
+		)
+	)
 )
-((equal x -1.0 1.0e-16)
-pi
-)
-((> (abs x) 1.0)
-(- (* pi 0.5) (atan (/ (/ 1.0 x) (sqrt (- 1.0 (/ 1.0 (* x x)))))))
-)
-(T
-(prompt "\n*ERROR* (abs x) < 1.0 from ASEC function\n")
-)
-)
-)
+(defun DDasec ( x / ) (asec (D->R x)))
 
 ;ARC SINE
 (defun asin (x)
-(cond
-((equal x 1.0 1.0e-16)
-(* pi 0.5)
+	(cond
+		((equal x 1.0 1.0e-16)
+			(* pi 0.5)
+		)
+		((equal x -1.0 1.0e-16)
+			(* pi -0.5)
+		)
+		((< (abs x) 1.0)
+			(atan (/ x (sqrt (- 1.0 (* x x)))))
+		)
+		(T
+			(prompt "\n*ERROR* (abs x) > 1.0 from ASIN function\n")
+		)
+	)
 )
-((equal x -1.0 1.0e-16)
-(* pi -0.5)
-)
-((< (abs x) 1.0)
-(atan (/ x (sqrt (- 1.0 (* x x)))))
-)
-(T
-(prompt "\n*ERROR* (abs x) > 1.0 from ASIN function\n")
-)
-)
-)
-;
-(princ "\nCOT, CSC, SEC, TAN, ACSC, ACOS, ASEC, ASIN \n")
-(prin1)
+(defun DDasin ( x / ) (asin (D->R x)))
+
+;(princ "\nCOT, CSC, SEC, TAN, ACSC, ACOS, ASEC, ASIN \n") (prin1)

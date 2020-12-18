@@ -1,0 +1,1877 @@
+<!--========================================================================================================
+
+    NO-BN-Foundations.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	(c) Railcomplete AS, Norway, 2019-2020 All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	KABELFØRINGER
+	KU-KFØ Kabelkanal
+	Cable ducts are made from concrete or plastic, where cables may enter or exit at any time through the use of a 
+	duct connection element. 
+	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
+	TODO: Add duct connection elements.
+	TODO: Automatic routing of cables in cable ducts. Modelchecking of duct fill percentage.
+ =========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Kabelkanal"
+				Layer="JBTUB_KU_KFØ_KABELKANAL" Color="ByLayer" 
+				Group="Underbygning/Føringsveier"
+				>
+
+		<RelationSourceSpace>kabelføring</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+
+		<!-- TODO Fjerne AlignmentSystem? -->
+		<AlignmentSystems DefaultSystemName="Kabelføring">
+			<AlignmentSystem Name="Kabelføring"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+			/>
+		</AlignmentSystems>
+
+		<Variants DefaultValue="Kabelkanal, betong, 1-løps, 30 cm" >
+			<Variant Name="Kabelkanal, betong, 1-løps, 30 cm" />
+			<Variant Name="Kabelkanal, betong, 1-løps, 40 cm" />
+			<Variant Name="Kabelkanal, betong, 2-løps, 60 cm" />
+			<Variant Name="Kabelkanal, betong, 3-løps, 60 cm" />
+		</Variants>
+
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+
+		<SetValue Key="Sweep3D" Value="True"/>
+		<SetValue Key="QuickMode3D" Value="True"/>
+
+		<LuaFunction Name="_KU_KFOE_Duct_getStartEndAndJump" 
+				ReturnType="AlignmentInfo,AlignmentInfo,Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns alignmentInfo structs for one duct element's start and end, plus the jump length from start to end along the duct's alignment.">
+			<Constructor>AlignmentInfo,AlignmentInfo,Double _KU_KFOE_Duct_getStartEndAndJump(AlignmentRefAndPos)</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_getStartEndAndJump(AlignmentRefAndPos)
+					--Interpret 'Cant' stored in duct's alignment as extra offset (usually the lift of the closest rail) [mm]:
+					local id,pos,len2d,offset,s,e,a,b
+					id = AlignmentRefAndPos.ref.id
+					pos = AlignmentRefAndPos.pos
+					len2d = getObjectFromId(id).RcAlignment.HorizontalProfile.Length
+					offset = 0.499 * Model3DSeparation --pick samples at +/- offset from object's insertion point
+					if pos &lt; offset then
+						a = 0
+						b = pos + offset
+					elseif pos &gt; len2d - offset then 
+						a = pos - offset
+						b = len2d
+					else 
+						a = pos - offset
+						b = pos + offset
+					end
+					s = getAlignmentInfo(getAlignmentPos(id,a))
+					e = getAlignmentInfo(getAlignmentPos(id,b))
+					return s,e,b-a
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- Trick: If QuickMode3D is False, then use possible Cant in the duct alignment as the height to add in 3D: -->
+		<LuaExpression Name="Offset3D.X"><Formula>_KU_KFOE_Duct_Offset3dX(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_Offset3dX" ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns sideways offset for cable duct element (midway betwen end points on alignment)." >
+			<Constructor>Double _KU_KFOE_Duct_Offset3dX(AlignmentRefAndPos)</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_Offset3dX(AlignmentRefAndPos)
+					local s,e,m
+					s,e = _KU_KFOE_Duct_getStartEndAndJump(AlignmentRefAndPos)
+					m = getAlignmentInfo(AlignmentRefAndPos.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
+					return m.DistanceToAlignment
+				end	
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Offset3D.Z"><Formula>_KU_KFOE_Duct_Offset3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_Offset3dZ" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns an extra elevation for the cable duct element, as stored in millimeter as Cant data. Copy cant data from closest track's relevant cant using Alignment Manager datagrid/Cant." >
+			<Constructor>Double _KU_KFOE_Duct_Offset3dZ(AlignmentRefAndPos)</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_Offset3dZ(AlignmentRefAndPos)
+					local s,e,m
+					s,e = _KU_KFOE_Duct_getStartEndAndJump(AlignmentRefAndPos)
+					m = getAlignmentInfo(AlignmentRefAndPos)
+					return (s.Elevation + e.Elevation)/2 + (s.Cant/1000 + e.Cant/1000)/2 - m.Point.Z
+				end	
+			</Formula>
+		</LuaFunction>
+		
+		<!-- Cant gradient is stored as per mille - using possible Cant information in the alignment (measured in millimeter, just copy from neighbor track's Cant) -->
+		<LuaExpression Name="Rotation3D.X"><Formula>_KU_KFOE_Duct_Rotation3dX(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_Rotation3dX" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns the pitch [Decimal Degrees] for the cable duct element, adding the effects of general vertical profile and the additional duct elevation stored as alignment cant." >
+			<Constructor>Double _KU_KFOE_Duct_Rotation3dX(AlignmentRefAndPos)</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_Rotation3dX(AlignmentRefAndPos)
+					local s,e,m
+					local jump
+					s,e,jump = _KU_KFOE_Duct_getStartEndAndJump(AlignmentRefAndPos)
+					sc = RC__isNan(s.Cant) and 0 or s.Cant
+					ec = RC__isNan(e.Cant) and 0 or e.Cant
+					return math.atan2((e.Elevation-s.Elevation) + (ec/1000-sc/1000),jump) * (180/math.pi)
+				end	
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="Rotation3D.Z"><Formula>_KU_KFOE_Duct_Rotation3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_Rotation3dZ" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns the pitch [Decimal Degrees] for the cable duct element, adding the effects of general vertical profile and the additional duct elevation stored as alignment cant." >
+			<Constructor>Double _KU_KFOE_Duct_Rotation3dZ(AlignmentRefAndPos)</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_Rotation3dZ(AlignmentRefAndPos)
+					local s,e,m
+					s,e = _KU_KFOE_Duct_getStartEndAndJump(AlignmentRefAndPos)
+					m = getAlignmentInfo(AlignmentRefAndPos)
+					return (math.atan2(e.Point.Y-s.Point.Y,e.Point.X-s.Point.X) - math.atan2(m.Tangent.Y,m.Tangent.X)) * (180/math.pi)
+				end	
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="Linetype"><Formula>_KU_KFOE_Duct_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_Linetype" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the CAD system 2D presentation line type for the cable duct, based on its Variant." >
+			<Constructor>String _KU_KFOE_Duct_Linetype()</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_Linetype()
+					if Variant:match("1%-løps") then return "RC-DASHED-01"
+					elseif Variant:match("2%-løps") then return "RC-DASHED-02"
+					elseif Variant:match("3%-løps") then return "RC-DASHED-03"
+					else return "Continuous",_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="GlobalWidth"><Formula>_KU_KFOE_Duct_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_GlobalWidth" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the global width of the cable duct's 2D representation as a wide polyline." >
+			<Constructor>Double _KU_KFOE_Duct_GlobalWidth()</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_GlobalWidth()
+					if Variant:match("1%-løps, 30 cm") then return 0.30
+					elseif Variant:match("1%-løps, 40 cm") then return 0.40
+					elseif Variant:match("2%-løps, 60 cm") then return 0.62
+					elseif Variant:match("3%-løps, 60 cm") then return 0.62
+					else return 0,_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DName"><Formula>_KU_KFOE_Duct_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Duct_Model3DName()" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the cable duct default 3D object model name." >
+			<Constructor>String _KU_KFOE_Duct_Model3DName()</Constructor>
+			<Formula>
+				function _KU_KFOE_Duct_Model3DName()
+					t = Sweep3D and "NO-BN-SWEEP-KU-KFØ-CABLEDUCT-" or "NO-BN-3D-KU-KFØ-CABLEDUCT-"
+					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-CHANNEL-WITH-50-50-COVER"
+					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-CHANNEL-WITH-50-50-COVER"
+					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then return t.."620x2400-2-CHANNEL-WITH-70-70-COVER"
+					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then return t.."620x2400-3-CHANNEL-WITH-70-70-COVER"
+					else 
+						return "",_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DSeparation"><Formula>Sweep3D and RC__getNearest3DStep(1.0) or _KU_KFOE_duct_Model3DSeparation(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_duct_Model3DSeparation()" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the distance to the next 3D model insertion point along the alignment axis during 3D Preview or 3D Export. Must be called with '_position' as input argument." >
+			<Constructor>Double _KU_KFOE_duct_Model3DSeparation(Double _position)</Constructor>
+			<Formula>
+				function _KU_KFOE_duct_Model3DSeparation(pos)
+					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
+					-- This simple formula assumes that the Model3D is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
+					-- TODO: Implement 'SweepMode3D' which interprets the given 3D Model Name as a 2D section to be sweeped (or twisted, if Cant info is provided).
+					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then 
+						f = 2400/1000
+						b = 0.3
+					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then 
+						f = 2400/1000
+						b = 0.4
+					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then 
+						f = 1
+						b = 0.6
+					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then 
+						f = 1
+						b = 0.6
+					else 
+						return 3.1416,_info("Variant ["..Variant.."] has not been anticipated yet - so we assume 3.1416m 3D Model Separation...")
+					end
+					r = getAlignmentInfo(pos).CurveRadius
+					-- Empirical formula, to allow a small separation between concrete elements in the "outer curve", but assuming that it will be cut in the "inner curve".
+					if r == nil or r &gt; 100 then 
+						return 2.4 / f + .005
+					elseif r &lt; (0.8 / b) then 
+						return (2.4 - b) / f
+					else 
+						return (2.4 - 0.8/r) / f + .005
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DOffset"><Formula>Sweep3D and 0 or RC__round(_KU_KFOE_duct_Model3DSeparation()/2, 1)</Formula></LuaExpression>
+
+		<PropertyPrompt Key="code" DefaultValue="Kabelkanal" AcceptEmptyValue="false"/>
+
+		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 30 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-ETTLOEPS-300" DefaultToTangentContinuity="false">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 40 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-ETTLOEPS-400" DefaultToTangentContinuity="false">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Kabelkanal, betong, 2-løps, 60 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-TOLOEPS-620" DefaultToTangentContinuity="false">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Kabelkanal, betong, 3-løps, 60 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-TRELOEPS-620" DefaultToTangentContinuity="false">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+
+	</ObjectType>
+			
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	KABELFØRINGER
+	KU-KFØ Rørpakke
+	Tube packages made from plastic or steel, where cables may NOT enter or exit except at the ends. 
+	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
+ =========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Rørpakke"
+				Layer="JBTUB_KU_KFØ_RØRPAKKE" Color="ByLayer" 
+				Group="Underbygning/Føringsveier"
+				>
+
+		<RelationSourceSpace>rørpakke</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+
+		<!-- TODO Fjerne AlignmentSystem? -->
+		<AlignmentSystems DefaultSystemName="Kabelføring">
+			<AlignmentSystem Name="Kabelføring"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+			/>
+		</AlignmentSystems>
+
+		<Variants DefaultValue="Rørpakke, omstøpt, 1x4xØ110" >
+			<Variant Name="Rørpakke, omstøpt, 1x4xØ110" />
+			<Variant Name="Rørpakke, omstøpt, 2x2xØ110" />
+			<Variant Name="Rørpakke, omstøpt, 2x3xØ110" />
+			<Variant Name="Rørpakke, omstøpt, 2x4xØ110" />
+			<Variant Name="Rørpakke, omstøpt, 3x3xØ110" />
+			<Variant Name="Rørpakke, omstøpt, 3x4xØ110" />
+			<Variant Name="Rørpakke, omstøpt, 4x4xØ110" />
+		</Variants>
+
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+
+		<SetValue Key="Sweep3D" Value="True"/>
+		<SetValue Key="QuickMode3D" Value="True"/>
+
+		<LuaExpression Name="Linetype"><Formula>_KU_KFOE_Package_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Package_Linetype" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the CAD system 2D presentation line type for the cable tube package, based on its Variant." >
+			<Constructor>String _KU_KFOE_Package_Linetype()</Constructor>
+			<Formula>
+				function _KU_KFOE_Package_Linetype()
+					return "Continuous" --_info("Variant ["..Variant.."] has not been anticipated yet.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="GlobalWidth"><Formula>_KU_KFOE_Package_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Package_GlobalWidth" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the global width of the cable tube package's 2D representation as a wide polyline." >
+			<Constructor>Double _KU_KFOE_Package_GlobalWidth()</Constructor>
+			<Formula>
+				function _KU_KFOE_Package_GlobalWidth()
+					return 1.0 --_info("Variant ["..Variant.."] has not been anticipated yet.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DName"><Formula>_KU_KFOE_Package_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_Package_Model3DName()" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the tube package default 3D object model name." >
+			<Constructor>Double _KU_KFOE_Package_Model3DName()</Constructor>
+			<Formula>
+				function _KU_KFOE_Package_Model3DName()
+					return "",_info("Variant ["..Variant.."] has not been anticipated yet.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DSeparation"><Formula>RC__getNearest3DStep(2.0)</Formula></LuaExpression>
+		<LuaExpression Name="Model3DOffset"><Formula>0</Formula></LuaExpression>
+
+		<PropertyPrompt Key="code" DefaultValue="Rørpakke" AcceptEmptyValue="false"/>
+
+		<!-- AxB betyr A i dybden (1ste etasje øverst) x B i bredden (1ste rad til venstre i stigende km-retning) -->
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x4xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x2xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x3xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x4xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x3xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x4xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x4xØ110" SubGroup="Omstøpte rør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+
+	</ObjectType>
+			
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	KABELFØRINGER
+	KU-KFØ Rørpress
+	Tube packages made from hard polymere or steel, where cables may NOT enter or exit except at the ends. 
+	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
+ =========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Rørpress"
+				Layer="JBTUB_KU_KFØ_RØRPRESS" Color="ByLayer" 
+				Group="Underbygning/Føringsveier"
+				>
+
+		<RelationSourceSpace>rørpress</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+
+		<!-- TODO Fjerne AlignmentSystem? -->
+		<AlignmentSystems DefaultSystemName="Kabelføring">
+			<AlignmentSystem Name="Kabelføring"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+			/>
+		</AlignmentSystems>
+
+		<Variants DefaultValue="Rørpress Ø160 uten subrør" >
+			<Variant Name="Rørpress Ø160 uten subrør" />
+			<Variant Name="Rørpress Ø400 uten subrør" />
+		</Variants>
+
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+
+		<SetValue Key="Sweep3D" Value="True"/>
+		<SetValue Key="QuickMode3D" Value="True"/>
+
+		<LuaExpression Name="Linetype"><Formula>_KU_KFOE_StiffTube_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_StiffTube_Linetype" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the CAD system 2D presentation line type for the stiff tube package, based on its Variant." >
+			<Constructor>String _KU_KFOE_StiffTube_Linetype()</Constructor>
+			<Formula>
+				function _KU_KFOE_StiffTube_Linetype()
+					return "ByLayer"
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="GlobalWidth"><Formula>_KU_KFOE__KU_KFOE_StiffTube_Linetype_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE__KU_KFOE_StiffTube_Linetype_GlobalWidth" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the global width of the stiff  tube package's 2D representation as a wide polyline." >
+			<Constructor>Double _KU_KFOE__KU_KFOE_StiffTube_Linetype_GlobalWidth()</Constructor>
+			<Formula>
+				function _KU_KFOE__KU_KFOE_StiffTube_Linetype_GlobalWidth()
+					if Variant:match("Rørpress Ø160") then return 0.160
+					elseif Variant:match("Rørpress Ø400") then return 0.400
+					else
+						return 1.0,_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DName"><Formula>_KU_KFOE_StiffTube_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_StiffTube_Model3DName()" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the tube package default 3D object model name." >
+			<Constructor>Double _KU_KFOE_StiffTube_Model3DName()</Constructor>
+			<Formula>
+				function _KU_KFOE_StiffTube_Model3DName()
+					t = "NO-BN-SWEEP-KU-KFØ-STEELPIPE-DIAMETER-"
+					if Variant:match("Rørpress Ø160") then return t.."144-160-EMPTY"
+					elseif Variant:match("Rørpress Ø400") then return t.."360-400-EMPTY"
+					else 
+						return "",_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DSeparation"><Formula>RC__getNearest3DStep(2.0)</Formula></LuaExpression>
+		<LuaExpression Name="Model3DOffset"><Formula>0</Formula></LuaExpression>
+
+		<PropertyPrompt Key="code" DefaultValue="Rørpress" AcceptEmptyValue="false"/>
+
+		<!-- Only straight segments (tangents) allowed - steel tubes don't bend... -->
+		<InsertAlignment VariantName="Rørpress Ø160 uten subrør" SubGroup="Rørpress" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+		</InsertAlignment>
+
+		<InsertAlignment VariantName="Rørpress Ø400 uten subrør" SubGroup="Rørpress" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+		</InsertAlignment>
+
+	</ObjectType>
+
+			
+
+<!--========================================================================================================
+	UNDERBYGNING
+	KABELFØRINGER
+	KU-KFØ Trekkeør
+	Flexible tube made from plastic, rubber, corrugated steel or combinations thereof, where cables may 
+	NOT enter or exit except at the ends. Usually only one cable fits per tube. Usually, tubes are not 
+	protected by concrete ducts, but rather connect the well-protected concrete ducts with objects in
+	the track or nearby a railway track.
+	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
+ =========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Trekkerør"
+				Layer="JBTUB_KU_KFØ_TREKKERØR" Color="ByLayer" 
+				Group="Underbygning/Føringsveier"
+				>
+
+		<RelationSourceSpace>trekkerør</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+
+		<!-- TODO Fjerne AlignmentSystem? -->
+		<AlignmentSystems DefaultSystemName="Kabelføring">
+			<AlignmentSystem Name="Kabelføring"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+			/>
+		</AlignmentSystems>
+
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+
+		<SetValue Key="Sweep3D" Value="True"/>
+		<SetValue Key="QuickMode3D" Value="True"/>
+
+		<LuaExpression Name="Linetype"><Formula>_KU_KFOE_tube_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_tube_Linetype" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the CAD system 2D presentation line type for the flexible tube, based on its Variant." >
+			<Constructor>String _KU_KFOE_tube_Linetype()</Constructor>
+			<Formula>
+				function _KU_KFOE_tube_Linetype()
+					if Variant:match("Ø50") then return 0.050
+					elseif Variant:match("Ø75") then return 0.075
+					elseif Variant:match("Ø110") then return 0.110
+					elseif Variant:match("Ø125") then return 0.125
+					elseif Variant:match("Ø160") then return 0.160
+					else 
+						return 0,_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="GlobalWidth"><Formula>_KU_KFOE_tube_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_tube_GlobalWidth" ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the global width of the flexible tube's 2D representation as a wide polyline." >
+			<Constructor>Double _KU_KFOE_tube_GlobalWidth()</Constructor>
+			<Formula>
+				function _KU_KFOE_tube_GlobalWidth()
+					if Variant:match("Ø50") then return 0.050
+					elseif Variant:match("Ø75") then return 0.075
+					elseif Variant:match("Ø110") then return 0.110
+					elseif Variant:match("Ø125") then return 0.125
+					elseif Variant:match("Ø160") then return 0.160
+					else 
+						return 0,_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DName"><Formula>_KU_KFOE_tube_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_tube_Model3DName()" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the flexible tube default 3D object model name." >
+			<Constructor>String _KU_KFOE_tube_Model3DName()</Constructor>
+			<Formula>
+				function _KU_KFOE_tube_Model3DName()
+					local t = "NO-BN-SWEEP-KU-KFØ-TUBE-RED-DIAMETER-"
+					if Variant:match("Ø50") then return t.."042-050"
+					elseif Variant:match("Ø75") then return t.."063-075"
+					elseif Variant:match("Ø110") then return t.."094-110"
+					elseif Variant:match("Ø125") then return t.."108-125"
+					elseif Variant:match("Ø160") then return t.."138-160"
+					else
+						return "",_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+
+		<LuaExpression Name="Offset3D.Z"><Formula>_KU_KFOE_tube_Offset3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_tube_Offset3dZ()" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the flexible tube Z offset along the geometry, relative to the duct bottom located at the start of the tube's alignment geometry." >
+			<Constructor>Double _KU_KFOE_tube_Offset3dZ(SampledPosition _position)</Constructor>
+			<Formula>
+				function _KU_KFOE_tube_Offset3dZ(cursor)
+					local P1 = RcAlignment.StartPoint
+					local ducts = getClosestAlignments("KU-KFØ Kabelkanal",P1.X,P1.Y)
+					if getCollectionLength(ducts) == 0 then
+						return 0,_info("UNFINISHED - No cable duct found at flexible tube's geometry start point.")
+					end
+					local Zref = getAlignmentInfo(ducts[0].id,P1.X,P1.Y).Point.Z
+					
+					local ini = 0.2		--Length of initial level part
+					local c = 0.8		--Length of cosine part
+					local h1 = 0.1		--Start at bottom duct level +h1, make a cosine bend down to bottom duct -h1 
+					local r = 0.5		--After horizontal movement, bend up from Zref-h1 as a quarter-circle with radius r 
+					local h2 = 0.4		--Finally, rise another h2, close to the tube's end (at the object to feed)
+					local d = 0.1		--Horizontal length of the last steep ascent
+					
+					local L = RcAlignment.HorizontalProfile.Length --2D length of the tube's geometry
+					local L1 = ini		--Start cosine bend
+					local L2 = L1+c		--End of cosine, start horizontal part
+					local L3 = L-d-r	--Start of arc
+					local L4 = L-d		--End of arc, start of steep ascent
+					if L &lt; ini+c+r+d then 
+						return 0,_info("UNFINISHED - Tube geometry is too short to generate Z offset.")
+					end
+					
+					local p = cursor.pos	--Our 'cursor' running along the geometry from 0 to L
+					
+					if p &lt; L1 then --horizontal
+						return Zref + h1
+					
+					elseif p &lt; L2 then --cosine
+						return Zref + h1*math.cos(math.pi*((p-L1)/c))
+					
+					elseif p &lt; L3 then --horizontal
+						return Zref - h1
+					
+					elseif p &lt; L4 then --circular arc
+						return Zref - h1 + r*(1 - math.sqrt(1 -((p-L3)/r)^2))
+					
+					else 
+						return Zref - h1 + r + h2*(p-L4)/d
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<Variants DefaultValue="Trekkerør, Ø50" >
+			<Variant Name="Trekkerør, Ø50" />
+			<Variant Name="Trekkerør, Ø75" />
+			<Variant Name="Trekkerør, Ø110" />
+			<Variant Name="Trekkerør, Ø125" />
+			<Variant Name="Trekkerør, Ø160" />
+		</Variants>
+
+		<LuaExpression Name="Model3DSeparation"><Formula>RC__getNearest3DStep(0.10)</Formula></LuaExpression>
+		<LuaExpression Name="Model3DOffset"><Formula>0</Formula></LuaExpression>
+
+		<PropertyPrompt Key="code" DefaultValue="Trekkerør" AcceptEmptyValue="false"/>
+
+		<InsertAlignment VariantName="Trekkerør, Ø50" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Trekkerør, Ø75" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Trekkerør, Ø110" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Trekkerør, Ø125" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+		<InsertAlignment VariantName="Trekkerør, Ø160" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER" DefaultToTangentContinuity="true">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+
+	</ObjectType>
+			
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	KABELFØRINGER
+	KU-KFØ Trekkekum
+	Manhole - generally made out of concrete, may be made out of hard polynmere or steel.
+ =========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-KFØ Trekkekum"
+				Layer="JBTUB_KU_KFØ_TREKKEKUM" Color="ByLayer" 
+				Group="Underbygning/Føringsveier"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+
+		<RelationSourceSpace>trekkekum</RelationSourceSpace>
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		
+		<Variants DefaultValue="Trekkekum Ø1400">
+			<Variant Name="Trekkekum Ø1400" >
+				<SetValue Key="ManholeHeight" Value="1350" />
+			</Variant>
+			<Variant Name="Trekkekum 1600x900" >
+				<SetValue Key="ManholeHeight" Value="900" />
+			</Variant>
+			<Variant Name="Trekkekum 1400x1400" >
+				<SetValue Key="ManholeHeight" Value="1600" />
+			</Variant>
+			<Variant Name="Trekkekum 2300x2300, 3-veis" >
+				<SetValue Key="ManholeHeight" Value="2400" />
+			</Variant>
+			<Variant Name="Trekkekum 2300x2300, 4-veis" >
+				<SetValue Key="ManholeHeight" Value="2400" />
+			</Variant>
+		</Variants>
+		
+		<CustomAttribute DataType="Enumeration" Name="ManholeHeight" DisplayName="Trekkekum høyde" DefaultValue="900"
+			Description="The manhole height (exterior dimension) [mm] [200 | 250 | 600 | ... | 3500]." >
+			<Values >
+				<Value>3500</Value>
+				<Value>3450</Value>
+				<Value>3400</Value>
+				<Value>3350</Value>
+				<Value>3300</Value>
+				<Value>3450</Value>
+				<Value>3400</Value>
+				<Value>3150</Value>
+				<Value>3100</Value>
+				<Value>3050</Value>
+				<Value>3000</Value>
+				<Value>2950</Value>
+				<Value>2900</Value>
+				<Value>2850</Value>
+				<Value>2800</Value>
+				<Value>2750</Value>
+				<Value>2700</Value>
+				<Value>2650</Value>
+				<Value>2600</Value>
+				<Value>2550</Value>
+				<Value>2500</Value>
+				<Value>2450</Value>
+				<Value>2400</Value>
+				<Value>2350</Value>
+				<Value>2300</Value>
+				<Value>2450</Value>
+				<Value>2400</Value>
+				<Value>2150</Value>
+				<Value>2100</Value>
+				<Value>2050</Value>
+				<Value>2000</Value>
+				<Value>1950</Value>
+				<Value>1900</Value>
+				<Value>1850</Value>
+				<Value>1800</Value>
+				<Value>1750</Value>
+				<Value>1700</Value>
+				<Value>1650</Value>
+				<Value>1600</Value>
+				<Value>1550</Value>
+				<Value>1500</Value>
+				<Value>1450</Value>
+				<Value>1400</Value>
+				<Value>1350</Value>
+				<Value>1300</Value>
+				<Value>1250</Value>
+				<Value>1200</Value>
+				<Value>1150</Value>
+				<Value>1100</Value>
+				<Value>1050</Value>
+				<Value>1000</Value>
+				<Value>950</Value>
+				<Value>900</Value>
+				<Value>850</Value>
+				<Value>800</Value>
+				<Value>750</Value>
+				<Value>700</Value>
+				<Value>650</Value>
+				<Value>600</Value>
+				<Value>550</Value>
+				<Value>500</Value>
+				<Value>450</Value>
+				<Value>400</Value>
+				<Value>350</Value>
+				<Value>300</Value>
+				<Value>250</Value>
+				<Value>200</Value>
+			</Values>
+		</CustomAttribute>
+
+		<LuaExpression Name="code"><Formula>_KU_KFOE_manhole_code()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_manhole_code()" ReturnType="String"
+			Description="Obtains the code for the manhole, as a concatenation of the manhole's reference mileage km-value and the current 'seq' local variable.">
+			<Constructor>String _KU_KFOE_manhole_code()</Constructor>
+			<Formula>
+				function _KU_KFOE_manhole_code()
+					entireKm = math.floor(ReferenceMileage/1000)
+					return string.format("TK-%d-%02d",entireKm,seq),_info("Manhole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable seq ("..seq..").")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+
+		<LuaExpression Name="DistanceToAlignment"><Formula>_KU_KFOE_manhole_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_manhole_DistanceToAlignment()" 
+				ReturnType="Double"
+				Description="Returns manhole's default 3D object model name." >
+			<Constructor>Double _KU_KFOE_manhole_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _KU_KFOE_manhole_DistanceToAlignment() 
+					local diameter = Variant:upper():match("Ø(%d+)")
+					local length = Variant:upper():match("(%d+)X%d+")
+					local depth = Variant:upper():match("%d+X(%d+)")
+					local MinFreeProfile = 2.30 --Bane NOR TRV value
+					local StdFreeProfile = 2.52 --Bane NOR TRV value
+					local d
+					a = getClosestAlignments("KU-KFØ Kabelkanal")
+					if diameter ~= nil then
+						--Should "touch" MinFreeProfile, insertion point = center manhole at Top-of-rail
+						d = MinFreeProfile + diameter/2000
+					elseif length ~= nil and depth ~= nil then
+						--Should "touch" MinFreeProfile, insertion point = midpoint long side towards track at Top-of-rail
+						if dir == "both" then d = MinFreeProfile + 0
+						elseif dir == "none" then d = MinFreeProfile + depth/1000
+						elseif dir == "up" then d = MinFreeProfile + length/2000
+						elseif dir == "down" then d = MinFreeProfile + length/2000
+						else return 4e-4,_info("UNFINISHED - Unknown direction") 
+						end
+					else
+						return 4e-4,_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+					return RightSided and d or -d,_info("Distance to alignment deduced from direction and from manhole dimensions.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Model3DName"><Formula>_KU_KFOE_manhole_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KU_KFOE_manhole_Model3DName()" 
+				ReturnType="String"
+				Description="Returns manhole's default 3D object model name." >
+			<Constructor>String _KU_KFOE_manhole_Model3DName()</Constructor>
+			<Formula>
+				function _KU_KFOE_manhole_Model3DName()
+					local diameter = Variant:upper():match("Ø(%d+)")
+					local length = Variant:upper():match("(%d+)X%d+")
+					local depth = Variant:upper():match("%d+X(%d+)")
+					local numberOfOrifices = Variant:upper():match("(%d+)%-VEIS")
+					if Variant:match("Ø%d+") then
+						return "NO-BN-3D-KU-MANHOLE-Ø"..diameter.."-H"..ManholeHeight.."-WITH-COVER"
+					elseif Variant:upper():match("%d+X%d+") then
+						if numberOfOrifices == nil then
+							return "NO-BN-3D-KU-MANHOLE-L"..length.."-D"..depth.."-H"..ManholeHeight.."-WITH-COVER"
+						else
+							return "NO-BN-3D-KU-MANHOLE-L"..length.."-D"..depth.."-H"..ManholeHeight.."-"..numberOfOrifices.."-WAY-WITH-COVER"
+						end
+					else
+						return "NO-BN-3D-UKJENT",_info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- TODO: Lage 2D-symbol for trekkekum variantene -->
+		<!-- Note: Snap distance is set quite low to ensure snapping to the intended track. Formulas adjust distance afterwards. -->
+		<InsertSymbol VariantName="Trekkekum Ø1400" DisplayBlockName="NO-BN-2D-JBTUB-TREKKEKUM-RUND-1400" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.5">
+			<Rotation Direction="true" AddAngle="-90" />
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Trekkekum 1600x900" DisplayBlockName="NO-BN-2D-JBTUB-TREKKEKUM-L1600-D900" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.5">
+			<Rotation Direction="true" AddAngle="-90" />
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Trekkekum 1400x1400" DisplayBlockName="NO-BN-2D-JBTUB-TREKKEKUM-L1400-D1400" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.5">
+			<Rotation Direction="true" AddAngle="-90" />
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Trekkekum 2300x2300, 3-veis" DisplayBlockName="NO-BN-2D-JBTUB-TREKKEKUM-L2300-D2300" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.5">
+			<Rotation Direction="true" AddAngle="-90" />
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Trekkekum 2300x2300, 4-veis" DisplayBlockName="NO-BN-2D-JBTUB-TREKKEKUM-L2300-D2300" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.5">
+			<Rotation Direction="true" AddAngle="-90" />
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-TREKKEKUM-RUND-1400" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				{% if Variant == 'Trekkekum Ø1400' %}NO-BN-2D-JBTUB-TREKKEKUM-RUND-1400
+				{% elsif Variant == 'Trekkekum 1600x900' %}NO-BN-2D-JBTUB-TREKKEKUM-L1600-D900
+				{% elsif Variant == 'Trekkekum 1400x1400' %}NO-BN-2D-JBTUB-TREKKEKUM-L1400-D1400
+				{% elsif Variant == 'Trekkekum 2300x2300, 3-veis' %}NO-BN-2D-JBTUB-TREKKEKUM-L2300-D2300
+				{% elsif Variant == 'Trekkekum 2300x2300, 4-veis' %}NO-BN-2D-JBTUB-TREKKEKUM-L2300-D2300
+				{% else %}BAD_VARIANT
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<Model3DDefinition><Attribute Tag="T01"><Value>{{code}}</Value></Attribute></Model3DDefinition>
+		
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="jordingsskinne" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+			
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	VEI
+	UB-VEI Vei
+	TODO: Avklare med Bane NOR om TAG-koden kan benyttes.
+=========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-VEI Vei"
+				Layer="JBTUB_KU_VEI" Color="ByLayer"
+				Group="Underbygning/Veier"
+				>
+
+		<RelationSourceSpace>vei</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG_OBJECTINFO_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+
+		<AlignmentSystems DefaultSystemName="Vei">
+			<AlignmentSystem Name="Vei"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				QuickMode3DLiftWithCant="false"
+		/>
+		</AlignmentSystems>
+
+		<Variants DefaultValue="Bilvei" >
+			<Variant Name="Bilvei" >
+				<LuaExpression Name="name" ><Formula>code.." (bilvei)"</Formula></LuaExpression>
+			</Variant>
+			<Variant Name="Gangvei" >
+				<LuaExpression Name="name" ><Formula>code.." (gangvei)"</Formula></LuaExpression>
+			</Variant>
+			<Variant Name="Sykkelvei" >
+				<LuaExpression Name="name" ><Formula>code.." (sykkelvei)"</Formula></LuaExpression>
+			</Variant>
+			<Variant Name="Rømningsvei" >
+				<LuaExpression Name="name" ><Formula>code.." (rømningsvei)"</Formula></LuaExpression>
+			</Variant>
+		</Variants>
+		
+		<PropertyPrompt Key="code" DefaultValue="Vei" AcceptEmptyValue="false"/>
+
+		<InsertAlignment VariantName="Bilvei" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-BILVEI" DefaultToTangentContinuity="true" >
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Vei" />
+		</InsertAlignment>
+		
+		<InsertAlignment VariantName="Sykkelvei" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-SYKKELVEI" DefaultToTangentContinuity="true" >
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Vei" />
+		</InsertAlignment>
+
+		<InsertAlignment VariantName="Gangvei" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-GANGVEI" DefaultToTangentContinuity="true" >
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Vei" />
+		</InsertAlignment>
+
+		<InsertAlignment VariantName="Rømningsvei" DisplayBlockName="NO-BN-2D-JBTUB-THUMBNAIL-ROEMNINGSVEI" DefaultToTangentContinuity="true" >
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+			<IncludeSegmentType>Spiral</IncludeSegmentType>
+			<SetValue Key="AlignmentSystem" Value="Vei" />
+		</InsertAlignment>
+
+	</ObjectType>
+			
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	FUNDAMENTER
+	KU-FUN Apparatskapfundament
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-FUN Apparatskapfundament"
+				Layer="JBTUB_KU_FUN" Color="ByLayer"
+				Group="Underbygning/Fundamenter/Apparatskap"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>apparatskapfundament</RelationSourceSpace>
+		<AttachmentCategory Name="apparatskapfundament" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<Variants>
+			<Variant Name="Betong apparatskap fundament, hull på langsiden" >
+				<SetValue Key="name" Value="Betong AS fund. langside" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-APPARATSKAP-STORT-1400x820x540-LANGSIDEHULL" />
+			</Variant>
+			<Variant Name="Betong apparatskap fundament, hull på kortsiden" >
+				<SetValue Key="name" Value="Betong AS fund. kortside" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-APPARATSKAP-STORT-1400x820x540-KORTSIDEHULL" />
+			</Variant>
+		</Variants>
+
+        <LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
+
+		<InsertSymbol VariantName="Betong apparatskap fundament, hull på langsiden" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-APPARATSKAP-LANGSIDE" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong apparatskap fundament, hull på kortsiden" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-APPARATSKAP-KORTSIDE" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-APPARATSKAP-LANGSIDE" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTUB-FUNDAMENT
+			{% if Variant == 'Betong apparatskap fundament, hull på langsiden' %}BETONG-APPARATSKAP-LANGSIDE
+			{% elsif Variant == 'Betong apparatskap fundament, hull på kortsiden' %}BETONG-APPARATSKAP-KORTSIDE
+			{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints Variant="Betong apparatskap fundament, hull på langsiden" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="apparatskap"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong apparatskap fundament, hull på kortsiden" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="apparatskap"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	FUNDAMENTER
+	EH-FUN KL-fundament
+	Store konstruksjoner i betong, eller boret i metall, med boltegruppe for KL-master
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-FUN KL-fundament"
+				Layer="JBTUB_EH_FUN" Color="ByLayer"
+				Group="Underbygning/Fundamenter/Kontaktledning"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>kl-fundament</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<Variants>
+			<Variant Name="Betong KL-fundament, bjelkemast" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-BJELKEMAST-191x374xM36-1600x1600x2700-SENTRERT" />
+			</Variant>
+			<Variant Name="Betong KL-fundament, boret Ø555" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-BORET-Ø555-191x374xM36-4500" />
+			</Variant>
+			<Variant Name="Fjellbolter for KL-mast i tunnel, 350x350" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-FJELLBOLT-350x350xM24" />
+			</Variant>
+			<Variant Name="Betong KL-fundament, H3, 6000-9500" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-H3-700x700xM36-1800x1600x2700-6000-9500" />
+			</Variant>
+			<Variant Name="Betong KL-fundament, H3, 10000-12000" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-H3-790x790xM36-1800x1600x2700-10000-12000" />
+			</Variant>
+			<Variant Name="Betong KL-fundament, H3, 12500-13000" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-H3-830x830xM36-1800x1600x2700-12500-13000" />
+			</Variant>
+			<Variant Name="Betong KL-fundament, B3" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-B3-240x800xM36-2300x2300x2150" />
+			</Variant>
+		</Variants>
+		
+		<CustomAttribute DataType="Enumeration" Name="OcsFoundationLength" DisplayName="Fundamentlengde" DefaultValue="4500"
+			Description="The overhead catenary system (OCS) foundation length [2500 | 3000 | ... | 6000]." >
+			<Values Variant="Betong KL-fundament, boret Ø555">
+				<Value>6000</Value>
+				<Value>5500</Value>
+				<Value>5000</Value>
+				<Value>4500</Value>
+				<Value>4000</Value>
+				<Value>3500</Value>
+				<Value>3000</Value>
+				<Value>2500</Value>
+			</Values>
+		</CustomAttribute>
+
+        <LuaExpression Name="code"><Formula>_EH_FUN_mast_code()</Formula></LuaExpression>
+		<LuaFunction Name="_EH_FUN_mast_code()" ReturnType="String" 
+			Description="Returns the code for a catenary mast foundation, copied from its mast." >
+			<Constructor>String _EH_FUN_mast_code()</Constructor>
+			<Formula>
+				function _EH_FUN_mast_code()
+					m = getNearbyPointObjects2D(1.0,"EH-MAS KL-mast")
+					if getCollectionLength(m) == 0 then
+						return "UNFINISHED - OCS mast foundation has no mast yet. Place OCS mast onto foundation and connect with 'Er kl-fundament for kl-mast'."
+					else
+						return m[0].code
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+		
+        <LuaExpression Name="name"><Formula>tostring(code):match("UNFINISHED") and "" or code</Formula></LuaExpression>
+        <LuaExpression Name="Mileage"><Formula>RC__getMileageFromRelatedObject("Er kl-fundament for kl-mast")</Formula></LuaExpression>
+        <LuaExpression Name="DistanceToAlignment"><Formula>RC__getDistanceToAlignmentFromRelatedObject("Er kl-fundament for kl-mast")</Formula></LuaExpression>
+        <LuaExpression Name="RelativeElevation"><Formula>RC__getRelativeElevationFromRelatedObject("Er kl-fundament for kl-mast")</Formula></LuaExpression>
+        <LuaExpression Name="dir"><Formula>RC__getDirFromRelatedObject("Er kl-fundament for kl-mast")</Formula></LuaExpression>
+        <LuaExpression Name="AngularOffset"><Formula>RC__getAngularOffsetFromRelatedObject("Er kl-fundament for kl-mast")</Formula></LuaExpression>
+
+		<InsertSymbol VariantName="Betong KL-fundament, bjelkemast" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-BJELKEMAST-SENTRERT"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong KL-fundament, boret Ø555" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-BORET-Ø555-4500" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Fjellbolter for KL-mast i tunnel, 350x350" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-FJELLBOLTER-FOR-HENGEMAST-350x350xM24" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Betong KL-fundament, H3, 6000-9500" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-H3-6000-9500"  
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong KL-fundament, H3, 10000-12000" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-H3-10000-12000"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong KL-fundament, H3, 12000-13500" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-H3-12500-13000"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong KL-fundament, B3" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-B3" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-H3" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTKL-FUNDAMENT
+			{% if    Variant == 'Betong KL-fundament, bjelkemast' %}BETONG-KL-BJELKEMAST-SENTRERT
+			{% elsif Variant == 'Betong KL-fundament, boret Ø555' %}BETONG-KL-BORET-Ø555-{{OcsFoundationLength}}
+			{% elsif Variant == 'Fjellbolter for KL-mast i tunnel, 350x350' %}FJELLBOLTER-FOR-HENGEMAST-350x350xM24
+			{% elsif Variant == 'Betong KL-fundament, H3, 6000-9500' %}BETONG-KL-H3-6000-9500
+			{% elsif Variant == 'Betong KL-fundament, H3, 10000-12000' %}BETONG-KL-H3-10000-12000
+			{% elsif Variant == 'Betong KL-fundament, H3, 12500-13000' %}BETONG-KL-H3-12500-13000
+			{% elsif Variant == 'Betong KL-fundament, B3' %}BETONG-KL-B3
+			{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<!-- Vi lar alle sammen få lov til å benyttes som ankerpunkt for barduner og strevere -->
+		<SnapPointsDefinitions>
+			<SnapPoints Variant="Betong KL-fundament, bjelkemast" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast" />
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong KL-fundament, boret Ø555" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast" />
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+			<SnapPoints Variant="Fjellbolter for KL-mast i tunnel, 350x350" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong KL-fundament, H3, 6000-9500" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong KL-fundament, H3, 10000-12000" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong KL-fundament, H3, 12500-13000" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong KL-fundament, B3" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="streverfeste"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	FUNDAMENTER
+	EH-FUN Bardunfundament
+	Store konstruksjoner i betong, eller boret i metall, med feste for KL-barduner
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-FUN Bardunfundament"
+				Layer="JBTUB_EH_FUN" Color="ByLayer"
+				Group="Underbygning/Fundamenter/Kontaktledning"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>bardunfundament</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<Variants>
+			<Variant Name="Boret KL-fundament, 2500mm (Bardunfeste)" >
+				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-FUN-KONTAKTLEDNING-BORET-Ø555-191x374xM36-2500" />
+				<SetValue Key="name" Value="Bardun/strever fundament" />
+			</Variant>
+		</Variants>
+		
+		<!-- dir is "up" since the fixation plate for strechers and spanners shall be alignmed with the strecher/spanner (along a track, normally) -->
+        <LuaExpression Name="dir"><Formula>"up"</Formula></LuaExpression>
+
+        <LuaExpression Name="code"><Formula>_EH_FUN_strecherSpanner_code()</Formula></LuaExpression>
+		<LuaFunction Name="_EH_FUN_strecherSpanner_code()" ReturnType="String" 
+			Description="Returns the code for a catenary strecher or spanner foundation, copied from its strecher / spanner." >
+			<Constructor>String _EH_FUN_strecherSpanner_code()</Constructor>
+			<Formula>
+				function _EH_FUN_strecherSpanner_code()
+					m1 = getNearbyPointObjects2D(1.0,"EH-BAR Bardun")
+					m2 = getNearbyPointObjects2D(1.0,"EH-KLO Strever")
+					n1 = getCollectionLength(m1)
+					n2 = getCollectionLength(m2)
+					if n1 + n2 == 0 then
+						return _warning,"UNFINISHED - OCS stretcher/spanner foundation has no strecher/spanner yet. Place OCS strecher/spanner onto foundation and connect with 'Er kl-fundament for kl-mast'."
+					elseif n1 + n2 >= 2 then
+						return _warning,"UNFINISHED - OCS stretcher/spanner foundation has more than one strecher/spanner - remove or adjust stage settings using layer names."
+					elseif n1 == 1 then
+						return m1[0].code
+					elseif n2 == 1 then
+						return m2[0].code
+					else
+						return _warning,"UNFINISHED - Too many objects placed on strecher/spanner foundation - remove or adjust stage settings using layer names."
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+		
+        <LuaExpression Name="name"><Formula>tostring(code):match("UNFINISHED") and "" or code</Formula></LuaExpression>
+        <LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
+
+		<InsertSymbol VariantName="Boret KL-fundament, 2500mm (Bardunfeste)" DisplayBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-BORET-Ø555-2500" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+		</InsertSymbol>
+															
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-KL-BORET-Ø555-2500" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D
+			{% if Variant == 'Boret KL-fundament, 2500mm (Bardunfeste)' %}JBTKL-FUNDAMENT-BETONG-KL-BORET-Ø555-2500
+			{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints Variant="Boret KL-fundament, 2500mm (Bardunfeste)" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kraftavlasting"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+	
+	
+<!--========================================================================================================
+	UNDERBYGNING
+	FUNDAMENTER
+	KU-FUN Signalfundament
+	Store konstruksjoner i betong, eller boret i metall, med boltegruppe
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-FUN Signalfundament"
+				Layer="JBTUB_KU_FUN" Color="ByLayer"
+				Group="Underbygning/Fundamenter/Signal"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>signalfundament</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<Variants>
+			<Variant Name="Betong Hs fundament på fri linje" >
+				<SetValue Key="name" Value="Hs-fund. på fri linje" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-HOVEDSIGNAL-300x300xM24-FRI-LINJE" />
+			</Variant>
+			<Variant Name="Betong Hs fundament på plattform" >
+				<SetValue Key="name" Value="Hs-fund. på plattform" />
+				<SetValue Key="RelativeElevation" Value="0.76" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-HOVEDSIGNAL-300x300xM24-PLATTFORM" />
+			</Variant>
+			<Variant Name="Betong Hs fundament, Ø680, h=1600" >
+				<SetValue Key="name" Value="Rundt Hs-fund, Ø680, h=1600" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-HOVEDSIGNAL-300x300xM24-Ø680-1600" />
+			</Variant>
+			<Variant Name="Betong Hs fundament, Ø680, h=1800" >
+				<SetValue Key="name" Value="Rundt Hs-fund, Ø680, h=1800" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-HOVEDSIGNAL-300x300xM24-Ø680-1800" />
+			</Variant>
+			<Variant Name="Betong Ds fundament, Ø76, konisk" >
+				<SetValue Key="name" Value="Ds-fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-DVERGSIGNAL-Ø76-KONISK" />
+			</Variant>
+			<Variant Name="Betong Ds fundament, Ø76, rettsidet" >
+				<SetValue Key="name" Value="Ds-fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-DVERGSIGNAL-Ø76-RETTSIDET" />
+			</Variant>
+			<Variant Name="Boret Hs fundament, Ø555" >
+				<SetValue Key="name" Value="Boret Hs-fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-HOVEDSIGNAL-BORET-Ø555-164x164xM32-4500" />
+			</Variant>
+			<Variant Name="Betong veibomdrivmaskin fundament, Ø680, h=1600" >
+				<SetValue Key="name" Value="Rundt Hs-fund, Ø680, h=1800" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-VEIBOMDRIVMASKIN-210x210xM20-Ø680-1600" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Betong Hs fundament på fri linje" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-FRI-LINJE-300-M24" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong Hs fundament på plattform" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-PLATTFORM-300-M24" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong Hs fundament, Ø680, h=1600" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-Ø680-300-M24-1600" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong Hs fundament, Ø680, h=1800" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-Ø680-300-M24-1800" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong Ds fundament, Ø76, konisk" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-KONISK" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betong Ds fundament, Ø76, rettsidet" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-RETTSIDET" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<Rotation AddAngle="-90" Direction="true" />
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="Boret Hs fundament, Ø555" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-BORET-Ø555-164x164-M32-4500"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<!-- NB: Veibomdrivmaskin plasseres inntil linjetype 'vei': -->
+		<InsertSymbol VariantName="Betong veibomdrivmaskin fundament, Ø680, h=1600" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-VEIBOMDRIVMASKIN-Ø680-210-M20-1600" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-FRI-LINJE-300-M24" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTUB-FUNDAMENT
+			{% if Variant == 'Betong Hs fundament på fri linje' %}BETONG-HS-FRI-LINJE-300-M24
+			{% elsif Variant == 'Betong Hs fundament på plattform' %}BETONG-HS-PLATTFORM-300-M24
+			{% elsif Variant == 'Betong Hs fundament, Ø680, h=1600' %}BETONG-HS-Ø680-300-M24-1600
+			{% elsif Variant == 'Betong Hs fundament, Ø680, h=1800' %}BETONG-HS-Ø680-300-M24-1800
+			{% elsif Variant == 'Betong Ds fundament, Ø76, konisk' %}BETONG-DS-KONISK
+			{% elsif Variant == 'Betong Ds fundament, Ø76, rettsidet' %}BETONG-DS-RETTSIDET
+			{% elsif Variant == 'Boret Hs fundament, Ø555' %}BETONG-HS-BORET-Ø555-164x164-M32-4500
+			{% elsif Variant == 'Betong veibomdrivmaskin fundament, Ø680, h=1600' %}BETONG-VEIBOMDRIVMASKIN-Ø680-210-M20-1600
+		{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints Variant="Betong Hs fundament på fri linje" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong Hs fundament på plattform" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong Hs fundament, Ø680, h=1600" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong Hs fundament, Ø680, h=1800" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong Ds fundament, Ø76, konisk" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betong Ds fundament, Ø76, rettsidet" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+			<SnapPoints Variant="Boret Hs fundament, Ø555" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	FUNDAMENTER
+	KU-FUN Telefundament
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-FUN Telefundament"
+				Layer="JBTUB_KU_FUN" Color="ByLayer"
+				Group="Underbygning/Fundamenter/Tele"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>telefundament</RelationSourceSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+
+		<Variants>
+			<Variant Name="Betongfundament, anvisersøyle" >
+				<SetValue Key="name" Value="Anvisersøyle fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-ANVISERSYØYLE-1500x1500x1000-Ø600" />
+			</Variant>
+			<Variant Name="Betongfundament, monitor" >
+				<SetValue Key="name" Value="Monitor fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-MONITOR-1000x1000x1000-Ø600" />
+			</Variant>
+			<Variant Name="Betongfundament, validator" >
+				<SetValue Key="name" Value="NSB validator fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-BILLETT-VALIDATOR-360x300x500" />
+			</Variant>
+			<Variant Name="Betongfundament, tele- og fordelingsskap" >
+				<SetValue Key="name" Value="Tele- og fordelingsskap fund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-FUN-TELE-OG-FORDELINGSSKAP-900x800x910" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="Betongfundament, anvisersøyle" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-ANVISERSOEYLE" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="true" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betongfundament, monitor" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-MONITOR" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="true" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betongfundament, validator" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-VALIDATOR" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="true" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betongfundament, tele- og fordelingsskap" DisplayBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-TELE-OG-FORDELINGSSKAP" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="0" Direction="true" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="dir" Value="both" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-3D-KU-FUN-ANVISERSYØYLE-1500x1500x1000-Ø600" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+			NO-BN-2D-JBTUB-FUNDAMENT
+			{% if Variant == 'Betongfundament, anvisersøyle' %}BETONG-ANVISERSOEYLE
+			{% elsif Variant == 'Betongfundament, monitor' %}BETONG-MONITOR
+			{% elsif Variant == 'Betongfundament, validator' %}BETONG-VALIDATOR
+			{% elsif Variant == 'Betongfundament, tele- og fordelingsskap' %}BETONG-TELE-OG-FORDELINGSSKAP
+			{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints Variant="Betongfundament, anvisersøyle" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="anvisersøyle"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betongfundament, monitor" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="monitor"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betongfundament, validator" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="validator"/>
+			</SnapPoints>
+			<SnapPoints Variant="Betongfundament, tele- og fordelingsskap" >
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="teleogfordelingsskap"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	MONTASJEELEMENTER
+	KU-SPB Montasjeelement inntil 100 kg
+	Små montasjeelementer som ikke skal monteres på noe annet (ved relations).
+	NB: 'KU-SPB' (spesialbrakett) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv', omfatter
+	dingser som vanligvis ikke fortjener å bli registrert i Banedata.
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-SPB Montasjeelement inntil 100 kg"
+				Layer="JBTUB_KU_SPB" Color="ByLayer"
+				Group="Underbygning/Montasjeelementer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSourceSpace>montasjeelement</RelationSourceSpace>
+		<AttachmentCategory Name="montasjeelement" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		
+		<LuaExpression Name="dir">
+			<Formula>"both"</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="RelativeElevation">
+			<Formula>if variant:find("Veggfeste") then return 2.5 else return 0 end</Formula>
+		</LuaExpression>
+
+		<Variants>
+			<Variant Name="Betongfundament (h=500mm)" >
+				<SetValue Key="name" Value="Ø60/b225/h500" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SKF-BETONG-Ø60-145..215x500" />
+			</Variant>
+			<Variant Name="Betongfundament (h=700mm)" >
+				<SetValue Key="name" Value="Ø60/b225/h700" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SKF-BETONG-Ø60-145..215x700" />
+			</Variant>
+			<Variant Name="Betongfundament (h=1200mm)" >
+				<SetValue Key="name" Value="Ø60/Ø200/h1200" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SKF-BETONG-Ø60-Ø200x1200" />
+			</Variant>
+			<Variant Name="Jordfundament" >
+				<SetValue Key="name" Value="Ø60/jordfund." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-EUROSKILT-JORDFUNDAMENT-Ø60-700" />
+			</Variant>
+			<Variant Name="Jordspyd (60cm dypt)" >
+				<SetValue Key="name" Value="Ø60/jordspyd" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-EUROSKILT-JORDSPYD-Ø60" />
+			</Variant>
+			<Variant Name="Veggfeste" >
+				<SetValue Key="name" Value="Ø60/vegg" />
+				<SetValue Key="RelativeElevation" Value="2.5" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-EUROSKILT-UNIVERSALFESTE-Ø60-150x120x119" />
+			</Variant>
+			<Variant Name="Brakett mot gulv" >
+				<SetValue Key="name" Value="Ø60/gulv" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-EUROSKILT-UNIVERSALFESTE-Ø60-200x200x308" />
+			</Variant>
+			<Variant Name="Tilbakefylt grop" >
+				<SetValue Key="name" Value="Tilbakefylt grop" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SKF-TILBAKEFYLT-BALLASTGROP" />
+			</Variant>
+			<Variant Name="Strips eller patentbånd" >
+				<SetValue Key="name" Value="Strips m.m." />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-PATENTBÅND" />
+			</Variant>
+		</Variants>
+		
+		<InsertSymbol VariantName="Betongfundament (h=500mm)" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-BETONG-60-225-500" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betongfundament (h=700mm)" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-BETONG-60-225-700" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Betongfundament (h=1200mm)" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-BETONG-60-200-1200"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Jordfundament" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STAAL-JORDFUNDAMENT-60-700"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Jordspyd (60cm dypt)" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STAAL-JORDSPYD-60" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Veggfeste" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STAAL-VEGGFESTE-60-110"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+			<SetValue Key="RelativeElevation" Value="2.5" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Brakett mot gulv" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STAAL-UNIVERSALFESTE-SPESIAL-60-308"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Tilbakefylt grop" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-TILBAKEFYLT-GROP"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="Strips eller patentbånd" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STRIPS-ELLER-PATENTBAAND"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation RotateIfRightSideOfAlignment="true" Direction="true" AddAngle="0" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-BETONG-60-225-700" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTUB-MONTASJEELEMENT
+				{% if Variant == 'Betongfundament (h=500mm)' %}BETONG-60-225-500
+				{% elsif Variant == 'Betongfundament (h=700mm)' %}BETONG-60-225-700
+				{% elsif Variant == 'Betongfundament (h=1200mm)' %}BETONG-60-200-1200
+				{% elsif Variant == 'Jordfundament' %}STAAL-JORDFUNDAMENT-60-700
+				{% elsif Variant == 'Jordspyd (60cm dypt)' %}STAAL-JORDSPYD-60
+				{% elsif Variant == 'Veggfeste' %}STAAL-VEGGFESTE-60-110
+				{% elsif Variant == 'Brakett mot gulv' %}STAAL-UNIVERSALFESTE-SPESIAL-60-308
+				{% elsif Variant == 'Tilbakefylt grop' %}TILBAKEFYLT-GROP
+				{% elsif Variant == 'Strips eller patentbånd' %}STRIPS-ELLER-PATENTBAAND
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="skilt"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="stolpe"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="skilt_mot_vei"/>
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	UNDERBYGNING
+	MONTASJEELEMENTER
+	KU-SPB Montasjeelement inntil 100 kg
+	Små montasjeelementer, som er beregnet på å bli montert på et annet objekt.
+	NB: 'KU-SPB' (spesialbrakett) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv', omfatter
+	dingser som vanligvis ikke fortjener å bli registrert i Banedata.
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-SPB Brakett på annen mast"
+				Layer="JBTUB_KU_SPB" Color="ByLayer"
+				Group="Underbygning/Montasjeelementer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+	
+		<RelationSourceSpace>montasjeelement2</RelationSourceSpace>
+		<AttachmentCategory Name="montasjeelement" />
+		<AttachTo Category="any" />
+
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTUB"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="RC_com_SET_OCP_STATION_REF"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		
+		<Variants DefaultValue="Brakett på annen mast">
+			<Variant Name="Brakett på annen mast" >
+				<SetValue Key="name" Value="Brakett på annen mast" />
+				<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-MASTEBRAKETT" />
+			</Variant>
+		</Variants>
+		
+		<InsertSymbol VariantName="Brakett på annen mast" DisplayBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STAAL-BRAKETT-PAA-ANNEN-MAST" 
+                  SnapToAlignment="true" SnapDistance="3.5">
+			<Rotation Direction="true" AddAngle="-90" />
+			<SetValue Key="name" Value="Brakett på annen mast" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="Model3DName" Value="NO-BN-3D-KU-SPB-MASTEBRAKETT" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-MONTASJEELEMENT-STAAL-BRAKETT-PAA-ANNEN-MAST" AllowSymbolMove="true">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTUB-MONTASJEELEMENT
+				{% if Variant == 'Brakett på annen mast' %}STAAL-BRAKETT-PAA-ANNEN-MAST
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT" />
+
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="skilt" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
