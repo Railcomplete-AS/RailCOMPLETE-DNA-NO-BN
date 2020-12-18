@@ -6,7 +6,7 @@
 ;Include Modern UI
 !include "MUI2.nsh"
 
-!define PRODUCT "BaneNOR"
+!define PRODUCT "RC-NO-BN"
 !define BUNDLEDIR "NO-BN"
 !define MUI_ICON "rc.ico"
 !define MUI_UNICON "rcun.ico"
