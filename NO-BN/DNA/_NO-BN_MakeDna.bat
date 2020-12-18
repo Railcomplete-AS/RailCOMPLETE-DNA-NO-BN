@@ -15,7 +15,7 @@ set /p CLEAN=<__clean.txt
 
 echo     Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 
-call ..\..\..\..\..\GitHub\RailCOMPLETE\Customization\_TOOLBOX\BatchFiles\CompileDna.bat
+call ..\..\_TOOLBOX\BatchFiles\CompileDna.bat
 
 echo EXIT _NO-BN_MakeDna.bat
 pause
