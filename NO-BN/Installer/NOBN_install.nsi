@@ -10,13 +10,14 @@
 !define BUNDLEDIR "NO-BN"
 !define MUI_ICON "rc.ico"
 !define MUI_UNICON "rcun.ico"
+!define /date DATE "%Y%m%d"
 
 ;--------------------------------
 ;General
 
   ;Name and file
   Name "${PRODUCT}"
-  OutFile "${PRODUCT}.install.exe"
+  OutFile "${PRODUCT}.install-${DATE}.exe"
 
   ;Default installation folder
   InstallDir "$APPDATA\Autodesk\ApplicationPlugins\RC.bundle\Adm\${BUNDLEDIR}"
