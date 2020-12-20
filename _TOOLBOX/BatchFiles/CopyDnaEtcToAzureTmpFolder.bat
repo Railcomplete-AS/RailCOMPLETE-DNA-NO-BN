@@ -1,22 +1,22 @@
 echo off
-echo     ENTER CopyDnaEtcToAppdataRcBundle.bat
+echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
 echo          Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 
 echo          *********************************************************************************
 echo          .
 echo          Batch file to transfer DNA and related files from these folders with subfolders:
-echo          ...\Github\RailCOMPLETE\Customization\XX-XX
+echo          ...\Github\RailCOMPLETE\Customization\XX-YY
 echo          .
-echo          to the folder/subfolders used by your local AutoCAD installation to run tests:
-echo          %APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-XX
+echo          to a TMP folder/subfolders used by the Azure pipeline to build an install file:
+echo          ..\TMP\%ADM%\
 echo          .
-echo          This batch file must be called from this folder ('XX-XX' is NO-BN etc given by ADM):
-echo           ...\Github\RailCOMPLETE\Customization\XX-XX
+echo          This batch file will be called from the Azure build pipeline.
 echo          .
 echo          Please read about batch file processing here: https://ss64.com/nt
 echo          .
 echo          Please note that general folders and paths, which RC must know before a RC-START'ed 
 echo          document has been opened, must be specified in the RC.bundle\startup.xml file.
+echo          .
 echo          The administration-specific folders and paths, which RC must know when using RC-START'ed 
 echo          document, must be specified in the RC.bundle\Adm\%ADM%\DNA folder's DNA file.
 echo          .
@@ -27,7 +27,7 @@ if "%ADM%" neq "" goto Continue
 	echo          *
 	echo          *********************************************************************************
 	echo          The ADM argument cannot be undefined - should be one of the
-	echo          administration abbrevs such as NO-BN.
+	echo          administration abbrevs such as XX-GL.
 	echo          Set ADM environment variable in calling batch file.
 	echo          *********************************************************************************
 	echo          *
@@ -35,7 +35,7 @@ goto TheEnd
  
 :Continue
 	echo          *********************************************************************************
-	echo          Transfering customization files for %ADM% to local machine's APPDATA folder...
+	echo          Transfering customization files for %ADM% to local machine's TMP folder...
 	echo          *********************************************************************************
 	echo          ON
 	
@@ -57,6 +57,10 @@ if "%COPY3D%" neq "1" goto Noecho
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-StyleDefinitions.xml			"..\TMP\%ADM%\DNA"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches\%ADM%-%RELEASE%-SwitchGeometries.xml 	"..\TMP\%ADM%\DNA\Switches"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\DnaMappings\*.xml								"..\TMP\%ADM%\DNA\DnaMappings"
+
+	echo - HELP and RELEASE NOTES:
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\Help\*.*.xml 						  				"..\TMP\%ADM%\Help"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\Help\ReleaseNotes\*.*					   			"..\TMP\%ADM%\Help\ReleaseNotes"
 
 	echo - FAQ:
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\FAQ\%ADM%-%RELEASE%-faq.xml 		  				"..\TMP\%ADM%\FAQ"
@@ -98,4 +102,4 @@ if "%TUTORIALS%" neq "1" goto Noecho
 	echo          *********************************************************************************
 
 :TheEnd
-echo     EXIT CopyDnaEtcToAppdataBundle.bat
+echo     EXIT CopyDnaEtcToAzureTmpFolder.bat
