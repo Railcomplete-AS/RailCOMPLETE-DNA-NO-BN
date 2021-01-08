@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY Adjust areas forbidden for axle counter sensors to new rules for speeds above / bekow 120 km/h.

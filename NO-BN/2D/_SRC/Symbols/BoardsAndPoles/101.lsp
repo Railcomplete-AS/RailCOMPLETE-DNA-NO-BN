@@ -8,7 +8,7 @@
 ; Change log:
 ; 2020-08-08 CLFEY Removed deprecated 101-09 (2-line ERTMS ID board, use ordinary symbol instead)
 ; 2020-08-08 CLFEY Removed deprecated 101-10 (3-line ERTMS ID board, use ordinary symbol instead)
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY The old 101-4 ERTMS ID board will be superseded by 101-9..101-14 ID-boards

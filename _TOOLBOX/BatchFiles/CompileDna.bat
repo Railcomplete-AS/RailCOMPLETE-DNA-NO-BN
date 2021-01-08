@@ -7,8 +7,8 @@ rem This Batch file is supposed to be called from another batchfile which has se
 rem ADM RELEASE and LOG. RELEASE may be empty, ADM may not.
 rem
 rem  Release name shall be same as extracted from the DNA Rootfile.xml IRI element.
-rem Use other batch file to copy result as release-candidate to 
-rem ...\Github\RailCOMPLETE\Solutions\RC.bundle\Adm\%ADM%\DNA.
+rem Use other batch file to copy result as release-candidate to folders such as:
+rem ...\Github\RailCOMPLETE-XX-YY\Solutions\RC.bundle\Adm\%ADM%\DNA.
 
 if "%ADM%" equ "" (
 	echo         *

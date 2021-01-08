@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ;
@@ -83,11 +83,11 @@
 	; TODO: 2020-08-06 CLFEY removeUnwantedStyles() doesn't work in batch mode - I gave up removing Norconsult stuff... 
 	; (removeUnwantedStyles) ; Resolves and purges stuff which might be there due to your company's LISP automations for new DWG files
 
-	; If debugging, use (setvar 'CMDECHO 1) to get maximum feedback. For silent and quicker operation, use (setvar 'CMDECHO 0). Quickest operation is inside VLIDE.
+	; If debugging, use (setvar 'CMDECHO 1) to get maximum feedback. For silent and quicker operation, use (setvar 'CMDECHO 0). 
+	; Quickest operation is when running inside VLIDE with 'CMDECHO == 0.
 	
-	; 'administration' will be set by the calling AutoCAD script if 2D library is built from a batch file:
 	(cond 
-		((= administration "NO-BN")
+		((= calledFromVlide nil)
 			(step "Called from batch file.")
 		) ; Do nothing if called from batch file...
 		(T 
@@ -99,7 +99,7 @@
 	
 	; NB: The sequence matters in the following statements:
 	(step "Setting AutoCAD parameters and layer '0' properties...")
-	(setvar 'CMDECHO 0)
+	(setvar 'CMDECHO 0) ; maximum speed, minimum verbosity
 	(setvar 'OSMODE 0) ; Otherwise LINE and other commands will produce bogus results, according to search on 'acad silent console mode'.
 	(command 
 		"._LAYER"
@@ -149,38 +149,30 @@
 	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Geo_Blocks________" (rtos nScaledBlocks _decimal_ 0)))
 ))
 	; *** The file name "2D.dwg" is expected by other batch files taking care of the results:
-	(step "Saving resulting blocks to file 2D.dwg...")
-	;(SAVE-RESULT "2D.dwg")
-	(SAVE-RESULT (strcat "2D_" (rtos (getvar "CDATE") 2 6) ".dwg"))
+	(setq symbolLibraryFileName (strcat "2D_" (rtos (getvar "CDATE") 2 6) ".dwg"))
+	(step (strcat "Saving resulting blocks to file '" symbolLibraryFileName "'..."))
+	(SAVE-RESULT symbolLibraryFileName)
 	(step "*** End of C:MAIN() - 2D library has been generated ***")
 )
 
 
 
 (defun SAVE-RESULT ( nn / fname )
-	(cond 
-		((= administration "NO-BN")
-			(setq fname (strcat (getvar "dwgprefix") nn))
-		)
-		(T 
-			(setq fname (strcat "c:\\users\\clfey\\github\\railcomplete\\customization\\NO-BN\\2D\\_src\\" nn))
-		)
+	(if calledFromVlide
+		(setq fname (strcat rootFolder "\\" nn))
+		(setq fname (strcat (getvar "dwgprefix") nn))
 	)
-	(cond 
-		((= (findfile fname) nil)
-				(command ".SAVE" fname) ; File does not exist
-				(command ".SAVE" fname "_YES") ; File exists already - accept to overwrite existing file
-		)
+	(setvar 'FILEDIA 0) ; suppress window dialog when saving drawing
+	(if (findfile fname)
+		(command "._SAVEAS" "2018" fname "_YES") ; File exists already - accept to overwrite existing file
+	;else
+		(command "._SAVEAS" "2018" fname) ; File does not exist - just save it
 	)
-	(cond 
-		((= administration "NO-BN")
-			(setq fname (strcat (getvar "dwgprefix") nn))
-			(step "File saved. Closing file...")
-			(command ".CLOSE")
-		)
-		(T 
-			(setq fname (strcat "c:\\users\\clfey\\github\\railcomplete\\customization\\NO-BN\\2D\\_src\\" nn))
-			(step "Cannot close current file from this VLIDE script since the VLIDE depends on it. Close manually and exit AutoCAD.")
+	(if calledFromVlide
+		(step "Cannot close current file from this VLIDE script since the VLIDE depends on it. Close manually and exit AutoCAD.")
+		(progn
+			(step "Closing file...\n")
+			(command "._CLOSE")
 		)
 	)
 )

@@ -9,7 +9,7 @@
 ; 2019-05-07 CLFEY: This file is not in use! It's intended use was to make an internal document, an overview over all available symbols for Bane NOR.
 ; 2019-07-26 CLFEY: Cleaned up a little, it might become useful later.
 ; 2020-07-26 CLFEY: Moved function 'round' here, deleted support file round.lsp in folder Utilities (was only in use here).
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 

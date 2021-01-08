@@ -7,7 +7,7 @@
 ;
 ; Change log:
 ; 2020-09-02 CLFEY Removed E34 and E35 markerboards. Added E35 to the .LSP file for Combined Signals.
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY Clarify which ERTMS 2D-symbols should be present - and create those.

@@ -7,7 +7,7 @@
 ;
 ; Change log:
 ; 2020-09-21 CLFEY Deprecated "ATC SLUTTER"
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet

@@ -6,13 +6,16 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2020-11-15 CLFEY Release 2021.1
+; 2021-01-17 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
 ; Boards and poles objects top-level LISP routine
 
-(loadFolder (findfile "BoardsAndPoles"))
+(setq f (strcat rootFolder "\\Symbols\\BoardsAndPoles"))
+(princ (vl-directory-files (findfile f)))
+(princ "\n")
+(loadfolder f)
 
 (defun C:GENERATE-BOARDSANDPOLES-OBJECTS ( / 
 		#symbols
