@@ -121,25 +121,23 @@
 	(setq tmp "")
 	(foreach x paperScaleList (setq tmp (strcat tmp " 1:" x)))
 	(step (strcat "Define available paper scales: "   tmp))
-	;(setq paperScaleList '())
 	(setq nSchematicBlocks 0) 	; Global: Increment for each new block created with createSchematicBlockFromCurrentGraphics and similar routines,
 	(setq nScaledBlocks 0) 		; Global: Increment for each new block created with createGeoBlockInAllPaperScalesFromBlock and similar routines.
 
 	(step "GENERATE-ANNOTATIONS") (C:GENERATE-ANNOTATIONS)
-(if T (progn
 	; Trouble: The "BJELKEMAST" routine hangs... One click in the VLIDE 'F6' window and the code continues. Weird!
-	;(step "GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS") (C:GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS) ; High voltage objects except yokes, cantilevers and cantilever support brackets
-	;(step "GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS") (C:GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS) ; OCS yokes, cantilevers and cantilever support brackets, which only exist as 1:1 scale objects
-	;(step "GENERATE-THUMBNAILS") (C:GENERATE-THUMBNAILS) ; Thumbnail icons when creating objects which are not point objects (area, alignment, table etc)
-	;;;;;;;;;;;;; (C:GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
-	;(step "GENERATE-COMMON-OBJECTS") (C:GENERATE-COMMON-OBJECTS) ; Felles
-	;(step "GENERATE-BOARDSANDPOLES-OBJECTS") (C:GENERATE-BOARDSANDPOLES-OBJECTS) ; Skilt og stolper (but not annotation objects which are scaled by RC with current CAD zoom level)
-	;(step "GENERATE-SUBSTRUCTURE-OBJECTS") (C:GENERATE-SUBSTRUCTURE-OBJECTS) ; Underbygning
-	;(step "GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS") (C:GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS) ; Superstructure (track and embankment) objects which follow the track's real geometry
-	;(step "GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS") (C:GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS) ; Superstructure (track and embankment) objects except switches and tongues
+	(step "GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS") (C:GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS) ; High voltage objects except yokes, cantilevers and cantilever support brackets
+	(step "GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS") (C:GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS) ; OCS yokes, cantilevers and cantilever support brackets, which only exist as 1:1 scale objects
+	(step "GENERATE-THUMBNAILS") (C:GENERATE-THUMBNAILS) ; Thumbnail icons when creating objects which are not point objects (area, alignment, table etc)
+	;;;;;;;;;;;; (C:GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
+	(step "GENERATE-COMMON-OBJECTS") (C:GENERATE-COMMON-OBJECTS) ; Felles
+	(step "GENERATE-BOARDSANDPOLES-OBJECTS") (C:GENERATE-BOARDSANDPOLES-OBJECTS) ; Skilt og stolper (but not annotation objects which are scaled by RC with current CAD zoom level)
+	(step "GENERATE-SUBSTRUCTURE-OBJECTS") (C:GENERATE-SUBSTRUCTURE-OBJECTS) ; Underbygning
+	(step "GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS") (C:GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS) ; Superstructure (track and embankment) objects which follow the track's real geometry
+	(step "GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS") (C:GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS) ; Superstructure (track and embankment) objects except switches and tongues
 	(step "GENERATE-SIGNALING-OBJECTS") (C:GENERATE-SIGNALING-OBJECTS)
-	;(step "GENERATE-TELECOM-OBJECTS") (C:GENERATE-TELECOM-OBJECTS)
-	;(step "GENERATE-LOWVOLTAGE-OBJECTS") (C:GENERATE-LOWVOLTAGE-OBJECTS)
+	(step "GENERATE-TELECOM-OBJECTS") (C:GENERATE-TELECOM-OBJECTS)
+	(step "GENERATE-LOWVOLTAGE-OBJECTS") (C:GENERATE-LOWVOLTAGE-OBJECTS)
 	
 	; Store (as the name of two dummy blocks) the number of blocks generated (AutoCAD doesn't count them for you):
 	(step "Storing the number of generated 2D schematic and scaled symbols as the names of two dummy blocks.")
@@ -147,7 +145,7 @@
 	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Schematic_Blocks__" (rtos nSchematicBlocks _decimal_ 0)))
 	(command "._CIRCLE" "0,0" 3.1416) ; just add something to look at...
 	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Geo_Blocks________" (rtos nScaledBlocks _decimal_ 0)))
-))
+
 	; *** The file name "2D.dwg" is expected by other batch files taking care of the results:
 	(setq symbolLibraryFileName (strcat "2D_" (rtos (getvar "CDATE") 2 6) ".dwg"))
 	(step (strcat "Saving resulting blocks to file '" symbolLibraryFileName "'..."))

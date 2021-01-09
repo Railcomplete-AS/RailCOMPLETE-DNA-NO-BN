@@ -201,10 +201,6 @@
 
 
 (defun setCadSystemDefaults ( / )
-	;(if (findfile "setCadSystemDefaults.scr")
-    ;	(command "_script" "setCadSystemDefaults.scr")
-    ;	(princ "No setCadSystemDefaults.scr file")
-	;)
 	(command
 		"._ERASE" "_ALL" "" ""
 		"._SNAP" 1.0

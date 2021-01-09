@@ -81,13 +81,14 @@
 	;(foreach yokeMounted '(nil)
 	(foreach yokeMounted '(nil "AAK")
 		
+	  ;(if T ; test for 'T' to execute the following nested loops, or test for 'nil' to skip nested loops.
 		; The 'Unknown combination' signal symbol
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
 		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   0  yokeMounted)
 
 		; 0-lys Frittstående Ds (Hs=Fs=0) Ds + MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   0  yokeMounted)
+		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   1  yokeMounted)
 		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   1   0   0  0   1  yokeMounted)
 
 		; 0-lys Togvei Slutt signal (Hs=Fs=0) TVs + MKs,Ds
@@ -126,8 +127,9 @@
 		; Only needed if one or more of the "foreach" loops have been commented out, 
 		; to avoid 'nil' values for commented-out arguments:
 		(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0) 
+	  ;);if
 
-	  (if nil ; test for 'T' to execute the following nested loops, or test for 'nil' to skip nested loops.
+	 ;(if T ; test for 'T' to execute the following nested loops, or test for 'nil' to skip nested loops.
 		(foreach hs '(2 3)
 			(foreach fs '(0 1)
 				(foreach fks '(0 1)
@@ -151,7 +153,7 @@
 				)
 			)
 		)
-	  );if nil
+	  ;);if
 	);foreach yokeMounted
 	
 	; ERTMS combinations:

@@ -15,6 +15,7 @@
 
 ; For debugging:
 ; (66A)
+; (The board's real name is '66', but '66' is not a valid LISP identifier)
 
 (defun 66A ( /	blockName description x y posCircle radius1 radius2 description )
 	; An 'S' shape

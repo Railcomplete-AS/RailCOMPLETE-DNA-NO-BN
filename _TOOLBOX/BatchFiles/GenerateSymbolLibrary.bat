@@ -37,6 +37,7 @@ rem Verify that ADM is one of the known ones:
 if .%ADM%. == .XX-GL. goto MAKE-LIBRARY
 if .%ADM%. == .NO-BN. goto MAKE-LIBRARY
 if .%ADM%. == .FR-SR. goto MAKE-LIBRARY
+if .%ADM%. == .DE-DB. goto MAKE-LIBRARY
 goto FAILURE
 
 :MAKE-LIBRARY
