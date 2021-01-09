@@ -5,7 +5,7 @@ echo OFF
 echo ENTER _MakeSymbolLibrary.bat
 
 Rem Set DNA version using files with names '__xxxxx.txt':
-call ..\DNA\_DefineDnaVersion.bat
+call _DefineDnaVersion.bat
 
 Rem Get DNA version info from '__xxxxx.txt' files (since we cannot pass Windows environment variables from child process to parent process):
 Rem The /p option instructs the SET command to stop and prompt for input, which we can use to redirect text from a file.
@@ -25,7 +25,8 @@ Rem Make .BAK from previous .DWG file:
 ;rename %ADM%-%RELEASE%.dwg %ADM%-%RELEASE%.bak
 
 if exist %ADM%-%RELEASE%.dwg rename %ADM%-%RELEASE%.dwg %ADM%-%RELEASE%.bak
-call ..\..\..\Customization\_TOOLBOX\BatchFiles\GenerateSymbolLibrary.bat
+cd %ADM%\2D
+call ..\..\_TOOLBOX\BatchFiles\GenerateSymbolLibrary.bat
 
 echo EXIT _MakeSymbolLibrary.bat
 pause

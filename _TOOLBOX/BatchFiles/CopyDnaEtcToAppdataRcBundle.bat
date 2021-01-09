@@ -40,8 +40,10 @@ goto TheEnd
 	echo          ON
 	
 	echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%-2D.dwg            					"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%-SymbolThumbnails.rc				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%-2D.dwg            					"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%-SymbolThumbnails.rc				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\*.dwg            									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\*.rc												"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
 
 if "%COPY3D%" neq "yes" goto Noecho
 	echo - 3D object models:
@@ -53,13 +55,17 @@ if "%COPY3D%" neq "yes" goto Noecho
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\AutoCAD\*.*											"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\AutoCAD"
 
 	echo - DNA, style definitions and switches:
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-DNA.xml							"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-StyleDefinitions.xml				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches\%ADM%-%RELEASE%-SwitchGeometries.xml 	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-DNA.xml							"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-StyleDefinitions.xml				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches\%ADM%-%RELEASE%-SwitchGeometries.xml 	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\DnaMappings\*.xml 								"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\DnaMappings"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\*.xml												"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches\*.xml 									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\DnaMappings\*.xml 								"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\DnaMappings"
 
 	echo - FAQ:
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\FAQ\%ADM%-%RELEASE%-faq.xml            				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\FAQ\%ADM%-%RELEASE%-faq.xml            				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\FAQ\*.xml 					           				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\FAQ\Images\*.*					       				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ\Images"
 
 	echo - Lua snippets and Tooltips (Lua and XAML code):
@@ -67,7 +73,8 @@ if "%COPY3D%" neq "yes" goto Noecho
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipViews\*.xaml				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages\TooltipViews"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipImages\TooltipImages.xaml	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages\TooltipImages"
 
-if "%TUTORIALS%" neq "yes" goto Noecho d | xcopy /Y /E /I /exclude:xcopyignore.txtTutorials
+if "%TUTORIALS%" neq "yes" goto Noecho
+rem	d | xcopy /Y /E /I /exclude:xcopyignore.txt Tutorials
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
 	set TARGETFOLDER=%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
@@ -89,7 +96,8 @@ if "%TUTORIALS%" neq "yes" goto Noecho d | xcopy /Y /E /I /exclude:xcopyignore.t
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\VectorImages\*.xaml									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\VectorImages"
 
 	echo - WebLinks:
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\%ADM%-%RELEASE%-weblinks.xml   	         	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
+rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\%ADM%-%RELEASE%-weblinks.xml   	         	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\*.xml 	  	        					 	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\Images\*.*									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks\Images"
 
 	echo OFF
