@@ -19,17 +19,18 @@
 
 (defun C:GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS ( / )
 	(setCadSystemDefaults)  
-	(subStep "CONNECTOR-ALIGNMENT-EXTENSION")		(C:CONNECTOR-ALIGNMENT-EXTENSION)
-	(subStep "CONNECTOR-ALIGNMENT-CROSSING")		(C:CONNECTOR-ALIGNMENT-CROSSING)
-	(subStep "TRACK-AXIS-CRITICAL-LOCATION")		(C:TRACK-AXIS-CRITICAL-LOCATION)
-	(subStep "DEFLECTION-BAR")						(C:DEFLECTION-BAR)
-	(subStep "BUFFER-STOP")							(C:BUFFER-STOP)
+	(subStep "CONNECTOR-SPLICE")				(C:CONNECTOR-SPLICE)
+	(subStep "CONNECTOR-CROSSING")				(C:CONNECTOR-CROSSING)
+	(subStep "ISOLATED-JOINT") 					(C:ISOLATED-JOINT) ; Track object when built, but their placement mainly planned by Signaling engineers, subsidiary by return current specialists.
+	(subStep "TRACK-AXIS-CRITICAL-LOCATION")	(C:TRACK-AXIS-CRITICAL-LOCATION)
+	(subStep "DEFLECTION-BAR")					(C:DEFLECTION-BAR)
+	(subStep "BUFFER-STOP")						(C:BUFFER-STOP)
 )
 
 
 
 (defun C:GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS ( / )
 	(setCadSystemDefaults)  
-	(subStep "CONNECTOR-TRACK-BIFURCATION")			(C:CONNECTOR-TRACK-BIFURCATION)	; Geographical 1:1 symbols for connecting the topological track network (switches, tongues). See also 'Schematic connections.lsp'.
+	(subStep "CONNECTOR-SWITCH")			(C:CONNECTOR-SWITCH)	; Geographical 1:1 symbols for connecting the topological track network (switches, tongues). See also 'Schematic connections.lsp'.
 	(subStep "SWITCH-TONGUE")						(C:SWITCH-TONGUE)
 )

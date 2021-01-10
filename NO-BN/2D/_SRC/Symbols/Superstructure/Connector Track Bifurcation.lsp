@@ -37,7 +37,7 @@
 ;
 ;-------------------------------------------------------------------------------------------------------------------------
 
-(defun C:CONNECTOR-TRACK-BIFURCATION ( / )
+(defun C:CONNECTOR-SWITCH ( / )
 	(setCadSystemDefaults)  
 	(CONNECTOR-SWITCH-UNSPECIFIED) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
 	(CONNECTOR-SWITCH-WITH-GEOMETRY) 	; Turnout - switch - point with recognized geometry (fixed 1:1 scale)

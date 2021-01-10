@@ -14,21 +14,21 @@
 
 ; Concerns schematic symbols that scale with paperspace drawing scale.
 
-(defun C:CONNECTOR-ALIGNMENT-EXTENSION ( / )
+(defun C:CONNECTOR-SPLICE ( / )
 	; Connects an alignment to another alignment when it has been recognized as a valid extension of the first alignment.
 	; The symbols look like this: [>>], [><], [<>], and [<<]. The arrows represent each alignment's direction of increasing mileages.
 	(setCadSystemDefaults)  
-	(CONNECTOR-ALIGNMENT-EXTENSION 0 0) ; [>>]
-	(CONNECTOR-ALIGNMENT-EXTENSION 0 1) ; [><]
-	(CONNECTOR-ALIGNMENT-EXTENSION 1 0) ; [<>]
-	(CONNECTOR-ALIGNMENT-EXTENSION 1 1) ; [<<]
+	(CONNECTOR-SPLICE 0 0) ; [>>]
+	(CONNECTOR-SPLICE 0 1) ; [><]
+	(CONNECTOR-SPLICE 1 0) ; [<>]
+	(CONNECTOR-SPLICE 1 1) ; [<<]
 )
 
 
 
-(defun CONNECTOR-ALIGNMENT-EXTENSION ( leftArrow rightArrow / blockName x y leftArrowStart leftArrowMid rightArrowStart rightArrowMid )
+(defun CONNECTOR-SPLICE ( leftArrow rightArrow / blockName x y leftArrowStart leftArrowMid rightArrowStart rightArrowMid )
 	(setq
-		blockName (strcat "NO-BN-2D-JBTOB-CONNECTOR-ALIGNMENT-EXTENSION-" (rtos leftArrow 2 0) "-" (rtos rightArrow 2 0))
+		blockName (strcat "NO-BN-2D-JBTOB-CONNECTOR-SPLICE-" (rtos leftArrow 2 0) "-" (rtos rightArrow 2 0))
 		x (/ 1.5 2.0)
 		y (/ 1.0 2.0)
 	)

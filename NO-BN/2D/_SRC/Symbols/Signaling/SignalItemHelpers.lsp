@@ -232,7 +232,7 @@
 
 
 (defun drawLs ( posX posY / side s2 centerPos defaultText )
-	; Signal 35B 'Linjesignal' (Hovedlinjesignal)
+	; Signal 35B 'Linjesignal'
 	(setq 
 		side 3.0
 		s2 (/ side 2)
@@ -240,7 +240,7 @@
 		defaultText "A/D"
 	)
 	(command "._RECTANGLE" (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LS" "Hovedlinjesignal" defaultText centerPos 1.0 0 "iso" "_MC" (+ _multipleLines_ _lockPosition_))
+	(addAtt "LS" "Linjesignal" defaultText centerPos 1.0 0 "iso" "_MC" (+ _multipleLines_ _lockPosition_))
 )
 
 

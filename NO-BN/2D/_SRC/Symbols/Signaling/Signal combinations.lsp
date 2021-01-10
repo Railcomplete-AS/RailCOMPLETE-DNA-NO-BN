@@ -25,6 +25,28 @@
 ; ==========
 ; TODO: 2020-07-31 CLFEY Remove drawTVs() since signal 66 is treated in other LISP code file - or upgrade LISP code and include it (=best)
 
+
+(defun SignalInfo ( / )
+	(subSubStep
+		(strcat "COMPLEX SIGNAL" 
+			" MB:" (if (= mb nil) "-" mb)
+			" HS:" (itoa hs)
+			" FS:" (itoa fs)
+			" TVS:" (itoa tvs)
+			" ZS:" (itoa zs) 
+			" AVS:" (itoa avs)
+			" BPS:" (itoa bps)
+			" MKS:" (itoa mks)
+			" FKS:" (itoa fks)
+			" LS:"  (itoa ls)
+			" LHS:" (itoa lhs)
+			" DS:" (itoa ds)
+			" - " (if (= yokeMounted nil) "(mast)" "(yoke)")
+		)
+	)
+)
+
+
 (defun C:SIGNAL-COMBINATIONS ( / hs fs tvs zs avs bs mks fks ls lhs ds yokeMounted )
 ;
 ; Togsporsignal, sporsperresignal, sporvekselsignal, planovergangsignal og veisignaler modelleres annet sted.
@@ -50,38 +72,18 @@
 ;                    |  |  |  |   |  |   +--------------- BPs Bremseprøvesignal, lysende 'T' eller 'L'
 ;                    |  |  |  |   |  |   |   +------------ MKs MiddelKontroll signal, signal 4C
 ;                    |  |  |  |   |  |   |   |   +--------- FKs Forsiktig Kjøring, signal 32
-;                    |  |  |  |   |  |   |   |   |   +------ Ls HovedLinjesignal (linjesignal), signal 35B, angir linjen som togvei er stilt til
+;                    |  |  |  |   |  |   |   |   |   +------ Ls Linjesignal, signal 35B, angir linjen som togvei er stilt til
 ;                    |  |  |  |   |  |   |   |   |   |  +---- LHs Lysende Hastighetssignal, signal 68E (10-er hastighet lyser)
 ;                    |  |  |  |   |  |   |   |   |   |  |   +- Ds Dvergsignal, signal 43/44/45/46
 ;                    |  |  |  |   |  |   |   |   |   |  |   |
 ;-------------------MB HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
 
-	(defun info ( / )
-		(subSubStep
-			(strcat "COMPLEX SIGNAL" 
-				" MB:" (if (= mb nil) "-" mb)
-				" HS:" (itoa hs)
-				" FS:" (itoa fs)
-				" TVS:" (itoa tvs)
-				" ZS:" (itoa zs) 
-				" AVS:" (itoa avs)
-				" BPS:" (itoa bps)
-				" MKS:" (itoa mks)
-				" FKS:" (itoa fks)
-				" LS:"  (itoa ls)
-				" LHS:" (itoa lhs)
-				" DS:" (itoa ds)
-				" - " (if (= yokeMounted nil) "(mast)" "(yoke)")
-			)
-		)
-	)
 	(setCadSystemDefaults)
 	
 	; nil = on upright mast, "AAK" = yoke-mounted
 	;(foreach yokeMounted '(nil)
 	(foreach yokeMounted '(nil "AAK")
 		
-	  ;(if T ; test for 'T' to execute the following nested loops, or test for 'nil' to skip nested loops.
 		; The 'Unknown combination' signal symbol
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
 		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   0  yokeMounted)
@@ -90,6 +92,11 @@
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
 		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   1  yokeMounted)
 		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   1   0   0  0   1  yokeMounted)
+
+		; 0-lys Frittstående Fs / Fs+MKs
+		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+		(COMPLEX-SIGNAL nil 0  1  0   0  0   0   0   0   0  0   0  yokeMounted)
+		(COMPLEX-SIGNAL nil 0  1  0   0  0   0   1   0   0  0   0  yokeMounted)
 
 		; 0-lys Togvei Slutt signal (Hs=Fs=0) TVs + MKs,Ds
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
@@ -127,9 +134,7 @@
 		; Only needed if one or more of the "foreach" loops have been commented out, 
 		; to avoid 'nil' values for commented-out arguments:
 		(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0) 
-	  ;);if
 
-	 ;(if T ; test for 'T' to execute the following nested loops, or test for 'nil' to skip nested loops.
 		(foreach hs '(2 3)
 			(foreach fs '(0 1)
 				(foreach fks '(0 1)
@@ -139,7 +144,7 @@
 								(foreach ls '(0 1)
 									(foreach lhs '(0 1)
 										(progn
-											(info) 
+											(SignalInfo)
 											; Zs and Ds never occur on the same mast.
 											(setq zs 0  ds 0 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
 											(setq zs 0  ds 1 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
@@ -153,7 +158,6 @@
 				)
 			)
 		)
-	  ;);if
 	);foreach yokeMounted
 	
 	; ERTMS combinations:
@@ -182,7 +186,7 @@
 	;	BPS - Number of Brake test signal (BremsePrøve)
 	;	MKS - Number of Middelkontrollampe [0..1]
 	;	FKS - Number of signal Forsiktig Kjøring [0..1]
-	;	LS - Number of Hovedlinjesignal [0..1] (linjesignal)
+	;	LS - Number of Linjesignal [0..1]
 	;	LHS - Number of Lysende hastighetssignal (signal 68), avvikende hastighet i sporveksel (annen enn 40 km/h) [0..1]
 	;	DS -  Antall Dvergsignal [0..1]
 	;
@@ -191,12 +195,13 @@
 	;==================================================================================================================
 	; A few TEST CASES for debugging - copy into VLIDE and step through LISP program:
 	;---------------HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS
+	;(setq MB nil HS 0  FS 1  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 0 yokemounted nil) ; Freestanding distant signal
 	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 0 yokemounted nil) ; Missing symbol
 	;(setq MB nil HS 3  FS 1  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 yokemounted nil) ; Hs3+Fs+Ds+Zs
 	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 yokemounted nil) ; Ds
 
-	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 nil )   ; Hs3+Fs+Ds+Zs  ;Everything, upright mast
-	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 "AAK" ) ; Hs3+Fs+Ds+Zs  ;Everything, yoke mounted
+	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 yokemountednil )   ; Hs3+Fs+Ds+Zs  ;Everything, upright mast
+	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 yokemounted"AAK" ) ; Hs3+Fs+Ds+Zs  ;Everything, yoke mounted
 
 	;(if _DEBUG_ <paste test case here and remove semicolon, then set _DEBUG_ to true with (setq _DEBUG_ T)>)
 	;(if _DEBUG_ (setq MB nil HS 3  FS 1  TVS 0  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 yokeMounted nil ))
@@ -205,7 +210,7 @@
 	;Print current setting: (defun show ( / ) (foreach x '(HS FS TVS ZS AVS BPS MKS FKS LS LHS DS yokemounted) (progn (print x) (print (eval x)))))
 	;==================================================================================================================
 
-	(info) 
+	(SignalInfo)
 	
 	; Set locals
 	(setq 
@@ -302,7 +307,7 @@
 		)
 	)
 
-	; Line signal ('Hovedlinjesignal' / 'Linjesignal')
+	; Line signal ('Linjesignal')
 	(if (= LS 1)
 		(addLs)
 	)

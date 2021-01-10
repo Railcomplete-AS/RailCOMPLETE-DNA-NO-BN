@@ -150,7 +150,7 @@
 
 	; Select drawing scales to be produced - Schematic will always be produced, scales must be specified in the paperScaleList global variable.
 	;(setq paperScaleList '("250" "500" "1000"))
-	(setq paperScaleList '("250" ))
+	(setq paperScaleList '("250" "500"))
 	(setq nSchematicBlocks 0) 	; Global: Increment for each new block created with createSchematicBlockFromCurrentGraphics and similar routines,
 	(setq nScaledBlocks 0) 		; Global: Increment for each new block created with createGeoBlockInAllPaperScalesFromBlock and similar routines.
 	; Show...:

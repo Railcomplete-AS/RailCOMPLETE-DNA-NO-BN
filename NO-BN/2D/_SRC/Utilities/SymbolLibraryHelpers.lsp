@@ -872,9 +872,10 @@
 ; CAD system Block manipulation (block table entries)
 ;----------------------------------------------------------
 
-(defun createSchematicBlockFromCurrentGraphics ( blockName ) 
+(defun createSchematicBlockFromCurrentGraphics ( blockName / ) 
 	; Create one block from present graphics in modelspace
 	; In the case when the blocks are nested:
+	(setq blockName (strcat blockName "-S"))
 	(if (tblsearch "BLOCK" blockName)
 		 ;If block exists already (such as 'NO-BN-2D-JBTSI-FILLED-nn' for switches / signaling symbols) which is generated for several switch types)
 			;Redefine block definition:
@@ -931,7 +932,9 @@
 		; But many signaling symbols are created to schematic scale and therefore require a dedicated conversion into the 1:500 scale.
 		(setq dwgScale (* conversionScale (/ (atof paperScale) 1000.0)))  ; <===== This sets what is the reference for drawing scale "_one_".
 
-		(addScaledGraphicsFromBlock inputBlockName dwgScale) ; Retrieve, explode and scale
+		;(setq inputBlockName (substr st 1 (- (strlen st) 2))) ; Remove '-S' at end of schematic symbols's block name
+		;(setq inputBlockName (strcat inputBlockName "-S")) ; Add '-S'
+		(addScaledGraphicsFromBlock inputBlockName dwgScale) ; Retrieve, explode and scale the corresponding schematic symbol's block
 		
 		; Name for the scaled block:
 		(setq scaledBlockName (strcat outputBlockName "-1_" paperScale))
@@ -957,13 +960,13 @@
 	;
 	; "1:500" is the default size for Bane NOR overhead catenary system (OCS) symbols. Signal symbols vary in size.
 
-	(createSchematicBlockFromCurrentGraphics "TMP")
+	(createSchematicBlockFromCurrentGraphics "TMP") ; (Note: a suffix "-S" denoting 'schematic symbol' will be added to "TMP")
 
 	(foreach paperScale paperScaleList
 		(setq dwgScale (* conversionScale (/ (atof paperScale) 1000.0)))  ; <===== This sets what is the reference for drawing scale "_one_".
 		(setq scaledBlockName (strcat outputBlockName "-1_" paperScale))
 
-		(addScaledGraphicsFromBlock "TMP" dwgScale) ; Retrieve, explode and scale
+		(addScaledGraphicsFromBlock "TMP" dwgScale) ; Retrieve, explode and scale (Note: '-S' will be added inside function call)
 		(if (tblsearch "BLOCK" scaledBlockName)		; Store block (See annotation further up)
 			(command "._BLOCK" scaledBlockName "_YES" "0,0" "_ALL" "")
 			(command "._BLOCK" scaledBlockName "0,0" "_ALL" "") 
@@ -973,7 +976,7 @@
 	)
 
 	; Cleanup
-	(eraseBlock "TMP") ; also sets layer 0 and decrements the schematic block counter
+	(eraseBlock "TMP-S") ; also sets layer 0 and decrements the schematic block counter
 )
 
 
@@ -981,8 +984,8 @@
 (defun addScaledGraphicsFromBlock ( blockName scale / )
 	; Retrieve, explode and scale an existing symbol
 	(command 
-		"._INSERT" blockName "_S" scale "_R" 0.0 "0,0"	; Retrieve schematic symbol - Set overall scale, rotation 0.0, pos. (0,0).
-		"._EXPLODE" "_ALL" ""							; Convert inserted block to modelspace graphics entities
+		"._INSERT" (strcat blockName "-S") "_S" scale "_R" 0.0 "0,0"	; Retrieve schematic symbol - Set overall scale, rotation 0.0, pos. (0,0).
+		"._EXPLODE" "_ALL" ""										; Convert inserted block to modelspace graphics entities
 	)
 	(setLayer layer_Zero)
 )

@@ -71,7 +71,7 @@
 	; You can toggle between 1-line and 2-line mode in RailCOMPLETE using the command RC-ShowTwoRails.
 	;
 	(setq
-		blockName (strcat "NO-BN-2D-JBTOB-SKJ-SKINNESKJOET-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
+		blockName (strcat "NO-BN-2D-JBTOB-SKINNESKJOET-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
 		schematicGauge 9.0 		; Spacing between rails in schematic 2-line signaling drawings
 		geoGauge 1.5 			; Spacing between rails in geo 2-line drawings
 	)

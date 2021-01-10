@@ -21,7 +21,7 @@
 
 (defun REFLEKS_HEL ( / blockName r )
 	(setq
-		blockName "NO-BN-2D-SKILT-REFLEKS-HEL"
+		blockName "NO-BN-2D-SKILT-KJOERENDE-REFLEKS-HEL"
 		description (strcat "REFLEKS P" _uAA_ " FORSIDEN OG BAKSIDEN AV INNKJ" _uOE_ "RHOVEDSIGNAL OG BLOKKSIGNAL")
 		r 1.5
 	)
@@ -44,7 +44,7 @@
 
 (defun REFLEKS_HALV ( / blockName r )
 	(setq
-		blockName "NO-BN-2D-SKILT-REFLEKS-HALV"
+		blockName "NO-BN-2D-SKILT-KJOERENDE-REFLEKS-HALV"
 		description (strcat "REFLEKS P" _uAA_ " FORSIDEN AV INDRE HOVEDSIGNAL I INNKJ" _uOE_ "RTOGVEI")
 		r 1.5
 	)

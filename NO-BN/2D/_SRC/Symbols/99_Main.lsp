@@ -51,6 +51,9 @@
 
 ; Print a trace when running under VLIDE:
 (setq majorStep 0)
+(setq minorStep 0)
+(setq microStep 0)
+
 (defun step ( msg / )
 	(setq majorStep (1+ majorStep))
 	(setq minorStep 0)

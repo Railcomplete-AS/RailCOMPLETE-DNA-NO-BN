@@ -14,15 +14,15 @@
 
 ; Concerns schematic symbols that scale with paperspace drawing scale.
 
-(defun C:CONNECTOR-ALIGNMENT-CROSSING ( / )
+(defun C:CONNECTOR-CROSSING ( / )
 	
 	(setCadSystemDefaults)  
-	(CONNECTOR-ALIGNMENT-CROSSING)
+	(CONNECTOR-CROSSING)
 )
 
-(defun CONNECTOR-ALIGNMENT-CROSSING ( / blockName radius )
+(defun CONNECTOR-CROSSING ( / blockName radius )
 	(setq
-		blockName "NO-BN-2D-JBTOB-CONNECTOR-ALIGNMENT-CROSSING" 
+		blockName "NO-BN-2D-JBTOB-CONNECTOR-CROSSING" 
 		radius 0.5 ; Radius of 180 deg half-circle arc, to be shown at the ends of a long horizontal and short vertical line meeting at the crossing
 	)
 	(setLayer layer_Zero)
