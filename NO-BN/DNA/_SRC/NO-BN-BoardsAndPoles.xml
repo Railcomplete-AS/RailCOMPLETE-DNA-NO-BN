@@ -24,10 +24,16 @@
 					return "Fs-PLO"
 				elseif Variant:find("ERTMS Planovergang, signal") then 
 					return "PLO"
-				elseif Variant:find("E34") then 
-					return "Stedskilt"
-				elseif Variant:find("E35") then 
-					return "Stoppskilt"
+				elseif Variant:find("ERTMS Planovergang, signal") then
+					s = s.."PLO"
+				elseif Variant:find("ERTMS Planovergang, forsignal") then
+					s = s.."PLO-Fs"
+				elseif Variant:find("ERTMS Shunting Area begynner") then
+					s = s.."Sh.start"
+				elseif Variant:find("ERTMS Shunting Area slutter") then
+					s = s.."Sh.slutt"
+				elseif Variant:find("ERTMS Supervised Area slutter")
+					then s = s.."Sup.slutt"
 				elseif Variant:find("Bevegelig kryss") then
 					return "Bev.X"
 				elseif Variant:find("refleks") then
@@ -467,6 +473,7 @@
 		<AttachmentCategory Name="skilt" PassAttachmentToTarget="true" />
 		<AttachTo Category="skilt" />
 		<AttachTo Category="skiltfeste" DrawTail="true" />
+		<AttachTo Category="signal" DrawTail="true" />
 		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___SCALE" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
@@ -3856,6 +3863,279 @@
 		</DisplayPointsDefinitions>
 	</ObjectType>
 	
+
+
+<!--========================================================================================================
+	SKILT
+	ERTMS SKILT
+	SA-MSS ERTMS
+	ERTMS boards with pole. 2D symbols feature the "mast foot".
+	Note: Markerboards (train route start/stop) have been classified as SA-SIG ERTMS (signals).
+
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-MSS ERTMS"
+				Layer="JBTSI_SA_MSS" Color="ByLayer"
+				Group="Skilt/ERTMS"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+		<RelationSourceSpace>ertms_skilt</RelationSourceSpace>
+		<AttachmentCategory Name="ertms_skilt" />
+		<AttachTo Category="ertms_skilt" />
+		<AttachTo Category="markerboard" />
+		<AttachTo Category="skiltfeste" />
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___SCALE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
+		
+		<xpp:expand select="NOBN_com_ISY_STK" />
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_bnp_getBoardOrPoleName().." - "..code</Formula></LuaExpression> 
+
+		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
+		<LuaExpression Name="PoleRouting3D"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
+		<LuaExpression Name="Offset3D.Z"><Formula>NOBN_bnp_getBoardOffset3dZ()</Formula></LuaExpression>
+
+		<!-- 2020-11-05 CLFEY Deprecated - all ERTMS boards are small, see BN document "NS-EN 16494_2015 ERTMS skilt" -->
+		<!-- <CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large" -->
+				<!-- Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400)."> -->
+			<!-- <Value DisplayName="Lite">Small</Value> -->
+			<!-- <Value DisplayName="Stort">Large</Value> -->
+		<!-- </CustomAttribute> -->
+
+		<LuaExpression Name="Model3DName" ><Formula>_SA_MSS_ertms_model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_SA_MSS_ertms_model3DName()" ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the 3D model name [String] for the ERTMS board. Covers various ERTMS board types, except stop/location markerboards." >
+			<Constructor>String _SA_MSS_ertms_model3DName()</Constructor>
+<!-- E38-AVALANCHE-AREA -->
+<!-- E39-FROST-GATE -->
+<!-- E61-DISTANCE-SIGN-ERTMS -->
+<!-- E65H-WARNING-LOWERING-OF-PANTOGRAPH -->
+<!-- E65H-WARNING-LOWERING-OF-PANTOGRAPH -->
+<!-- E65K-RAISING-OF-PANTOGRAPH -->
+<!-- E65L-WARNING-OF-DEAD-SECTION -->
+<!-- E65M-DISCONNECTION-IN-DEAD-SECTION -->
+<!-- E65N-CONNECTION-AFTER-DEAD-SECTION -->
+<!-- E106-STOP-FOR-SHUNTING -->
+<!-- E107-UNSECURED-AREA -->
+<!-- E108-INTERLOCKED-AREA -->
+<!-- E200-LEVEL-ZERO -->
+<!-- E201-LEVEL-TRANSITION-ETCS -->
+<!-- E202-SPEED-RESTRICTION-10 -->
+<!-- E203-SPEED-RESTRICTION-20 -->
+<!-- E204-SPEED-RESTRICTION-30 -->
+<!-- E205-SPEED-RESTRICTION-LIFTED -->
+<!-- E206-SELECT-GSM-R-NETWORK-NORWAY -->
+			<Formula>
+				function _SA_MSS_ertms_model3DName()
+					--Board type:
+					t = "NO-BN-3D-SA-MSS"
+					if Variant:find("Planovergang") then 
+						t = t.."-E36-LEVEL-CROSSING"
+					elseif Variant:find("Shunting") then 
+						t = t.."-SHUNTING-AREA"
+						t = t..(Variant:find("begynner") and "-BEGIN" or "-END")
+					elseif Variant:find("Supervised") then 
+						t = t.."-SUPERVISED-AREA"
+						t = t..(Variant:find("begynner") and "-BEGIN" or "-END")
+					else 
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_error
+					end
+					--Placement Right/Left/Above (relevant only for STOP and POSITION markers):
+					if Variant:find("sidestilt") then
+						if RightSided then
+							t = (dir == 'up') and t.."-RIGHT" or t.."-LEFT"
+						else
+							t = (dir == 'up') and t.."-LEFT" or t.."-RIGHT"
+						end
+					elseif Variant:find("nedpil") then
+						t = t.."-ABOVE"
+					else
+						--Do nothing for boards that don't depend on position)
+					end
+					--Size:
+					if Size == "Large" then
+						t = t.."-700x700"
+					elseif Size == "Small" then
+						t = t.."-400x400"
+					else
+						return "Bad Variant ["..Variant.."], cannot determine 3D Model Name.",_error
+					end
+					return t
+				end
+			</Formula>
+		</LuaFunction>
+
+		<Variants>
+			<Variant Name="ERTMS Planovergang, signal" >
+				<SetValue Key="type" Value="other:levelCrossingSignal" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS Planovergang, forsignal" >
+				<SetValue Key="type" Value="other:levelCrossingDistantSignal" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS E34 Stedsskilt, sidestilt" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Pole" />
+			</Variant>
+			<Variant Name="ERTMS E34 Stedsskilt, nedpil" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Yoke" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, sidestilt" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Pole" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, nedpil" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Yoke" />
+			</Variant>
+			<Variant Name="ERTMS Shunting Area begynner" >
+				<SetValue Key="type" Value="other:shuntingAreaBegin" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS Shunting Area slutter" >
+				<SetValue Key="type" Value="other:shuntingAreaEnd" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+			<Variant Name="ERTMS Supervised Area slutter" >
+				<SetValue Key="type" Value="other:supervisedAreaEnd" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+			</Variant>
+		</Variants>
+
+		<InsertSymbol VariantName="ERTMS Planovergang, signal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS Planovergang, forsignal" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-PLANOVERGANG-FORSIGNAL" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS E34 Stedsskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E34-STEDSSKILT-HSIDE" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
+			<SetValue Key="type" Value="main" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS E34 Stedsskilt, nedpil" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E34-STEDSSKILT-OVER" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-STOPPSKILT-HSIDE" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, nedpil" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-STOPPSKILT-OVER" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS Shunting Area begynner" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SHUNTING-AREA-BEGIN"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="ERTMS Shunting Area slutter" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SHUNTING-AREA-END"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+
+		<InsertSymbol VariantName="ERTMS Supervised Area slutter" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-SUPERVISED-AREA-END"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+
+		<SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="">
+			<Rotation RotateDirection="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTSI-SIGNAL-ERTMS
+				{% if Variant == 'ERTMS E34 Stedsskilt, sidestilt' or Variant == 'ERTMS E34 Stedsskilt, nedpil' %}E34-STEDSSKILT
+				{% elsif Variant == 'ERTMS E35 Stoppskilt, sidestilt' or Variant == 'ERTMS E35 Stoppskilt, nedpil' %}E35-STOPPSKILT
+				{% elsif Variant == 'ERTMS Planovergang, signal' %}PLANOVERGANG
+				{% elsif Variant == 'ERTMS Planovergang, forsignal' %}PLANOVERGANG-FORSIGNAL
+				{% elsif Variant == 'ERTMS Shunting Area begynner' %}SHUNTING-AREA-BEGIN
+				{% elsif Variant == 'ERTMS Shunting Area slutter' %}SHUNTING-AREA-END
+				{% elsif Variant == 'ERTMS Supervised Area slutter' %}SUPERVISED-AREA-END
+				{% else %}BAD_VARIANT
+				{% endif %}
+				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+				{% if ArrowDirection == 'leftArrow' %}HSIDE
+				{% elsif ArrowDirection == 'rightArrow' %}VSIDE
+				{% elsif ArrowDirection == 'downArrow' %}OVER
+				{% elsif ArrowDirection == 'noArrow' %}
+				{% else %}BAD_ARROWDIRECTION
+				{% endif %}
+			</BlockNameFormat>
+		</SymbolDefinition>
+				<!-- {% elsif Variant == 'ERTMS Shunting begynner' %}SHUNTING-AREA-BEGIN -->
+				<!-- {% elsif Variant == 'ERTMS Shunting slutter' %}SHUNTING-AREA-END -->
+				<!-- {% elsif Variant == 'ERTMS Supervised Area slutter' %}SUPERVISED-AREA-END -->
+
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-S" />
+		<SnapPointsDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="skiltfeste" />
+			</SnapPoints>
+		</SnapPointsDefinitions>
+
+		<!-- Ingen displaypoints - 2D-symbolet settes der InsertionPoint er -->
+	</ObjectType>
+
 
 
 <!--========================================================================================================

@@ -2,7 +2,7 @@
 ;
 ; Signaling.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2020. All rights reserved. 
+; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved. 
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -25,7 +25,7 @@
 	(subStep "VIRTUAL-SIGNAL") 					(C:VIRTUAL-SIGNAL)
 	(subStep "REFLECTIVE-MARKER") 				(C:REFLECTIVE-MARKER)
 	(subStep "RELAY-ROOM")						(C:RELAY-ROOM)
-	(subStep "ERTMS-SIGNALS")				 	(C:ERTMS-SIGNALS)
+	(subStep "ERTMS-BOARDS")				 	(C:ERTMS-BOARDS)
 	(subStep "SIGNAL-COMBINATIONS")			 	(C:SIGNAL-COMBINATIONS) ; Loop which iterates over many signal combinations
 	(subStep "DERAILER-SIGNAL") 				(C:DERAILER-SIGNAL)
 	(subStep "SWITCH-SIGNAL") 					(C:SWITCH-SIGNAL)

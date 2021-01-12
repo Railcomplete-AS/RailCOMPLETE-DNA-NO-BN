@@ -2,7 +2,7 @@
 ;
 ; Level crossing road signal.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2020. All rights reserved.
+; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -12,7 +12,7 @@
 
 ; Road signal at level crossing
 
-; Veisignalene er ikke reglet i TRV for jernbane ()SJT TFF), men i Veitrafikkens regelverk.
+; Veisignalene er ikke reglet i TRV for jernbane (SJT TFF), men i Veitrafikkens regelverk.
 
 (defun C:LEVEL-CROSSING-ROAD-SIGNAL ( / variation yokeMounted )
 	(foreach variation '("VS1" "VS2")			; 'VS1'= single mast, 'VS2' = forked mast (double signal)

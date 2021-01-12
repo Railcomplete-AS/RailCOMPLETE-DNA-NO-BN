@@ -2,7 +2,7 @@
 ;
 ; Signal combinations.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2020. All rights reserved.
+; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -80,6 +80,7 @@
 
 	(setCadSystemDefaults)
 	
+;(cond (nil 
 	; nil = on upright mast, "AAK" = yoke-mounted
 	;(foreach yokeMounted '(nil)
 	(foreach yokeMounted '(nil "AAK")
@@ -159,6 +160,7 @@
 			)
 		)
 	);foreach yokeMounted
+;)) (cond (nil
 	
 	; ERTMS combinations:
 	(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0)
@@ -216,6 +218,7 @@
 	(setq 
 		config ""
 		blockName "NO-BN-2D-JBTSI-SIGNAL"
+		description "SIGNAL"
 		yokePole 2.0			; above lanterns if suspended from yoke.
 		basePole 3.0			; a short pole stub below the lowest signal item down to the signal mast base, if upright mast.
 		minMastWithoutDs 9.0	; minimum from base to lowest Hs lantern / top element, when no Ds is present.
@@ -340,9 +343,9 @@
 	; Construct configuration string:
 	
 	(cond
-		((= MB _left_) (setq config (strcat config "-MBL")))
-		((= MB _right_) (setq config (strcat config "-MBR")))
-		((= MB _down_) (setq config (strcat config "-MBD")))
+		((= MB _left_) (setq config (strcat config "-ERTMS-E35-HSIDE"))) 	; Left arrow
+		((= MB _right_) (setq config (strcat config "-ERTMS-E35-VSIDE"))) 	; Right arrow
+		((= MB _down_) (setq config (strcat config "-ERTMS-E35-OVER"))) 	; Down arrow
 	)
 	(if (= HS 1) (setq config (strcat config "-HS1")))
 	(if (= HS 2) (setq config (strcat config "-HS2")))
@@ -358,6 +361,7 @@
 	(if (= AVS 1) (setq config (strcat config "-AVS")))
 	(if (= BPS 1) (setq config (strcat config "-BPS")))
 	(if yokeMounted (setq config (strcat config "-AAK")))
+	(setq description (strcat description " " (substr config 2 ))); Skip first '-' character in 'config'
 
 	; Add yoke pole / add rest of main pole with Hs base
 	(if yokeMounted
@@ -381,7 +385,7 @@
 	
 	; Create blocks
 	(setq blockName (strcat blockName config))
-	(addDescriptionBelowOrigo blockName _descriptionTextHeight_)
+	(addDescriptionBelowOrigo description _descriptionTextHeight_) 
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; 2/3 of schematic is good for 1:500 scale symbols
 )
