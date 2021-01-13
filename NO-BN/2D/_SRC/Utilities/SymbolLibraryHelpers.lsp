@@ -881,7 +881,7 @@
 			;Redefine block definition:
 			(command "._BLOCK" blockName "_YES" "0,0" "_ALL" "") ; Additional question 'Redefine it?' needs answer "_YES"
 		; else just create first-time block:
-			(command "._BLOCK" blockName "0,0" "_ALL" "") 
+			(command "._BLOCK" blockName "0,0" "_ALL" "") ; Not annotative block is default
 	)
 	(setq nSchematicBlocks (+ nSchematicBlocks 1)) ; Global: Increment for each block created with routine createSchematicBlockFromCurrentGraphics.
 	(setLayer layer_Zero)

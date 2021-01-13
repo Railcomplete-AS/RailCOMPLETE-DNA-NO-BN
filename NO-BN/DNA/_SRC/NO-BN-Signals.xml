@@ -92,10 +92,10 @@ end
 function NOBN_sig_getSignalFullName()
 	local t
 	if RcType == "SA-SIG ERTMS" then
-		if (Markerboard ~= "-") then 
-			t = "Mb."
-		elseif (DwarfSignal ~= "-") then 
+		if Variant == "ERTMS dverg" then 
 			return "EDs.R"..NOBN_sig_getSignalNumber() 
+		elseif Variant:match("E35") then
+			t = "Mb."
 		end
 	
 	elseif RcType == "SA-SIG Signal" then
@@ -116,7 +116,6 @@ function NOBN_sig_getSignalFullName()
 		else
 			t = "Sig." --Covers all the remaining - MKs, FKs, Ls, LHs, AVs, BPs
 		end
-		return t..NOBN_sig_getSignalShortName()
 	
 	elseif RcType == "SA-SIG Fiktivt punkt" then
 		t = "Fik."
@@ -145,7 +144,7 @@ function NOBN_sig_getSignalFullName()
 	else
 		t = "Bad signal type ["..RcType.."] (code='"..code.."').",_warning
 	end
-	return t
+	return t..NOBN_sig_getSignalShortName()
 end
 		</Formula>
      </LuaFunction>
@@ -160,8 +159,8 @@ function NOBN_sig_getSignalPartNames()
 	local s = ""
 	local errMsg = "*** Unrecognized signal configuration ***"
 	if RcType == "SA-SIG ERTMS" then
-		if (Markerboard ~= "-") then s = "MB" end
-		if (DwarfSignal ~= "-") then s = s.."-EDS" end
+		if Variant:match("E35") then s = "E35" end
+		if Variant:lower():match("dverg") then s = s.."-EDS" end
 	elseif RcType == "SA-SIG Signal" then
 		if (MainSignal ~= "-") then s = s..MainSignal:upper() end
 		if (DistantSignal ~= "-") then s = s.."-FS" end
@@ -1767,13 +1766,12 @@ end
 				function _SA_SIG_ertms_model3DName()
 					local t = "NO-BN-3D-SA-SIG-ERTMS"
 					if Variant:match("E35")then
-						t = t.."-E35" end
+						t = t.."-E35"
 					else
 						return "Bad ERTMS markerboard Variant ["..Variant.."], cannot determine 3D Model Name.",_error
 					end
-					--Placement Right/Left/Above (relevant only for STOP (E35) and LOCATION (E34) markers):
 					if Variant:match("sidestilt") then
-						t = (RightSided and dir == "up") or (LeftSided and dir == "down") and "-HSIDE" or "-VSIDE"
+						t = ((RightSided and dir == "up") or (LeftSided and dir == "down")) and "-HSIDE" or "-VSIDE"
 					elseif Variant:match("over sporet") then
 						t = t.."-OVER"
 					else
@@ -1781,10 +1779,6 @@ end
 					end
 					if Variant:match("dverg") then t = t.."-DS" end
 					if Variant:match("lav") then t = t.."-LAV" end
-						t = t.."DS-LAV"
-					else
-						return "Bad dwarf spec ["..DwarfSignal.."], cannot determine 3D Model Name.",_error
-					end
 					return t
 				end
 			</Formula>
@@ -1831,6 +1825,14 @@ end
 				<SetValue Key="ruleCode" Value="" />
 				<SetValue Key="PoleOrYoke" Value="Yoke" />
 			</Variant>
+			<Variant Name="ERTMS dverg" >
+				<SetValue Key="type" Value="shunting" />
+				<SetValue Key="function" Value="intermediate" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="PoleOrYoke" Value="Mast" />
+			</Variant>
 		</Variants>
 
 		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-HSIDE-S"
@@ -1857,10 +1859,16 @@ end
 			<Rotation AddAngle="-90" Direction="true" />
 		</InsertSymbol>
 		
-		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, over sporet med dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-OVER-S"
+		<InsertSymbol VariantName="ERTMS E35 Stoppskilt, over sporet med dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-OVER-DS-S"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<Rotation AddAngle="-90" Direction="true" />
+		</InsertSymbol>
+		
+		<InsertSymbol VariantName="ERTMS dverg" DisplayBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-DS-S"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<Rotation AddAngle="-90" Direction="true" FlipIfLeftSideOfAlignment="true" />
 		</InsertSymbol>
 		
 		<SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-HSIDE-S">
@@ -1874,16 +1882,11 @@ end
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSI-SIGNAL-ERTMS
-				{% if Variant == 'ERTMS E35 Stoppskilt, sidestilt' %}
+				{% if Variant 'sidestilt' %}
 					{% if (RightSided and dir == 'up') or (LeftSided and dir == 'down') %}E35-HSIDE{% else %}E35-VSIDE{% endif %}
-				{% elsif Variant == 'ERTMS E35 Stoppskilt, sidestilt med dverg' %}
-					{% if (RightSided and dir == 'up') or (LeftSided and dir == 'down') %}E35-HSIDE-DS{% else %}E35-VSIDE-DS{% endif %}
-				{% elsif Variant == 'ERTMS E35 Stoppskilt, sidestilt med lav dverg' %}
-					{% if (RightSided and dir == 'up') or (LeftSided and dir == 'down') %}E35-HSIDE-DS{% else %}E35-VSIDE-DS{% endif %}
-				{% elsif Variant == 'ERTMS E35 Stoppskilt, over sporet' %}E35-OVER
-				{% elsif Variant == 'ERTMS E35 Stoppskilt, over sporet med dverg' %}E35-OVER-DS
-				{% else %}BAD_VARIANT
+				{% elsif Variant contains 'over' %}E35-OVER
 				{% endif %}
+				{% if Variant contains 'dverg' %}DS{% endif %}
 				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
 				{{Scale}}
 			</BlockNameFormat>
