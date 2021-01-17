@@ -322,7 +322,7 @@ end
 			<!-- <Rotation RotateDirection="true" AddAngle="-90" /> -->
 			<!-- <BlockNameFormat JoinBy="-"> -->
 			<!-- NO-BN-2D-JBTSI-SIGNAL-TVS -->
-			<!-- {% if PoleOrYoke == 'Yoke' %}AAK{% endif %} -->
+			<!-- {% if Yokemounted %}AAK{% endif %} -->
 			<!-- {{Scale}} -->
 			<!-- </BlockNameFormat> -->
 		<!-- </SymbolDefinition> -->
@@ -374,7 +374,7 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 
 	--Check if this test can be omitted (a low signal):
 	local omit = true
-	if PoleOrYoke == "Yoke" then 
+	if Yokemounted then 
 		omit = false
 
 	elseif RcType == "SA-SIG ERTMS" then
@@ -430,7 +430,7 @@ end
 				side = side and side:lower() or "(no arg)"				
 				if side ~= "left" and side ~= "right" then return "*** ERROR Function should be called with argument 'right' or 'left' ["..side.."]." end
 				if Alignment == nil then return "UNFINISHED - Signal must first be assigned to an alignment to deduce its own direction." end
-				if (DwarfSignal == "Ja" and MainSignal == "-" and PoleOrYoke == "Yoke") then return "WARNING - Shunting signal mounted in yoke. Please do manual check.",_warning end
+				if (DwarfSignal == "Ja" and MainSignal == "-" and Yokemounted) then return "WARNING - Shunting signal mounted in yoke. Please do manual check.",_warning end
 --2021-01-12 CLFEY: No warning just if high above but outside lateral problem distance.
 --if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.",_warning end
 				tracks = getClosestAlignments("KO-SPO Spor"):filter(function (x) return (side:upper() == "RIGHT" and 1 or -1) * getAlignmentInfo(x.id).DistanceToAlignment &lt; 0 end)
@@ -505,7 +505,7 @@ end
 			
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___SCALE" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
@@ -663,13 +663,13 @@ end
 					local t
 					if (Markerboard ~= "-") then
 						t = "NO-BN-3D-SA-SIG-ERTMS"
-						if (PoleOrYoke == "Pole") then
+						if not Yokemounted then
 							if (RightSided and (dir == 'up')) or (LeftSided and (dir == 'down')) then 
 								t = t.."-E35L"
 							else
 								t = t.."-E35R"
 							end
-						elseif (PoleOrYoke == "Yoke") then
+						elseif Yokemounted then
 							t = t.."-E35D"
 						end
 						if (ErtmsDwarfSignal ~= "-") then t = t.."-DS" end
@@ -694,7 +694,7 @@ end
 					if (DepartureSignal ~= "-") then t = t.."-AVS" end --Avgangssignal
 					if (BrakeTestSignal ~= "-") then t = t.."-BPS" end --Bremseprøvesignal
 					if Sunscreen == "-" then t = t.."-UTEN-SKJERM" end
-					if PoleOrYoke == "Yoke" then t = t.."-ÅK" end
+					if Yokemounted then t = t.."-ÅK" end
 					return t
 				end
 			</Formula>
@@ -1687,7 +1687,7 @@ end
 			{% if OpticalSpeedSignal == 'Ja' %}LHS{% endif %}
 			{% if DepartureSignal == 'Ja' %}AVS{% endif %}
 			{% if BrakeTestSignal == 'Ja' %}BPS{% endif %}
-			{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+			{% if Yokemounted %}AAK{% endif %}
 			{{Scale}}
 			</BlockNameFormat>
 			
@@ -1735,7 +1735,7 @@ end
 		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___SCALE" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
@@ -1791,7 +1791,7 @@ end
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="PoleOrYoke" Value="Pole" />
+				<SetValue Key="Yokemounted" Value="False" />
 			</Variant>
 			<Variant Name="ERTMS E35 Stoppskilt, sidestilt med dverg" >
 				<SetValue Key="type" Value="main" />
@@ -1799,7 +1799,7 @@ end
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="PoleOrYoke" Value="Pole" />
+				<SetValue Key="Yokemounted" Value="False" />
 			</Variant>
 			<Variant Name="ERTMS E35 Stoppskilt, sidestilt med lav dverg" >
 				<SetValue Key="type" Value="main" />
@@ -1807,7 +1807,7 @@ end
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="PoleOrYoke" Value="Pole" />
+				<SetValue Key="Yokemounted" Value="False" />
 			</Variant>
 			<Variant Name="ERTMS E35 Stoppskilt, over sporet" >
 				<SetValue Key="type" Value="main" />
@@ -1815,7 +1815,7 @@ end
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="PoleOrYoke" Value="Yoke" />
+				<SetValue Key="Yokemounted" Value="True" />
 			</Variant>
 			<Variant Name="ERTMS E35 Stoppskilt, over sporet med dverg" >
 				<SetValue Key="type" Value="main" />
@@ -1823,7 +1823,7 @@ end
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="PoleOrYoke" Value="Yoke" />
+				<SetValue Key="Yokemounted" Value="True" />
 			</Variant>
 			<Variant Name="ERTMS dverg" >
 				<SetValue Key="type" Value="shunting" />
@@ -1831,7 +1831,7 @@ end
 				<SetValue Key="switchable" Value="false" />
 				<SetValue Key="virtual" Value="false" />
 				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="PoleOrYoke" Value="Mast" />
+				<SetValue Key="Yokemounted" Value="Mast" />
 			</Variant>
 		</Variants>
 
@@ -1887,7 +1887,7 @@ end
 				{% elsif Variant contains 'over' %}E35-OVER
 				{% endif %}
 				{% if Variant contains 'dverg' %}DS{% endif %}
-				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+				{% if Yokemounted %}AAK{% endif %}
 				{{Scale}}
 			</BlockNameFormat>
 		</SymbolDefinition>
@@ -1923,7 +1923,7 @@ end
 		<AttachTo Category="signal" />
 
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
@@ -2068,7 +2068,7 @@ end
 					{% endif %}
 				{% else %}BAD_VARIANT
 				{% endif %}
-				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+				{% if Yokemounted %}AAK{% endif %}
 			</BlockNameFormat>
 		</SymbolDefinition>
 
@@ -2108,7 +2108,7 @@ end
 		<AttachmentCategory Name="signal" />
 
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
@@ -2162,7 +2162,7 @@ end
 			<SetValue Key="switchable" Value="true" />
 			<SetValue Key="virtual" Value="false" />
 			<SetValue Key="ruleCode" Value="" />
-			<SetValue Key="PoleOrYoke" Value="Pole" />
+			<SetValue Key="Yokemounted" Value="False" />
 		</InsertSymbol>
 		
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL" AllowSymbolMove="true">
@@ -2178,7 +2178,7 @@ end
 				{% if Variant == 'Frittstående Høyt Skiftesignal' %}NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL
 				{% else %}NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL-MKS
 				{% endif %}
-				{% if PoleOrYoke == 'Yoke' %}AAK{% endif %}
+				{% if Yokemounted %}AAK{% endif %}
 				{% else %}BAD_VARIANT
 			</BlockNameFormat>
 		</SymbolDefinition>
@@ -2215,7 +2215,7 @@ end
 		<AttachmentCategory Name="signal" />
 
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
@@ -2291,7 +2291,7 @@ end
 		<AttachmentCategory Name="signal" />
 
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
@@ -2373,7 +2373,7 @@ end
 		<AttachmentCategory Name="signal" />
 
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___POLEORYOKE" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" />
 		<xpp:expand select="NOBN_com_DISCIPLINE_JBTSI" />
