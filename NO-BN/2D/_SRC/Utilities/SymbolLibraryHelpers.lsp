@@ -577,10 +577,13 @@
 ;----------------------------------------------------------
 
 (defun addAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justify aflags / tmp )
+	; NB! All arttribute texts are added as ANNOTATIVE.
 	; Low-level access to CAD system Text Attribute entity creation
 	; Add text attribute (a named storage for text in a symbol, which can be read and written to later).
 	; Features the TAG, PROMPT amd VALUE field, a POSITION and lots of attribute flags (see global contants elsewhere).
 	; ATTDEF is a 'drive me crazy' command - the inputs vary wildly AFLAGS settings.
+	;
+	; See definition of symbolic constants _xxxx_ elsewhere.
 	; 0		No attribute mode selected
 	; 1		Invisible
 	; 2		Constant
@@ -600,12 +603,13 @@
 
 	(setq tmp (getvar 'AFLAGS))
 	(setvar 'AFLAGS aflags)
-	(if (= (logand aflags _multipleLines_) 0) ; (NB - only nil is false. all numerical values are 'T' (true))
+	(if (= (logand aflags _multipleLines_) 0) ; LISP bitwise AND (NB - only nil is false. all numerical values are 'T' (true))
 		; Single line attribute:
 		(if (= attPrompt nil)
 			(command
 				"._ATTDEF"
-				""					; Accept current AFLAGS settings
+				"_A"				; Text will be annotative
+				""					; Accept current AFLAGS settings (6 bits, decimal 2^b, b=0..5))
 				attTag				; Name of attribute tag
 				""					; Add empty prompt when 'prom' is nil
 				attDefaultValue		; ...doesn't ask for more lines...
@@ -617,7 +621,8 @@
 			)
 			(command 
 				"._ATTDEF"
-				""					; Accept current AFLAGS settings
+				"_A"				; Text will be annotative
+				""					; Accept current AFLAGS settings (6 bits, decimal 2^b, b=0..5))
 				AttTag				; Name of attribute tag
 				attPrompt			; ==> Add empty prompt since 'prom' is nil
 				attDefaultValue		; ...doesn't ask for more lines...
@@ -872,33 +877,37 @@
 ; CAD system Block manipulation (block table entries)
 ;----------------------------------------------------------
 
-(defun createSchematicBlockFromCurrentGraphics ( blockName / ) 
-	; Create one block from present graphics in modelspace
-	; In the case when the blocks are nested:
-	(setq blockName (strcat blockName "-S"))
+(defun createAnnotativeBlockFromCurrentGraphics ( blockName / ) 
+	; Create annotative block from present graphics in modelspace
+	(setq blockName blockName)
 	(if (tblsearch "BLOCK" blockName)
-		 ;If block exists already (such as 'NO-BN-2D-JBTSI-FILLED-nn' for switches / signaling symbols) which is generated for several switch types)
-			;Redefine block definition:
-			(command "._BLOCK" blockName "_YES" "0,0" "_ALL" "") ; Additional question 'Redefine it?' needs answer "_YES"
-		; else just create first-time block:
-			(command "._BLOCK" blockName "0,0" "_ALL" "") ; Not annotative block is default
+		 ;If block exists already (such as 'NO-BN-2D-JBTSI-FILLED-nn' for switches / signaling symbols) which is generated for several switch types)...
+		; or using VLIDE 'manually' several times...
+		; ...then answer the additional question 'Redefine it?' which needs answer "_YES".
+		;Redefine block definition:
+		; Then "_Annotative" triggers question "Create annotative block?" which needs answers "Yes". Then set insertion point and select all graphics ("_All" + "" (Enter)).
+		(command "._BLOCK" blockName "_YES" "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+	; else just create first-time block:
+		(command "._BLOCK" blockName         "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
 	)
-	(setq nSchematicBlocks (+ nSchematicBlocks 1)) ; Global: Increment for each block created with routine createSchematicBlockFromCurrentGraphics.
+	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1)) ; Global: Increment for each block created with routine createAnnotativeBlockFromCurrentGraphics.
 	(setLayer layer_Zero)
 	(setDefaultObjectPropertiesToByBlock)
+	blockname
 )
 
 
 
-(defun createGeoBlockInCurrentPaperScaleFromCurrentGraphics ( paperScale blockName /  ) 
-	; Create one block from the present graphics in model space, already scaled and ready to be stored as a scaled block!
-	; See more comments in the iteraion-variant of this routine, below.
-	(setq blockName (strcat blockName "-1_" paperScale))
-	(if (tblsearch "BLOCK" blockName) ; (See annotation further up)
-		(command "._BLOCK" blockName "_YES" "0,0" "_ALL" "")
-		(command "._BLOCK" blockName "0,0" "_ALL" "") 
+(defun createNonAnnotativeBlockFromCurrentGraphics ( blockName /  ) 
+	; Create non-annotative block from the present graphics in model space
+	; See also AnnotativeBlock version.
+	(if (tblsearch "BLOCK" blockName) 
+	; if existing block:
+		(command "._BLOCK" blockName "_YES" "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+	; else just create first-time block:
+		(command "._BLOCK" blockName         "_Annotative" "_No" "_No" "0,0" "_ALL" "")
 	)
-	(setq nScaledBlocks (+ 1 nScaledBlocks)) ; Global: Increment for each block created with routine (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName).
+	(setq nNonAnnotativeBlocks (+ 1 nNonAnnotativeBlocks)) ; Global counter, increment.
 	(setLayer layer_Zero)
 	(setDefaultObjectPropertiesToByBlock)
 )
@@ -943,7 +952,7 @@
 			(command "._BLOCK" scaledBlockName "_YES" "0,0" "_ALL" "")
 			(command "._BLOCK" scaledBlockName "0,0" "_ALL" "") 
 		)
-		(setq nScaledBlocks (+ nScaledBlocks 1)) ; Global: Increment for each block created with routine (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName).
+		(setq nNonAnnotativeBlocks (+ nNonAnnotativeBlocks 1)) ; Global: Increment for each block created with routine (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName).
 		(setDefaultObjectPropertiesToByBlock)
 	)
 )
@@ -960,7 +969,7 @@
 	;
 	; "1:500" is the default size for Bane NOR overhead catenary system (OCS) symbols. Signal symbols vary in size.
 
-	(createSchematicBlockFromCurrentGraphics "TMP") ; (Note: a suffix "-S" denoting 'schematic symbol' will be added to "TMP")
+	(createAnnotativeBlockFromCurrentGraphics "TMP") ; (Note: a suffix "-S" denoting 'schematic symbol' will be added to "TMP")
 
 	(foreach paperScale paperScaleList
 		(setq dwgScale (* conversionScale (/ (atof paperScale) 1000.0)))  ; <===== This sets what is the reference for drawing scale "_one_".
@@ -971,7 +980,7 @@
 			(command "._BLOCK" scaledBlockName "_YES" "0,0" "_ALL" "")
 			(command "._BLOCK" scaledBlockName "0,0" "_ALL" "") 
 		)
-		(setq nScaledBlocks (+ nScaledBlocks 1))
+		(setq nNonAnnotativeBlocks (+ nNonAnnotativeBlocks 1))
 		(setDefaultObjectPropertiesToByBlock)
 	)
 
@@ -1019,6 +1028,6 @@
 	(command "._LAYERP") ; restore previous layer state
 	(command "._PURGE" "_B" blockNames "_N") ; Erase specified block(s) from block table
 	(setLayer layer_Zero)
-	(setq nSchematicBlocks (- nSchematicBlocks 1)) ; One block removed...
+	(setq nAnnotativeBlocks (- nAnnotativeBlocks 1)) ; One block removed...
 	(setDefaultObjectPropertiesToByBlock)
 )
