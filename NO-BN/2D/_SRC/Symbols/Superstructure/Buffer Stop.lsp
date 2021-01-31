@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -34,5 +34,5 @@
 	)
 	(command "._ROTATE" "_ALL" "" "0,0" "90")
 	(addDescriptionBelowOrigo description 0.0)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics _one_ blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

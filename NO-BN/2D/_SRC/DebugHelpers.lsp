@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ;
@@ -30,7 +30,8 @@
 
 (defun hlp ( / )
 	(princ (strcat "\n=============================== DebugHelper - HLP ===============================")) (prin1)
-	(princ (strcat "\n\nRoot folder = " rootFolder)) (prin1)
+	(princ (strcat "\n\n*** Root folder = " rootFolder " ***")) (prin1)
+	(princ (strcat "\n\n" "VLIDE shortcuts:\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+Shift+C: AutoCAD (Command) mode\n    F6: Console window")) (prin1)
 	(princ (strcat "\n\n" "(mkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (mkAll)")) (prin1)
 	(princ (strcat "\n\n" "(ql)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (ql folderName)")) (prin1)
 	(princ (strcat "\n\n" "(loadAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (loadAll)")) (prin1)
@@ -65,7 +66,8 @@
 	; (Re-)load everything, then run MAIN
 	(loadAll)
 	(princ (strcat "\n\n\n==> Running MAIN() routine...\n")) (prin1)
-	(setq calledFromVlide T)
+	(setq calledFromVlide T)	; T (true) if used under AutoCAD VLIDE debugger, otherwise set to nil
+	(setq calledFromBlade nil)	; T (true) if used under BricsCAD BLADE debugger, otherwise set to nil
 	(C:MAIN)
 	(princ (strcat "Done.\n")) (prin1)
 )
@@ -148,11 +150,9 @@
 	(createStandardLayers)
 	(setDefaultObjectPropertiesToByBlock)
 
-	; Select drawing scales to be produced - Schematic will always be produced, scales must be specified in the paperScaleList global variable.
-	;(setq paperScaleList '("250" "500" "1000"))
-	(setq paperScaleList '("250" "500"))
-	(setq nSchematicBlocks 0) 	; Global: Increment for each new block created with createSchematicBlockFromCurrentGraphics and similar routines,
-	(setq nScaledBlocks 0) 		; Global: Increment for each new block created with createGeoBlockInAllPaperScalesFromBlock and similar routines.
-	; Show...:
-	paperScaleList
+	(setq nSchematicBlocks 0)
+	(setq nAnnotativeBlocks 0)
+	(setq nMetricBlocks 0)
 )
+
+;  (loadAll)

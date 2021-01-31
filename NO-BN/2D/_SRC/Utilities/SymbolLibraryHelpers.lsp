@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ;
@@ -78,11 +78,13 @@
 		; Constants for graphics creation (independent of the underlying CAD system)
 
 		; Single values
+		_fifth_			0.20
 		_quarter_		0.25
 		_third_			(/ 1.0 3)
 		_half_			0.5
 		_twoThirds_		(/ 2.0 3)
 		_threeQuarters_	0.75
+		_fourFifths_	0.80
 		_one_			1.0
 		_two_			2.0
 		_three_			3.0
@@ -119,31 +121,43 @@
 		_oneLetterProxySymbolTextHeight_	2.5
 		_twoLetterProxySymbolTextHeight_	1.8
 		_threeLetterProxySymbolTextHeight_	1.2
+		
+		; Symbol modes
+		; Use these as suffix to the basic symbol names (blockName).
+		; A corresponding declaration will be made in DNA to pick the appropriate symbol to show in CAD modelspace.
+		_schematic_		"-Schematic"	; Non-annotative symbol size according to the administration's symbol catalogue for schematic drawings
+		_annotative_	"-Geographic"	; Annotative symbol size according to the administration's symbol catalogue for use in geo drawings
+		_metric_		"-Metric"		; Non-annotative real-size items, for instance metal-free area, bolt groups etc, for non-annotative use in geo drawings
 	
 		; Symbol description - usually place text below symbols, in UPPERCASE
 		_descriptionTextHeight_		_th020_
 		_descriptionTextBoxWidth_	3.0
 		
-		; Attribute definitions
-		_attTextHeight_				_th125_
-		
-		; 'Enum lists' - #TODO# replace by GUIDs
-		_active_	"_active_"
-		_inactive_	"_inactive_"
+		; 'Enum lists'
+		_active_		"_active_"
+		_inactive_		"_inactive_"
 		;
-		_single_	"_single_"
-		_double_	"_double_"
+		_single_		"_single_"
+		_double_		"_double_"
 		
-		_left_		"_left_"
-		_right_		"_right_"
-		_up_		"_up_"
-		_down_		"_down_"
+		_left_			"_left_"
+		_right_			"_right_"
+		_up_			"_up_"
+		_down_			"_down_"
 		
-		; Directions (alias for angles 0..360 in Decimal Degrees)
-		_east_		0
-		_north_		90
-		_west_		180
-		_south_		270
+		; Compass directions (alias for angles 0..360 in Decimal Degrees, CW rotation)
+		_east_			0
+		_north_			90
+		_west_			180
+		_south_			270
+		
+		; Track gauges and normal sleeper spacing
+		_normalGauge_				1.435	; Distance between the two inner rails for this administration's network.
+		_cantReferenceGauge_		1.500	; Reference value when converting cant (superelevation) into rotations: atan(cant/referenceGauge).
+		_sleeperSpacing_			0.600	; This administrations normal sleeper spacing.
+		_schematicGauge_			9.000	; Spacing between rails in a schematic 2-line drawing (insulation, return current etc, showing both rails).
+		_schematicTrackSpacing_		21.000	; Standard spacing between track centerlines in a schematic 1-line or 2-line drawing (signaling isolation, return current drawing - not track schematic).
+		_geographicTrackSpacing_	 4.700	; Standard spacing between track centerlines in real installations.
 	)
 )
 
@@ -876,10 +890,101 @@
 
 ; CAD system Block manipulation (block table entries)
 ;----------------------------------------------------------
+(defun createSchematicBlockFromCurrentGraphics ( blockName /  ) 
+	; Create a non-annotative block from the present graphics in model space.
+	; Assume that all AttDefs have been declared as non-annotative already.
+	; See also AnnotativeBlock version.
+	(setq blockName (strcat blockName _schematic_))
+	(if (tblsearch "BLOCK" blockName) 
+	; if existing block:
+		(command "._BLOCK" blockName "_YES" "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+	; else just create first-time block:
+		(command "._BLOCK" blockName        "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+	)
+	(setq nSchematicBlocks (+ 1 nSchematicBlocks)) ; Global counter, increment.
+	(setLayer layer_Zero)
+	(setDefaultObjectPropertiesToByBlock)
+)
 
-(defun createAnnotativeBlockFromCurrentGraphics ( blockName / ) 
-	; Create annotative block from present graphics in modelspace
-	(setq blockName blockName)
+
+
+(defun createAnnotativeBlockFromCurrentGraphics ( blockName /  ) 
+	; Create an annotative block from the present graphics in model space.
+	; Typical use: The balise triangular symbol in an annotative symbol meant for geographic mode drawings
+	; Assume that all AttDefs have been declared as annotative already.
+	(setq blockName (strcat blockName _annotative_))
+	(if (tblsearch "BLOCK" blockName) 
+	; if existing block:
+		(command "._BLOCK" blockName "_YES" "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+	; else just create first-time block:
+		(command "._BLOCK" blockName        "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+	)
+	(setq nAnnotativeBlocks (+ 1 nAnnotativeBlocks)) ; Global counter, increment.
+	(setLayer layer_Zero)
+	(setDefaultObjectPropertiesToByBlock)
+)
+
+
+
+(defun createMetricBlockFromCurrentGraphics ( blockName /  ) 
+	; Create a non-annotative but real-size block from the present graphics in model space.
+	; Typical use: Yokes / cantilevers / switches
+	; Assume that all AttDefs have been declared as non-annotative already.
+	(setq blockName (strcat blockName _metric_))
+	(if (tblsearch "BLOCK" blockName) 
+	; if existing block:
+		(command "._BLOCK" blockName "_YES" "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+	; else just create first-time block:
+		(command "._BLOCK" blockName        "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+	)
+	(setq nMetricBlocks (+ 1 nMetricBlocks)) ; Global counter, increment.
+	(setLayer layer_Zero)
+	(setDefaultObjectPropertiesToByBlock)
+)
+
+
+
+(defun addGraphicsFromScaledSchematicBlock ( blockName scale / )
+	; Insert, scale and explode an existing block.
+	; NB: No checking - the block must exist in the block table.
+	(command 
+		"._INSERT" (strcat blockName "-Schematic") "_S" scale "_R" 0.0 "0,0"	; Retrieve schematic symbol - Set overall scale, rotation 0.0, pos. (0,0).
+		"._EXPLODE" "_ALL" ""													; Convert inserted block to modelspace graphics entities
+	)
+	(setLayer layer_Zero)
+)
+
+
+
+(defun createAnnotativeBlockFromScaledSchematicBlock ( blockName scale / )
+	;
+	; Create an annotative block based on a scaled version of a schematic symbol retrieved from the BLOCK table as an INSERT.
+	;
+	; Signaling symbols are first programmed in LISP to their 'schematic plan' scale. However, some schematic symbols are quite big (the 
+	; 'S-lås' symbol for instance) and may be scaled down before use in a geo drawing (annotative symbol). with , some must are 1:1 (yokes,
+	; switches). Each scalable block is first stored as a schematic version, then re-inserted and possibly scaled, before it is stored as
+	; an annotative symbol for use in geo drawings. 
+	;
+	; Note that a much-used paper scale will be the 1:250 drawing scale, because most producers will draw 350 meter of model on a landscape 
+	; A1 sheet, and then reduce size to 50% (A1 -> A3) when printing on paper - this is a suitable size for seeing most details.
+	; 
+	; A1 sheets measure 594 x 841 mm. A suitable half-page lying viewport, allowing for paper margins, will be 800 mm wide (and ca 200 mm high).
+	; If we deliver paper or PDF drawings in 1:1000 scale on A1 format, then we will orient and scale the contents of the viewport to cover
+	; 800 meters x 200 m (horizontally x vertically). I.e., insert a rectangle measuring 800x200 meters in modelspace, and zoom-to-window in
+	; the corresponding paperspace viewport.
+	;
+	; Since A1 is not a common printer paper size, it is customary to reduce print size to A3 (420x297) at print time.
+	; That is, symbols intended for 1:1000 scale A1 will appear half in width and height. To compensate, you should set the annotative scale
+	; in the CAD system to 2:1 to maintain symbol sizes on A3 paper sheets.
+	;
+	; Because the density of placed objects will be to crowded in an 1:1000 drawing, many suppliers tend to establish A1 size 1:250 scale
+	; drawings. Then the paper size will be 420x297 mm. A suitable paperspace half-paper viewport will measure 800x200 in millimeters, and
+	; will represent a 200 x 50 square meter area. The scehamtic-sized symbols will be far too big now, nbut a 4:1 reduction will usually be
+	; fine. So set the CAD system annotative drawing scale to 4:1 before printing from paperspace.
+	;
+	(addGraphicsFromScaledSchematicBlock blockName scale)
+
+	(setq blockName (strcat blockName _annotative_))
 	(if (tblsearch "BLOCK" blockName)
 		 ;If block exists already (such as 'NO-BN-2D-JBTSI-FILLED-nn' for switches / signaling symbols) which is generated for several switch types)...
 		; or using VLIDE 'manually' several times...
@@ -890,133 +995,13 @@
 	; else just create first-time block:
 		(command "._BLOCK" blockName         "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
 	)
-	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1)) ; Global: Increment for each block created with routine createAnnotativeBlockFromCurrentGraphics.
-	(setLayer layer_Zero)
-	(setDefaultObjectPropertiesToByBlock)
-	blockname
-)
-
-
-
-(defun createNonAnnotativeBlockFromCurrentGraphics ( blockName /  ) 
-	; Create non-annotative block from the present graphics in model space
-	; See also AnnotativeBlock version.
-	(if (tblsearch "BLOCK" blockName) 
-	; if existing block:
-		(command "._BLOCK" blockName "_YES" "_Annotative" "_No" "_No" "0,0" "_ALL" "")
-	; else just create first-time block:
-		(command "._BLOCK" blockName         "_Annotative" "_No" "_No" "0,0" "_ALL" "")
-	)
-	(setq nNonAnnotativeBlocks (+ 1 nNonAnnotativeBlocks)) ; Global counter, increment.
+	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1))
 	(setLayer layer_Zero)
 	(setDefaultObjectPropertiesToByBlock)
 )
 
 
-
-(defun createGeoBlockInAllPaperScalesFromBlock ( inputBlockName conversionScale outputBlockName / paperScale dwgScale scaledBlockName )
-	;
-	; Create several scaled blocks based on the corresponding schematic symbol retrieved from the BLOCK table as an INSERT.
-	; The scales are retrieved from the global list 'paperScaleList', a list of text strings "250" for 1:250 drawings, "500" for 1:500 
-	; drawings etc defined in MAIN().
-	;
-	; Note: We assume that everything in the schematic block can be scaled uniformly (no real-metric scale things there).
-	;
-	; 'conversionScale' denotes the scaling factor to apply to a schematic plan's symbol in order to produce a suitable 1:500 scale symbol from
-	; schematic graphics.
-	;
-	; The signal symbols are generally programmed in LISP to their 'schematic plan' scales. Some symbols are quite big (the 'S-lås' symbol 
-	; for instance), some are 1:1 (yokes, switches). Each scalable block is first stored as a schematic version, without any scaling (dwgScale = 1.0).
-	; A call to (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)(conversionScale blockName) pre-scales graphics with factor 
-	; 'conversionScale' to convert into a suitable default 1:1000 scale size.
-	; Note that the ordinary drawing scale will be 1:250 drawing scale, because most producers will draw 350 meter of model on an lying A1 sheet, 
-	; and then reduce size to 50% (A1 -> A3) when printing on paper - this is a suitable size for seeing most details.
-	; 
-	; "1:500" is the default size for Bane NOR overhead catenary system (OCS) symbols. Signal symbols vary in size.
-
-	(foreach paperScale paperScaleList
-		; Non-schematic symbols (switches etc) should provide '1.0' as conversionScale whenever the symbol is already drawn to a suitable geo scale by its LISP routine.
-		; All geographical scale drawing symbols receive a "-1_100", "-1_250" etc scale suffix.
-		; Most scalable symbols are created to 1:500 scale, the conversionScale parameter should then be '1.0'.
-		; But many signaling symbols are created to schematic scale and therefore require a dedicated conversion into the 1:500 scale.
-		(setq dwgScale (* conversionScale (/ (atof paperScale) 1000.0)))  ; <===== This sets what is the reference for drawing scale "_one_".
-
-		;(setq inputBlockName (substr st 1 (- (strlen st) 2))) ; Remove '-S' at end of schematic symbols's block name
-		;(setq inputBlockName (strcat inputBlockName "-S")) ; Add '-S'
-		(addScaledGraphicsFromBlock inputBlockName dwgScale) ; Retrieve, explode and scale the corresponding schematic symbol's block
-		
-		; Name for the scaled block:
-		(setq scaledBlockName (strcat outputBlockName "-1_" paperScale))
-		
-		(if (tblsearch "BLOCK" scaledBlockName)		; Store block (See annotation further up)
-			(command "._BLOCK" scaledBlockName "_YES" "0,0" "_ALL" "")
-			(command "._BLOCK" scaledBlockName "0,0" "_ALL" "") 
-		)
-		(setq nNonAnnotativeBlocks (+ nNonAnnotativeBlocks 1)) ; Global: Increment for each block created with routine (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName).
-		(setDefaultObjectPropertiesToByBlock)
-	)
-)
-
-
-
-(defun createGeoBlockInAllPaperScalesFromCurrentGraphics ( conversionScale outputBlockName / paperScale dwgScale scaledBlockName )
-	;
-	; Create several scaled blocks based on the corresponding graphics in modelspace.
-	; The scales are retrieved from the global list 'paperScaleList', a list of text strings "250" for 1:250 drawings, "500" for 1:500 
-	; drawings etc defined in MAIN().
-	;
-	; Note: We assume that everything in the current graphics can be scaled uniformly (no real-metric scale things there).
-	;
-	; "1:500" is the default size for Bane NOR overhead catenary system (OCS) symbols. Signal symbols vary in size.
-
-	(createAnnotativeBlockFromCurrentGraphics "TMP") ; (Note: a suffix "-S" denoting 'schematic symbol' will be added to "TMP")
-
-	(foreach paperScale paperScaleList
-		(setq dwgScale (* conversionScale (/ (atof paperScale) 1000.0)))  ; <===== This sets what is the reference for drawing scale "_one_".
-		(setq scaledBlockName (strcat outputBlockName "-1_" paperScale))
-
-		(addScaledGraphicsFromBlock "TMP" dwgScale) ; Retrieve, explode and scale (Note: '-S' will be added inside function call)
-		(if (tblsearch "BLOCK" scaledBlockName)		; Store block (See annotation further up)
-			(command "._BLOCK" scaledBlockName "_YES" "0,0" "_ALL" "")
-			(command "._BLOCK" scaledBlockName "0,0" "_ALL" "") 
-		)
-		(setq nNonAnnotativeBlocks (+ nNonAnnotativeBlocks 1))
-		(setDefaultObjectPropertiesToByBlock)
-	)
-
-	; Cleanup
-	(eraseBlock "TMP-S") ; also sets layer 0 and decrements the schematic block counter
-)
-
-
-
-(defun addScaledGraphicsFromBlock ( blockName scale / )
-	; Retrieve, explode and scale an existing symbol
-	(command 
-		"._INSERT" (strcat blockName "-S") "_S" scale "_R" 0.0 "0,0"	; Retrieve schematic symbol - Set overall scale, rotation 0.0, pos. (0,0).
-		"._EXPLODE" "_ALL" ""										; Convert inserted block to modelspace graphics entities
-	)
-	(setLayer layer_Zero)
-)
-
-
-
-(defun copyAndScaleBlock ( fromBlockName toBlockName scale / )
-	(command 
-		"._INSERT" fromblockName "_S" scale "_R" 0.0 "0,0"
-		"._EXPLODE" "_ALL" ""
-	)
-	(if (tblsearch "BLOCK" toBlockName) ; (See annotation further up)
-		(command "._BLOCK" toBlockName "_YES" "0,0" "_ALL" "")
-		(command "._BLOCK" toBlockName "0,0" "_ALL" "")
-	)
-	(setLayer layer_Zero)
-	(setDefaultObjectPropertiesToByBlock)
-)
-
-
-
-(defun eraseBlock ( blockNames / ss )
+(defun eraseSchematicBlock ( blockNames / ss )
 	; Removes all inserts and definition of block(s)
 	; usage (deleteBlock "blkname1,blkname2,blkname3,and_so_on")
 	(if (setq ss (ssget "x" (list (cons 0 "INSERT") (cons 2 blockNames)))) ; if any INSERTs found, erase them first
@@ -1028,6 +1013,6 @@
 	(command "._LAYERP") ; restore previous layer state
 	(command "._PURGE" "_B" blockNames "_N") ; Erase specified block(s) from block table
 	(setLayer layer_Zero)
-	(setq nAnnotativeBlocks (- nAnnotativeBlocks 1)) ; One block removed...
+	(setq nSchematicBlocks (- nSchematicBlocks 1)) ; One block removed...
 	(setDefaultObjectPropertiesToByBlock)
 )

@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ; See Bane NOR, TRV, Elektro/Høyspent, sporvekselsymboler
@@ -53,7 +53,8 @@
 			((= i 1) (setq hatchVariant "LEDNING-BEGGE-SPOR"))
 		)
 		(setq
-			blockName (strcat "NO-BN-2D-JBTKL-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
+			blockName	(strcat "NO-BN-2D-JBTKL-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
+			description	(strcat "SPORVEKSEL / KL-SYMBOL, "         str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
 		)
 		(setLayer layer_Zero)
 		(if (= hatchVariant "LEDNING-ENKELT-SPOR")
@@ -74,7 +75,7 @@
 		)
 		;Mirror 0x, 1x eller 2x til korrekt kvadrant:
 		(moveToQuadrant quadrant "_ALL")
-		(createSchematicBlockFromCurrentGraphics blockName)
+		(createMetricBlockFromCurrentGraphics blockName)
 		(setq i (+ 1 i))
 	);repeat
 )

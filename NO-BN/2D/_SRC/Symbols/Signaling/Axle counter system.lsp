@@ -6,20 +6,20 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
 ; Axle counter sensor and axle counter tuning unit
 
 (defun C:AXLE-COUNTER-SYSTEM ( / )
-	(AKSELTELLER)
-	(AKSELTELLER-SOPP)
+	(subSubStep "AKSELTELLER")		(AKSELTELLER)
+	(subSubStep "AKSELTELLER-SOPP")	(AKSELTELLER-SOPP)
 )
 
 
 
-(defun AKSELTELLER ( / blockName description gx gy gp paperScale )
+(defun AKSELTELLER ( / blockName description rax ray rap disatAlong loLilmit hiLimit gx gy gp )
 	;
 	;  -(*)--.--(*)-   ; Two hatched circles on a line
 	;        |         ; Vertical snapline added on own layer (in Geo versions)
@@ -27,30 +27,43 @@
 	(setq
 		blockName "NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SENSOR"
 		description	"AKSELTELLER SENSOR"
+		rax 4.0 ; reserved area, assume along the track, outside a possible 60 cm wide cable duct
+		ray 0.5
+		rap (list 0 3.0) ; center reserved area
+		distAlong _sleeperSpacing_	; Width of the area indicating minimum rail separation (enough to be well visible during design, and to allow for mounting tolerances)
+		loLimit 0.30 	; Minimum rail separation at sensor for speeds up to 120 km/h inclusive
+		hiLimit 1.00 	; Minimum rail separation at sensor for speeds above 120 km/h
+	)
 		gx 4.0 ; reserved area
 		gy 0.5
 		gp (list 0 3.0) ; center area
-	)
 
-	; Schematic symbol:
+	; Schematic symbol
 	(drawLine layer_Zero _origo_ (list 0.875 0.0))					; .--
 	(drawCircleAtPos layer_Zero 1.0 (list 1.875 0.0) _noWipeout_)	; .--( )
 	(drawHatch _mediumHatch_)										; .--(*)
 	(drawLine layer_Zero (list 2.875 0) (list 3.375 0))				; .--(*)-
 	(mirrorAboutYaxis _keep_)										; -(*)--.--(*)-
-	(addDescriptionBelowOrigo description (* -3 gy))
+	(addDescriptionBelowOrigo description (* -1.5 _cantReferenceGauge_))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols:
-	(foreach paperScale paperScaleList
-		(addScaledGraphicsFromBlock blockName (/ (atof paperScale) 1000.0)) ; Pre-scale symbolic elements...
+	; Annotative symbol
+	(addGraphicsFromScaledSchematicBlock blockName _one_)
+	(drawLine layer_Zero _origo_ (list 0 (* -0.5 _cantReferenceGauge_))) ; -(*)--|--(*)- Add vertical snap line to annotative part of geo symbol (half track gauge, from centre track to annotative symbol)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 
-		; Add metric graphics for reserved area for tuning unit
-		(drawBoxAtPos layer_AxleCounter_ReservedAreaForTuningUnit gx gy gp nil) ; no wipeout
-		(drawHatch _filledHatch_)
-		(drawLine layer_AxleCounter_SnaplineForPositioning _origo_ (list 0 -0.75)) ; Add snap line to geo symbols (half track gauge)
-		(createGeoBlockInCurrentPaperScaleFromCurrentGraphics paperScale blockName)
-	)
+	; Metric symbol
+	; Reserved area for tuning unit
+	(drawBoxAtPos layer_AxleCounter_ReservedAreaForTuningUnit rax ray rap _noWipeout_)
+	(drawHatch _filledHatch_)
+	; Metal-free area:
+	; Ref. Bane NOR, ERTMS Engineering Guidelines ERP-30-S-00097_16E ch. 4.2 Points: Requirements ENI-SS-ENG-1513 / 1514 / 1515,
+	; stating that the distance required from centre of a sensor's rail to the nearest other rail shall be at 
+	; least +/- 0.30m for speeds up to 120 km/h, and +/- 1.0m for speeds above 120 km/h.
+	(drawBoxAtPos layer_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh distAlong loLimit _origo_ _noWipeout_)
+	(drawHatch _filledHatch_) ; Hatching the smaller of the two areas
+	(drawBoxAtPos layer_AxleCounter_MinimumRailSeparationAtSpeedsAbove_120_kmh distAlong hiLimit _origo_ _noWipeout_)
+	(createMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -74,6 +87,6 @@
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	; Annotative symbol
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

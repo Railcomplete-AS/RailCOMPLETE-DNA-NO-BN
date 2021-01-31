@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet
@@ -46,7 +46,7 @@
 	(drawHatchFromPoint _filledHatch_ (list 0 (* 0.1 y)) 0 0)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -95,7 +95,7 @@
 	(drawCircleAtPos layer_Zero r p99 _noWipeout_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -152,7 +152,7 @@
 	(drawCircleAtPos layer_Zero r p99 _noWipeout_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -197,7 +197,7 @@
 	(drawHatch _filledHatch_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -233,7 +233,7 @@
 	(drawHatch _filledHatch_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -269,7 +269,7 @@
 	(drawHatch _filledHatch_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -299,7 +299,7 @@
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -338,7 +338,7 @@
 	(drawHatchFromPoint _filledHatch_ p2 0 0)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -377,6 +377,6 @@
 	(drawHatchFromPoint _filledHatch_ p2 0 0)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

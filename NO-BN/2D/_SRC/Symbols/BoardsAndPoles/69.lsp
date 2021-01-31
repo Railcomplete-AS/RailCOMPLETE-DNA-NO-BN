@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet
@@ -45,7 +45,7 @@
 	(command "._PLINE" p1 p2 _origo_ p3 p4 _closed_)
 	(addTextAttributeAtPos layer_Zero _th250_ p5 attTen)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -82,6 +82,6 @@
 	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keep_)
 	(addTextAttributeAtPos layer_Zero _th250_ p6 attTen)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

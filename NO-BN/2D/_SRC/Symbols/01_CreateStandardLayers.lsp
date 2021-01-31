@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 (defun createStandardLayers ( / )
@@ -103,7 +103,15 @@
 		'(
 			"JBTUB__FE_FUN_LOKALISERING"
 			62
-			"RailCOMPLETE Underbygning - Fundamentlokalisering - en sirkel med fagtilh\U+00F8righet KL(KL), S(Signal), T(Tele) eller F(skiltfeste)"
+			(strcat "RailCOMPLETE Underbygning - Fundamentlokalisering - en sirkel med fagtilh" _OE_ "righet KL(KL), S(Signal), T(Tele) eller F(skiltfeste)")
+			"_ByLayer"
+		)
+		
+		layer_MetricDetails
+		'(
+			"JBTUB__FE_DIV_FAKTISK_STOERRELSE"
+			62
+			(strcat "RailCOMPLETE Felles - Objektet vist i faktisk st" _OE_ "rrelse (ikke-annotativ grafikk)")
 			"_ByLayer"
 		)
 		
@@ -115,14 +123,6 @@
 			"JBTOB__KO_SPV_SPORVEKSEL_WIPEOUT"
 			62
 			"RailCOMPLETE Overbygning - Wipeout for sporveksler og sporkryss"
-			"_ByLayer"
-		)
-
-		layer_Turnout_ForbiddenAreaForAxleCounterSensor
-		'(
-			"JBTOB__KO_SPV_FORBUDT_OMRAADE_FOR_AKSELTELLERE"
-			62
-			(strcat "RailCOMPLETE Overbygning - Forbudt omr" _aa_ "de for akseltellere (mindre enn 60cm til n" _ae_ "rmeste skinne")
 			"_ByLayer"
 		)
 
@@ -160,14 +160,6 @@
 			"_ByLayer"
 		)
 
-		layer_TensioningDeviceType
-		'(
-			"JBTKL__EH_AEH_TYPENAVN"
-			62
-			"RailCOMPLETE KL - Avspenningstype"
-			"_ByLayer"
-		)
-	
 		layer_AutoTransformerTerminals
 		'(
 			"JBTKL__EH_AUT_POLER_FOR_AUTOTRANSFORMATOR"
@@ -207,6 +199,22 @@
 			"JBTSI__SA_TEL_SNAPLINJE"
 			62
 			(strcat "RailCOMPLETE Signal - Snaplinje for tellepunkt (en linje fra akseltellersymbolet vinkelrett inn p" _aa_ " sporaksen)")
+			"_ByLayer"
+		)
+
+		layer_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh
+		'(
+			"JBTSI__SA_TEL_MINSTEAVSTAND_TIL_NESTE_SKINNE_VED_HASTIGHETER_MINDRE_ELLER_LIK_120_KMH"
+			62
+			(strcat "RailCOMPLETE Signal - Minsteavstand fra akseltellers skinne til n" _AE_ "rmeste neste skinne ved hastigheter mindre eller lik 120 km/h")
+			"_ByLayer"
+		)
+
+		layer_AxleCounter_MinimumRailSeparationAtSpeedsAbove_120_kmh
+		'(
+			"JBTSI__SA_TEL_MINSTEAVSTAND_TIL_NESTE_SKINNE_VED_HASTIGHETER_OVER_120_KMH"
+			62
+			(strcat "RailCOMPLETE Signal - Minsteavstand fra akseltellers skinne til n" _AE_ "rmeste neste skinne ved hastigheter over 120 km/h")
 			"_ByLayer"
 		)
 
@@ -291,6 +299,7 @@
 	(createLayer layer_Description)
 	(createLayer layer_Cabinet_ReservedSpaceForDoors)
 	(createLayer layer_Cabinet_Wipeout)
+	(createLayer layer_MetricDetails)
 	
 	; Board or pole layers
 	(createLayer layer_BoardOrPole_Wipeout)
@@ -300,14 +309,12 @@
 	
 	; Superstructure (track and embankment) layers
 	(createLayer layer_Turnout_Wipeout)
-	(createLayer layer_Turnout_ForbiddenAreaForAxleCounterSensor)
 	(createLayer layer_Turnout_LongSleepers)
 	(createLayer layer_Turnout_ShortSleepers)
 	(createLayer layer_Turnout_TrackCenterLines)
 
 	; Overhead Catenary System (OCS) layers
 	(createLayer layer_CatenaryIsolator_Wipeout)
-	(createLayer layer_TensioningDeviceType)
 	(createLayer layer_AutoTransformerTerminals)
 	(createLayer layer_PushPullDirection)
 	(createLayer layer_CantileverType)
@@ -315,6 +322,8 @@
 	; Signaling
 	(createLayer layer_Derailer_Wipeout)
 	(createLayer layer_AxleCounter_SnaplineForPositioning)
+	(createLayer layer_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh)
+	(createLayer layer_AxleCounter_MinimumRailSeparationAtSpeedsAbove_120_kmh)
 	(createLayer layer_AxleCounter_ReservedAreaForTuningUnit)
 	(createLayer layer_Balise_MetalFreeArea)
 	(createLayer layer_Balise_3m_Separation)

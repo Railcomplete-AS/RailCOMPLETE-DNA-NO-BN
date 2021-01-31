@@ -9,7 +9,7 @@
 ; 2020-07-30 CLFEY Adjusted all mainPole sizes. Use floating point numbers to avoid possible later mistakes with integer division. Sorted and deleted duplicates.
 ; 2020-08-01 CLFEY New LISP code for ALL 'plain' symbols, allowing for use of nested loops and 'combinatorial computations' to ensure that all combinations are covered. Some might not be very meaningful, though.
 ; 2020-09-02 CLFEY Added addMb function / ERTMS markerboards
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ; ==========
 ;
 ;=========================================================================================================================
@@ -387,7 +387,7 @@
 	(setq blockName (strcat blockName config))
 	(addDescriptionBelowOrigo description _descriptionTextHeight_) 
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; 2/3 of schematic is good for 1:500 scale symbols
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 

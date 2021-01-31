@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -15,14 +15,21 @@
 ; Både frittstående, vegghengt og plassert på annen mast eller vegg (men som eget objekt, uten base ('fot'))
 
 (defun C:SHARED-TRACK-SIGNAL ( / )
-    (TOGSPORSIGNAL-1 nil)		; 1-begreps Togsporsignal på egen mast
-    (TOGSPORSIGNAL-1 "AAK")		; 1-begreps Togsporsignal i åk
-    (TOGSPORSIGNAL-2 nil)		; 2-begreps Togsporsignal på egen mast
-    (TOGSPORSIGNAL-2 "AAK")		; 2-begreps Togsporsignal i åk
-    (TOGSPORSIGNAL-3 "VSIDE")	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
-    (TOGSPORSIGNAL-3 "HSIDE") 	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
-    (TOGSPORSIGNAL-4 "VSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
-    (TOGSPORSIGNAL-4 "HSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
+	(subSubStep "TOGSPORSIGNAL-1")
+		(TOGSPORSIGNAL-1 nil)		; 1-begreps Togsporsignal på egen mast
+		(TOGSPORSIGNAL-1 "AAK")		; 1-begreps Togsporsignal i åk
+
+	(subSubStep "TOGSPORSIGNAL-2")
+		(TOGSPORSIGNAL-2 nil)		; 2-begreps Togsporsignal på egen mast
+		(TOGSPORSIGNAL-2 "AAK")		; 2-begreps Togsporsignal i åk
+
+	(subSubStep "TOGSPORSIGNAL-3")
+		(TOGSPORSIGNAL-3 "VSIDE")	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
+		(TOGSPORSIGNAL-3 "HSIDE") 	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
+
+	(subSubStep "TOGSPORSIGNAL-4")
+		(TOGSPORSIGNAL-4 "VSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
+		(TOGSPORSIGNAL-4 "HSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
 )
 
 
@@ -37,8 +44,9 @@
 	(drawSingleUprightTrackSignal yokeMounted)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	; Annotative symbol
+	(drawSingleUprightTrackSignal yokeMounted)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -55,9 +63,9 @@
 	(drawForkedUprightTrackSignal yokeMounted schematicSidewaysSeparation)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols
+	; Annotative symbol
 	(drawForkedUprightTrackSignal yokeMounted geoSidewaysSeparation)		; A narrower version than the schematic symbol
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics _twoThirds_ blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -66,14 +74,16 @@
 	; Wall-mounted (no base), upright knee mast with 2 lanterns
 	(setq 
 		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-TOGSPORSIGNAL-3-" side)
+		description (strcat "TOGSPORSIGNAL P" _uAA_ " KNE, TO ARMER")
 	)
 
 	; Schematic symbol
 	(drawSingleWallmountedTrackSignal side)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	; Annotative symbol
+	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -89,9 +99,9 @@
 	(drawForkedWallmountedTrackSignal schematicSidewaysSeparation side)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawForkedWallmountedTrackSignal geoSidewaysSeparation side)			; A narrower version than the schematic symbol
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics _twoThirds_ blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 

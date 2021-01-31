@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ; See Bane NOR, TRV, Signal, sporvekselsymboler
@@ -32,6 +32,7 @@
 ;
 ;-------------------------------------------------------------------------------------------------------------------------
 
+; TODO 2021-01-25 CLFEY: Include all NO-BN schematic signaling sysmbols for switches and crossings
 (defun SWITCH-SYMBOL-SIGNALING ( quadrant Drawing_Number 
 	/	blockName
 		switchParameters
@@ -60,7 +61,10 @@
 			((= i 1) (setq hatchVariant "SPARSE")) ; signifies key-locked control in right / left / both position(s)
 			((= i 2) (setq hatchVariant _noHatch_)) ; signifies that the point's tongues position is neither controlled or detected
 		)
-		(setq blockName (strcat "NO-BN-2D-JBTSI-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0)))
+		(setq 
+			blockName (strcat "NO-BN-2D-JBTSI-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
+			description	(strcat "SPORVEKSEL / SIGNAL-SYMBOL, "   str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
+		)
 		; A circle marks the theoretical crossing (where the two end-of-switch tangent extensions meet);
 		(setLayer layer_Zero)
 
@@ -68,7 +72,7 @@
 			"._LINE" "0,0" (list (- A radius) 0) ""
 			"._CIRCLE" (list A 0) radius
 		)
-		;Switch symbol - from the Signaling discipline's viewpoint:
+		; Switch symbol - from the Signaling discipline's viewpoint:
 		(command 
 			"._PLINE"
 				(list (+ A radius) 0)
@@ -84,10 +88,10 @@
 		)   
 		; Wipeout under sirkelen som markerer teoretisk kryss (vi skal kunne skjule sporlinjen som ligger under):
 		(drawWipedOutCircle Drawing_Number) 
-		;Mirror 0x, 1x eller 2x til korrekt kvadrant:
-		(moveToQuadrant quadrant "_ALL") ; TODO: 2019-07-26 CLFEY - Hva benyttes 'rev' til? Koden var slik: (setq rev (moveToQuadrant quadrant "_ALL"))
-		(createSchematicBlockFromCurrentGraphics blockName)
-		blockName
+		; Mirror 0x, 1x eller 2x til korrekt kvadrant:
+		(moveToQuadrant quadrant "_ALL")
+		(addDescriptionBelowOrigo description 1.0)
+		(createMetricBlockFromCurrentGraphics blockName)
 		(setq i (+ 1 i))
 	);repeat
 )
@@ -129,7 +133,7 @@
 			(command "._RECTANGLE" (list 1.85 0.75) (list 4.85 1.50))
 			)
 		)
-		(createSchematicBlockFromCurrentGraphics blockName)
+		(createMetricBlockFromCurrentGraphics blockName)
 		(setq i (+ 1 i))
 	)
 	blockName

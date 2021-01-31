@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -17,19 +17,28 @@
 )
 
 (defun DERAILMENT-INDICATOR ( / blockName h dh paperScale )
+;
+;  TL--1-2--TR
+;  |   |*|   |
+;  |   |.|   |
+;  |   |*|   |
+;  BL--3-4--BR
+;
+;
 	(setq
 		blockName "NO-BN-2D-JBTSI-DIVERSE-DERAILMENT-INDICATOR"
-		side 3.0
-		h		(/ side 2.0) ; half
-        dh 		0.2	; +/- Proportion of box to be hatched (a vertical bar - the derailment indicator device - across the track)
+		x		3.0 ; Box
+		y		3.0
+        x2		0.6	; Width of vertical hatched bar (1234) in geo symbol
 	)
-	; Schematic symbol:
-	(command "._RECTANGLE" (list (- h) (- h)) (list h h)) ; 3 x 3 box
+	; Schematic symbol
+	(drawBox layer_Zero x y _noWipeout_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols:
-	(addScaledGraphicsFromBlock blockName 1.0) 								; Retrieve, explode and scale S symbol
-	(command "._RECTANGLE" (list (* h (- dh)) (- h)) (list (* h dh) h)) 	; Add hatched 'bar' across the track
+	; Annotative symbol
+	(addGraphicsFromScaledSchematicBlock blockName _one_)
+	; Add hatched vertical bar to geo symbol:
+	(drawBox layer_Zero x2 y _noWipeout_)
 	(drawHatch _denseHatch_)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 1.0 blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

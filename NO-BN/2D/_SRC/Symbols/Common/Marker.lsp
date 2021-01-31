@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -18,7 +18,7 @@
 	)
 	(drawMarker)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 

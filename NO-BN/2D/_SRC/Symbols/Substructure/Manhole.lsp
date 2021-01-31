@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -43,7 +43,7 @@
 	(setLayerAndObjectColor layer_Description "_ByLayer")
 	(addMText (strcat "TREKKEKUM RUND \U+00D8" manholeDiameter) (list 0 (- (/ (atof manholeDiameter) -2000) 0.5)) _descriptionTextHeight_ 1.5 0 "iso" "_TC") ; \U+00D8 = Ø
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName) ; Already drawn to 1:500 scale
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -74,5 +74,5 @@
 	(setLayerAndObjectColor layer_Description "_ByLayer")
 	(addMText (strcat "TREKKEKUM L=" manholeLength ", D=" manholeDepth) (list 0 -0.5) _descriptionTextHeight_ 1.5 0 "iso" "_TC")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName) ; Already drawn to 1:500 scale
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

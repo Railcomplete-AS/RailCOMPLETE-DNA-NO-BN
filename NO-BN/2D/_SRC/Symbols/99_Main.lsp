@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ;
@@ -75,14 +75,10 @@
 	;
 	; GLOBAL identifiers:
 	;
-	; paperScaleList	A list of paper drawing scales
-	; nSchematicBlocks			Increments for each call to createSchematicBlockFromCurrentGraphics()
-	; nScaledBlocks		Increments for each call to (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)()
+	; nSchematicBlocks		Increments for each call to routine 'createSchematicBlockFromCurrentGraphics'
+	; nAnnotativeBlocks		Increments for each call to routine 
+	; nMetricBlocks			Increments for each call to routine 
 	;
-	; The paperScaleList is used by routine (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)().
-	; Routine (createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)() tags geographical (scaled) symbol's names with 
-	; "-1_nnn" in scale 1:nnn. Unscaled (schematic) symbols get no name suffix. Example list: ("250" "500")
-
 	; TODO: 2020-08-06 CLFEY removeUnwantedStyles() doesn't work in batch mode - I gave up removing Norconsult stuff... 
 	; (removeUnwantedStyles) ; Resolves and purges stuff which might be there due to your company's LISP automations for new DWG files
 
@@ -90,13 +86,19 @@
 	; Quickest operation is when running inside VLIDE with 'CMDECHO == 0.
 	
 	(cond 
-		((= calledFromVlide nil)
-			(step "Called from batch file.")
-		) ; Do nothing if called from batch file...
-		(T 
-			(step "Called from VLIDE debugger.")
+		(calledFromVlide
+			; non-nil if called from AutoCAD's Visual Lisp Integrated Development Environment
+			(step "Running under AutoCAD VLIDE...")
 			(command "._BCLOSE" "") ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
 			(C:LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
+		) 
+		(calledFromBlade ; non-nil if called from BricsCAD Lisp Advanced Development Environment
+			(step "Running under BricsCAD BLADE...")
+			(command "._BCLOSE" "") ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
+			(C:LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
+		) ; Do nothing if called from batch file...
+		(T 
+			(step "Called from Windows batch file, using a 'clean' AutoCAD or BricsCAD setup, no hidden automation started.")
 		)
 	)
 	
@@ -118,36 +120,31 @@
 	(step "Create standard RailCOMPLETE layers") (createStandardLayers)
 	(step "Set default object properties to ByBlock") (setDefaultObjectPropertiesToByBlock)
 
-	; Select drawing scales to be produced - Schematic will always be produced, scales must be specified in the paperScaleList global variable.
-	;(setq paperScaleList '("250" ))
-	(setq paperScaleList '("250" "500"))
-	(setq tmp "")
-	(foreach x paperScaleList (setq tmp (strcat tmp " 1:" x)))
-	(step (strcat "Define available paper scales: "   tmp))
-	(setq nSchematicBlocks 0) 	; Global: Increment for each new block created with createSchematicBlockFromCurrentGraphics and similar routines,
-	(setq nScaledBlocks 0) 		; Global: Increment for each new block created with createGeoBlockInAllPaperScalesFromBlock and similar routines.
+	(setq nSchematicBlocks 0)
+	(setq nAnnotativeBlocks 0)
+	(setq nMetricBlocks 0)
+	
+	;(step "GENERATE-ANNOTATIONS")				(C:GENERATE-ANNOTATIONS)
+	;(step "GENERATE-HIGH-VOLTAGE-OBJECTS")		(C:GENERATE-HIGH-VOLTAGE-OBJECTS)
+	;(step "GENERATE-THUMBNAILS")				(C:GENERATE-THUMBNAILS) ; Thumbnail icons when creating objects which are not point objects (area, alignment, table etc)
+	;(step "GENERATE-COMMON-OBJECTS")			(C:GENERATE-COMMON-OBJECTS) ; Felles
+	;(step "GENERATE-BOARDSANDPOLES-OBJECTS")	(C:GENERATE-BOARDSANDPOLES-OBJECTS) ; Boards and poles
+	;(step "GENERATE-SUBSTRUCTURE-OBJECTS")		(C:GENERATE-SUBSTRUCTURE-OBJECTS) ; Underbygning
+	;(step "GENERATE-SUPERSTRUCTURE-OBJECTS")	(C:GENERATE-SUPERSTRUCTURE-OBJECTS) ; Superstructure (track and embankment) objects
+	 (step "GENERATE-SIGNALING-OBJECTS")			(C:GENERATE-SIGNALING-OBJECTS)
+	;(step "GENERATE-TELECOM-OBJECTS")			(C:GENERATE-TELECOM-OBJECTS)
+	;(step "GENERATE-LOWVOLTAGE-OBJECTS")		(C:GENERATE-LOWVOLTAGE-OBJECTS)
 
-	(step "GENERATE-ANNOTATIONS") (C:GENERATE-ANNOTATIONS)
-	; Trouble: The "BJELKEMAST" routine hangs... One click in the VLIDE 'F6' window and the code continues. Weird!
-	(step "GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS") (C:GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS) ; High voltage objects except yokes, cantilevers and cantilever support brackets
-	(step "GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS") (C:GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS) ; OCS yokes, cantilevers and cantilever support brackets, which only exist as 1:1 scale objects
-	(step "GENERATE-THUMBNAILS") (C:GENERATE-THUMBNAILS) ; Thumbnail icons when creating objects which are not point objects (area, alignment, table etc)
-	;;;;;;;;;;;; (C:GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
-	(step "GENERATE-COMMON-OBJECTS") (C:GENERATE-COMMON-OBJECTS) ; Felles
-	(step "GENERATE-BOARDSANDPOLES-OBJECTS") (C:GENERATE-BOARDSANDPOLES-OBJECTS) ; Skilt og stolper (but not annotation objects which are scaled by RC with current CAD zoom level)
-	(step "GENERATE-SUBSTRUCTURE-OBJECTS") (C:GENERATE-SUBSTRUCTURE-OBJECTS) ; Underbygning
-	(step "GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS") (C:GENERATE-SUPERSTRUCTURE-FIXED-SCALE-OBJECTS) ; Superstructure (track and embankment) objects which follow the track's real geometry
-	(step "GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS") (C:GENERATE-SUPERSTRUCTURE-SCALED-OBJECTS) ; Superstructure (track and embankment) objects except switches and tongues
-	(step "GENERATE-SIGNALING-OBJECTS") (C:GENERATE-SIGNALING-OBJECTS)
-	(step "GENERATE-TELECOM-OBJECTS") (C:GENERATE-TELECOM-OBJECTS)
-	(step "GENERATE-LOWVOLTAGE-OBJECTS") (C:GENERATE-LOWVOLTAGE-OBJECTS)
+	;;;; (C:GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
 	
 	; Store (as the name of two dummy blocks) the number of blocks generated (AutoCAD doesn't count them for you):
 	(step "Storing the number of generated 2D schematic and scaled symbols as the names of two dummy blocks.")
 	(command "._RECTANGLE" "-1,-1" "1,1" "") ; just add something to look at...
 	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Schematic_Blocks__" (rtos nSchematicBlocks _decimal_ 0)))
-	(command "._CIRCLE" "0,0" 3.1416) ; just add something to look at...
-	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Geo_Blocks________" (rtos nScaledBlocks _decimal_ 0)))
+	(command "._RECTANGLE" "-1,-1" "1,1" "") ; just add something to look at...
+	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Annotative_Blocks___" (rtos nAnnotativeBlocks _decimal_ 0)))
+	(command "._RECTANGLE" "-1,-1" "1,1" "") ; just add something to look at...
+	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Metric_Blocks___" (rtos nMetricBlocks _decimal_ 0)))
 
 	; *** The file name "2D.dwg" is expected by other batch files taking care of the results:
 	(setq symbolLibraryFileName (strcat "2D_" (rtos (getvar "CDATE") 2 6) ".dwg"))

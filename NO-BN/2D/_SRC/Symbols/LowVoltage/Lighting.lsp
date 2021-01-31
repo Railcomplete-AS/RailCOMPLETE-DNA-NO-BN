@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -46,7 +46,7 @@
 	(drawStAndrewCross layer_Zero x y)
 	(addDescriptionBelowOrigo description rm)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -75,7 +75,7 @@
 	(drawStAndrewCross layer_Zero x y)
 	(addDescriptionBelowOrigo description (halfOf len))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -171,7 +171,7 @@
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 

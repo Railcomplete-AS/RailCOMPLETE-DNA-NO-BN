@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -52,7 +52,7 @@
 	(drawLine layer_Zero p1 p2)
 	(addDescriptionBelowOrigo description 0) 
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -77,13 +77,13 @@
 		(progn
 			; Push:
 			; The cantilever 'trunk' is always visible (layer zero):
-			(drawLine layer_Zero _origo_ '(0 (- lenM))) ; The 'arm'
+			(drawLine layer_Zero _origo_ (list 0 (- lenM))) ; The 'arm'
 			(setLayer layer_PushPullDirection)
 			(cond 
 				((= pushPull "S") ; 'Strekk' - Pull = The contact wire forces stretch the cantilever ----->
 					(command
-						"._LINE" '(0 (+ (- lenM) (- 0.500))) "@1.25<45" ""
-						"._LINE" '(0 (+ (- lenM) (- 0.500))) "@1.25<135" ""
+						"._LINE" (list 0 (+ (- lenM) (- 0.500))) "@1.25<45" ""
+						"._LINE" (list 0 (+ (- lenM) (- 0.500))) "@1.25<135" ""
 					)
 				)
 				((= pushPull "T") ; 'Trykk' - Push = The contact wire forces compress the cantilever -----<
@@ -99,12 +99,20 @@
 		(while (< (strlen lenString) 4) (setq lenString (strcat "0" lenString))) ; Leftsided zero-padding till we have 4 digits
 
 		(setq description (strcat "KL UTLIGGER SYSTEM " variation "/" pushPull " L=" lenString))
-		(addDescriptionBelowOrigo description (+ lenM))
+		(addDescriptionBelowOrigo description (+ lenM 0.5))
 
-		(scaleAll _four_)
 		(setq cantileverName (strcat blockName "-" lenString))
+
+		; Schematic symbol
+		(scaleAll _four_)
 		(createSchematicBlockFromCurrentGraphics cantileverName)
-		(createGeoBlockInAllPaperScalesFromBlock cantileverName _one_ cantileverName)
+
+		; No annotative symbol
+
+		; Metric symbol
+		(addGraphicsFromScaledSchematicBlock cantileverName _quarter_)
+		(createMetricBlockFromCurrentGraphics cantileverName)
+
 		(setq len (+ len step))
 	)
 )
@@ -123,5 +131,5 @@
 	(addTextAtPos layer_CantileverType _th070_ p2 "Car")
 	(addDescriptionBelowOrigo description -3)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

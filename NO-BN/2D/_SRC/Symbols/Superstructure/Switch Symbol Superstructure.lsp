@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY Adjust areas forbidden for axle counter sensors to new rules for speeds above / bekow 120 km/h.
@@ -67,7 +67,10 @@
 	(if (< x 10)
 		(setq str "0")
 	)
-	(setq blockName (strcat "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-H-" railProfile "-" crossType "-" (rtos quadrant 2 0)))
+	(setq 
+		blockName	(strcat "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-"  str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" (rtos quadrant 2 0))
+		description	(strcat "SPORVEKSEL / OVERBYGNING-SYMBOL, " str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" (rtos quadrant 2 0))
+	)
 	(setLayer layer_Zero)
  	(command
 		"._COLOR" "_ByBlock"
@@ -133,17 +136,19 @@
 		"._LINE" (list (+ A (* (+ B E) (cos (D->R(/ ang 2.0))))) (* (+ B E) (sin (D->R (/ ang 2.0))))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) ""
 	)
     
-	; Forbidden area for axle counter sensors
-	; TODO 2020-08-20 CLFEY: Adjust areas.
-	; Split in two areas: One for XX cm separation => speeds less than 120 km/h allowed. Another (above 1.0 meter separation?) for speeds above 120 km/h. See new BN spec.
-	(setLayer layer_Turnout_ForbiddenAreaForAxleCounterSensor)
-	(setq pts (getAreaOne Drawing_Number))
-	(command "._PLINE" (foreach pt pts (command pt)))
-	(drawHatchOptions _sparseHatch_ 0 0.01 "ANSI37" "_LAST")
-	(setq pts (getAreaTwo Drawing_Number))
-	(command "._PLINE" (foreach pt pts (command pt)))
-	(drawHatchOptions _sparseHatch_ 0 0.01 "ANSI37" "_LAST")
+; TODO 2021-01-24 CLFEY: Deprecated - the 'forbidden area for sensors' has been moved to the sensor object itself (Axle Counter), "SA-TEL Tellepunkt".
+;	; Forbidden area for axle counter sensors
+;	; TODO 2020-08-20 CLFEY: Adjust areas.
+;	; Split in two areas: One for XX cm separation => speeds less than 120 km/h allowed. Another (above 1.0 meter separation?) for speeds above 120 km/h. See new BN spec.
+;	(setLayer layer_Turnout_ForbiddenAreaForAxleCounterSensor)
+;	(setq pts (getAreaOne Drawing_Number))
+;	(command "._PLINE" (foreach pt pts (command pt)))
+;	(drawHatchOptions _sparseHatch_ 0 0.01 "ANSI37" "_LAST")
+;	(setq pts (getAreaTwo Drawing_Number))
+;	(command "._PLINE" (foreach pt pts (command pt)))
+;	(drawHatchOptions _sparseHatch_ 0 0.01 "ANSI37" "_LAST")
 
 	(moveToQuadrant quadrant "_ALL")
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(addDescriptionBelowOrigo description 1.0)
+	(createMetricBlockFromCurrentGraphics blockName)
 )

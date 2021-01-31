@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -28,15 +28,17 @@
 
 (defun SUGETRANSFORMATOR ( len r / blockName )
 	(setq
-		blockName "NO-BN-2D-JBTKL-TRANSFORMATOR-SUGETRAFO"
+		blockName	"NO-BN-2D-JBTKL-TRANSFORMATOR-SUGETRAFO"
+		description	(strcat "KL TRANSFORMATOR, SUGETRAFO")
 	)
 	(drawCoil len r)
 	(command 
 		"._ROTATE" "_ALL" "" "0,0" 90
 		"._MOVE" "_ALL" "" "0,0" (list (* 4 r) 0)
 	)
+	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName 0.5 blockName) ; 50% size is 1:500 scale
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -44,6 +46,7 @@
 (defun SUGETRANSFORMATOR-I-KIOSK ( len r / blockName )
 	(setq
 		blockName "NO-BN-2D-JBTKL-TRANSFORMATOR-SUGETRAFO-I-KIOSK"
+		description	(strcat "KL TRANSFORMATOR, SUGETRAFO I KIOSK")
 	)
 	(drawCoil len r)
 	(command 
@@ -55,8 +58,9 @@
 			(list (* (- 5) r) (- r))
 			(list (* (+ 5) r) (+ len r r))
 	)
+	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName 0.5 blockName) ; 50% size is 1:500 scale
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -64,6 +68,7 @@
 (defun AUTOTRANSFORMATOR ( len r / blockName )
 	(setq 
 		blockName "NO-BN-2D-JBTKL-TRANSFORMATOR-AUTOTRAFO"
+		description	(strcat "KL TRANSFORMATOR, AUTOTRAFO")
 	)
 	(drawCoil len r)
 	(command 
@@ -75,8 +80,9 @@
 	(addText "NL" (list (- (+ len r r)) (* 8 r)) 1.8 0 "iso" "_MC")
 	(addText "PL" (list (- (+ len r r)) 0) 1.8 0 "iso" "_MC")
 	(setLayer layer_Zero)
+	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName 0.5 blockName) ; 50% size is 1:500 scale
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 

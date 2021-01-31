@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -26,6 +26,6 @@
 	(command "._RECTANGLE" (list (/ x -2) 0) (list (/ x 2) y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols:
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	; Annotative symbol
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

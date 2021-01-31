@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -27,7 +27,7 @@
 	;
 	(setq 
 		blockName	"NO-BN-2D-JBTTE-TELEFON-LANGS-SPOR"
-		description	"Tlf"
+		description	"TELEFON"
 		x 3.0
 		y 3.0
 		gx 0.3
@@ -39,10 +39,10 @@
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
 	(addTextAtPos layer_Zero (* 0.8 gy) "0,0" "T")
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) "Telefon")
 	(moveDown (halfOf gy))
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics _one_ blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

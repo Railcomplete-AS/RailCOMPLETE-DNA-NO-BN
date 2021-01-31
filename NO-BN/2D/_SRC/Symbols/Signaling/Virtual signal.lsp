@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -22,17 +22,19 @@
 (defun VIRTUAL-SIGNAL ( / blockName x y ang len1 width )
 	(setq
 		blockName "NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT"
+		description "FIKTIVT SLUTTPUNKT FOR TOGVEI OG SKIFTEVEI"
 		x 3.0		; Schematic symbol (simple angle bracket)
 		y 3.0
-		ang 130		; Geo symbols ('fat' arrow - better visibility):
+		ang 130		; Annotative symbol ('fat' arrow - better visibility):
 		len1 3.0
 		width (/ 0.416 2.0)
 	)
 	; Schematic symbol
 	(command "._PLINE" (list (- x) y) "0,0" (list (- x) (- y)) _open_) ; the '>' angle bracket
+	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols:
+	; Annotative symbol
 	(command ; 'Fat' angle bracket
 		"._PLINE"
 			"0,0" 
@@ -42,7 +44,8 @@
 			""
 		"._MIRROR" "_LAST" "" "0,0" "1,0" "_NO" 
 	)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 1.0 blockName)
+	(addDescriptionBelowOrigo description _proxySymbolRadius_)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -50,8 +53,9 @@
 (defun VIRTUAL-INTERMEDIATE-SIGNAL ( / blockName s gs gs2 )
 	(setq
 		blockName "NO-BN-2D-JBTSI-SIGNAL-VIAPUNKT"
+		description "VIAPUNKT FOR TOGVEI OG SKIFTEVEI UTPEKING"
 		s	3.0			; Schematic symbol (simple triangle)
-		gs	1.5			; Geo symbols ('fat' triangle - better visibility):
+		gs	1.5			; Annotative symbol ('fat' triangle - better visibility):
 		gs2	(/ gs 2)
 	)
 	
@@ -62,12 +66,12 @@
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols:
+	; Annotative symbol
 	(command ; 'fat' triangle
 		"._POLYGON" 3 (list 0 0) "_INSCRIBED" gs
 		"._POLYGON" 3 (list 0 0) "_INSCRIBED" (- gs gs2)
 		"._ROTATE" "_ALL" "" (list 0 0) (- 90)
 		"._MOVE" "_ALL" "" (list 0 0) (list (- gs) 0)
 	)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 1.0 blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

@@ -7,7 +7,7 @@
 ;
 ; Change log:
 ; 2020-09-02 CLFEY Removed E34 and E35 markerboards. Added E35 to the .LSP file for Combined Signals.
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY Clarify which ERTMS 2D-symbols should be present - and create those.
@@ -21,12 +21,13 @@
 	; See trv \ Bane NOR document "ERTMS Programme Design requirements - Signs and boards" Doc.no. 1000001649_00E dated 2020-04-28.
 	; 
 	; Symbols: See example files from Bane NOR (drawings).
-	; TODO: 2020-08-04 CLFEY - missing boards, see ORV.
+	; TODO: 2020-08-04 CLFEY - missing boards, see ORV. Move these routines over to "Boards and poles" Lisp routine, one file per board (group).
 	;
 	(setCadSystemDefaults)
 		
 	; ERTMS signals
 	; E36 Veisikringsanlegg - Level Crossing
+	(subStep "ERTMS-LEVEL-CROSSING")
 	(ERTMS-LEVEL-CROSSING "FORSIGNAL" nil)
 	(ERTMS-LEVEL-CROSSING "FORSIGNAL" "AAK")
 	(ERTMS-LEVEL-CROSSING nil nil)
@@ -34,6 +35,7 @@
 
 	; ERTMS boards
 	; E??
+	(subStep "ERTMS-SHUNTING-AREA")
 	(ERTMS-SHUNTING-AREA "BEGIN" nil)
 	(ERTMS-SHUNTING-AREA "BEGIN" "AAK")
 	(ERTMS-SHUNTING-AREA "END" nil)
@@ -41,10 +43,12 @@
 
 	; E??
 	; ( there is no "BEGIN" here)
+	(subStep "ERTMS-SUPERVISED-AREA")
 	(ERTMS-SUPERVISED-AREA "END" nil)
 	(ERTMS-SUPERVISED-AREA "END" "AAK")
 
 	; E37 Systemovergang
+	(subStep "ERTMS-LEVEL-TRANSITION")
 	(ERTMS-LEVEL-TRANSITION)
 )
 
@@ -54,13 +58,13 @@
 ; ERTMS signals
 ;=======================
 ; 2020-09-02 CLFEY Note: This function is deprecated. See Combined Signals LISP file.
-;(defun ERTMS ( variant mounting dir / blockName pole yokePole x y )	;<-- defines a function with name ERTMS, lists arguments and local variables of function. 
+;(defun ERTMS ( variation mounting dir / blockName pole yokePole x y )	;<-- defines a function with name ERTMS, lists arguments and local variables of function. 
 ;	; Input parameters to the left of /, local variables to the right.
 ;	; Local variables are deleted after function call. 
 ;	; NB: If an identifier is not declared as local, but is used in (setq xyzzy ...) then 'xyzzy' will be globally accessible afterwards.
 ;	; All lines below this one are function bodies, that perform operations on the arguments.
 ;	(setq
-;		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-ERTMS-" variant)	;<-- assigns value to the local variable blockName. 
+;		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-ERTMS-" variation)	;<-- assigns value to the local variable blockName. 
 ;		pole 6.0
 ;		yokePole 2.0
 ;		x 6.0 ; surrounding box
@@ -94,7 +98,7 @@
 ;			""					
 ;		"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
 ;	)
-;	(if (= variant "E35-STOPPSKILT")
+;	(if (= variation "E35-STOPPSKILT")
 ;		(drawHatchFromPoint 0.02 (list (* 0.45 x) (* 0.45 y)) 0 0)
 ;	)
 ;
@@ -127,7 +131,7 @@
 ;		)
 ;	)
 ;	(createSchematicBlockFromCurrentGraphics blockName)
-;	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+;	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 ;)
 
 
@@ -189,7 +193,7 @@
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -239,7 +243,7 @@
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -297,7 +301,7 @@
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -328,6 +332,6 @@
 	; Epilogue:
 	(command "._MOVE" "_ALL" "" "0,0" (list 0 (/ y 2))) ; move up by half of surrounding box, board insertion point is middle lower side
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _twoThirds_ blockName) ; Use 2/3 of scaled schematic symbol as 1:500 cale etc
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 

@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -22,7 +22,8 @@
 
 (defun CONNECTOR-CROSSING ( / blockName radius )
 	(setq
-		blockName "NO-BN-2D-JBTOB-CONNECTOR-CROSSING" 
+		blockName	"NO-BN-2D-JBTOB-CONNECTOR-CROSSING"
+		description	"CONNECTOR, CROSSING"
 		radius 0.5 ; Radius of 180 deg half-circle arc, to be shown at the ends of a long horizontal and short vertical line meeting at the crossing
 	)
 	(setLayer layer_Zero)
@@ -34,5 +35,7 @@
 		"_ARC" "_CE" (list 0 (* -3 radius)) (list (* 1 radius) (* -3 radius)) (list (* -1 radius) (* -3 radius)) ; Bottom arc
 		"_ARC" "_CE" (list 0 (* 3 radius)) (list (* -1 radius) (* 3 radius)) (list (* 1 radius) (* 3 radius)) ; Top arc
 	)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics _one_ blockName)
+	(addDescriptionBelowOrigo description (* 4 radius))
+	(createSchematicBlockFromCurrentGraphics blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

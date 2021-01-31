@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -15,18 +15,29 @@
 
 (defun C:CABINETS-AND-CABLE-DISTRIBUTION-BOXES ( / )
 
-	(APPARATSKAP-STORT "DOBBEL")
-	(APPARATSKAP-STORT "VHENGSLET")
-	(APPARATSKAP-STORT "HHENGSLET")
-	(APPARATSKAP-LITE-PAA-STOLPE "VHENGSLET")
-	(APPARATSKAP-LITE-PAA-STOLPE "HHENGSLET")
-	(NOEKKELSKAP "VHENGSLET")
-	(NOEKKELSKAP "HHENGSLET")
-	(SVEIVSKAP "VHENGSLET")
-	(SVEIVSKAP "HHENGSLET")
-	(KABELBOKS "VHENGSLET")
-	(KABELBOKS "HHENGSLET")
-	(S-LAAS)
+	(subSubStep "APPARATSKAP-STORT")
+		(APPARATSKAP-STORT "DOBBEL")
+		(APPARATSKAP-STORT "VHENGSLET")
+		(APPARATSKAP-STORT "HHENGSLET")
+	
+	(subSubStep "APPARATSKAP-LITE-PAA-STOLPE")
+		(APPARATSKAP-LITE-PAA-STOLPE "VHENGSLET")
+		(APPARATSKAP-LITE-PAA-STOLPE "HHENGSLET")
+	
+	(subSubStep "NOEKKELSKAP")
+		(NOEKKELSKAP "VHENGSLET")
+		(NOEKKELSKAP "HHENGSLET")
+	
+	(subSubStep "SVEIVSKAP")
+		(SVEIVSKAP "VHENGSLET")
+		(SVEIVSKAP "HHENGSLET")
+	
+	(subSubStep "KABELBOKS")
+		(KABELBOKS "VHENGSLET")
+		(KABELBOKS "HHENGSLET")
+	
+	(subSubStep "S-LAAS")
+		(S-LAAS)
 )
 
 
@@ -62,9 +73,9 @@
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
-	; (no cross)
+	(drawStAndrewCross layer_Zero gx gy)
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
 	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
@@ -79,7 +90,7 @@
 			(drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy))
 		)
 	)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 2.0 blockName) ; Double of metric size when drawn in 1:500 scale, real metric size in 1:250 scale
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -116,7 +127,7 @@
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
 	; (no cross)
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
@@ -126,7 +137,7 @@
 		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 2.0 blockName) ; Double of metric size when drawn in 1:500 scale, real metric size in 1:250 scale
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -163,7 +174,7 @@
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
 	; (no cross)
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
@@ -173,7 +184,7 @@
 		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 2.0 blockName) ; Double of metric size when drawn in 1:500 scale, real metric size in 1:250 scale
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -210,7 +221,7 @@
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
 	; (no cross)
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
@@ -220,7 +231,7 @@
 		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 2.0 blockName) ; Double of metric size when drawn in 1:500 scale, real metric size in 1:250 scale
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -257,7 +268,7 @@
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
 	; (no cross)
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
@@ -267,7 +278,7 @@
 		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 2.0 blockName) ; Double of metric size when drawn in 1:500 scale, real metric size in 1:250 scale
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -304,7 +315,7 @@
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
+	; Annotative symbol
 	(drawLine layer_Zero (posTL gb gy) (posTR gb gy)) 
 	(drawBox layer_Zero gx gy _noWipeout_)
 	(drawHatch _sparseHatch_)
@@ -315,5 +326,5 @@
 		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics 2.0 blockName) ; Double of metric size when drawn in 1:500 scale, real metric size in 1:250 scale
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

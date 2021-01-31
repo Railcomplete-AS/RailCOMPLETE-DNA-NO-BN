@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -28,11 +28,11 @@
 	(setq
 		blockName "NO-BN-2D-JBTKL-MAST-BJELKEMAST"
 		description "KL BJELKEMAST TYPE HEB"
-		x (/ 3.0 2) ;Halvbredde
-		y (/ 3.0 2) ;Halvhøyde
-		w1 0.09 	;Halvbredde "livet"
-		w2 0.20     ;hel tykkelse "tverr-beina"
-		r 0.15		;bøyradius i "innerhjørner" på HEB bjelken
+		x (/ 3.0 2) ; Halvbredde
+		y (/ 3.0 2) ; Halvhøyde
+		w1 0.09 	; Halvbredde "livet"
+		w2 0.20     ; hel tykkelse "tverr-beina"
+		r 0.15		; bøyradius i "innerhjørner" på HEB bjelken
 	)
 	; Draw the first quadrant of an "I" shaped beam, then mirror+mirror:
 	(setLayer layer_Zero)
@@ -50,10 +50,10 @@
 		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
 		"._MIRROR" "_ALL" "" (list 0 0) (list 1 0) "_NO"
 	)
-	(drawHatchFromPoint _denseHatch__ (list 0 r) (/ 3.14 4) 0)
+	(drawHatchFromPoint _denseHatch_ (list 0 r) (/ 3.14 4) 0)
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -82,7 +82,7 @@
 	(addDescriptionBelowOrigo description 0)
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -97,7 +97,7 @@
 	(drawBox layer_Zero x y _noWipeout_)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -112,7 +112,7 @@
 	(drawBox layer_Zero x y _noWipeout_)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -128,7 +128,7 @@
 	(drawHatch _mediumHatch_)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -142,5 +142,5 @@
 	(drawCircle layer_Zero r _noWipeout_)
 	(addDescriptionBelowOrigo description r)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

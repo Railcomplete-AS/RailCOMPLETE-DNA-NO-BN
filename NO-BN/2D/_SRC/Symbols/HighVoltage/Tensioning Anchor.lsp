@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -37,14 +37,14 @@
 	;
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-TUNNELFESTE"
-		description 	"TUNNELFESTE"
+		description "KL KRAFTAVLASTING, ANKERPUNKT I TUNNELHVELV"
 		x	1.5
 		y	2.0
 	)
 	(drawStAndrewCross layer_Zero x y)
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )		
 
 
@@ -61,7 +61,7 @@
 	;
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-BARDUN-ENKEL"
-		description "1 x BARDUN"
+		description "KL KRAFTAVLASTING, ANKERPUNKT FOR 1 x BARDUN"
 		p1	(list -0.5  2.0)
 		p2	(list  0.5  2.0)
 		p3	(list  0.0  2.0)
@@ -73,17 +73,17 @@
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols
+	; Annotative symbol
 	(command "._PLINE" p1 _origo_ p2 _open_)	; arrow
 	(drawLine layer_Zero _origo_ p3) 	; SHORT shaft
 	(addDescriptionBelowOrigo description 0)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )		
 
 
 	
 (defun BARDUNFESTE-DOBBEL ( / blockName description p1 p2 p3 p4 p5 p6 p10 )
-	; Double arrow - double strether fastening
+	; Double arrow - double stretcher fastening
 	; Ref TRV Strekningsplan symboler
 	; Default insertion direction is "down" in strecher wire alignment, i.e. pointing towards foundation.
 	;
@@ -97,7 +97,7 @@
 	;
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-BARDUN-DOBBEL"
-		description "2 x BARDUN"
+		description "KL KRAFTAVLASTING, ANKERPUNKT FOR 2 x BARDUN"
 		p1	(list -0.5  2.0)
 		p2	(list  0.5  2.0)
 		p3	(list  0.0  2.0)
@@ -113,12 +113,12 @@
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols
+	; Annotative symbol
 	(command "._PLINE" p1 _origo_ p2 _open_)	; lower arrow
 	(command "._PLINE" p4 p3 p5 _open_)			; upper arrow
 	(drawLine layer_Zero _origo_ p6) 	; SHORT shaft
 	(addDescriptionBelowOrigo description 0)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 	
@@ -127,7 +127,7 @@
 	;Default insertion direction is "up" in spanner rod alignment, i.e. pointing towards top of OCS mast.
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-STREVER"
-		description "STREVERFESTE"
+		description "KL KRAFTAVLASTING, ANKERPUNKT FOR STREVER"
 		shaftLength	4	; Bane NOR length 2D symbol is basically 7.875 and can be changed, RC is fixed and will usually extend past the start of its spanner alignment.
 		arrowHeight 2.0
 		arrowHalfWidth 0.5
@@ -140,9 +140,9 @@
 		"._LINE" (list (- baseHalfWidth) shaftLength) (list (+ baseHalfWidth) shaftLength) ""
 		"._MIRROR" "_ALL" "" (list 0 0) (list 1 0) "_YES"
 	)
-	(addDescriptionBelowOrigo description 0)
+	(addDescriptionBelowOrigo description arrowHeight)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -152,7 +152,7 @@
 	;Default insertion direction is "both", i.e. spanner is located at the track side of its bridge / tunnel suspension mast.
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-STREVER-MED-FESTEPLATE-FOR-BRU-OG-TUNNEL-120"
-		description (strcat "STREVER MED FESTEPLATE FOR BRU OG TUNNEL, " _uOE_ "120")
+		description (strcat "KL KRAFTAVLASTING, STREVER MED FESTEPLATE FOR BRU OG TUNNEL, " _uOE_ "120")
 	)
 	(command
 		; Base plate with holes for roof fastening (draw right side, then mirror left side):
@@ -168,7 +168,8 @@
 		"._CIRCLE" "0,0" 0.060 ; Inside of Ø16 U iron clamp around Ø120 suspension mast
 		"._CIRCLE" "0,0" 0.076 ; Outside of clamp
 	)
-	(addDescriptionBelowOrigo description 0)
+	(scaleAll _four_)
+	(addDescriptionBelowOrigo description 4)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

@@ -6,16 +6,16 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
 ; Turnout, derailer and level crossing boom operation (point machine, derailer machine, boom machine)
 
 (defun C:SWITCH-CONTROL-EQUIPMENT ( / )
-	(POINT-MACHINE)
-	(DERAILER-MACHINE)
-	(LOCAL-CONTROL-PANEL)
+	(subSubStep "POINT-MACHINE")		(POINT-MACHINE)
+	(subSubStep "DERAILER-MACHINE")	(DERAILER-MACHINE)
+	(subSubStep "LOCAL-CONTROL-PANEL")	(LOCAL-CONTROL-PANEL)
 )
 
 
@@ -32,7 +32,7 @@
 	; no hatch
 	(addDescriptionBelowOrigo description r1)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -49,7 +49,7 @@
 	; no hatch
 	(addDescriptionBelowOrigo description r1)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -66,5 +66,5 @@
 	(drawHatch _dense_)
 	(addDescriptionBelowOrigo description r1)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

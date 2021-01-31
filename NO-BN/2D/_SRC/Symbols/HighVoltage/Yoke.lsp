@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -15,6 +15,7 @@
 (defun C:YOKE ( / )
 	(setq counter 10)
 	(repeat 34
+		(subSubStep (strcat "YOKE: " (rtos counter _decimal_ 0) " m"))
 		(AAK counter) ; 10 to 43 inclusive
 		(setq counter (+ counter 1))
 	)
@@ -25,39 +26,47 @@
 
 (defun AAK ( len / blockName )
 	(setq 
-		blockName (strcat "NO-BN-2D-JBTKL-AAK-" (rtos (* len 1000) 2 0))
+		blockName (strcat "NO-BN-2D-JBTKL-AAK-" (rtos (* 1000 len) _decimal_ 0))
+		description (strcat "KL-" _uAA_ "K " (rtos len _decimal_ 0) " METER")
 	)
 
-	; Schematic symbol - Adapt to schematic plan with 21 units between center tracks (instead of standard ~4.7 in shunting yards
-	(drawLine layer_Zero (list 0 0) (list 0 (atoi (rtos (* (/ 21.0 4.7) (- len)) _decimal_ 0)))) ; scaled, floored to int
-	(addTextAtPos layer_Description _descriptionTextHeight_ (list 0 _descriptionTextHeight_) (strcat "KL-aak " (rtos len _decimal_ 0) " meter")) ; text above
+	; Schematic symbol
+	; Adapt to schematic plan with 21 units between center tracks (instead of standard ~4.7 in shunting yards
+	(drawLine layer_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
+	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols - metric in all scales
-	(foreach paperScale paperScaleList
-		(drawLine layer_Zero (list 0 0) (list 0 (- len))) ; metric
-		(addTextAtPos layer_Description _descriptionTextHeight_ (list 0 _descriptionTextHeight_) (strcat "KL-aak " (rtos len _decimal_ 0)  " meter")) ; text above
-		(createGeoBlockInCurrentPaperScaleFromCurrentGraphics paperScale blockName)
-	)
+	; Annotative symbol
+	; Just annotative text, no graphics
+	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
+	(createAnnotativeBlockFromCurrentGraphics blockName)
+
+	; Metric symbol
+	(drawLine layer_Zero (list 0 0) (list 0 (- len)))
+	(createMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
 (defun UTLIGGERAAK ( / blockName len )
 	(setq 
-		blockName "NO-BN-2D-JBTKL-AAK-UTLIGGERAAK-6000"
-		len 6.0 ; Fixed length
+		len 6.000 ; Fixed length [m]
+		blockName (strcat "NO-BN-2D-JBTKL-AAK-UTLIGGERAAK-" (rtos (* 1000 len) _decimal_ 0))
+		description (strcat "KL UTLIGGER-" _uAA_ "K " (rtos len _decimal_ 0) " METER")
 	)
 
-	; Schematic symbol - Adapt to schematic plan with 21 units between center tracks (instead of standard ~4.7 in shunting yards
-	(drawLine layer_Zero (list 0 0) (list 0 (atoi (rtos (* (/ 21.0 4.7) (- len)) _decimal_ 0)))) ; scaled, floored to int
-	(addTextAtPos layer_Description _descriptionTextHeight_ (list 0 _descriptionTextHeight_) (strcat "KL utligger-aak " (rtos len _decimal_ 0)  " meter")) ; text above
+	; Schematic symbol
+	; Adapt to schematic plan with _schematicTrackSpacing_ units between center tracks (instead of standard ~4.7 in shunting yards
+	(drawLine layer_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
+	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols - metric in all scales
-	(foreach paperScale paperScaleList
-		(drawLine layer_Zero (list 0 0) (list 0 (- len))) ; metric
-		(addTextAtPos layer_Description _descriptionTextHeight_ (list 0 _descriptionTextHeight_) (strcat "KL utligger-aak " (rtos len _decimal_ 0)  " meter")) ; text above
-		(createGeoBlockInCurrentPaperScaleFromCurrentGraphics paperScale blockName)
-	)
+	; Annotative symbol
+	; Just annotative text, no graphics
+	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
+	(createAnnotativeBlockFromCurrentGraphics blockName)
+
+	; Metric symbol
+	(drawLine layer_Zero _origo_ (list 0 (- len)))
+	(createMetricBlockFromCurrentGraphics blockName)
 )

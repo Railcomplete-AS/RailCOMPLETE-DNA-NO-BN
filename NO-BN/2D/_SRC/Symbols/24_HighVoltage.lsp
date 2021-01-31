@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -17,7 +17,7 @@
 (princ "\n")
 (loadfolder f)
 
-(defun C:GENERATE-HIGH-VOLTAGE-SCALED-OBJECTS ( / )
+(defun C:GENERATE-HIGH-VOLTAGE-OBJECTS ( / )
 	(setCadSystemDefaults)
 	(subStep "OCS-MAST")					(C:OCS-MAST) ; file: mast.lsp
 	(subStep "TENSIONING-DEVICE")			(C:TENSIONING-DEVICE)
@@ -29,12 +29,6 @@
 	(subStep "HIGH-VOLTAGE-ISOLATOR")		(C:HIGH-VOLTAGE-ISOLATOR)
 	(subStep "EARTHING")					(C:EARTHING)
 	(subStep "TENSIONING-DEVICE-ANCHOR")	(C:TENSIONING-DEVICE-ANCHOR)
-)
-
-
-
-(defun C:GENERATE-HIGH-VOLTAGE-FIXED-SCALE-OBJECTS ( / )
-	(setCadSystemDefaults)
 	(subStep "YOKE")						(C:YOKE)
 	(subStep "CANTILEVER")					(C:CANTILEVER)
 )

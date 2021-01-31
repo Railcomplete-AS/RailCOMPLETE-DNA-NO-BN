@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -25,7 +25,11 @@
 
 
 (defun VEISIGNAL ( variation yokeMounted / )
-	(setq blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-" variation (if (= yokeMounted nil) "" "-AAK")))
+	(setq 
+		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-" variation (if (= yokeMounted nil) "" "-AAK"))
+		description "VEISIGNAL (SIGNAL MOT VEITRAFIKK)"
+	)
+	
 	(thawAllLayers)
 
 	; Schematic symbol
@@ -45,7 +49,7 @@
 	(thawAllLayers)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols
+	; Annotative symbol
 	; Geo 1-line signaling / schematic plan ('skjematisk plan') view
 	(setLayer layer_View_SchematicPlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
@@ -58,9 +62,9 @@
 	(setLayer layer_View_TrackIsolationPlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
 	
-	; Create geo symbols
 	(thawAllLayers)
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics _twoThirds_ blockName)
+	(scaleAll _twoThirds_)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 

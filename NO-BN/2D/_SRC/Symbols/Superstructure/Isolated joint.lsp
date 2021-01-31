@@ -8,11 +8,16 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
 ; Isolated rail joint (showing where the signal current is flowing)
+;
+; Test cases:
+;		(setq  q4 1  q3 0  q2 1  q1 1)
+;		(SKINNESKJOET q4 q3 q2 1)
+
 
 (defun C:ISOLATED-JOINT ( / ) 
 	; Isolated joints, for track circuit separation or for return current circuit drawings
@@ -47,7 +52,7 @@
 
 
 
-(defun SKINNESKJOET ( q4 q3 q2 q1 / blockName schematicGauge geoGauge paperScale dwgScale )
+(defun SKINNESKJOET ( q4 q3 q2 q1 / blockName schematicGauge geoGauge )
 	;
 	; Isolated joint ('Skinneskjøt').
 	;
@@ -61,7 +66,7 @@
 	;
 	; In "JBTOB__KO_SKJ_KABELPLAN" view, we assume a 1-line representation of the centre track.
 	; Schematic symbols feature a 3 meter 'bar' across the track and 1.5 meter 'ears' along the track in the direction of track circuit current.
-	; Geo symbols feature a 0.75 
+	; Annotative symbol feature a 0.75 line from alignment axis to the rail where the sensor is actually located.
 	; 
 	; In "JBTOB__KO_SKJ_SPORISOLERING_OG_RETURKRETS" view, we assume a 2-line representation of the centre track. Schematic and 1:500 symbols feature
 	; a 3.0 meter 'bar' across the relevant rail pluss a 1.5 meter 'ear' along that rail in the direction of track circuit current presence.
@@ -71,48 +76,42 @@
 	; You can toggle between 1-line and 2-line mode in RailCOMPLETE using the command RC-ShowTwoRails.
 	;
 	(setq
-		blockName (strcat "NO-BN-2D-JBTOB-SKINNESKJOET-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
-		schematicGauge 9.0 		; Spacing between rails in schematic 2-line signaling drawings
-		geoGauge 1.5 			; Spacing between rails in geo 2-line drawings
+		blockName	(strcat "NO-BN-2D-JBTOB-SKINNESKJOET-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
+		description (strcat "ISOLERT SKINNESKJ" _uOE_ "T, KVADRANT IV-III-II-I = " (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
 	)
 	
 	; Schematic symbol
 	; Schematic 1-line signaling / schematic plan ('skjematisk plan') view
 	(setLayer layer_View_SchematicPlan)
-	(drawIsolatedJointThickBarSymbol 1.0)
+	(drawIsolatedJointThickBarSymbol _one_)
 
 	; Schematic 1-line signaling / cable plan ('plan og kabelplan') view
 	(setLayer layer_View_CablePlan)
-	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 1.0 0.0) ; No scaling, no offset from centre track
+	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; No scaling, no offset from centre track
 
 	; Schematic 2-line signaling / track insulation plan OR high voltage / return current plan view
-	; 9 units (meters) rail separation in Bane NOR schematic signaling drawings
 	(setLayer layer_View_TrackIsolationPlan)
-	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 1.0 (/ schematicGauge 2)) ; No scaling, then offset with half of schematic gauge from centre track
+	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _schematicGauge_)) ; No scaling, then offset with half of schematic gauge from centre track
 
-	; Create schematic symbol
+	; Schematic symbol
+	(addDescriptionBelowOrigo description (* _threeQuarters_ _schematicGauge_))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
-	; Geo symbols
-	; Note: The geo symbols must be created one by one because the rail gauge is the same in all scales, but the 'ears' vary in size.
-	(foreach paperScale paperScaleList
-		(setq dwgScale (/ (atof paperScale) 500.0)) ; The schematic symbol is also suitable for 1:500 geo scale.
+	; Annotative symbol
+	; Geo 1-line signaling view showing just a thick bar
+	; (setLayer layer_View_SchematicPlan)  -   not meaningful for geo symbols
+	; (drawIsolatedJointThickBarSymbol _one_)
 
-		; Geo 1-line signaling view showing just a thick bar
-		(setLayer layer_View_SchematicPlan)
-		(drawIsolatedJointThickBarSymbol dwgScale)
+	; Geo 1-line signaling view showing a bar with ears, centered on the track axis
+	; (setLayer layer_View_CablePlan)
+	; (drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; Scale, no offset
 
-		; Geo 1-line signaling view showing a bar with ears, centered on the track axis
-		(setLayer layer_View_CablePlan)
-		(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 dwgScale 0.0) ; Scale, no offset
-
-		; Geo 2-line signaling / return current view showing a bar with ear(s), centered on the left or right rail
-		; (1.5 meters rail separation in all geo scales, of course)
-		(setLayer layer_View_TrackIsolationPlan)
-		(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 dwgScale (/ geoGauge 2)) ; Scale, then offset with half of normal track gauge
-
-		(createGeoBlockInCurrentPaperScaleFromCurrentGraphics paperScale blockName)
-	)
+	; Geo 2-line signaling / return current view showing a bar with ear(s), centered on the left or right rail
+	(setLayer layer_View_TrackIsolationPlan)
+	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _cantReferenceGauge_)) ; Scale, then offset with half of normal gauge reference width
+	
+	(addDescriptionBelowOrigo description (* _threeQuarters_ _cantReferenceGauge_))
+	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -150,7 +149,7 @@
 	;  11    12    13  -(offset+y)
 	;
 	(setq
-		bar		3.0							; Length of "bar" across track
+		bar		3.0							; Length of "bar" across track (Schematic size + 1:1 scale drawing size)
 		ear		1.5							; Length of "ear" along track
 		y		(* (/ bar 2) scale)			; Half-length of scaled bar across track
 		x		(* ear scale)				; Length of scaled ear along track

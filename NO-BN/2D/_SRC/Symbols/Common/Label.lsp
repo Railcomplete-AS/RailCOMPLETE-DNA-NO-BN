@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -50,7 +50,7 @@
 	(command "._LINE" "0,0" "0,10" "")
 	(addAtt "T01" "T01" "T01" "-0.6,0" 1.8 90 "iso" "_BL" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLT-018 ( / blockName )
@@ -59,7 +59,7 @@
 	(addAtt "T01" "T01" "T01" "-0.6,0" 1.8 90 "iso" "_BL" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "Displacement" "0,-10") 
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRB-018 ( / blockName )
@@ -68,7 +68,7 @@
 	(addAtt "T01" "T01" "T01" "-0.6,0" 1.8 90 "iso" "_BL" (+ _multipleLines_ _lockPosition_))
 	(command "._ROTATE" "_ALL" "" "0,5" "180") 
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRT-018 ( / blockName )
@@ -78,7 +78,7 @@
 	(command "._ROTATE" "_ALL" "" "0,5" "180")
 	(command "._MOVE" "_ALL" "" "Displacement" "0,-10") 
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLB-018 ( / blockName )
@@ -86,7 +86,7 @@
 	(command "._LINE" "0,0" "0,3" "-10,3" "")
 	(addAtt "T01" "T01" "T01" "-10,2.4" 1.8 0 "iso" "_TL" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLT-018 ( / blockName )
@@ -96,7 +96,7 @@
 	(addAtt "T01" "T01" "T01" "-10,0.6" 1.8 0 "iso" "_BL" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-3")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRB-018 ( / blockName )
@@ -104,7 +104,7 @@
 	(command "._LINE" "0,0" "0,3" "10,3" "")
 	(addAtt "T01" "T01" "T01" "10,2.4" 1.8 0 "iso" "_TR" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRT-018 ( / blockName )
@@ -114,7 +114,7 @@
 	(command "._MIRROR" "_ALL" "" "0,1.5" "1,1.5" "_YES")
 	(command "._MOVE" "_ALL" "" "0,0" "0,-3")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLB-025 ( / blockName )
@@ -122,7 +122,7 @@
 	(command "._LINE" "0,3" "0,0" "-3,3" "-21,3" "")
 	(addAtt "T01" "T01" "T01" "-21.5,3.75" 2.5 0 "iso" "_BL" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLT-025 ( / blockName )
@@ -130,7 +130,7 @@
 	(command "._LINE" "0,-3" "0,0" "-3,-3" "-21,-3" "")
 	(addAtt "T01" "T01" "T01" "-21.5,-2.25" 2.5 0 "iso" "_BL" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRB-025 ( / blockName )
@@ -138,7 +138,7 @@
 	(command "._LINE" "0,3" "0,0" "3,3" "21,3" "")
 	(addAtt "T01" "T01" "T01" "21.5,3.75" 2.5 0 "iso" "_BR" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRT-025 ( / blockName )
@@ -146,7 +146,7 @@
 	(command "._LINE" "0,-3" "0,0" "3,-3" "21,-3" "")
 	(addAtt "T01" "T01" "T01" "21.5,-2.25" 2.5 0 "iso" "_BR" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLB-025-018 ( / blockName )
@@ -155,7 +155,7 @@
 	(addAtt "T01" "T01" "T01" "-12.5,3.75" 2.5 0 "iso" "_BC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T02" "T02" "T02" "-12.5,2.4" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLT-025-018 ( / blockName )
@@ -165,7 +165,7 @@
 	(addAtt "T02" "T02" "T02" "-12.5,-0.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-3")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRB-025-018 ( / blockName )
@@ -174,7 +174,7 @@
 	(addAtt "T01" "T01" "T01" "12.5,3.75" 2.5 0 "iso" "_BC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T02" "T02" "T02" "12.5,2.4" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRT-025-018 ( / blockName )
@@ -184,7 +184,7 @@
 	(addAtt "T02" "T02" "T02" "12.5,-0.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-3")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLB-025-018 ( / blockName )
@@ -194,7 +194,7 @@
 	(addAtt "T02" "T02" "T02" "-12.5,2.4" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T03" "T03" "T03" "-12.5,0.4" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLT-025-018 ( / blockName )
@@ -205,7 +205,7 @@
 	(addAtt "T03" "T03" "T03" "-12.5,-2.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-3")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRB-025-018 ( / blockName )
@@ -215,7 +215,7 @@
 	(addAtt "T02" "T02" "T02" "12.5,-0.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T03" "T03" "T03" "12.5,-2.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRT-025-018 ( / blockName )
@@ -226,7 +226,7 @@
 	(addAtt "T03" "T03" "T03" "12.5,-2.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-3")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLB-025-018 ( / blockName )
@@ -236,7 +236,7 @@
 	(addAtt "T01" "T01" "T01" "-12.5,5.25" 2.5 0 "iso" "_BC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T02" "T02" "T02" "-12.5,3.9" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLT-025-018 ( / blockName )
@@ -247,7 +247,7 @@
 	(addAtt "T02" "T02" "T02" "-12.5,0.9" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-6")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRB-025-018 ( / blockName )
@@ -257,7 +257,7 @@
 	(addAtt "T01" "T01" "T01" "12.5,5.25" 2.5 0 "iso" "_BC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T02" "T02" "T02" "12.5,3.9" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRT-025-018 ( / blockName )
@@ -268,7 +268,7 @@
 	(addAtt "T02" "T02" "T02" "12.5,0.9" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(command "._MOVE" "_ALL" "" "0,0" "0,-6")
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLB-025-018 ( / blockName )
@@ -279,7 +279,7 @@
 	(addAtt "T02" "T02" "T02" "-12.5,3.9" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T03" "T03" "T03" "-12.5,1.4" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLT-025-018 ( / blockName )
@@ -290,7 +290,7 @@
 	(addAtt "T02" "T02" "T02" "-12.5,-5.1" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T03" "T03" "T03" "-12.5,-7.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRB-025-018 ( / blockName )
@@ -301,7 +301,7 @@
 	(addAtt "T02" "T02" "T02" "12.5,3.9" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T03" "T03" "T03" "12.5,1.4" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 (defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRT-025-018 ( / blockName )
@@ -312,5 +312,5 @@
 	(addAtt "T02" "T02" "T02" "12.5,-5.1" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(addAtt "T03" "T03" "T03" "12.5,-7.6" 1.8 0 "iso" "_TC" (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

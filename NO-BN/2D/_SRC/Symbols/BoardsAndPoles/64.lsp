@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet
@@ -92,7 +92,7 @@
 	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -152,7 +152,7 @@
 	(addAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ -90 "iso" "_MC" _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -234,7 +234,7 @@
 	(addAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -294,7 +294,7 @@
 	(addAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -376,7 +376,7 @@
 	(addAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ -90 "iso" "_MC" _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -439,6 +439,6 @@
 	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createGeoBlockInAllPaperScalesFromBlock blockName _one_ blockName)
+	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

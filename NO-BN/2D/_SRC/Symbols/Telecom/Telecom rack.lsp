@@ -6,7 +6,7 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
-; 2021-01-17 CLFEY Release 2021.a
+; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
 
@@ -36,11 +36,17 @@
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) "Telerack")
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
-	; Geo symbols
+	; Annotative symbol
 	(drawBox layer_Zero gx gy layer_Cabinet_Wipeout)
 	(drawBottomEmphasis layer_Zero gx gy)
 	(drawCircle layer_Zero gr _noWipeout_)
 	(addTextAtPos layer_Zero (* 0.8 gy) _origo_ "TR")
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) "Telerack")
-	(createGeoBlockInAllPaperScalesFromCurrentGraphics	1.0 blockName)
+	(createAnnotativeBlockFromCurrentGraphics blockName)
+	
+	; Metric symbol
+	(drawBox layer_MetricDetails gx gy layer_Cabinet_Wipeout)
+	(drawBottomEmphasis layer_MetricDetails gx gy)
+	(drawCircle layer_MetricDetails gr _noWipeout_)
+	(createMetricBlockFromCurrentGraphics blockName)
 )
