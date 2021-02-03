@@ -46,7 +46,12 @@
 	; Schematic symbol
 	(setq 
 		blockName (drawBalise variation) ; NOTE: Schematic size graphics routine draws the balise and returns the basic block name
-		description (strcat "BALISE " (cond ((= 1) "TOM/FAST") ((= 2) "TOM/STYRT") ((= 3) "FYLT/FAST") ((= 4) "FYLT/STYRT")))
+		description (strcat "BALISE " (cond 
+			((= variation 1) "TOM/FAST")
+			((= variation 2) "TOM/STYRT")
+			((= variation 3) "FYLT/FAST")
+			((= variation 4) "FYLT/STYRT"))
+		)
 	)
 	(addDescriptionBelowOrigo description _one_) ; below TEKST_UNDER item
 	(createSchematicBlockFromCurrentGraphics blockName)
