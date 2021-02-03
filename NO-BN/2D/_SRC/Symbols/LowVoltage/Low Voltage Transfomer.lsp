@@ -29,12 +29,12 @@
 		dx (* radius 0.6)
 	)
 	(command
-		"._RECTANGLE" (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		"._CIRCLE" (list (- dx) 0) radius
-		"._CIRCLE" (list dx 0) radius
+		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
+		_CIRCLE_ (list (- dx) 0) radius
+		_CIRCLE_ (list dx 0) radius
 	)
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Transformator" "0,-0.6" _descriptionTextHeight_ 1.5 0 "ISO" "_TC")
+	(addMText "Transformator" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

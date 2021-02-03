@@ -105,18 +105,18 @@
 	(defun localGraphics ( layDef /)
 		(setLayer layDef)
 		(command
-			"._PLINE" ; 
+			_POLYLINE_ ; 
 				(list (- (/ baseX 2)) (/ baseY 2))
 				(list (+ (/ baseX 2)) (/ baseY 2))
 				(list (+ (/ shaftX 2)) (/ shaftY 2))
 				(list (- (/ shaftX 2)) (/ shaftY 2))
-				"_CLOSE"
-			"._CIRCLE" (list x y) boltRadius
+				_closedPolyline_
+			_CIRCLE_ (list x y) boltRadius
 		)
-		(mirrorAboutXaxis _keep_)
-		(mirrorAboutYaxis _keep_)
-		(mirrorAboutDiagonal _keep_)
-		(command "._RECTANGLE" (list (- (/ cutoutX 2)) (- (/ shaftY 2))) (list (+ (/ cutoutX 2)) (- cutoutY (/ shaftY 2))))
+		(mirrorAboutXaxis _keepMirrorSource_)
+		(mirrorAboutYaxis _keepMirrorSource_)
+		(mirrorAboutDiagonal _keepMirrorSource_)
+		(command _RECTANGLE_ (list (- (/ cutoutX 2)) (- (/ shaftY 2))) (list (+ (/ cutoutX 2)) (- cutoutY (/ shaftY 2))))
 	)
 
 	; Schematic symbol
@@ -153,21 +153,21 @@
 	(defun localGraphics ( layDef /)
 		(setLayer layDef)
 		(command
-			"._RECTANGLE"	(list (- (/ s1 2)) (- (/ s1 2)))	(list (/ s1 2) (/ s1 2))			;stort kvadrat, ytre
-			"._RECTANGLE"	(list (- (/ s2 2)) (- (/ s2 2)))	(list (/ s2 2) (/ s2 2))			;lite kvadrat, indre
+			_RECTANGLE_	(list (- (/ s1 2)) (- (/ s1 2)))	(list (/ s1 2) (/ s1 2))			;stort kvadrat, ytre
+			_RECTANGLE_	(list (- (/ s2 2)) (- (/ s2 2)))	(list (/ s2 2) (/ s2 2))			;lite kvadrat, indre
 			; skrålinjer:
-			"._LINE"		(list (- (/ s1 2)) (- (/ s1 2)))	(list (- (/ s2 2)) (- (/ s2 2))) ""
-			"._LINE"		(list (/ s1 2) (/ s1 2))			(list (/ s2 2) (/ s2 2)) ""
-			"._LINE"		(list (/ s1 -2) (/ s1 2))			(list (/ s2 -2) (/ s2 2)) ""
-			"._LINE"		(list (/ s1 2) (/ s1 -2))			(list (/ s2 2) (/ s2 -2)) ""
-			"._CIRCLE"		(list dim1 dim1) radius_gjengejern
-			"._CIRCLE"		(list (- dim1) dim1) radius_gjengejern
-			"._CIRCLE"		(list dim1 (- dim1)) radius_gjengejern
-			"._CIRCLE"		(list (- dim1) (- dim1)) radius_gjengejern
-			"._CIRCLE"		(list 0 0) radius_gjengejern
-			"._CIRCLE"		(list (- radius_roer) (- roer_y)) radius_roer
-			"._CIRCLE"		(list radius_roer (- roer_y)) radius_roer
-			"._CIRCLE"		(list 0 roer_y) radius_roer
+			_LINE_		(list (- (/ s1 2)) (- (/ s1 2)))	(list (- (/ s2 2)) (- (/ s2 2))) _ENTER_
+			_LINE_		(list (/ s1 2) (/ s1 2))			(list (/ s2 2) (/ s2 2)) _ENTER_
+			_LINE_		(list (/ s1 -2) (/ s1 2))			(list (/ s2 -2) (/ s2 2)) _ENTER_
+			_LINE_		(list (/ s1 2) (/ s1 -2))			(list (/ s2 2) (/ s2 -2)) _ENTER_
+			_CIRCLE_		(list dim1 dim1) radius_gjengejern
+			_CIRCLE_		(list (- dim1) dim1) radius_gjengejern
+			_CIRCLE_		(list dim1 (- dim1)) radius_gjengejern
+			_CIRCLE_		(list (- dim1) (- dim1)) radius_gjengejern
+			_CIRCLE_		_origo_ radius_gjengejern
+			_CIRCLE_		(list (- radius_roer) (- roer_y)) radius_roer
+			_CIRCLE_		(list radius_roer (- roer_y)) radius_roer
+			_CIRCLE_		(list 0 roer_y) radius_roer
 		)
 	)
 
@@ -202,12 +202,12 @@
 	(defun localGraphics ( layDef /)
 		(setLayer layDef)
 		(command
-			"._CIRCLE" (list 0 0) r1
-			"._CIRCLE" (list 0 0) r2
-			"._CIRCLE" (list d d) radius_gjengejern
-			"._CIRCLE" (list d (- d)) radius_gjengejern
-			"._CIRCLE" (list (- d) d) radius_gjengejern
-			"._CIRCLE" (list (- d) (- d)) radius_gjengejern
+			_CIRCLE_ _origo_ r1
+			_CIRCLE_ _origo_ r2
+			_CIRCLE_ (list d d) radius_gjengejern
+			_CIRCLE_ (list d (- d)) radius_gjengejern
+			_CIRCLE_ (list (- d) d) radius_gjengejern
+			_CIRCLE_ (list (- d) (- d)) radius_gjengejern
 		)
 	)
 
@@ -242,12 +242,12 @@
 	(defun localGraphics ( layDef /)
 		(setLayer layDef)
 		(command ; Add metric graphics
-			"._CIRCLE" (list 0 0) r1
-			"._CIRCLE" (list 0 0) r2
-			"._CIRCLE" (list d d) radius_gjengejern
-			"._CIRCLE" (list d (- d)) radius_gjengejern
-			"._CIRCLE" (list (- d) d) radius_gjengejern
-			"._CIRCLE" (list (- d) (- d)) radius_gjengejern
+			_CIRCLE_ _origo_ r1
+			_CIRCLE_ _origo_ r2
+			_CIRCLE_ (list d d) radius_gjengejern
+			_CIRCLE_ (list d (- d)) radius_gjengejern
+			_CIRCLE_ (list (- d) d) radius_gjengejern
+			_CIRCLE_ (list (- d) (- d)) radius_gjengejern
 		)
 	)
 
@@ -269,12 +269,12 @@
 
 
 
-(defun BETONG-HS-FUNDAMENT-BORET ( / blockName description rad R1 R2 R_circ x ang d_ang )
+(defun BETONG-HS-FUNDAMENT-BORET ( / blockName description r R1 R2 R_circ x ang d_ang )
 	; Ref. S.xxxxxx
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-BORET-" _uOE_ "555-164x164xM32")
 		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT BORET " _uOE_ "555 164x164xM32")
-		rad (/ 0.032 2) ; M32 gjengejern for de indre Ø45 hullene i signalets mastefot-plate
+		r (/ 0.032 2) ; M32 gjengejern for de indre Ø45 hullene i signalets mastefot-plate
 		R1 0.15
 		R2 0.4
 		R_pole (/ 0.555 2) ; Ø555
@@ -285,10 +285,11 @@
 	(defun localGraphics ( layDef /)
 		(setLayer layDef)
 		(command
-			"._CIRCLE" (list x x) rad
-			"._ARC" "C" "0,0" (polar (list 0 0) (D->R ang) R2) "Angle" d_ang
-			"._ARC" "C" "0,0" (polar (list 0 0) (D->R (/ d_ang -2)) R1) "Angle" d_ang
-			"._ARRAY" "_ALL" "" "_POLAR" "0,0" 4 360 "_YES" "._CIRCLE" "0,0" R_pole
+			_CIRCLE_ (list x x) r
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R ang) R2) _setArcAngle_ d_ang
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (/ d_ang -2)) R1) _setArcAngle_ d_ang
+			"._ARRAY" _selectAll_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
+			_CIRCLE_ _origo_ R_pole
 		)
 	)
 
@@ -324,14 +325,14 @@
 		(drawSmallBolt layDef)
 		; make three of them:
 		(command	
-			"._MIRROR" "_ALL" "" (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) "_YES"
-			"._ARRAY" "_ALL" "" "_POLAR" "0,0" 3 360 "_YES"
-			"._CIRCLE" "0,0" 0.0413
-			"._CIRCLE" "0,0" 0.0445
+			_MIRROR_ _selectAll_ _ENTER_ (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) _eraseMirrorSource_
+			"._ARRAY" _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
+			_CIRCLE_ _origo_ 0.0413
+			_CIRCLE_ _origo_ 0.0445
 		)
 		; Tapered foundation for Ds shunting signal:
 		(command
-			"._LINE" 
+			_LINE_ 
 				(list (/ dim1 -2) (- s2))
 				(strcat "@0,-" (rtos dim2))
 				(strcat "@-" (rtos (- s1 (/ dim1 2))) ",0")
@@ -345,14 +346,14 @@
 				(strcat "@" (rtos (* -2 s2)) ",0")
 				(strcat "@0," (rtos (* -2 s2)))
 				(strcat "@" (rtos (- s2 (/ dim1 2))) ",0")
-				""
+				_ENTER_
 			"LINE"
 				(list (- s1) (- s1))
 				(list (- s2) (- s2))
-				""
-			"._ARRAY" "_LAST" ""
-				"_POLAR" "0,0" 4 360 "_YES"
-			"._RECTANGLE"
+				_ENTER_
+			"._ARRAY" 
+				_lastSelection_ _ENTER_ _polarArray_ _origo_ 4 360 _rotateObjects_
+			_RECTANGLE_
 				(list (/ dim1 -2) -0.24)
 				(list (/ dim1 2) (+ -0.24 dim2))
 		)
@@ -390,16 +391,16 @@
 	(defun localGraphics ( layDef /)
 		(drawSmallBolt layDef)
 		(command
-			"._MIRROR" "_ALL" "" (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) "_YES"
-			"._ARRAY" "_ALL" ""  "_POLAR" "0,0" 3 360  "_YES"
-			"._CIRCLE"  "0,0" 0.0413
-			"._CIRCLE" "0,0" 0.0445
+			_MIRROR_ _selectAll_ _ENTER_ (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) _eraseMirrorSource_
+			"._ARRAY" _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
+			_CIRCLE_  _origo_ 0.0413
+			_CIRCLE_ _origo_ 0.0445
 		)
 		; Straight-sided foundation for Ds shunting signal:
 		(command
-			"._RECTANGLE"
+			_RECTANGLE_
 				(list (- s1) (- s1)) (list s1 s1)
-			"._LINE"
+			_LINE_
 				(list (/ dim1 2) (- s2))
 				(list s2 (- s2))
 					(strcat "@0," (rtos (* 2 s2)))
@@ -409,7 +410,7 @@
 					(strcat "@0," (rtos (/ dim1 2)))
 					(strcat "@" (rtos dim1) ",0")
 					(strcat "@0," (rtos (/ dim1 -2.0)))
-				""
+				_ENTER_
 		)
 	)
 
@@ -458,13 +459,13 @@
 		(setLayer layDef)
 		(drawBoltGroup191x374xM36 layDef)
 		(command
-			"._RECTANGLE" ; base
+			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
 				(list (+ (/ baseX 2)) (+ 0.800 baseOffsetY))
-			"._RECTANGLE" ; shaft
+			_RECTANGLE_ ; shaft
 				(list (- (/ shaftX 2)) (- (/ shaftY 2)))
 				(list (+ (/ shaftX 2)) (+ (/ shaftY 2)))
-			"._CIRCLE" "0,0" ductRadius
+			_CIRCLE_ _origo_ ductRadius
 		)
 	)
 
@@ -516,13 +517,13 @@
 	(defun localGraphics ( layDef / )
 		(drawBoltGroup layDef bx by bd)
 		(command
-			"._RECTANGLE" ; base
+			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
 				(list (+ (/ baseX 2)) (+ 0.800 baseOffsetY))
-			"._RECTANGLE" ; shaft
+			_RECTANGLE_ ; shaft
 				(list (- (/ shaftX 2)) (- (/ shaftY 2)))
 				(list (+ (/ shaftX 2)) (+ (/ shaftY 2)))
-			"._CIRCLE" "0,0" ductRadius
+			_CIRCLE_ _origo_ ductRadius
 		)
 	)
 
@@ -574,13 +575,13 @@
 	(defun localGraphics ( layDef / )
 		(drawBoltGroup layDef bx by bd)
 		(command
-			"._RECTANGLE" ; base
+			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
 				(list (+ (/ baseX 2)) (+ 0.800 baseOffsetY))
-			"._RECTANGLE" ; shaft
+			_RECTANGLE_ ; shaft
 				(list (- (/ shaftX 2)) (- (/ shaftY 2)))
 				(list (+ (/ shaftX 2)) (+ (/ shaftY 2)))
-			"._CIRCLE" "0,0" ductRadius
+			_CIRCLE_ _origo_ ductRadius
 		)
 	)
 	
@@ -668,13 +669,13 @@
 		(setLayer layDef)
 		(drawBoltGroup layDef bx by bd)
 		(command ; Draw shaft and duct
-			"._RECTANGLE" ; base
+			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
 				(list (+ (/ baseX 2)) (+ 0.800 baseOffsetY))
-			"._RECTANGLE"
+			_RECTANGLE_
 				(list (- (/ shaftX 2)) (- (/ shaftY 2)))
 				(list (+ (/ shaftX 2)) (+ (/ shaftY 2)))
-			"._CIRCLE" "0,0" ductRadius
+			_CIRCLE_ _origo_ ductRadius
 		)
 	)	
 	
@@ -729,9 +730,9 @@
 	(drawLine layer_Zero _origo_ (posTR x y))					; ./ line from origo
 	(drawCircleAtPos layer_Zero br (posTR bx by) _noWipeout_)	; ( ) bolt
 	(drawLine layer_Zero (posTR x1 y1) (posTR x2 y2))			; (/) hatch over bolt
-	(mirrorAboutXaxis _keep_)
-	(mirrorAboutYaxis _keep_)
-	(mirrorAboutDiagonal _keep_) ; Now we have 8 bolts
+	(mirrorAboutXaxis _keepMirrorSource_)
+	(mirrorAboutYaxis _keepMirrorSource_)
+	(mirrorAboutDiagonal _keepMirrorSource_) ; Now we have 8 bolts
 	(drawCircle layer_Zero pr _noWipeout_) ; Foundation concrete pole
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
@@ -741,9 +742,9 @@
 	(drawLine layer_MetricDetails _origo_ (posTR x y))					
 	(drawCircleAtPos layer_MetricDetails br (posTR bx by) _noWipeout_)	
 	(drawLine layer_MetricDetails (posTR x1 y1) (posTR x2 y2))			
-	(mirrorAboutXaxis _keep_)
-	(mirrorAboutYaxis _keep_)
-	(mirrorAboutDiagonal _keep_)
+	(mirrorAboutXaxis _keepMirrorSource_)
+	(mirrorAboutYaxis _keepMirrorSource_)
+	(mirrorAboutDiagonal _keepMirrorSource_)
 	(drawCircle layer_MetricDetails pr _noWipeout_)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
@@ -903,11 +904,11 @@
 		(moveDown (+ wy (* _half_ cy)))
 		(command 
 			; Wallmount plate:
-			"._RECTANGLE" (list (/ wx -2) 0) (list (/ wx 2) (- wy))
+			_RECTANGLE_ (list (/ wx -2) 0) (list (/ wx 2) (- wy))
 			; Base plate:
-			"._RECTANGLE" (list (/ cx -2) (- wy)) (list (/ cx 2) (- (+ wy cy)))
+			_RECTANGLE_ (list (/ cx -2) (- wy)) (list (/ cx 2) (- (+ wy cy)))
 			; Side plates:
-			"._RECTANGLE" (list (- (/ cx -2) sx) (- wy)) (list (+ (/ cx 2) sx) (- (+ wy sy)))
+			_RECTANGLE_ (list (- (/ cx -2) sx) (- wy)) (list (+ (/ cx 2) sx) (- (+ wy sy)))
 		)
 	)
 
@@ -981,32 +982,32 @@
 (defun drawSmallBolt ( layDef / )
 	(setLayer layDef)
 	(command
-		"._LINE" "0,0" "0.00519615,0" ""
-		"._LINE" "0.00347980,0.005" "@0,-0.00407180" ""
-		"._PLINE" 
-			"0,0" 
-			"_ARC"
-			"_CE" "0,0.00692818" "0.00347980,0.00092820"
-			"_CE" "0.00521209,0.00208057" "0.00694390,0.00092820"
-			"_LINE"
+		_LINE_ _origo_ "0.00519615,0" _ENTER_
+		_LINE_ "0.00347980,0.005" "@0,-0.00407180" _ENTER_
+		_POLYLINE_ 
+			_origo_ 
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ "0,0.00692818" "0.00347980,0.00092820"
+			_setPolylineArcCenter_ "0.00521209,0.00208057" "0.00694390,0.00092820"
+			_setPolylineLineMode_
 			"@0,0.00407180" 
-			""
-		"._LINE"
+			_ENTER_
+		_LINE_
 			"0,0.005"
 			"@0.00741570,0"
 			"@0,0.0012"
 			"@-0.00741570,0"
-			""
-		"._LINE" "0.00401569,0.008" "@-0.004,0" ""
-		"._LINE" "0.00401569,0.005" "@0,0.0395" ""
-		"._LINE" "0.00314964,0.045" "@0,-0.037" ""
-		"._LINE" 
+			_ENTER_
+		_LINE_ "0.00401569,0.008" "@-0.004,0" _ENTER_
+		_LINE_ "0.00401569,0.005" "@0,0.0395" _ENTER_
+		_LINE_ "0.00314964,0.045" "@0,-0.037" _ENTER_
+		_LINE_ 
 			"0,0.04500000"
 			"0.00314964,0.04500000"
 			"0.00401567,0.04450039"
 			"0,0.04450039"
-			""
-		"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
+			_ENTER_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
 )
 
@@ -1059,8 +1060,8 @@
 	;	y (/ 0.350 2)
 	;(command 
 	;	"._POLYGON" 6 (list x y) "_INSCRIBED" nutRadius
-	;	"._CIRCLE" (list x y) boltRadius
-	;	"._MIRROR" "_ALL" "" (list 0 0) (list 0 1) "_NO"
-	;	"._MIRROR" "_ALL" "" (list 0 0) (list 1 0) "_NO"
+	;	_CIRCLE_ (list x y) boltRadius
+	;	_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+	;	_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 	;)
 ;)

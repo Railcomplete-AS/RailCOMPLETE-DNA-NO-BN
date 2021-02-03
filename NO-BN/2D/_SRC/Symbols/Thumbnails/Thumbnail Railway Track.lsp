@@ -30,27 +30,30 @@
 		centerTrack (- (/ 1435 2) (- (/ railFoot 2) (/ railHead 2 )))
 	)
 	(command
-		"._RECTANGLE" (list 0 centerTrack) (list trackLength (+ centerTrack railFoot))
-		"._LINE" (list 0 (+ centerTrack (/ (- railFoot railHead) 2))) (list trackLength (+ centerTrack (/ (- railFoot railHead) 2))) ""
-		"._LINE" (list 0 (+ centerTrack (/ (- railFoot railHead) 2) railHead)) (list trackLength (+ centerTrack (/ (- railFoot railHead) 2) railHead)) ""
-		"._LINE" (list trackLengthBeforeFirstSleeper 0) (list trackLengthBeforeFirstSleeper centerTrack) ""
-		"._LINE" 
+		_RECTANGLE_ (list 0 centerTrack) (list trackLength (+ centerTrack railFoot))
+		_LINE_ (list 0 (+ centerTrack (/ (- railFoot railHead) 2))) (list trackLength (+ centerTrack (/ (- railFoot railHead) 2))) _ENTER_
+		_LINE_ (list 0 (+ centerTrack (/ (- railFoot railHead) 2) railHead)) (list trackLength (+ centerTrack (/ (- railFoot railHead) 2) railHead)) _ENTER_
+		_LINE_ (list trackLengthBeforeFirstSleeper 0) (list trackLengthBeforeFirstSleeper centerTrack) _ENTER_
+		_LINE_ 
 			(list trackLengthBeforeFirstSleeper (+ centerTrack railFoot)) (list trackLengthBeforeFirstSleeper sleeperLength)
 			(list (+ trackLengthBeforeFirstSleeper sleeperWidth) sleeperLength) (list (+ trackLengthBeforeFirstSleeper sleeperWidth) (+ centerTrack railFoot))
-			""
-		"._LINE" (list (+ trackLengthBeforeFirstSleeper sleeperWidth) 0) (list (+ trackLengthBeforeFirstSleeper sleeperWidth) centerTrack) ""
-		"._LINE" (list (+ trackLengthBeforeFirstSleeper sleeperWidth sleeperGap) 0) (list (+ trackLengthBeforeFirstSleeper sleeperWidth sleeperGap) centerTrack) ""
-		"._LINE"
+			_ENTER_
+		_LINE_ (list (+ trackLengthBeforeFirstSleeper sleeperWidth) 0) (list (+ trackLengthBeforeFirstSleeper sleeperWidth) centerTrack) _ENTER_
+		_LINE_ (list (+ trackLengthBeforeFirstSleeper sleeperWidth sleeperGap) 0) (list (+ trackLengthBeforeFirstSleeper sleeperWidth sleeperGap) centerTrack) _ENTER_
+		_LINE_
 			(list (+ trackLengthBeforeFirstSleeper sleeperWidth sleeperGap) (+ centerTrack railFoot))
 			(list (+ trackLengthBeforeFirstSleeper sleeperWidth sleeperGap) sleeperLength) (list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) sleeperLength)
-			""
-		"._MIRROR" "_ALL" "" (list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) 0) (list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) sleeperLength) "_NO"
-		"._MIRROR" "_ALL" "" "0,0" "1,0" "_NO"
-		"._MOVE" "_ALL" "" (list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) 0) (list 0 0) 
+			_ENTER_
+		_MIRROR_ _selectAll_ _ENTER_ 
+			(list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) 0) 
+			(list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) sleeperLength)
+			_keepMirrorSource_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+		_MOVE_ _selectAll_ _ENTER_ (list (+ trackLengthBeforeFirstSleeper (* sleeperWidth 1.5) sleeperGap) 0) _origo_ 
 	)
 	(command
-		"._SCALE" "_ALL" "" (list 0 0) 0.001 ; convert millimeter to meter
-		"._SCALE" "_ALL" "" (list 0 0) 2 ; suitable scale for alignment thumbnails - ca 4-5 meter (...and they auto-scale in RailCOMPLETE)
+		_SCALE_ _selectAll_ _ENTER_ _origo_ 0.001 ; convert millimeter to meter
+		_SCALE_ _selectAll_ _ENTER_ _origo_ _two_ ; suitable scale for alignment thumbnails - ca 4-5 meter (...and they auto-scale in RailCOMPLETE)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName

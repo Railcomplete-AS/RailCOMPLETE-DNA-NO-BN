@@ -47,30 +47,30 @@
 	(setLayer layer_Zero)
 	; Opening towards the right:
 	(command
-		"._ARC" 
+		_ARC_ 
 			(strcat (rtos r) "<" (rtos startAngle)) 			; Start point
 			(strcat (rtos r) "<" (rtos (+ 180.0 startAngle))) 	; Middle point
 			(strcat (rtos r) "<" (rtos endAngle)) 				; End point
-		"._PLINE" ; upper arrow
+		_POLYLINE_ ; upper arrow
 			(strcat (rtos r) "<" (rtos startAngle))
-			"_WIDTH" 0 arrowWidth
+			_setPolylineWidth_ _zero_ arrowWidth						; Start width - end width
 			(strcat "@" (rtos arrowLength) "<" (rtos (+ startAngle 105.0)))
-			"_WIDTH" 0 0 ;reset polyline width after use
-			""
-		"._PLINE" ; lower arrow
+			_setPolylineWidth_ _zero_ _zero_ ;reset polyline width after use
+			_ENTER_
+		_POLYLINE_ ; lower arrow
 			(strcat (rtos r) "<" (rtos endAngle))
-			"_WIDTH" 0 arrowWidth
+			_setPolylineWidth_ _zero_ arrowWidth
 			(strcat "@" (rtos arrowLength) "<" (rtos (- endAngle 105.0)))
-			"_WIDTH" 0 0 ;reset polyline width after use
-			""
+			_setPolylineWidth_ _zero_ _zero_ ;reset polyline width after use
+			_ENTER_
 	)
 	(command
-		"._MOVE" "_ALL" ""
+		_MOVE_ _selectAll_ _ENTER_
 			(strcat (rtos r) "<" (rtos endAngle))
-			(list 0 0)
+			_origo_
 	)
 	(if (= dir "V")
-		(command "._MIRROR" "_ALL" "" (list 0 0) (list 0 1) "_YES")
+		(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
 	)
 	(addDescriptionBelowOrigo description r)
 	(createSchematicBlockFromCurrentGraphics blockName)

@@ -25,18 +25,18 @@
 		r2 0.45
 	)
 	(command
-		"._PLINE"
-			(list 0 0) (list 1 0) 
-			"_ARC" "_CE" (list 1.0 r1)
-			"A" "180" "R" r2
-			"A" "180" "-90" "R" r1
-			"A" "180" "90" "R" r2
-			"A" "180" "-90" "R" r1
-			"A" "180" "90" "R" r2
-			"A" "22" "-168" 
-			""
+		_POLYLINE_
+			_origo_ (list 1 0) 
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list 1.0 r1)
+			_setPolylineArcAngle_ _angle180_ _setPolylineArcRadius_ r2
+			_setPolylineArcAngle_ _angle180_ _angleMinus90_ _setPolylineArcRadius_ r1
+			_setPolylineArcAngle_ _angle180_ _angle90_ _setPolylineArcRadius_ r2
+			_setPolylineArcAngle_ _angle180_ _angleMinus90_ _setPolylineArcRadius_ r1
+			_setPolylineArcAngle_ _angle180_ _angle90_ _setPolylineArcRadius_ r2
+			_setPolylineArcAngle_ 22  -168
+			_ENTER_
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName
 )
-

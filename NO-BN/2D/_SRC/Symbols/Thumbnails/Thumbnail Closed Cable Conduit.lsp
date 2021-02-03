@@ -19,25 +19,26 @@
 
 
 (defun ALIGNMENT-ROERPAKKE (/ blockName x y r) 
-  (setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE"
+	(setq 
+		blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE"
 		y 0.155
 		x 0.45
 		r 0.055
 	)
 	(command 
-		"._PLINE" 
+		_POLYLINE_ 
 			(list (/ x 2.0) 0)
 			(list (/ x 2.0) (* y 0.9))
 			(list 0.1954 y)
 			(list 0 y)
-			""
-		"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
-		"._CIRCLE" (list 0 0.07) r
-		"._CIRCLE" (list 0.14 0.07) r
-		"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-		"._MIRROR" "_ALL" "" "0,0" "1,0" "_NO"
+			_ENTER_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_CIRCLE_ (list 0 0.07) r
+		_CIRCLE_ (list 0.14 0.07) r
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		;
-		"._SCALE" "_ALL" "" (list 0 0) "10"
+		_SCALE_ _selectAll_ _ENTER_ _origo_ _ten_
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName

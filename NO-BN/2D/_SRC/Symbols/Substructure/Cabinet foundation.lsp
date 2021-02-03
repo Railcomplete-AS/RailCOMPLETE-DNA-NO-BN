@@ -26,7 +26,7 @@
 (defun BETONG-APPARATSKAP-FUNDAMENT ( variation / blockName description s1 s2 h1 h2 len1 len2 )
 	(setq
 		blockName (strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-APPARATSKAP-" variation)
-		description "" ; see below
+		description _ENTER_ ; see below
 		s1 (/ 1.4 2)	; 1.4 wide x 0.82 deep 
 		s2 (/ 0.82 2)
 		h1 (/ 0.76 2)	; Inner hole 0.76 x 0.38
@@ -42,16 +42,16 @@
 			(defun localGraphics (/)
 				(command
 					; Outer and inner 'box'
-					"._RECTANGLE" (list (- s1) (- s2)) (list s1 s2)
-					"._RECTANGLE" (list (- h1) (- h2)) (list h1 h2)
+					_RECTANGLE_ (list (- s1) (- s2)) (list s1 s2)
+					_RECTANGLE_ (list (- h1) (- h2)) (list h1 h2)
 					; Left dashed line
-					"._LINE" (list (- h1) (- h2)) (strcat "@0," (rtos (- len1))) ""	
-					"._LINE" (list (- h1) (- (- h2) (* 2 len1))) (strcat "@0," (rtos (- len1))) ""
-					"._LINE" (list (- h1) (- (- h2) (* 4 len1))) (strcat "@0," (rtos (- len1))) ""
+					_LINE_ (list (- h1) (- h2)) (strcat "@0," (rtos (- len1))) _ENTER_	
+					_LINE_ (list (- h1) (- (- h2) (* 2 len1))) (strcat "@0," (rtos (- len1))) _ENTER_
+					_LINE_ (list (- h1) (- (- h2) (* 4 len1))) (strcat "@0," (rtos (- len1))) _ENTER_
 					; Right dashed line
-					"._LINE" (list h1 (- h2)) (strcat "@0," (rtos (- len1))) ""
-					"._LINE" (list h1 (- (- h2) (* 2 len1))) (strcat "@0," (rtos (- len1))) ""
-					"._LINE" (list h1 (- (- h2) (* 4 len1))) (strcat "@0," (rtos (- len1))) ""
+					_LINE_ (list h1 (- h2)) (strcat "@0," (rtos (- len1))) _ENTER_
+					_LINE_ (list h1 (- (- h2) (* 2 len1))) (strcat "@0," (rtos (- len1))) _ENTER_
+					_LINE_ (list h1 (- (- h2) (* 4 len1))) (strcat "@0," (rtos (- len1))) _ENTER_
 				)
 			)
 		)
@@ -62,16 +62,16 @@
 			(defun localGraphics (/)
 				(command
 					; Outer and inner 'box'
-					"._RECTANGLE" (list (- s2) (- s1)) (list s2 s1)
-					"._RECTANGLE" (list (- h2) (- h1)) (list h2 h1)
+					_RECTANGLE_ (list (- s2) (- s1)) (list s2 s1)
+					_RECTANGLE_ (list (- h2) (- h1)) (list h2 h1)
 					; Left dashed line
-					"._LINE" (list (- h2) (- h1)) (strcat "@0," (rtos (- len2))) ""	
-					"._LINE" (list (- h2) (- (- h1) (* 2 len2))) (strcat "@0," (rtos (- len2))) ""
-					"._LINE" (list (- h2) (- (- h1) (* 4 len2))) (strcat "@0," (rtos (- len2))) ""
+					_LINE_ (list (- h2) (- h1)) (strcat "@0," (rtos (- len2))) _ENTER_	
+					_LINE_ (list (- h2) (- (- h1) (* 2 len2))) (strcat "@0," (rtos (- len2))) _ENTER_
+					_LINE_ (list (- h2) (- (- h1) (* 4 len2))) (strcat "@0," (rtos (- len2))) _ENTER_
 					; Right dashed line
-					"._LINE" (list h2 (- h1)) (strcat "@0," (rtos (- len2))) ""
-					"._LINE" (list h2 (- (- h1) (* 2 len2))) (strcat "@0," (rtos (- len2))) ""
-					"._LINE" (list h2 (- (- h1) (* 4 len2))) (strcat "@0," (rtos (- len2))) ""
+					_LINE_ (list h2 (- h1)) (strcat "@0," (rtos (- len2))) _ENTER_
+					_LINE_ (list h2 (- (- h1) (* 2 len2))) (strcat "@0," (rtos (- len2))) _ENTER_
+					_LINE_ (list h2 (- (- h1) (* 4 len2))) (strcat "@0," (rtos (- len2))) _ENTER_
 				)
 			)
 		)

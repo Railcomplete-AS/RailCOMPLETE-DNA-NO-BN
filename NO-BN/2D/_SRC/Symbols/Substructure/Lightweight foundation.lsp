@@ -42,23 +42,23 @@
 
 
 
-(defun Skiltfeste_Betongfot_60_225 ( variation / blockName description s1 s2 x d rad )
+(defun Skiltfeste_Betongfot_60_225 ( variation / blockName description s1 s2 x d r )
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTUB-SKILTFESTE-BETONGFOT-60-225-" variation)
-		description	"" ; See below
+		description	_ENTER_ ; See below
 		s1 (/ 0.150 2)
 		s2 (/ 0.255 2)
 		x 0.150 ; four "flaps"
 		d 0.12
-		rad 0.03
+		r 0.03
 	)
 	(defun localGraphics (/)
 		(command 
-			"._LINE" (list s2 0) (list s2 s1) (list s1 s2) (list 0 s2) ""
-			"._LINE" (polar  (list x x) (D->R -45) d) (polar  (list x x) (D->R (+ 90 45)) d) ""
-			"._MIRROR" "_ALL" "" _origo_ "0,1" "_NO"
-			"._MIRROR" "_ALL" "" _origo_ "1,0" "_NO"
-			"._CIRCLE" _origo_ rad
+			_LINE_ (list s2 0) (list s2 s1) (list s1 s2) (list 0 s2) _ENTER_
+			_LINE_ (polar  (list x x) (D->R -45) d) (polar  (list x x) (D->R (+ _angle90_ 45)) d) _ENTER_
+			_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+			_CIRCLE_ _origo_ r
 		)
 	)
 
@@ -100,16 +100,16 @@
 	)
 	(defun localGraphics (/)
 		(command
-			"._ARC" "C" _origo_ (polar _origo_ (D->R ang1) R1) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R ang1) R2) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R (+ ang1 90)) R1) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R (+ ang1 90)) R2) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R (+ ang1 180)) R1) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R (+ ang1 180)) R2) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R (+ ang1 270)) R1) "Angle" (rtos d_ang)
-			"._ARC" "C" _origo_ (polar _origo_ (D->R (+ ang1 270)) R2) "Angle" (rtos d_ang)
-			"._CIRCLE"  _origo_ rad1
-			"._CIRCLE"  _origo_ rad2
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R ang1) R1) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R ang1) R2) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle90_)) R1) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle90_)) R2) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle180_)) R1) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle180_)) R2) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angleMinus90_)) R1) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angleMinus90_)) R2) _setArcAngle_ (rtos d_ang)
+			_CIRCLE_  _origo_ rad1
+			_CIRCLE_  _origo_ rad2
 		)
 	)
 
@@ -139,13 +139,13 @@
 		description	(strcat "SKILTFESTE, JORDFUNDAMENT " _uOE_ "60/H700")
 		rad1	0.030 ; Ø060 pole
 		rad2	0.181 ; 0.151 side wings from the inner pole/tube
-		ang		45.0	; DD
+		ang		_angle45_
 	)
 	(defun localGraphics (/)
 		(command 
-			"._CIRCLE" _origo_ rad1
-			"._LINE" (list (* rad1 (DDcos ang)) (* rad1 (DDsin ang))) (list (* rad2 (DDcos ang)) (* rad2 (DDsin ang))) ""
-			"._ARRAY" "_LAST" "" "PO" _origo_ 4 360 "_YES"
+			_CIRCLE_ _origo_ rad1
+			_LINE_ (list (* rad1 (DDcos ang)) (* rad1 (DDsin ang))) (list (* rad2 (DDcos ang)) (* rad2 (DDsin ang))) _ENTER_
+			"._ARRAY" _lastSelection_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
 		)
 	)
 
@@ -168,13 +168,13 @@
 
 
 
-(defun Skiltfeste_Jordspyd_60 ( / blockName description x y rad )
+(defun Skiltfeste_Jordspyd_60 ( / blockName description x y r )
 	(setq 
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-JORDSPYD-60"
 		description	(strcat "SKILTFESTE, JORDSPYD " _uOE_ "60/H600")
 		x   0.100	; Square symbolizes the L-iron bar
 		y	0.100
-		rad	0.030	; For Ø60 poles, an L-iron with a Ø60 hose on top
+		r	0.030	; For Ø60 poles, an L-iron with a Ø60 hose on top
 	)
 	; Schematic symbol
 	(drawProxySymbol layer_FoundationLocator "F")
@@ -183,50 +183,50 @@
 	
 	; Annotative symbol
 	(drawBox layer_Zero x y _noWipeout_)
-	(drawCircle layer_Zero rad _noWipeout_)
+	(drawCircle layer_Zero r _noWipeout_)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
 	(drawBox layer_MetricDetails x y _noWipeout_)
-	(drawCircle layer_MetricDetails rad _noWipeout_)
+	(drawCircle layer_MetricDetails r _noWipeout_)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Tilbakefylt_Grop ( / blockName description rad )
+(defun Skiltfeste_Tilbakefylt_Grop ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-TILBAKEFYLT-GROP"
 		description	"SKILTFTESTE, TILBAKEFYLT GROP"
-		rad	0.030	; For Ø60 pole
+		r	0.030	; For Ø60 pole
 	)
 	(defun localgraphics (/)
 		(command 
-			"._PLINE" 
+			_POLYLINE_ 
 				"0.3094,0.5743" 
-				"_ARC"
-					"_CE" "0.1572,0.5517" "0.0839,0.6870"
-					"_CE" "-0.0163,0.5716" "-0.1528,0.6263"
-					"_CE" "-0.2561,0.5066" "-0.4019,0.5570"
-					"_CE" "-0.4856,0.4273" "-0.6361,0.4616"
-					"_CE" "-0.4869,0.4239" "-0.4713,0.2708"
-					"_CE" "-0.4470,0.1070" "-0.5927,0.0281"
-					"_CE" "-0.6526,-0.1172" "-0.8096,-0.1106"
-					"_CE" "-0.7679,-0.2624" "-0.8963,-0.3534"
-					"_CE" "-0.7367,-0.3321" "-0.6621,-0.4748"
-					"_CE" "-0.5606,-0.3520" "-0.4105,-0.4054"
-					"_CE" "-0.2817,-0.3217" "-0.1590,-0.4141"
-					"_CE" "-0.0258,-0.3273" "0.1013,-0.4227"
-					"_CE" "0.1893,-0.29" "0.3441,-0.3274"
-					"_CE" "0.4638,-0.2306" "0.5957,-0.31"
-					"_CE" "0.5641,-0.1448" "0.7085,-0.0586"
-					"_CE" "0.5549,-0.024" "0.5350,0.1321"
-					"_CE" "0.4179,0.2440" "0.4829,0.3922"
-					"_CE" "0.3324,0.4225" "0.3094,0.5743"
-					""
-				"._SCALE" "_ALL" "" _origo_ 0.5
+				_setPolylineArcMode_
+				_setPolylineArcCenter_ "0.1572,0.5517" "0.0839,0.6870"
+				_setPolylineArcCenter_ "-0.0163,0.5716" "-0.1528,0.6263"
+				_setPolylineArcCenter_ "-0.2561,0.5066" "-0.4019,0.5570"
+				_setPolylineArcCenter_ "-0.4856,0.4273" "-0.6361,0.4616"
+				_setPolylineArcCenter_ "-0.4869,0.4239" "-0.4713,0.2708"
+				_setPolylineArcCenter_ "-0.4470,0.1070" "-0.5927,0.0281"
+				_setPolylineArcCenter_ "-0.6526,-0.1172" "-0.8096,-0.1106"
+				_setPolylineArcCenter_ "-0.7679,-0.2624" "-0.8963,-0.3534"
+				_setPolylineArcCenter_ "-0.7367,-0.3321" "-0.6621,-0.4748"
+				_setPolylineArcCenter_ "-0.5606,-0.3520" "-0.4105,-0.4054"
+				_setPolylineArcCenter_ "-0.2817,-0.3217" "-0.1590,-0.4141"
+				_setPolylineArcCenter_ "-0.0258,-0.3273" "0.1013,-0.4227"
+				_setPolylineArcCenter_ "0.1893,-0.29" "0.3441,-0.3274"
+				_setPolylineArcCenter_ "0.4638,-0.2306" "0.5957,-0.31"
+				_setPolylineArcCenter_ "0.5641,-0.1448" "0.7085,-0.0586"
+				_setPolylineArcCenter_ "0.5549,-0.024" "0.5350,0.1321"
+				_setPolylineArcCenter_ "0.4179,0.2440" "0.4829,0.3922"
+				_setPolylineArcCenter_ "0.3324,0.4225" "0.3094,0.5743"
+				_ENTER_
+			_SCALE_ _selectAll_ _ENTER_ _origo_ _half_
 		)
 	)
 
@@ -244,35 +244,36 @@
 
 	; Metric symbol
 	(setLayer layer_MetricDetails)
-	(drawCircle layer_MetricDetails rad _noWipeout_)
+	(drawCircle layer_MetricDetails r _noWipeout_)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Strips_Eller_Patentbaand ( / blockName description rad )
+(defun Skiltfeste_Strips_Eller_Patentbaand ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-STRIPS-ELLER-PATENTBAAND"
 		description	(strcat "SKILTFESTE, STRIPS ELLER PATENTB" _uAA_ "ND")
-		rad	0.030	; For Ø60 pole
+		r	0.030	; For Ø60 pole
 	)
 	(defun localGraphics (/)
 		(command 
-			"._PLINE"
+			_POLYLINE_
 				"-0.5987,0.25"
 				"-0.4487,0.25"
-				"_ARC"
-				"_CE" "-0.4487,0.1513"
-				"Angle" -90
-				"Line"
+				_setPolylineArcMode_
+				_setPolylineArcCenter_ "-0.4487,0.1513"
+				_setPolylineArcAngle_ _angleMinus90_
+				_setPolylineLineMode_
 				"-0.35,0"
-				"_ARC"
-				"_CE" "0,0" "0,-0.35"
-				""
-			"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
-			"._ROTATE" "_ALL" "" (list 0 0) 180
-			"._SCALE" "_ALL" "" _origo_ 0.25
-			"._CIRCLE" "0,0" "0.03"
+				_setPolylineArcMode_
+				_setPolylineArcCenter_ _origo_ "0,-0.35"
+				_ENTER_
+
+			_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_ROTATE_ _selectAll_ _ENTER_ _origo_ _angle180_
+			_SCALE_ _selectAll_ _ENTER_ _origo_ _quarter_
+			_CIRCLE_ _origo_ r
 		)
 	)
 
@@ -307,13 +308,13 @@
 	)
 	(defun localGraphics (/)
 		(command
-			"._CIRCLE" "0,0" rad1
-			"._RECTANGLE" 
+			_CIRCLE_ _origo_ rad1
+			_RECTANGLE_ 
 				(list (/ side -2) (/ side -2))
 				(list (/ side 2) (/ side 2))
-				""
-			"._CIRCLE" (list pos pos) rad2
-			"._ARRAY" "_LAST" "" "PO" "0,0" 4 360 "_YES"
+				_ENTER_
+			_CIRCLE_ (list pos pos) rad2
+			"._ARRAY" _lastSelection_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
 		)
 	)
 
@@ -336,17 +337,17 @@
 
 
 
-(defun Skiltfeste_Brakett_Mot_Mast ( / blockName description rad )
+(defun Skiltfeste_Brakett_Mot_Mast ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BRAKETT-PAA-ANNEN-MAST"
 		description	(strcat "SKILTFESTE, BRAKETT P" _uAA_ " ANNEN MAST")
-		rad	0.030	; For Ø60 pole
+		r	0.030	; For Ø60 pole
 	)
 	(defun localGraphics (/)
 		(command 
-			"_ARC" "C" "0,0" '(0.1 0.2) '(-0.1 0.2)
-			"._MIRROR" "_ALL" "" "0,0" "1,0" "_NO"
-			"._CIRCLE" "0,0" rad
+			_ARC_ _setArcCenter_ _origo_ '(0.1 0.2) '(-0.1 0.2)
+			_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+			_CIRCLE_ _origo_ r
 		)
 	)
 
@@ -381,14 +382,14 @@
 	)
 	(defun localGraphics (/)
 		(command  ; Three "eagle wings" to each side of insertion point:
-			"._LINE" (list wingStart 0) (list (+ wingStart wingLength) 0) ""
-			"._LINE" (list wingStart wingIncrY) (list (+ wingStart wingLength) wingIncrY) ""
-			"._LINE" (list wingStart (- wingIncrY)) (list (+ wingStart wingLength) (- wingIncrY)) ""
-			"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
+			_LINE_ (list wingStart 0) (list (+ wingStart wingLength) 0) _ENTER_
+			_LINE_ (list wingStart wingIncrY) (list (+ wingStart wingLength) wingIncrY) _ENTER_
+			_LINE_ (list wingStart (- wingIncrY)) (list (+ wingStart wingLength) (- wingIncrY)) _ENTER_
+			_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		)
 		(command ; Outline of wall-mount bracket (for boards etc Ø60):
-			"._LINE" (list (- (/ backPlate 2)) 0) (list (/ backPlate 2) 0) ""
-			"._RECTANGLE" 
+			_LINE_ (list (- (/ backPlate 2)) 0) (list (/ backPlate 2) 0) _ENTER_
+			_RECTANGLE_ 
 				(list (- (/ backPlate 4)) 0)
 				(list (/ backPlate 4) (- (/ backPlate 2)))
 		)

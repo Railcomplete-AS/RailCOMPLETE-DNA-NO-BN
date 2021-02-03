@@ -28,15 +28,15 @@
 		radius (* x 0.1)
 	)
 	(command
-		"._RECTANGLE" (list (* x -0.5) (* y -0.5)) (list (* x 0.5) (* y 0.5))
-		"._LINE" (list (* x -0.5) (* y 0.5)) (list (* x 0.5) (* y -0.5)) ""
-		"._LINE" (list (* x -0.4) (* y -0.2)) (list 0 (* y -0.2)) ""
-		"._LINE" (list (* x -0.4) (* y -0.3)) (list 0 (* y -0.3)) ""
+		_RECTANGLE_ (list (* x -0.5) (* y -0.5)) (list (* x 0.5) (* y 0.5))
+		_LINE_ (list (* x -0.5) (* y 0.5)) (list (* x 0.5) (* y -0.5)) _ENTER_
+		_LINE_ (list (* x -0.4) (* y -0.2)) (list 0 (* y -0.2)) _ENTER_
+		_LINE_ (list (* x -0.4) (* y -0.3)) (list 0 (* y -0.3)) _ENTER_
 		"._ARC"  (list (* x 0.00) (* y 0.25)) (list (* x 0.10) (* y 0.15)) (list (* x 0.20) (* y 0.20))
 		"._ARC"  (list (* x 0.20) (* y 0.20)) (list (* x 0.30) (* y 0.25)) (list (* x 0.40) (* y 0.15))
 	)
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "UPS-fordeler" "0,-0.6" _descriptionTextHeight_ 1.5 0 "ISO" "_TC")
+	(addMText "UPS-fordeler" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

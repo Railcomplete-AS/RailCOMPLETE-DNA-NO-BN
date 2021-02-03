@@ -18,11 +18,11 @@
 		blockName "NO-BN-2D-INSERTION-POINT" ;2D symbol block insertion point
 	)
 	(setLayer layer_InsertionPoint)
-	(command 
-;		"._CIRCLE" "0,0" radius
-;		"._LINE" (list (- radius) 0) (list radius 0) ""
-;		"._LINE" (list 0 (- radius)) (list 0 radius) ""
-		"._POINT" "0,0" ""
+	(command
+;		_CIRCLE_ _origo_ radius
+;		_LINE_ (list (- radius) 0) (list radius 0) _ENTER_
+;		_LINE_ (list 0 (- radius)) (list 0 radius) _ENTER_
+		_POINT_ _origo_ _ENTER_
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 )

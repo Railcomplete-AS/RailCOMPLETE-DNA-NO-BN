@@ -25,6 +25,17 @@
 
 
 (defun BJELKEMAST ( / blockName description x y w1 w2 r )
+	;
+	; 6-----------------5 = (x,y)
+	; :           w2    |
+	; :      3----------4
+	; :   /  : 
+	; :  2...r       Quarter beam - mirror twice to get complete HEB beam profile
+	; :  |           x wide, y high 
+	; :w1|           Waist = 2 * w1 
+	; :  |           Footplate / top-plate thickness: w2 
+	; .  1           Rounding radius = r
+	;
 	(setq
 		blockName "NO-BN-2D-JBTKL-MAST-BJELKEMAST"
 		description "KL BJELKEMAST TYPE HEB"
@@ -33,24 +44,29 @@
 		w1 0.09 	; Halvbredde "livet"
 		w2 0.20     ; hel tykkelse "tverr-beina"
 		r 0.15		; bøyradius i "innerhjørner" på HEB bjelken
+		p1	(list w1 0)
+		p2	(list w1 (- y (+ w2 r)))
+		p3	(list (+ w1 r) (- y w2))
+		p4	(list x (- y w2))
+		p5	(list x y)
+		p6	(list 0 y)
 	)
 	; Draw the first quadrant of an "I" shaped beam, then mirror+mirror:
 	(setLayer layer_Zero)
 	(command
-		"._PLINE"
-			(list w1 0)
-			(list w1 (- y (+ w2 r)))
-			"_ARC"
-			(list (+ w1 r) (- y w2))
-			"_LINE" 
-			(list x (- y w2))
-			(list x y)
-			(list 0 y)
-			""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
-		"._MIRROR" "_ALL" "" (list 0 0) (list 1 0) "_NO"
+		_POLYLINE_
+			p1 p2
+			_setPolylineArcMode_ 
+			p3
+			_setPolylineLineMode_
+			p4 p5 p6
+			_ENTER_
 	)
-	(drawHatchFromPoint _denseHatch_ (list 0 r) (/ 3.14 4) 0)
+	(command
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+	)
+	(drawHatchFromPoint _denseHatch_ (list 0 0) _angleZero_ 0)
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -69,14 +85,15 @@
 	)
 	(setLayer layer_Zero)
 	(command
-		"._PLINE" 
+		_POLYLINE_ 
 			(list 0 (/ y 2))
-			(list 0 0)
+			_origo_
 			(list x 0)
 			(list x y)
-			"_ARC" "_CE" (list center_x center_y)
-			(list 0 (/ y 2))
-			""
+			_setPolylineArcMode_ 
+			_setPolylineArcCenter_ (list center_x center_y)
+			(list 0 (/ y 2)) ; endpoint of arc
+			_ENTER_
 	)
 	(moveLeft (halfOf x))
 	(addDescriptionBelowOrigo description 0)

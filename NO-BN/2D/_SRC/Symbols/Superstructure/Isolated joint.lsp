@@ -125,12 +125,12 @@
 		barWidth	0.15		; Width of bar across track
 	)
 	(command 
-		"._PLINE" 
+		_POLYLINE_ 
 			(list 0 (/ barLength -2)) "_W" barWidth barWidth (list 0 (/ barLength 2))
-			"_W" 0 0 ; Always reset PLINE width after using non-standard settings
-			""
+			_setPolylineWidth_ _zero_ _zero_ ; Always reset PLINE width after using non-standard settings
+			_ENTER_
 	)
-	(command "._SCALE" "_LAST" "" "0,0" scale)
+	(command _SCALE_ _lastSelection_ _ENTER_ _origo_ scale)
 )
 
 
@@ -162,16 +162,16 @@
 		pt42	(list (+ 0) (+ (+ offset y)))
 		pt43	(list (+ x) (+ (+ offset y)))
 	)
-	(if (> (+ q1 q2) 0) (command "._LINE" pt32 pt42 "")) ; upper bar
-	(if (> (+ q3 q4) 0) (command "._LINE" pt22 pt12 "")) ; lower bar
-	(if (= q1 1) (command "._LINE" pt42 pt43 "")) ; quadrant I
-	(if (= q2 1) (command "._LINE" pt42 pt41 "")) ; quadrant II
-	(if (= q3 1) (command "._LINE" pt12 pt11 "")) ; quadrant III
-	(if (= q4 1) (command "._LINE" pt12 pt13 "")) ; quadrant IV
+	(if (> (+ q1 q2) 0) (command _LINE_ pt32 pt42 _ENTER_)) ; upper bar
+	(if (> (+ q3 q4) 0) (command _LINE_ pt22 pt12 _ENTER_)) ; lower bar
+	(if (= q1 1) (command _LINE_ pt42 pt43 _ENTER_)) ; quadrant I
+	(if (= q2 1) (command _LINE_ pt42 pt41 _ENTER_)) ; quadrant II
+	(if (= q3 1) (command _LINE_ pt12 pt11 _ENTER_)) ; quadrant III
+	(if (= q4 1) (command _LINE_ pt12 pt13 _ENTER_)) ; quadrant IV
 	(if (= (+ q4 q3 q2 q1) 0) ; Add two small circles to "0000" symbol, meaning "UNFINISHED - not configured yet"
 		(progn 
-			(command "._CIRCLE" pt12 y)
-			(command "._CIRCLE" pt42 y)
+			(command _CIRCLE_ pt12 y)
+			(command _CIRCLE_ pt42 y)
 		)
 	)
 )

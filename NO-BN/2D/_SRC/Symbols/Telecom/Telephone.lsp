@@ -41,7 +41,7 @@
 
 	; Annotative symbol
 	(drawBox layer_Zero gx gy _noWipeout_)
-	(addTextAtPos layer_Zero (* 0.8 gy) "0,0" "T")
+	(addTextAtPos layer_Zero (* 0.8 gy) _origo_ "T")
 	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) "Telefon")
 	(moveDown (halfOf gy))
 	(createAnnotativeBlockFromCurrentGraphics blockName)

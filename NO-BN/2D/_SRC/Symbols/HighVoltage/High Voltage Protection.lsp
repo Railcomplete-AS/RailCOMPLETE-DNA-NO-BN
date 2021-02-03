@@ -45,7 +45,7 @@
 				(progn
 					(drawRightSideScreen) ; First screen
 					(command 
-						"._PLINE" ; Right brace around Ø200 mast
+						_POLYLINE_ ; Right brace around Ø200 mast
 							"-0.030,0.406"
 							"0.020,0.406"
 							"0.040,0.386"
@@ -56,19 +56,19 @@
 							"0.015,0.145"
 							"0.015,0.231"
 							"-0.030,0.281"
-							"_CLOSE"
-							""
-						"._RECTANGLE" "-0.025,-0.081" "0.025,0.401" "" ; Side arm...
-						"._ROTATE" "_LAST" "" "0,0.376" "29.0" ; ...rotated 29 deg around rear bracket hole to fit front of sidebar with screen's middle ear
-						"._CIRCLE" "0.000,0.376" "0.011" ; Rear hole
-						"._MOVE" "_ALL" "" "0,0" "0.095,-0.188" ; Move everything right and down such that Ø200 mast center is in the origo (0,0)
-						"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO" ; Add left side copy
-						"._RECTANGLE" "-0.120,0.128" "0.120,0.148" "" ; Rear 240xØ20 threaded iron...
-						"._COPY" "_LAST" "" "0,0.138" "0,-0.138" ; ...front threaded iron
-						"._RECTANGLE" "-0.092,0.121" "-0.072,0.155" "" ; Nut upper left...
-						"._COPY" "_LAST" "" "0,0.138" "0,-0.138" ; ...lower left
-						"._RECTANGLE" "0.092,0.121" "0.072,0.155" "" ; Nut upper right...
-						"._COPY" "_LAST" "" "0,0.138" "0,-0.138" ; ...lower right
+							_closedPolyline_
+							_ENTER_
+						_RECTANGLE_ "-0.025,-0.081" "0.025,0.401" _ENTER_ ; Side arm...
+						_ROTATE_ _lastSelection_ _ENTER_ "0,0.376" _angle29_ ; ...rotated 29 deg around rear bracket hole to fit front of sidebar with screen's middle ear
+						_CIRCLE_ "0.000,0.376" "0.011" ; Rear hole
+						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.095,-0.188" ; Move everything right and down such that Ø200 mast center is in the origo (0,0)
+						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Add left side copy
+						_RECTANGLE_ "-0.120,0.128" "0.120,0.148" _ENTER_ ; Rear 240xØ20 threaded iron...
+						_COPY_ _lastSelection_ _ENTER_ "0,0.138" "0,-0.138" ; ...front threaded iron
+						_RECTANGLE_ "-0.092,0.121" "-0.072,0.155" _ENTER_ ; Nut upper left...
+						_COPY_ _lastSelection_ _ENTER_ "0,0.138" "0,-0.138" ; ...lower left
+						_RECTANGLE_ "0.092,0.121" "0.072,0.155" _ENTER_ ; Nut upper right...
+						_COPY_ _lastSelection_ _ENTER_ "0,0.138" "0,-0.138" ; ...lower right
 					)
 				)
 			)
@@ -78,19 +78,19 @@
 				(progn
 					(drawRightSideScreen)
 					(command 
-						"._RECTANGLE" "-0.035,-0.025" "0.025,0.406" "" ; Right arm
-						"._RECTANGLE" "-0.035,-0.025" "-0.029,0.406" "" ; L-bar
-						"._RECTANGLE" "-0.025,-0.081" "0.025,0.401" "" ; Side arm...
-						"._ROTATE" "_LAST" "" "0,0.376" "29.0" ; ...rotated 29 deg around rear bracket hole to fit front of sidebar with screen's middle ear
-						"._CIRCLE" "0.000,0.376" "0.011" ; Rear hole
-						"._MOVE" "_ALL" "" "0,0" "0.155,-0.188" ; Move everything right and down such that 240x240 HEB or concrete mast is centered in origo (0,0)
-						"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO" ; Add left side copy
-						"._RECTANGLE" "-0.190,0.155" "0.190,0.175" "" ; Rear 380xØ20 threaded iron...
-						"._COPY" "_LAST" "" "0,0.165" "0,-0.165" ; ...front threaded iron
-						"._RECTANGLE" "-0.146,0.148" "-0.126,0.182" "" ; Nut upper left...
-						"._COPY" "_LAST" "" "0,0.165" "0,-0.165" ; ...lower left
-						"._RECTANGLE" "0.146,0.148" "0.126,0.182" "" ; Nut upper right...
-						"._COPY" "_LAST" "" "0,0.16538" "0,-0.165" ; ...lower right
+						_RECTANGLE_ "-0.035,-0.025" "0.025,0.406" _ENTER_ ; Right arm
+						_RECTANGLE_ "-0.035,-0.025" "-0.029,0.406" _ENTER_ ; L-bar
+						_RECTANGLE_ "-0.025,-0.081" "0.025,0.401" _ENTER_ ; Side arm...
+						_ROTATE_ _lastSelection_ _ENTER_ "0,0.376" _angle29_ ; ...rotated 29 deg around rear bracket hole to fit front of sidebar with screen's middle ear
+						_CIRCLE_ "0.000,0.376" "0.011" ; Rear hole
+						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.155,-0.188" ; Move everything right and down such that 240x240 HEB or concrete mast is centered in origo (0,0)
+						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Add left side copy
+						_RECTANGLE_ "-0.190,0.155" "0.190,0.175" _ENTER_ ; Rear 380xØ20 threaded iron...
+						_COPY_ _lastSelection_ _ENTER_ "0,0.165" "0,-0.165" ; ...front threaded iron
+						_RECTANGLE_ "-0.146,0.148" "-0.126,0.182" _ENTER_ ; Nut upper left...
+						_COPY_ _lastSelection_ _ENTER_ "0,0.165" "0,-0.165" ; ...lower left
+						_RECTANGLE_ "0.146,0.148" "0.126,0.182" _ENTER_ ; Nut upper right...
+						_COPY_ _lastSelection_ _ENTER_ "0,0.16538" "0,-0.165" ; ...lower right
 					)
 				)
 			)
@@ -102,15 +102,15 @@
 				(progn 
 					(drawRightSideScreen)
 					(command 
-						"._MOVE" "_ALL" "" "0,0" "0.085,-0.105"
-						"._RECTANGLE" "0.221,-0.100" "0.241,0.100" "" ; 200mm x Ø20 threaded bar (right)
-						"._RECTANGLE" "0.214,0.076" "0.248,0.096" "" ; Nut upper right...
-						"._RECTANGLE" "0.214,-0.076" "0.248,-0.096" "" ; Nut lower right...
-						"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO" ; Left side copy
-						"._RECTANGLE" "-0.325,-0.130" "0.325,-0.070" "" ; Long 650mm x L60 bar in front of B-mast...
-						"._RECTANGLE" "-0.325,-0.076" "0.325,-0.070" "" ; ...L60-shaped
-						"._RECTANGLE" "-0.270,0.070" "0.270,0.130" "" ; Shorter 540mm x L60 bar to be mounted in rear B-mast...
-						"._RECTANGLE" "-0.270,0.070" "0.270,0.076" "" ; ...L60-shaped
+						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.085,-0.105"
+						_RECTANGLE_ "0.221,-0.100" "0.241,0.100" _ENTER_ ; 200mm x Ø20 threaded bar (right)
+						_RECTANGLE_ "0.214,0.076" "0.248,0.096" _ENTER_ ; Nut upper right...
+						_RECTANGLE_ "0.214,-0.076" "0.248,-0.096" _ENTER_ ; Nut lower right...
+						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Left side copy
+						_RECTANGLE_ "-0.325,-0.130" "0.325,-0.070" _ENTER_ ; Long 650mm x L60 bar in front of B-mast...
+						_RECTANGLE_ "-0.325,-0.076" "0.325,-0.070" _ENTER_ ; ...L60-shaped
+						_RECTANGLE_ "-0.270,0.070" "0.270,0.130" _ENTER_ ; Shorter 540mm x L60 bar to be mounted in rear B-mast...
+						_RECTANGLE_ "-0.270,0.070" "0.270,0.076" _ENTER_ ; ...L60-shaped
 					)
 				)
 			)
@@ -122,10 +122,10 @@
 				(progn 
 					(drawRightSideScreen)
 					(command 
-						"._MOVE" "_ALL" "" "0,0" "0.085,-0.185"
-						"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO" ; Left side copy
-						"._RECTANGLE" "-0.325,-0.210" "0.325,-0.150" "" ; Long 650mm x L60 bar in front of B-mast...
-						"._RECTANGLE" "-0.325,-0.156" "0.325,-0.150" "" ; ...L60-shaped
+						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.085,-0.185"
+						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Left side copy
+						_RECTANGLE_ "-0.325,-0.210" "0.325,-0.150" _ENTER_ ; Long 650mm x L60 bar in front of B-mast...
+						_RECTANGLE_ "-0.325,-0.156" "0.325,-0.150" _ENTER_ ; ...L60-shaped
 					)
 				)
 			)
@@ -136,18 +136,18 @@
 				(progn 
 					(drawRightSideScreen)
 					(command 
-						"._MOVE" "_ALL" "" "0,0" "0.175,0.110"  ; 100x150 yoke mast/2 + half mounting L-bar = 0.075+0.035=0.110
-						"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO" ; Add left side screen
-						"._RECTANGLE" "-0.420,0.075" "0.420,0.135" "" ; Long 840mm x L60 bar to be mounted on rear of 100w x 150d suspension mast (away from track)
-						"._RECTANGLE" "-0.420,0.075" "0.420,0.081" "" ; ...L60-shaped
-						"._RECTANGLE" "-0.085,-0.075" "0.085,-0.135" "" ; Short 170mm x L60 bar to be mounted on front of 100w x 150d suspension mast (facing the track)
-						"._RECTANGLE" "-0.085,-0.075" "0.085,-0.081" "" ; ...L60-shaped
-						"._RECTANGLE" "0.055,-0.100" "0.075,0.100" "" ; 200mm x Ø20 threaded bar (right)
-						"._RECTANGLE" "-0.055,-0.100" "-0.075,0.100" "" ; 200mm x Ø20 threaded bar (left)
-						"._RECTANGLE" "-0.082,0.081" "-0.048,0.097" "" ; Nut - upper left (16mm thick M20 nuts, not 20mm)
-						"._RECTANGLE" "0.082,0.081" "0.048,0.097" "" ; Nut - upper right
-						"._RECTANGLE" "-0.082,-0.081" "-0.048,-0.097" "" ; Nut - lower left
-						"._RECTANGLE" "0.082,-0.081" "0.048,-0.097" "" ; Nut - lower right
+						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.175,0.110"  ; 100x150 yoke mast/2 + half mounting L-bar = 0.075+0.035=0.110
+						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Add left side screen
+						_RECTANGLE_ "-0.420,0.075" "0.420,0.135" _ENTER_ ; Long 840mm x L60 bar to be mounted on rear of 100w x 150d suspension mast (away from track)
+						_RECTANGLE_ "-0.420,0.075" "0.420,0.081" _ENTER_ ; ...L60-shaped
+						_RECTANGLE_ "-0.085,-0.075" "0.085,-0.135" _ENTER_ ; Short 170mm x L60 bar to be mounted on front of 100w x 150d suspension mast (facing the track)
+						_RECTANGLE_ "-0.085,-0.075" "0.085,-0.081" _ENTER_ ; ...L60-shaped
+						_RECTANGLE_ "0.055,-0.100" "0.075,0.100" _ENTER_ ; 200mm x Ø20 threaded bar (right)
+						_RECTANGLE_ "-0.055,-0.100" "-0.075,0.100" _ENTER_ ; 200mm x Ø20 threaded bar (left)
+						_RECTANGLE_ "-0.082,0.081" "-0.048,0.097" _ENTER_ ; Nut - upper left (16mm thick M20 nuts, not 20mm)
+						_RECTANGLE_ "0.082,0.081" "0.048,0.097" _ENTER_ ; Nut - upper right
+						_RECTANGLE_ "-0.082,-0.081" "-0.048,-0.097" _ENTER_ ; Nut - lower left
+						_RECTANGLE_ "0.082,-0.081" "0.048,-0.097" _ENTER_ ; Nut - lower right
 					)
 				)
 			)
@@ -161,12 +161,12 @@
 				;	tube 0.032 ; Ø32 tube frame
 				;)
 				(command 
-					"._RECTANGLE" (list 0.190 0.016) (list 0.200 (+ 0.016 0.125)) ""
-					"._LINE" (list 0.190 (+ 0.016 0.125 (- 0.019))) (list 0.200 (+ 0.016 0.125 (- 0.019))) ""
-					"._LINE" (list 0.190 (+ 0.016 0.125 (- 0.035))) (list 0.200 (+ 0.016 0.125 (- 0.035))) ""
-					"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
-					"._RECTANGLE" (list (- 1.000) 0) (list 1.000 0.032) ""
-					"._MOVE" "_ALL" "" "0,0" "0.0,-0.114" 
+					_RECTANGLE_ (list 0.190 0.016) (list 0.200 (+ 0.016 0.125)) _ENTER_
+					_LINE_ (list 0.190 (+ 0.016 0.125 (- 0.019))) (list 0.200 (+ 0.016 0.125 (- 0.019))) _ENTER_
+					_LINE_ (list 0.190 (+ 0.016 0.125 (- 0.035))) (list 0.200 (+ 0.016 0.125 (- 0.035))) _ENTER_
+					_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+					_RECTANGLE_ (list (- 1.000) 0) (list 1.000 0.032) _ENTER_
+					_MOVE_ _selectAll_ _ENTER_ _origo_ "0.0,-0.114" 
 				)
 			)
 		)
@@ -209,13 +209,13 @@
 		ear3 (+ ear2 0.240)
 	)
 	(command 
-		"._RECTANGLE" (list 0 0) (list x y) ""
-		"._RECTANGLE" (list (- ear1 (/ earX 2)) y) (list (+ ear1 (/ earX 2)) (+ y earY)) ""
-		"._CIRCLE" (list ear1 (+ y (/ earY 2))) earHoleRadius ""
-		"._RECTANGLE" (list (- ear2 (/ earX 2)) y) (list (+ ear2 (/ earX 2)) (+ y earY)) ""
-		"._CIRCLE" (list ear2 (+ y (/ earY 2))) earHoleRadius ""
-		"._RECTANGLE" (list (- ear3 (/ earX 2)) y) (list (+ ear3 (/ earX 2)) (+ y earY)) ""
-		"._CIRCLE" (list ear3 (+ y (/ earY 2))) earHoleRadius ""
-		"._MOVE" "_ALL" "" (list ear1 (+ y (/ earY 2))) (list 0 0) ; Ear 1 = origo
+		_RECTANGLE_ _origo_ (list x y) _ENTER_
+		_RECTANGLE_ (list (- ear1 (/ earX 2)) y) (list (+ ear1 (/ earX 2)) (+ y earY)) _ENTER_
+		_CIRCLE_ (list ear1 (+ y (/ earY 2))) earHoleRadius _ENTER_
+		_RECTANGLE_ (list (- ear2 (/ earX 2)) y) (list (+ ear2 (/ earX 2)) (+ y earY)) _ENTER_
+		_CIRCLE_ (list ear2 (+ y (/ earY 2))) earHoleRadius _ENTER_
+		_RECTANGLE_ (list (- ear3 (/ earX 2)) y) (list (+ ear3 (/ earX 2)) (+ y earY)) _ENTER_
+		_CIRCLE_ (list ear3 (+ y (/ earY 2))) earHoleRadius _ENTER_
+		_MOVE_ _selectAll_ _ENTER_ (list ear1 (+ y (/ earY 2))) _origo_ ; Ear 1 = origo
 	)
 )

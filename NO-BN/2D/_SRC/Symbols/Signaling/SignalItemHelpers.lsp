@@ -62,7 +62,7 @@
 ; Signal lanterns
 ;==========================
 (defun drawLantern ( pos r / )
-	(command "._CIRCLE" pos r)
+	(command _CIRCLE_ pos r)
 )
 
 
@@ -71,7 +71,7 @@
 ; Draw signal item
 ;==========================
 (defun drawVerticalPole ( poleLength / )
-	(command "._LINE" "0,0" (list 0 poleLength) "")
+	(command _LINE_ _origo_ (list 0 poleLength) _ENTER_)
 )	
 
 
@@ -82,7 +82,7 @@
 		y 0.5
 	)
 	(command 
-		"._RECTANGLE" 
+		_RECTANGLE_ 
 			(list (/ x -2) (/ y -2)) 
 			(list (/ x 2) (/ y 2))
 	)
@@ -94,7 +94,7 @@
 (defun drawLyingPole ( poleEnd1 poleEnd2 / )
 	; We here assume that the signal is drawn with its pole starting at (0,0) and extends to the right, lying along the X-axis.
 	; In use by older drawX...X...() routines.
-	(command "._LINE" (list poleEnd1 0) (list poleEnd2 0) "")
+	(command _LINE_ (list poleEnd1 0) (list poleEnd2 0) _ENTER_)
 )
 
 
@@ -107,7 +107,7 @@
 		y 3.0
 	)
 	(command 
-		"._RECTANGLE" (list (- (/ x 2)) (- (/ y 2))) (list (/ x 2) (/ y 2))
+		_RECTANGLE_ (list (- (/ x 2)) (- (/ y 2))) (list (/ x 2) (/ y 2))
 	)
 	(drawHatch _denseHatch_)
 ) 
@@ -123,7 +123,7 @@
 		y 2.0
 	)
 	(command 
-		"._RECTANGLE" (list (- (/ x 2)) (- (/ y 2))) (list (/ x 2) (/ y 2))
+		_RECTANGLE_ (list (- (/ x 2)) (- (/ y 2))) (list (/ x 2) (/ y 2))
 	)
 	(drawHatch _denseHatch_)
 ) 
@@ -159,11 +159,11 @@
 	(drawBoxAtPos layer_Zero x y _origo_ layer_BoardOrPole_Wipeout )
 
 	; Arrow pointing straight up:
-	(command "._PLINE" p11 p12 p23 p24 p31 p21 p22 p11 _open_)
+	(command _POLYLINE_ p11 p12 p23 p24 p31 p21 p22 p11 _openPolyline_)
 	(cond 
-		((= dir _left_)	(command "._ROTATE" "_LAST" "" "0,0" "90")) ; Arrow now points to the left
-		((= dir _right_)(command "._ROTATE" "_LAST" "" "0,0" "-90")); Arrow noe points to the right
-		((= dir _down_)(command "._ROTATE" "_LAST" "" "0,0" "180")) ; Arrow now points down
+		((= dir _left_)	(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angle90_)) ; Arrow now points to the left
+		((= dir _right_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angleMinus90_)); Arrow noe points to the right
+		((= dir _down_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angle180_)) ; Arrow now points down
 	)
 	(drawHatchFromPoint _denseHatch_ p1 0 0)
 	(moveUp (/ y 2))
@@ -191,7 +191,7 @@
 		pt7 (list (+ posX 1.0) (+ posY 3.5))
 	)
 	(command 
-		"._PLINE" pt1 "_ARC" "CE" pt0 pt2 pt3 pt4 pt5 pt6 pt7 ""
+		_POLYLINE_ pt1 _setPolylineArcMode_ "CE" pt0 pt2 pt3 pt4 pt5 pt6 pt7 _ENTER_
 	)
 )
 
@@ -205,13 +205,13 @@
 		r 0.3125 ; five small circles in 3posX3 boposX
 	)
 	(command 
-		"._RECTANGLE" (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)) ; boposX
+		_RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)) ; boposX
 		; five small circles:
-		"._CIRCLE" (list (+ posX 0.0) (+ posY s2 -1.0)) r
-		"._CIRCLE" (list (+ posX 0.0) (+ posY s2 1.0)) r  
-		"._CIRCLE" (list (+ posX 0.0) (+ posY s2 0.0)) r
-		"._CIRCLE" (list (- posX 1.0) (+ posY s2)) r
-		"._CIRCLE" (list (+ posX 1.0) (+ posY s2)) r
+		_CIRCLE_ (list (+ posX 0.0) (+ posY s2 -1.0)) r
+		_CIRCLE_ (list (+ posX 0.0) (+ posY s2 1.0)) r  
+		_CIRCLE_ (list (+ posX 0.0) (+ posY s2 0.0)) r
+		_CIRCLE_ (list (- posX 1.0) (+ posY s2)) r
+		_CIRCLE_ (list (+ posX 1.0) (+ posY s2)) r
 		; Bottom center of box is now at (posX,posY)
 	)
 )
@@ -225,8 +225,8 @@
 		s2 (/ side 2)
 		centerPos (list posX (+ posY s2))
 	)
-	(command "._RECTANGLE" (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addText text centerPos 1.8 0 "iso" "_MC")
+	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
+	(addText text centerPos 1.8 0 _rcTextStyle_ _middleCenter_)
 )
 
 
@@ -239,8 +239,8 @@
 		centerPos (list posX (+ posY s2))
 		defaultText "A/D"
 	)
-	(command "._RECTANGLE" (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LS" "Linjesignal" defaultText centerPos 1.0 0 "iso" "_MC" (+ _multipleLines_ _lockPosition_))
+	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
+	(addAtt "LS" "Linjesignal" defaultText centerPos 1.0 0 _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 )
 
 
@@ -253,8 +253,8 @@
 		centerPos (list posX (+ posY s2))
 		defaultSpeed "6/7"
 	)
-	(command "._RECTANGLE" (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos 1.0 0 "iso" "_MC" (+ _multipleLines_ _lockPosition_))
+	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
+	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos 1.0 0 _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 )
 
 
@@ -268,8 +268,8 @@
 		y2 2.175
   	)
 	(command 
-		"._RECTANGLE" (list (+ posX (/ x -2)) posY) (list (+ posX (/ x 2)) (+ posY y)) ; Signal head rectangle, bottom line center in origo
-		"._RECTANGLE" (list (+ posX (/ x -2)) (+ posY y1)) (list (+ posX (/ x 2)) (+ posY y2))  ; Area to hatch across signal head
+		_RECTANGLE_ (list (+ posX (/ x -2)) posY) (list (+ posX (/ x 2)) (+ posY y)) ; Signal head rectangle, bottom line center in origo
+		_RECTANGLE_ (list (+ posX (/ x -2)) (+ posY y1)) (list (+ posX (/ x 2)) (+ posY y2))  ; Area to hatch across signal head
 	)
 	(drawHatch _denseHatch_)
 )
@@ -279,26 +279,35 @@
 (defun drawMKs ( posX posY / side pt1 pt2 pt3 x y pt4 )
 	; Signal 4C 'Middelkontrolllampe'
 	(setq r (getMediumLanternRadius))
-	(command "._CIRCLE" (list posX posY) r)
+	(command _CIRCLE_ (list posX posY) r)
 )
 
 
 
 (defun drawDs ( / side pt1 pt2 pt3 x y pt4 )
 	; Signal 43/44/45/46 'Dvergsignal'
+	;
+	;  1----
+	;  |     \
+	;  |      4
+	;  |   /   \
+	;  | /      |
+	;  2----.---3
+	;
 	(setq
 		side 4.0
 		pt1 (list (- (/ side 2)) side) 	; upper left corner of centered Ds head
 		pt2 (list (- (/ side 2)) 0) 	; lower left corner
 		pt3 (list (+ (/ side 2)) 0) 	; lower right corner
-		x (* side (cos (/ pi 4))) ; 45 deg
-		y (* side (sin (/ pi 4))) ; 45 deg
+		x (* side (DDcos _angle45_))
+		
+		y (* side (DDsin _angle45_))
 		pt4 (list (- x (/ side 2)) y) ; diagonal point
 	)
 	(command ; Draw Ds head
-		"._LINE" pt1 pt2 pt3 ""
-		"._LINE" pt2 pt4 ""
-		"._ARC" "C" pt2 pt3 "Angle" "90"
+		_LINE_ pt1 pt2 pt3 _ENTER_
+		_LINE_ pt2 pt4 _ENTER_
+		_ARC_ _setArcCenter_ pt2 pt3 _setArcAngle_ _angle90_
 	)
 )
 

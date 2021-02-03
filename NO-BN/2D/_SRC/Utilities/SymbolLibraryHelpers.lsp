@@ -16,106 +16,391 @@
 ; Usage: Build a library of graphics primitive routines on top of this API, applicable to any LISP dialect. Then build concrete 
 ; railway object symbols from CAD-system independent primitives.
 ;
-; Note on WIPEOUTs: The AutoLISP system variable WIPEOUTFRAME has three settings:
-;
-; WIPEOUTFRAME = 0		Frames are not displayed or plotted. Frames are temporarily displayed for object selection and selection preview.
-; WIPEOUTFRAME = 1		Frames are displayed and plotted
-; WIPEOUTFRAME = 2		(default) Frames are displayed, but not plotted
-;
 
 
 ; CAD system global constants
 ;----------------------------------------------------------
 
 (defun defineGlobalCadSystemConstants ( / )
+	(princ) ; At least one (dummy) command is needed to make VLIDE print the function's name to the console at load time
 	(setq
-		; Flags for the AutoLISP command ATTRIBUTE:
-		_invisible_ 		1
-		_constant_ 			2
-		_verify_ 			4
-		_preset_ 			8
-		_lockPosition_ 		16
-		_multipleLines_ 	32
-		
-		; rtos - Real-to-String
-		_scientific_		1
-		_decimal_			2
-		_engineering_		3	; (feet and decimal inches)
-		_architectural_		4	; (feet and fractional inches)
-		_fractional_		5
-	
-		; Mirror:
-		_keep_ 				"_No" 	; keep original item after mirroring
-		_erase_ 			"_Yes"	; erase original item after mirroring
 
-		; The 'Scandinavian extras':
-		_uAE_	"\U+00C6"	; Æ = Unicode decimal 198 - hex 00C6 - AutoLISP \U+00C6
-		_uOE_	"\U+00D8"	; Ø = Unicode decimal 216 - hex 00D8 - AutoLISP \U+00D8
-		_uAA_	"\U+00C5"	; Å = Unicode decimal 197 - hex 00C5 - AutoLISP \U+00C5
-		_ae_	"\U+00E6"	; æ = Unicode decimal 230 - hex 00E6 - AutoLISP \U+00E6
-		_oe_	"\U+00F8"	; ø = Unicode decimal 248 - hex 00F8 - AutoLISP \U+00F8
-		_aa_	"\U+00E5"	; å = Unicode decimal 229 - hex 00E5 - AutoLISP \U+00E5
+		; Constants specific to this DNA's railway administration
+		;============================================================================
+
+		; Track gauges and normal sleeper spacing
+		_normalGauge_					1.435	; Distance between the two inner rails for this administration's network.
+		_cantReferenceGauge_			1.500	; Reference value when converting cant (superelevation) into rotations: atan(cant/referenceGauge).
+		_sleeperSpacing_				0.600	; This administrations normal sleeper spacing.
+		_schematicGauge_				9.000	; Spacing between rails in a schematic 2-line drawing (insulation, return current etc, showing both rails).
+		_schematicTrackSpacing_			21.000	; Standard spacing between track centerlines in a schematic 1-line or 2-line drawing (signaling isolation, return current drawing - not track schematic).
+		_geographicTrackSpacing_		 4.700	; Standard spacing between track centerlines in real installations.
+
+
+
+		; Character sets, font sizes, text attributes and justification
+		;============================================================================
+
+		; Strings
+		_emptyString_					""
 		
-		; Text heights:
+		; The 'Scandinavian extras'
+		_uAE_							"\U+00C6"	; Æ = Unicode decimal 198 - hex 00C6 - AutoLISP \U+00C6
+		_uOE_							"\U+00D8"	; Ø = Unicode decimal 216 - hex 00D8 - AutoLISP \U+00D8
+		_uAA_							"\U+00C5"	; Å = Unicode decimal 197 - hex 00C5 - AutoLISP \U+00C5
+		_ae_							"\U+00E6"	; æ = Unicode decimal 230 - hex 00E6 - AutoLISP \U+00E6
+		_oe_							"\U+00F8"	; ø = Unicode decimal 248 - hex 00F8 - AutoLISP \U+00F8
+		_aa_							"\U+00E5"	; å = Unicode decimal 229 - hex 00E5 - AutoLISP \U+00E5
+		
+		; Text heights
 		; Text height is 10x linewidth. Font name is based on the linewidth, i.e. '180' is 1.80 m text height (suitable for 1:1000 scale drawings) (0.18 mm linewidth)
-		_th020_	0.2 
-		_th050_	0.5
-		_th070_	0.7
-		_th100_	1.0
-		_th125_	1.25
-		_th150_	1.5
-		_th180_	1.8
-		_th250_	2.5
-		_th350_	3.5
-		_th500_	5.0
-		_th700_	7.0
+		_th020_							0.2 
+		_th050_							0.5
+		_th070_							0.7
+		_th100_							1.0
+		_th125_							1.25
+		_th150_							1.5
+		_th180_							1.8
+		_th250_							2.5
+		_th350_							3.5
+		_th500_							5.0
+		_th700_							7.0
 		
-		; Wipeouts
-		_noWipeout_	nil	; Providing 'nil' instead of a layer definition to one of the drawCircle / drawBox functions suppresses adding of wipeout.
-	)
-
-	(setq
-		; Constants for graphics creation (independent of the underlying CAD system)
-
-		; Single values
-		_fifth_			0.20
-		_quarter_		0.25
-		_third_			(/ 1.0 3)
-		_half_			0.5
-		_twoThirds_		(/ 2.0 3)
-		_threeQuarters_	0.75
-		_fourFifths_	0.80
-		_one_			1.0
-		_two_			2.0
-		_three_			3.0
-		_four_			4.0
-		_five_			5.0
+		; Flags for the Auto LISP command ATTDEF (define text attribute entity)
+		_invisible_ 					1
+		_constant_ 						2
+		_verify_ 						4
+		_preset_ 						8
+		_lockPosition_ 					16
+		_multipleLines_ 				32
 		
-		; 2D points
-		_origo_			'( 0.00  0.00)
-		_slightlyBelow_	'( 0.00 -0.01)
-		_slightlyAbove_	'( 0.00  0.01)
-		_slightlyLeft_	'(-0.01  0.00)
-		_slightlyRight_	'( 0.01  0.00)
-		
-		; Polylines open/closed
-		_open_			""
-		_closed_		"_CLOSE"
-		
-		; Hatch pattern densities
-		_noHatch_		"no-hatch"
-		_filledHatch_	0.02
-		_denseHatch_	0.04
-		_mediumHatch_	0.08
-		_sparseHatch_	0.16
-		
-		; Hatch patterns representing colors
-		_blackHatch_	_filledHatch_
-		_redHatch_		_denseHatch_
-		_blueHatch_		_mediumHatch_
-		_yellowHatch_	_sparseHatch_
-		; _whiteHatch_	Do not hatch
+		; Justification
+		_topLeft_						"_TL"
+		_topCenter_						"_TC"
+		_topRight_						"_TR"
+		_middleLeft_					"_ML"
+		_middleCenter_					"_MC"
+		_middleRight_					"_MR"
+		_bottomLeft_					"_BL"
+		_bottomCenter_					"_BC"
+		_bottomRight_					"_BR"
+						
+		; Text styles				
+		_rcTextStyle_					"ISO"
 	
+
+
+		; Commands and arguments
+		;============================================================================
+
+		; Arguments used in several commands
+		_ENTER_							""	 		; All commands: An empty string plays the role of an ENTER keystroke, to accept a proposed value inside a command dialogue
+		_byBlock_						"_ByBlock"
+		_byLayer_						"_ByLayer"
+
+		
+		; SELECT command, and all other commands using the SELECT dialogue
+		_SELECT_						"._SELECT"
+		_selectAll_						"_All"		; SELECT command: Select all items
+		_lastSelection_					"_Last"		; SELECT command: Select last item
+
+
+		; LAYER command
+		; AuoCAD LAYER 'New' option:
+		;     Creates layers. You can create two or more layers by entering names separated by commas.
+		; AuoCAD LAYER 'Make' option:
+		;     Creates a layer and makes it current. New objects are drawn on the current layer. If no layer exists for 
+		;     the name you enter, a new layer with that name is created. The new layer is on and assumes the following 
+		;     properties by default: color number 7, the CONTINUOUS linetype, and a lineweight of DEFAULT. If the layer
+		;     exists but is turned off, it is turned on.
+		_LAYER_							"._LAYER"	; Manipulate CAD layers
+		_anyLayerName_					"*"
+		_setLayer_						"_Set"
+		_unlockLayer_					"_Unlock"
+		_lockLayer_						"_Lock"
+		_createNewLayer_				"_New"
+		_makeNewLayer_					"_Make"			
+		_colorizeLayer_					"_Color"
+		_describeLayer_					"_Description"
+		_freezeLayer_					"_Freeze_"
+		_thawLayer_						"_Thaw"
+		_plottability_					"_Plot"
+		_isNotPlottable_				"_No"
+		_turnOnLayer_					"_ON"
+		_turnOffLayer_					"_OFf"
+
+
+		; LAYERP command
+		_LAYERP_						"._LAYERP"	; Restore previous layer state
+
+
+		; TEXTLAYER command (system variable)
+		; With TEXTLAYER , anytime you create text in AutoCAD, the text will automatically assign itself to a predetermined layer – regardless of whatever layer you’re currently on.
+		; DOES NOT WORK - despite acad documentation on system variables !!!! 
+		; Specifies a default layer for new text and multiline text objects in the current drawing (System variable)
+		_TEXTLAYER_						"._TEXTLAYER"
+
+
+		; CLAYER
+		_CLAYER_						"._CLAYER"	; Sets the current layer, which is the default drawing layer (for any type of entity, except for TEXT / MTEXT if TEXTLAYER is set to another layer)
+
+
+		; COLOR command
+		_COLOR_							"._COLOR"	; Set default drawing color
+		_colorWhite_					"white"
+		_colorYellow_					"yellow"
+
+
+		; LINETYPE command
+		; Set line type (ByBlock, ByLayer, continuous, dashed etc)
+		_LINETYPE_						"._LINETYPE"
+		_setLinetype_					"_Set"
+	
+	
+		; LWEIGHT command
+		; Set line weight (thickness)
+		_LWEIGHT_						"._LWEIGHT"
+
+		
+		; CETRANSPARENCY command (system variable)
+		; Current entity transparanecy
+		; -1 (ByLayer) Transparency value determined by layer (default setting)
+		; -2 (ByBlock) Transparency value determined by block
+		; 0 Fully opaque (not transparent)
+		; 1-90 Transparency value defined as a percentage
+		; To change the transparency of existing objects, use the Properties palette or the Layer Properties Manager.
+		; Note: Transparency is limited to 90 percent to avoid confusion with layers that are turned off or frozen.
+		; The transparency level for new hatch objects is controlled by the HPTRANSPARENCY system variable.
+		_CETRANSPARENCY_				"._CETRANSPARENCY"
+
+
+		; POINT command
+		; The application using the symbol librart should use PTYPE command to define the actual point type graphics (regenerates to set size on screen when zooming).
+		_POINT_							"._POINT"
+		
+		
+		; LINE command
+		_LINE_							"._LINE"
+
+		
+		; POLYLINE command (2D version)
+		_POLYLINE_						"._PLINE"
+		_openPolyline_					""			
+		_closedPolyline_				"_Close"
+		_setPolylineWidth_				"_Width"
+		_setPolylineLineMode_			"_Line"
+		_setPolylineArcMode_			"_Arc"
+		_setPolylineArcCenter_			"_CEnter"
+		_setPolylineArcRadius_			"_Radius"
+		_setPolylineArcAngle_			"_Angle"
+		_setPolylineArcDirection_		"_Direction"
+
+
+		; RECTANGLE command
+		_RECTANGLE_						"._RECTANGLE"
+
+		
+		; CIRCLE command
+		_CIRCLE_						"._CIRCLE"
+
+		
+		; ARC command
+		_ARC_							"._ARC"
+		_setArcCenter_					"_Center"
+		_setArcAngle_					"_Angle"
+
+		
+		; TEXT command
+		_TEXT_							"._TEXT"
+		_justifyText_					"_Justify"
+		_setTextStyle_					"_Style"
+		
+
+		; MTEXT command
+		_MTEXT_							"._MTEXT"
+
+		
+		; RTOS - Real-to-String command
+		; (rtos number [mode [precision]])
+		; number: A number.
+		; mode: An integer specifying the linear units mode. The mode corresponds to the values 
+		; allowed for the LUNITS AutoCAD system variable. The mode can be one of the following numbers:
+		;     1 Scientific
+		;     2 Decimal
+		;     3 Engineering (feet and decimal inches)
+		;     4 Architectural (feet and fractional inches)
+		;     5 Fractional
+		; precision: An integer specifying the precision.
+		; The mode and precision arguments correspond to the system variables LUNITS and LUPREC. If you omit 
+		; the arguments, rtos uses the current settings of LUNITS and LUPREC.
+		; Return Values: A string. The UNITMODE system variable affects the returned string when engineering,
+		; architectural, or fractional units are selected (mode values 3, 4, or 5).
+		_scientific_					1
+		_decimal_						2
+		_engineering_					3	; (feet and decimal inches)
+		_architectural_					4	; (feet and fractional inches)
+		_fractional_					5
+
+	
+		; COPY command
+		_COPY_							"._COPY"
+
+		
+		; MOVE command
+		_MOVE_							"._MOVE"
+		_setMoveDisplacement_			"_Displacement"
+	
+	
+		; ROTATE command (2D)
+		_ROTATE_						"._ROTATE"
+	
+	
+		; MIRROR command
+		_MIRROR_						"._MIRROR"
+		_eraseMirrorSource_				"_Yes"	; Confirm when asked "Erase source objects?"
+		_keepMirrorSource_				"_No"	; Decline when asked "Erase source objects?", i.e. keep the source objects as well as the mirror-image
+
+		
+		; SCALE command
+		_SCALE_							"._SCALE"
+	
+	
+		; HATCH command
+		_HATCH_							"._-HATCH"
+		_selectHatchObjects_			"_Select"
+		_setHatchProperties_			"_Properties"
+		_selectHatchOrigin_				"_Origin"
+		_setNewHatchOrigin_ 			"_Set" 
+		_doNotStoreHatchOriginAsDefault_ "_No"
+		; Hatch patterns
+		_hatchPatternSlantedLines_		"ANSI31"
+		_hatchPatternLosanges_			"ANSI37"
+		; Hatch pattern densities
+		_noHatch_						"_nohatch_"
+		_solidHatch_					0.02
+		_denseHatch_					0.04
+		_mediumHatch_					0.08
+		_sparseHatch_					0.16
+		; Hatch pattern densities when these are representing colors
+		_blackHatch_					_solidHatch_
+		_redHatch_						_denseHatch_
+		_blueHatch_						_mediumHatch_
+		_yellowHatch_					_sparseHatch_
+		; _whiteHatch_					Do not hatch
+	
+
+		; EXPLODE command
+		_EXPLODE_						"._EXPLODE"
+
+		
+		; POLYGON command
+		_POLYGON_						"._POLYGON"
+		_inscribed_						"_Inscribed"
+		
+		; ARRAY command
+		_ARRAY_							"._ARRAY"
+		_rectangularArray_				"_Rectangular"
+		_polarArray_					"_POlar"
+		_pathArray_						"_PAth"
+		_rotateObjects_					"_Yes"			; When doing polar arrays, confirm that objects shall be rotated as they are placed around a rotational center
+		_fullCircle_					360				; Decimal Degrees to fill a full circle with the specified number of items (the preceding number)
+
+		
+		; DRAWORDER command
+		_DRAWORDER_						"._DRAWORDER"
+		_aboveObjects_					"_Above"		; Relative to other objects
+		_underObjects_					"_Under"		; Relative to other objects
+		_aboveAllObjects_				"_Front"		; On top of everything else
+		_underAllObjects_				"_Back"			; Below everything else
+
+		
+		; WIPEOUT command
+		; The AutoLISP system variable WIPEOUTFRAME has three settings:
+		; WIPEOUTFRAME = 0		Frames are not displayed or plotted. Frames are temporarily displayed for object selection and selection preview.
+		; WIPEOUTFRAME = 1		Frames are displayed and plotted
+		; WIPEOUTFRAME = 2		(default) Frames are displayed, but not plotted
+		_WIPEOUT_						"._WIPEOUT"
+		_createWipeoutFromPolyline_		"_Polyline"
+		_keepWipeoutSource_ 			"_No" 	; Keep original item after mirroring
+		_eraseWipeoutSource_			"_Yes"	; Erase original item after mirroring
+		_noWipeout_						nil		; Providing 'nil' instead of a layer definition to one of the drawCircle / drawBox functions suppresses adding of wipeout.
+
+
+		; ERASE command
+		_ERASE_							"._ERASE"
+		_eraseAll_						"_All"
+	
+	
+		; PURGE command
+		_PURGE_							"._PURGE"
+		_purgeAll_						"_All"			; Purge everything that is currently purgable
+		_purgeBlocks_					"_Blocks"		; Purge specific blocks (a list of block names follows)
+		_purgeWithoutVerification_		"_No"			; Decline the question "Verify each name to be purged?"
+
+		
+		; BLOCK command
+		_BLOCK_							"._BLOCK"
+		_redefineBlock_					"_Yes"			; Conirm overwrite of existing block
+		_annotativity_					"_Annotative"	; Initiate the 'annotative?' dialogue
+		_isAnnotative_					"_Yes"			; Confirm that block shall be created as annotative
+		_isNotAnnotative_				"_No"			; Decline that block shall not created as non-annotative
+		_keepOrientation_				"_No"			; Negative answer to the question "Orient relative to sheet in paper space viewports?"
+
+		
+		; INSERT command
+		_INSERT_						"._INSERT"
+
+		
+		; SAVEAS command
+		_SAVEAS_						"._SAVEAS"
+		_overwriteFile_					"_Yes"
+
+
+		; Constants for graphics creation (independent of the underlying CAD system)
+		;============================================================================
+
+		; Single numeric values
+		_tenth_							0.10
+		_fifth_							0.20
+		_quarter_						0.25
+		_third_							(/ 1.0 3)
+		_half_							0.5
+		_twoThirds_						(/ 2.0 3)
+		_threeQuarters_					0.75
+		_fourFifths_					0.80
+		_one_							1.0
+		_two_							2.0
+		_three_							3.0
+		_four_							4.0
+		_five_							5.0
+		_ten_							10.0
+		
+		; Decimal Degree angles		
+		_angleZero_						0
+		_angle29_						29
+		_angle30_						30
+		_angle45_						45
+		_angle90_						90
+		_angle180_						180
+		_angleMinus90_					-90
+		
+		; 2D points		
+		_origo_							'( 0.00  0.00)
+		_slightlyBelow_					'( 0.00 -0.01)
+		_slightlyAbove_					'( 0.00  0.01)
+		_slightlyLeft_					'(-0.01  0.00)
+		_slightlyRight_					'( 0.01  0.00)
+		
+		; 2D directions
+		_xAxis_							"1,0"
+		_yAxis_							"0,1"
+		_diagonalAxis_					"1,1"
+		_reverseDiagonalAxis_			"-1,1"
+		
+
+		; Constants specific to RailCOMPLETE
+		;============================================================================
+
 		; Proxy symbols (when no ordinary symbol has been defined)
 		_proxySymbolRadius_					1.5
 		_oneLetterProxySymbolTextHeight_	2.5
@@ -125,39 +410,31 @@
 		; Symbol modes
 		; Use these as suffix to the basic symbol names (blockName).
 		; A corresponding declaration will be made in DNA to pick the appropriate symbol to show in CAD modelspace.
-		_schematic_		"-Schematic"	; Non-annotative symbol size according to the administration's symbol catalogue for schematic drawings
-		_annotative_	"-Geographic"	; Annotative symbol size according to the administration's symbol catalogue for use in geo drawings
-		_metric_		"-Metric"		; Non-annotative real-size items, for instance metal-free area, bolt groups etc, for non-annotative use in geo drawings
+		_schematic_						"-Schematic"	; Non-annotative symbol size according to the administration's symbol catalogue for schematic drawings
+		_scalable_						"-Geographic"	; Annotative symbol size according to the administration's symbol catalogue for use in geo drawings
+		_metric_						"-Metric"		; Non-annotative real-size items, for instance metal-free area, bolt groups etc, for non-annotative use in geo drawings
 	
 		; Symbol description - usually place text below symbols, in UPPERCASE
-		_descriptionTextHeight_		_th020_
-		_descriptionTextBoxWidth_	3.0
+		_descriptionTextHeight_			_th020_
+		_descriptionTextBoxWidth_		3.0
 		
 		; 'Enum lists'
-		_active_		"_active_"
-		_inactive_		"_inactive_"
-		;
-		_single_		"_single_"
-		_double_		"_double_"
-		
-		_left_			"_left_"
-		_right_			"_right_"
-		_up_			"_up_"
-		_down_			"_down_"
+		_active_						"_active_"
+		_inactive_						"_inactive_"
+		;				
+		_single_						"_single_"
+		_double_						"_double_"
+						
+		_left_							"_left_"
+		_right_							"_right_"
+		_up_							"_up_"
+		_down_							"_down_"
 		
 		; Compass directions (alias for angles 0..360 in Decimal Degrees, CW rotation)
-		_east_			0
-		_north_			90
-		_west_			180
-		_south_			270
-		
-		; Track gauges and normal sleeper spacing
-		_normalGauge_				1.435	; Distance between the two inner rails for this administration's network.
-		_cantReferenceGauge_		1.500	; Reference value when converting cant (superelevation) into rotations: atan(cant/referenceGauge).
-		_sleeperSpacing_			0.600	; This administrations normal sleeper spacing.
-		_schematicGauge_			9.000	; Spacing between rails in a schematic 2-line drawing (insulation, return current etc, showing both rails).
-		_schematicTrackSpacing_		21.000	; Standard spacing between track centerlines in a schematic 1-line or 2-line drawing (signaling isolation, return current drawing - not track schematic).
-		_geographicTrackSpacing_	 4.700	; Standard spacing between track centerlines in real installations.
+		_east_							0
+		_north_							90
+		_west_							180
+		_south_							270
 	)
 )
 
@@ -190,8 +467,15 @@
 		)
 		(print "NO .LSP FILES LOADED")
 	)
-	(princ (strcat "" folderName " loaded...\n")) (prin1)
+	(princ (strcat _ENTER_ folderName " loaded...\n")) (prin1)
 )
+
+
+
+
+; Define global constants before further loading of LISP files
+;--------------------------------------------------------------
+(defineGlobalCadSystemConstants)
 
 
 
@@ -200,14 +484,14 @@
 
 (defun purgeAll ( / )
 	(command 
-		"._LAYER" "Unlock" "*" ""
-		"._ERASE" "_ALL" ""
+		_LAYER_ _unlockLayer_ _anyLayerName_ _ENTER_
+		_ERASE_ _selectAll_ _ENTER_
 	)
-	(command "._LAYER" "_Set" "0" "")
+	(command _LAYER_ _setLayer_ "0" _ENTER_)
 	(command 
-		"._PURGE" "_ALL" "*" "_NO"
-		"._PURGE" "_ALL" "*" "_NO"
-		"._PURGE" "_ALL" "*" "_NO"
+		_PURGE_ _purgeAll_ _anyLayerName_ _purgeWithoutVerification_
+		_PURGE_ _purgeAll_ _anyLayerName_ _purgeWithoutVerification_
+		_PURGE_ _purgeAll_ _anyLayerName_ _purgeWithoutVerification_
 	)
 	'purgeAll
 )
@@ -216,7 +500,7 @@
 
 (defun setCadSystemDefaults ( / )
 	(command
-		"._ERASE" "_ALL" "" ""
+		_ERASE_ _selectAll_ _ENTER_ _ENTER_
 		"._SNAP" 1.0
 		"._OSNAP" "OFF"
 		"._OSNAPCOORD" 1
@@ -249,7 +533,7 @@
 		"._ZOOM" "_WINDOW" "-11,-5" "11,5"
 	)
 	(command
-		"._PLINE" "0,0" "_WIDTH" 0 0 "" ; Default to thin polylines
+		_POLYLINE_ _origo_ _setPolylineWidth_ _zero_ _zero_ _ENTER_ ; Default to thin polylines (from start to end)
 	)
 	'setCadSystemDefaults
 )
@@ -258,10 +542,10 @@
 (defun setDefaultObjectPropertiesToByBlock ( / )
 	(setLayer layer_Zero)
 	(command
-		"._COLOR" "_ByBlock"
-		"._LINETYPE" "_SET" "_ByBlock" ""
-		"._LWEIGHT" "_ByBlock"
-		"._CETRANSPARENCY" "_ByBlock"
+		_COLOR_ _byBlock_
+		_LINETYPE_ _setLinetype_ _byBlock_ _ENTER_
+		_LWEIGHT_ _byBlock_
+		_CETRANSPARENCY_ _byBlock_
 	)
 	'setDefaultObjectPropertiesToByBlock
 )
@@ -270,10 +554,10 @@
   
 (defun setCurrentDefaultPropertiesToByLayer ( / )
 	(command
-		"._COLOR" "_ByLayer"
-		"._LINETYPE" "_SET" "_ByLayer" ""
-		"._LWEIGHT" "_ByLayer"
-		"._CETRANSPARENCY" "_ByLayer"
+		_COLOR_ _byLayer_
+		_LINETYPE_ _setLinetype_ _byLayer_ _ENTER_
+		_LWEIGHT_ _byLayer_
+		"._CETRANSPARENCY" _byLayer_
 	)
 	'setCurrentDefaultPropertiesToByLayer
 )
@@ -313,7 +597,7 @@
 	;
 	; "TextHeight = 0.0" means that the text van vary in size (after creation)
 	;------------------   StyleName FontFile Annotative "Annotative" "_NO" TextHeight Width Obliquing Backwards UpsideDowm )
-	(command "._STYLE"   "ISO"      "iso3098.shx"        "A"         "_NO" "0.0"      "1.0" "0.0"     "_NO"     "_NO" )
+	(command "._STYLE"   _rcTextStyle_      "iso3098.shx"        "A"         "_NO" "0.0"      "1.0" "0.0"     "_NO"     "_NO" )
 	'createIsoTextStyle
 )
 
@@ -422,7 +706,7 @@
 (defun createLayer ( layDef / currentLayer )
 	; Create new layer, or modify if layer already exists.
 	;
-	; Option "New" instead of "Make" will create layer if it does not exist, but it has some flaws: 'New' fails for some reason.
+	; Option "New" (createNewLayer) instead of "Make" (makeNewLayer) will create layer if it does not exist, but it has some flaws: 'New' fails for some reason.
 	; Option 'Make' instead of 'New' would just ignore & inform but not fail if layer already exists. ACAD internal state variable CLAYER (current layer) would be set to the specified layer.
 	; Note: If you try use "Make" to an existing layer, then the option "Description" asks for accept to change existing description, if any. This makes the "Make" command difficult to use.
 	;
@@ -438,21 +722,21 @@
 			; Change
 			(setq currentLayer (getvar 'CLAYER)) ; stash current layer in local variable
 			(command
-				"._LAYER"
-					"_Set" layerName
-					"_Color" layerColor layerName ; Color
-					"_Description" layerDescription layerName "" ; Description + extra ENTER to accept overwrite of existing description
+				_LAYER_
+					_setLayer_      layerName
+					_colorizeLayer_ layerColor layerName
+					_describeLayer_ layerDescription layerName _ENTER_ ; Description + extra ENTER to accept overwrite of existing description
 			)
 			(setvar 'CLAYER currentLayer) ; retrieve stashed value
 		)
 	;else
 		; Create
 		(command
-			"._LAYER"
-				"_Make" layerName ; New
-				"_Color" layerColor layerName ; Color
-				"_Description" layerDescription layerName ; Description
-				""
+			_LAYER_
+				_makeNewLayer_  layerName
+				_colorizeLayer_ layerColor layerName
+				_describeLayer_ layerDescription layerName
+				_ENTER_
 		)
 	)
 	; Always reset - otherwise (createLayer ...) fails at least in the VLIDE debugger.
@@ -463,7 +747,7 @@
 
 
 
-(defun setLayer ( layDef / layerName )
+(defun setLayer ( layDef / layerName objectColor )
 	(if (= layDef nil)
 	 	(alert "setLayer(): layDef argument cannot be nil.")
 	 )
@@ -473,9 +757,9 @@
 	)
 	(cond
 		((isExistingLayer layerName)
-				(command "._LAYER" "_Thaw" layerName "") ; Thaw it, change to it, unlock and turn on
-				(command "._LAYER" "_Set" layerName "_Unlock" layerName "_ON" layerName  "")
-				(command "._COLOR" objectColor) ; Default color for next graphics entities to be drawn
+				(command _LAYER_ _thawLayer_ layerName _ENTER_)
+				(command _LAYER_ _setLayer_ layerName _unlockLayer_ layerName _turnOnLayer_ layerName  _ENTER_)
+				(command _COLOR_ objectColor) ; Default color for next graphics entities to be drawn
 		)
 		(T
 			(createLayer layer_UnknownLayerNameRequested) ; Create layer if nonexisting. Switch to this layer.
@@ -487,27 +771,27 @@
 
 
 
+(defun setDefaultOjectColor ( color / )
+	(command _COLOR_ color)
+)
+
+
+
 (defun setLayerAndObjectColor ( layDef objectColor / )
 	(setLayer layDef)
-	(command "._COLOR" objectColor) ; override layer's usual object color, which was first set with setLayer().
+	(command _COLOR_ objectColor) ; override layer's usual object color, which was first set with setLayer().
 )
 
 
 
 (defun freezeAllLayersExceptCurrentLayer ( / )
-	(command "._LAYER" "_F" "*" "")	; Freeze all layers except current layer
+	(command _LAYER_ _freezeLayer_ _anyLayerName_ _ENTER_)	; Freeze all layers except current layer
 )
 
 
 
 (defun thawAllLayers ( / )
-	(command "._LAYER" "_T" "*" "")	; Thaw all layers except current layer
-)
-
-
-
-(defun setDefaultOjectColor ( color / )
-	(command "._COLOR" color)
+	(command _LAYER_ _thawLayer_ _anyLayerName_ _ENTER_)	; Thaw all layers except current layer
 )
 
 
@@ -515,11 +799,11 @@
 ; CAD system TEXT entities
 ;----------------------------------------------------------
 
-(defun addText ( text pos textHeight rotation textStyle justify / )
+(defun addText ( text pos textHeight rotation textStyle justification / )
 	(command 
-		"._TEXT"
-			"_STYLE" textStyle 
-			"_JUSTIFY" justify 
+		_TEXT_
+			_setTextStyle_ textStyle 
+			_justifyText_ justify 
 			pos 
 			textHeight 
 			rotation 
@@ -530,58 +814,63 @@
 
 
 
-(defun addTextAtPos ( layDef textHeight pos text / rotation textStyle justify layerName )
+(defun addTextAtPos ( layDef textHeight pos text / rotation textStyle justification layerName )
 	; Single text, no line breaking
 	; layDef textHeight pos text
+	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
 	;
 	; Note: ; For some reason, texts on layer 0 get "_ByLayer" insted of "_ByBlock" :-( but not when running MAIN() as a batch job.
 	;
 	(setq
-		rotation	0 ; degrees
-		textStyle	"ISO"
-		justify		"_MC" ; middle centered
-		layerName	(nth 0 layDef)
+		rotation		_angleZero_
+		textStyle		_rcTextStyle_
+		justification	_middleCenter_ ; middle centered
+		layerName		(nth 0 layDef)
 	)
 	(setLayer layDef) ; Sets layer and drawing color
-	(command "._TEXTLAYER" layerName) ; otherwise it goes to the default text layer which was previously set with TEXTLAYER
-	(addText text pos textHeight rotation textStyle justify)
+	(command _TEXTLAYER_ layerName) ; otherwise it goes to the default text layer which was previously set with TEXTLAYER
+	(addText text pos textHeight rotation textStyle justification)
 	'addTextAtPos
 )
 
 
 
-(defun addMText ( text pos textHeight width rotation textStyle justify / )
+(defun addMText ( text pos textHeight width rotation textStyle justification / )
 	; Multiline text
+	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
 	(command 
 		"._MTEXT"
 			pos 
-			"_S" textStyle	; Style
-			"_H" textHeight	; Text height
-			"_J" justify	; Justification
-			"_R" rotation	; Rotation
-			"_W" width		; Multiline box width (instead of giving next corner as a position)
+			"_Style" textStyle	; Style
+			"_Height" textHeight	; Text height
+			"_Justify" justification	; Justification
+			"_Rotation" rotation	; Rotation
+			"_Width" width		; Multiline box width (instead of giving next corner as a position)
 			text			; The text which will break inside the given text box width.
 							; ...if Width is non-zero then text will break at spaces when needed.
 							; ...if Width is zero then text will remain one one single line.
-			""				; No further text lines
+			_ENTER_			; No further text lines
 	)
    'addMText
 )
 
 
 
-(defun addMTextAtPos ( layDef textHeight textBoxWidth pos text / rotation textStyle justify layerName )
+(defun addMTextAtPos ( layDef textHeight textBoxWidth pos text / rotation textStyle justification layerName )
 	; Multiline text at given pos and text height / box width (or zero)
-	; layDef textHeight textBoxWidth pos text
+	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
 	(setq
-		rotation	0	; degrees
-		textStyle	"ISO"
-		justify		"_MC" ; middle centered
-		layerName	(nth 0 layDef)
+		rotation		_angleZero_
+		textStyle		_rcTextStyle_
+		justification	_middleCenter_ ; middle centered
+		layerName		(nth 0 layDef)
 	)
+	(princ "ENTER AddMTextAtPos...\n")
 	(setLayer layDef) ; Set layer and drawing color
-	(command "._TEXTLAYER" layerName) ; otherwise it goes to the previously set value for TEXTLAYER
+	;(command _TEXTLAYER_ layerName) ; otherwise it goes to the previously set value for TEXTLAYER
+	;(princ (strcat layerName " - " (rtos textHeight) " - " (rtos textBoxWidth) " - " text))
 	(addMText text pos textHeight textBoxWidth rotation textStyle justify)
+	(princ "EXIT AddMTextAtPos done\n")
 	'addMTextAtPos
 )
 
@@ -590,12 +879,12 @@
 ; CAD system text ATTRIBUTE entities
 ;----------------------------------------------------------
 
-(defun addAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justify aflags / tmp )
-	; NB! All arttribute texts are added as ANNOTATIVE.
+(defun addAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification aflags / tmp )
+	; NB! All attribute texts are added as ANNOTATIVE.
 	; Low-level access to CAD system Text Attribute entity creation
 	; Add text attribute (a named storage for text in a symbol, which can be read and written to later).
 	; Features the TAG, PROMPT amd VALUE field, a POSITION and lots of attribute flags (see global contants elsewhere).
-	; ATTDEF is a 'drive me crazy' command - the inputs vary wildly AFLAGS settings.
+	; ATTDEF is a 'drive me crazy' command - the inputs vary wildly with AFLAGS settings.
 	;
 	; See definition of symbolic constants _xxxx_ elsewhere.
 	; 0		No attribute mode selected
@@ -608,12 +897,17 @@
 	;
 	; Test cases when debugging LISP code:
 	;
-	; (defun x0() (setq tag "TEKSTOVER" prom "Tekst over" val "" pos (list 0 (* 1.333 side)) height 1.0 rot 0 textstyle "iso" justification "_MC" aflags _lockPosition_))
-	; (defun x1() (setq tag "TAG1" prom "PROMPT1" val "TEXT1" pos "1.1,1.1" height 1.1 rot 11.11 textStyle "iso" justify "_MC" aflags 48)) ; LockPosition + MultipleLines
-	; (defun x2() (setq tag "TAG2" prom nil       val "TEXT2" pos "2.2,2.2" height 2.2 rot 22.22 textStyle "iso" justify "_MC" aflags 16)) ; LockPosition, prom = nil
-	; (defun x3() (setq tag "TAG3" prom "PROMPT3" val "TEXT3" pos "3.3,3.3" height 3.3 rot 33.33 textStyle "iso" justify "_MC" aflags 16)) ; LockPosition
-	; (defun vals() (foreach x '(tag prom val pos height rot textStyle justify aflags) (print (eval x))))
-	; (defun test1() (progn (x1) (addAtt tag prom val pos height rot textStyle justify aflags)))
+	; (defun x0() (setq tag "TAG0" prom "PromptZero" val _ENTER_ pos (list 0 (* 1.333 3.0)) height 1.0 rot 0 textstyle _rcTextStyle_ justification _middleCenter_ aflags 16)) ; LockPosition / Single line
+	; (defun x1() (setq tag "TAG1" prom nil          val "TEXT1" pos "1.1,1.1" height 1.1 rot 11.11 textStyle _rcTextStyle_ justification _middleCenter_ aflags 16)) ; LockPosition / Single line / no prompt
+	; (defun x2() (setq tag "TAG2" prom "PromptTwo"  val "TEXT2" pos "2.2,2.2" height 2.2 rot 22.22 textStyle _rcTextStyle_ justification _middleCenter_ aflags 16)) ; LockPosition / Single line / with prompt
+	; (defun x3() (setq tag "TAG3" prom nil          val "TEXT3" pos "3.3,3.3" height 3.3 rot 33.33 textStyle _rcTextStyle_ justification _middleCenter_ aflags 48)) ; LockPosition / Multiple lines ( no prompt
+	; (defun x4() (setq tag "TAG4" prom "PromptFour" val "TEXT4" pos "4.3,4.4" height 4.4 rot 44.44 textStyle _rcTextStyle_ justification _middleCenter_ aflags 48)) ; LockPosition / Multiple lines ( no prompt
+	; (defun vals() (foreach x '(tag prom val pos height rot textStyle justification aflags) (print (eval x))))
+	; (defun test0() (progn (x0) (addAtt tag prom val pos height rot textStyle justification aflags)))
+	; (defun test1() (progn (x1) (addAtt tag prom val pos height rot textStyle justification aflags)))
+	; (defun test2() (progn (x2) (addAtt tag prom val pos height rot textStyle justification aflags)))
+	; (defun test3() (progn (x3) (addAtt tag prom val pos height rot textStyle justification aflags)))
+	; (defun test4() (progn (x4) (addAtt tag prom val pos height rot textStyle justification aflags)))
 
 	(setq tmp (getvar 'AFLAGS))
 	(setvar 'AFLAGS aflags)
@@ -622,45 +916,62 @@
 		(if (= attPrompt nil)
 			(command
 				"._ATTDEF"
-				"_A"				; Text will be annotative
-				""					; Accept current AFLAGS settings (6 bits, decimal 2^b, b=0..5))
-				attTag				; Name of attribute tag
-				""					; Add empty prompt when 'prom' is nil
-				attDefaultValue		; ...doesn't ask for more lines...
-				"_S" textStyle		; Text adjustment
-				"_J" justify		; Text adjustment
-				pos					; Text position (list x y)
-				textHeight 			; Text height
-				rotation 			; Text rotation (the whole text, not obliquing)
+					"_A"				; Text will be annotative
+					_ENTER_				; Accept current AFLAGS settings (6 bits, decimal 2^b, b=0..5))
+					attTag				; Name of attribute tag
+					_ENTER_				; Add empty prompt since 'attPrompt' argument is nil
+					attDefaultValue		; ...doesn't ask for more lines...
+					"_S" textStyle		; Text adjustment
+					"_J" justification		; Text adjustment
+					pos					; Text position (list x y)
+					textHeight 			; Text height
+					rotation 			; Text rotation (as per AUNIT settings) (the whole text, not obliquing)
 			)
-			(command 
+			(command
 				"._ATTDEF"
-				"_A"				; Text will be annotative
-				""					; Accept current AFLAGS settings (6 bits, decimal 2^b, b=0..5))
-				AttTag				; Name of attribute tag
-				attPrompt			; ==> Add empty prompt since 'prom' is nil
-				attDefaultValue		; ...doesn't ask for more lines...
-				"_S" textStyle		; Text adjustment
-				"_J" justify		; Text adjustment
-				pos					; Text position (list x y)
-				textHeight 			; Text height
-				rotation 			; Text rotation (the whole text, not obliquing)
+					"_A"				; Text will be annotative
+					_ENTER_				; Accept current AFLAGS settings (6 bits, decimal 2^b, b=0..5))
+					AttTag				; Name of attribute tag
+					attPrompt			; Add prompt since 'attPrompt' argument is non-nil
+					attDefaultValue		; ...doesn't ask for more lines...
+					"_S" textStyle		; Text adjustment
+					"_J" justification		; Text adjustment
+					pos					; Text position (list x y)
+					textHeight 			; Text height
+					rotation 			; Text rotation (as per AUNIT settings) (the whole text, not obliquing)
 			)
 		)
 	;else
 		; Multiple line attribute:
-		(command 
-			"._ATTDEF" 
-				"" ; accept current AFLAGS settings
-				attTag				; name of attribute tag
-				attPrompt			; prompt
-				attDefaultValue ""	; Default text value + plus stop asking for multiple lines
-				pos 				; First corner of multiline 'box'
-				"_S" textStyle
-				"_J" justify
-				"_H" textHeight		; Text adjustment - must be preceded by "_H" 
-				"_R" rotation		; Text adjustment - must be preceded by "_R 
-				"_W" 0				; Text box width - only when  _multipleLines_ bit is set, instead of giving a pos for the other corner of the 'box'
+		(if (= attPrompt nil)
+			(command 
+				"._ATTDEF" 
+					"_A"				; Text will be annotative
+					_ENTER_ ; accept current AFLAGS settings
+					attTag				; name of attribute tag
+					_ENTER_				; Add empty prompt since 'attPrompt' argument is nil
+					attDefaultValue _ENTER_	; Default text value + plus stop asking for multiple lines. Use '\P' inside text string as newline in attDefaultValue argument.
+					pos 				; First corner of multiline 'box'
+					"_S" textStyle
+					"_J" justification		; Must be "_J" (not "_justification")
+					"_H" textHeight		; Text adjustment - must be preceded by "_H" 
+					"_R" rotation		; Text adjustment - must be preceded by "_R 
+					"_W" 0				; Text box width - only when  _multipleLines_ bit is set, instead of giving a pos for the other corner of the 'box'
+			)
+			(command 
+				"._ATTDEF" 
+					"_A"				; Text will be annotative
+					_ENTER_ ; accept current AFLAGS settings
+					attTag				; name of attribute tag
+					attPrompt			; Add prompt since 'attPrompt' argument is non-nil
+					attDefaultValue _ENTER_	; Default text value + plus stop asking for multiple lines. Use '\P' inside text string as newline in attDefaultValue argument.
+					pos 				; First corner of multiline 'box'
+					"_S" textStyle
+					"_J" justification		; Must be "_J" (not "_Justify")
+					"_H" textHeight		; Text adjustment - must be preceded by "_H" 
+					"_R" rotation		; Text adjustment - must be preceded by "_R 
+					"_W" 0				; Text box width - only when  _multipleLines_ bit is set, instead of giving a pos for the other corner of the 'box'
+			)
 		)
     )
 	(setvar "AFLAGS" tmp)
@@ -669,7 +980,7 @@
 
 
 
-(defun addTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue rotation textStyle justify )
+(defun addTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue rotation textStyle justification )
 	; API access to CAD system Text Attribute entity creation
 	; Single line text attribute, no line breaking
 	;
@@ -685,18 +996,18 @@
 		attTag			(eval (nth 0 attDef))
 		attPrompt		(eval (nth 1 attDef))
 		attDefaultValue	(eval (nth 2 attDef))
-		rotation		0 ; degrees
-		textStyle		"ISO"
-		justify			"_MC" ; middle centered
+		rotation		0 ; Text rotation (as per AUNIT settings) (the whole text, not obliquing)
+		textStyle		_rcTextStyle_
+		justification	_middleCenter_ ; middle centered
 	)
 	(setLayer layDef) ; Set layer and drawing color
-	(addAtt attTag attPrompt attDefaultValue pos textHeight rotation textStyle justify _lockPosition_)
+	(addAtt attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification _lockPosition_)
 	'addTextAttributeAtPos
 )
 
 
 
-(defun addMTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue rotation textStyle justify )
+(defun addMTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue rotation textStyle justification )
 	; API access to CAD system Text Attribute entity creation
 	; Multiple line attribute text, automatic line breaking
 	(setq
@@ -704,11 +1015,11 @@
 		attPrompt			(eval (nth 1 attDef))
 		attDefaultValue		(eval (nth 2 attDef))
 		rotation			0 				; degrees
-		textStyle			"ISO"
-		justify				"_MC" 			; middle centered
+		textStyle			_rcTextStyle_
+		justification		_middleCenter_ 			; middle centered
 	)
 	(setLayer layDef) ; Set layer and drawing color
-	(addAtt attTag attPrompt attDefaultValue pos textHeight rotation textStyle justify (+ _lockPosition_ _multipleLines_))
+	(addAtt attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification (+ _lockPosition_ _multipleLines_))
 	'addMTextAttributeAtPos
 )
 
@@ -717,7 +1028,7 @@
 ; Graphics scaling
 ;----------------------------------------------------------
 (defun scaleAll ( factor / )
-	(command "._SCALE" "_ALL" "" _origo_ factor)
+	(command _SCALE_ _selectAll_ _ENTER_ _origo_ factor)
 )
 
 
@@ -726,14 +1037,14 @@
 ;----------------------------------------------------------
 (defun rotateLeft ( angle / )
 	; Rotate CCW with angle [Decimal Degrees]
-	(command "._ROTATE" "_ALL" "" "0,0" angle)
+	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
 )
 
 
 
 (defun rotateRight ( angle / )
 	; Rotate CCW with angle [Decimal Degrees]
-	(command "._ROTATE" "_ALL" "" "0,0" angle)
+	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
 )
 
 
@@ -743,11 +1054,11 @@
 
 (defun mirrorAboutXaxis ( variation / )
 	; Mirror about horizontal axis through origo
-	; variation should be one of _keep_ or _erase_ (see definition of global CAD constants)
+	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond 
-		((= variation _keep_) (command "._MIRROR" "_ALL" "" "0,0" "1,0" _keep_))
-		((= variation _erase_) (command "._MIRROR" "_ALL" "" "0,0" "1,0" _erase_))
-		(T (alert "*** _keep_ or _erase_ expected as argument to function mirrorAboutXaxis"))
+		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_))
+		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutXaxis"))
     )
 	'mirrorAboutXaxis
 )
@@ -756,11 +1067,11 @@
 
 (defun mirrorAboutYaxis ( variation / )
 	; Mirror about vertical axis through origo
-	; variation should be one of _keep_ or _erase_ (see definition of global CAD constants)
+	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond
-		((= variation _keep_) (command "._MIRROR" "_ALL" "" "0,0" "0,1" _keep_))
-		((= variation _erase_) (command "._MIRROR" "_ALL" "" "0,0" "0,1" _erase_))
-		(T (alert "*** _keep_ or _erase_ expected as argument to function mirrorAboutYaxis"))
+		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_))
+		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutYaxis"))
     )
 	'mirrorAboutYaxis
 )
@@ -769,11 +1080,11 @@
 
 (defun mirrorAboutDiagonal ( variation / )
 	; Mirror about 45 degrees diagonal through origo
-	; variation should be one of _keep_ or _erase_ (see definition of global CAD constants)
+	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond
-		((= variation _keep_) (command "._MIRROR" "_ALL" "" "0,0" "1,1" _keep_))
-		((= variation _erase_) (command "._MIRROR" "_ALL" "" "0,0" "1,1" _erase_))
-		(T (alert "*** _keep_ or _erase_ expected as argument to function mirrorAboutDiagonal"))
+		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _diagonalAxis_ _keepMirrorSource_))
+		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _diagonalAxis_ _eraseMirrorSource_))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutDiagonal"))
     )
 	'mirrorAboutDiagonal
 )
@@ -782,11 +1093,11 @@
 
 (defun mirrorAboutReverseDiagonal ( variation / )
 	; Mirror about 135 degrees diagonal through origo
-	; variation should be one of _keep_ or _erase_ (see definition of global CAD constants)
+	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond
-		((= variation _keep_) (command "._MIRROR" "_ALL" "" "0,0" "-1,1" _keep_))
-		((= variation _erase_) (command "._MIRROR" "_ALL" "" "0,0" "-1,1" _erase_))
-		(T (alert "*** _keep_ or _erase_ expected as argument to function mirrorAboutReverseDiagonal"))
+		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _reverseDiagonalAxis_ _keepMirrorSource_))
+		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _reverseDiagonalAxis_ _eraseMirrorSource_))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutReverseDiagonal"))
     )
 	'mirrorAboutReverseDiagonal
 )
@@ -796,7 +1107,7 @@
 (defun moveToQuadrant ( quadrant selection / ) 
 	; Mirror an object residing in the first quadrant (from 0 to 90 decimal degrees, 0 DD = East and 90 DD = North).
 	; quadrant = number 1..4, results in mirroring operations resulting from mirroring about X-axis (0 DD) and / or Y-axis (90 DD).
-	; 'selection' is typically "A" or ("_ALL")
+	; 'selection' is typically "A" or (_selectAll_)
 	; 1 = no action
 	; 2 = mirror about the Y-axis
 	; 3 = mirror about the Y- then the X-axis (or X-axis then Y-axis)
@@ -807,14 +1118,14 @@
 			; No action
 		)
 		((= quadrant 2)
-			(command "._MIRROR" selection "" "0,0" "0,1" "_YES")
+			(command _MIRROR_ selection _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
 		)
 		((= quadrant 3)
-			(command "._MIRROR" selection "" "0,0" "0,1" "_YES")
-			(command "._MIRROR" selection "" "0,0" "1,0" "_YES")
+			(command _MIRROR_ selection _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
+			(command _MIRROR_ selection _ENTER_ _origo_ _xAxis_ _eraseSource)
 		)
 		((= quadrant 4)
-			(command "._MIRROR" selection "" "0,0" "1,0" "_YES")
+			(command _MIRROR_ selection _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
 		)
 	)
 	'moveToQuadrant
@@ -829,9 +1140,13 @@
 ;
 (defun drawHatch ( scale )
 	(command 
-		"._-HATCH" "S" "_LAST" "" "Properties" "ANSI31" scale "0" "ORIGIN" "_SET" "0.0,0.01" "_NO" ""
-	   "._DRAWORDER" "_LAST" "" "_Front"
-	   "._EXPLODE" "_LAST" ""
+		_HATCH_ 
+			_selectHatchObjects_ _lastSelection_ _ENTER_ 
+			_setHatchProperties_ _hatchPatternSlantedLines_ scale _angleZero_ 
+			_selectHatchOrigin_ _setNewHatchOrigin_ slightlyAbove_ _doNotStoreHatchOriginAsDefault_
+			_ENTER_
+	   _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_
+	   _EXPLODE_ _lastSelection_ _ENTER_
 	)
 	'drawHatch
 )
@@ -840,30 +1155,42 @@
 
 (defun drawHatchFromPoint ( scale pt ang offset )
 	(command 
-		"._-HATCH" pt "Properties" "ANSI31" scale ang "ORIGIN" "_SET" (strcat "0.0," (rtos offset)) "_NO" ""
-	   "._DRAWORDER" "_LAST" "" "_Front"
-	   "._EXPLODE" "_LAST" ""
+		_HATCH_ 
+			pt
+			_setHatchProperties_ _hatchPatternSlantedLines_ scale ang 
+			_selectHatchOrigin_ _setNewHatchOrigin_ (strcat "0.0," (rtos offset)) _doNotStoreHatchOriginAsDefault_
+			_ENTER_
+	   _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_
+	   _EXPLODE_ _lastSelection_ _ENTER_
 	)
 	'drawHatchFromPoint
 )
 
 
 
-(defun drawHatchOptions ( scale ang offset style selection )
+(defun drawHatchFromSelectionUsingWithStyle ( scale selectionSet ang offset style )
 	(command 
-		"._-HATCH" "S" selection "" "Properties" style scale ang "ORIGIN" "_SET" (strcat "0.0," (rtos offset)) "_NO" ""
-	   "._EXPLODE" "_LAST" ""
+		_HATCH_ 
+			_selectHatchObjects_ selectionSet _ENTER_ 
+			_setHatchProperties_ style scale ang 
+			_selectHatchOrigin_ _setNewHatchOrigin_ (strcat "0.0," (rtos offset)) _doNotStoreHatchOriginAsDefault_
+			_ENTER_
+	   _EXPLODE_ _lastSelection_ _ENTER_
 	)
-	'drawHatchOptions
+	'drawHatchFromSelectionUsingWithStyle
 )
 
 
-(defun drawHatchOptionsSelectPoint ( scale pt ang offset style )
+(defun drawHatchFromPointUsingStyle ( scale pt ang offset style )
 	(command
-		"._-HATCH" pt "Properties" style scale ang "ORIGIN" "_SET" (strcat "0.0," (rtos offset)) "_NO" ""
-	   "._EXPLODE" "_LAST" ""
+		_HATCH_
+			pt
+			_setHatchProperties_ style scale ang
+			_selectHatchOrigin_ _setNewHatchOrigin_ (strcat "0.0," (rtos offset)) _doNotStoreHatchOriginAsDefault_
+			_ENTER_
+	   _EXPLODE_ _lastSelection_ _ENTER_
 	)
-	'drawHatchOptionsSelectPoint
+	'drawHatchFromPointUsingStyle
 )
 
 
@@ -873,13 +1200,13 @@
 	(setq currentLayer (getvar 'CLAYER)) ; stash current layer in local variable
 	(setLayer wipeoutLayDef)
 	(cond 
-		((= keepOrErase _keep_) 
-			(command "._WIPEOUT" "_POLYLINE" "_LAST" "" _keep_)
-			(command "._DRAWORDER" "_LAST" "" "_Back")
+		((= keepOrErase _keepWipeoutSource_) 
+			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
+			(command _DRAWORDER_ _lastSelection_ _ENTER_ _underAllObjects_)
 		)
-		((= keepOrErase _erase_)
-			(command "._WIPEOUT" "_POLYLINE" "_LAST" "" _erase_)
-			(command "._DRAWORDER" "_LAST" "" "_Back")
+		((= keepOrErase _eraseWipeoutSource_)
+			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_)
+			(command _DRAWORDER_ _lastSelection_ _ENTER_ _underAllObjects_)
 		)
 		(T (alert (strcat "*** ERROR: addWipeoutToLastClosedPolyline( ) called with bad keepOrErase argument [" keepOrErase "].")))
 	)
@@ -897,9 +1224,9 @@
 	(setq blockName (strcat blockName _schematic_))
 	(if (tblsearch "BLOCK" blockName) 
 	; if existing block:
-		(command "._BLOCK" blockName "_YES" "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName _redefineBlock_ _annotativity_ _isNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	; else just create first-time block:
-		(command "._BLOCK" blockName        "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName                 _annotativity_ _isNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nSchematicBlocks (+ 1 nSchematicBlocks)) ; Global counter, increment.
 	(setLayer layer_Zero)
@@ -908,16 +1235,28 @@
 
 
 
+(defun addGraphicsFromScaledSchematicBlock ( blockName scale / )
+	; Insert, scale and explode an existing block.
+	; NB: No checking - the block must exist in the block table.
+	(command 
+		"._INSERT" (strcat blockName _schematic_) "_S" scale "_R" _angleZero_ _origo_	; Retrieve schematic symbol - Set overall scale, rotation and position
+		_EXPLODE_ _selectAll_ _ENTER_															; Convert inserted block to modelspace graphics entities
+	)
+	(setLayer layer_Zero)
+)
+
+
+
 (defun createAnnotativeBlockFromCurrentGraphics ( blockName /  ) 
 	; Create an annotative block from the present graphics in model space.
 	; Typical use: The balise triangular symbol in an annotative symbol meant for geographic mode drawings
 	; Assume that all AttDefs have been declared as annotative already.
-	(setq blockName (strcat blockName _annotative_))
+	(setq blockName (strcat blockName _scalable_))
 	(if (tblsearch "BLOCK" blockName) 
 	; if existing block:
-		(command "._BLOCK" blockName "_YES" "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName _redefineBlock_ _annotativity_ _isAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	; else just create first-time block:
-		(command "._BLOCK" blockName        "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName                 _annotativity_ _isAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nAnnotativeBlocks (+ 1 nAnnotativeBlocks)) ; Global counter, increment.
 	(setLayer layer_Zero)
@@ -933,25 +1272,13 @@
 	(setq blockName (strcat blockName _metric_))
 	(if (tblsearch "BLOCK" blockName) 
 	; if existing block:
-		(command "._BLOCK" blockName "_YES" "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName _redefineBlock_ _annotativity_ _isNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	; else just create first-time block:
-		(command "._BLOCK" blockName        "_Annotative" "_No" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName                 _annotativity_ _isNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nMetricBlocks (+ 1 nMetricBlocks)) ; Global counter, increment.
 	(setLayer layer_Zero)
 	(setDefaultObjectPropertiesToByBlock)
-)
-
-
-
-(defun addGraphicsFromScaledSchematicBlock ( blockName scale / )
-	; Insert, scale and explode an existing block.
-	; NB: No checking - the block must exist in the block table.
-	(command 
-		"._INSERT" (strcat blockName "-Schematic") "_S" scale "_R" 0.0 "0,0"	; Retrieve schematic symbol - Set overall scale, rotation 0.0, pos. (0,0).
-		"._EXPLODE" "_ALL" ""													; Convert inserted block to modelspace graphics entities
-	)
-	(setLayer layer_Zero)
 )
 
 
@@ -984,16 +1311,16 @@
 	;
 	(addGraphicsFromScaledSchematicBlock blockName scale)
 
-	(setq blockName (strcat blockName _annotative_))
+	(setq blockName (strcat blockName _scalable_))
 	(if (tblsearch "BLOCK" blockName)
 		 ;If block exists already (such as 'NO-BN-2D-JBTSI-FILLED-nn' for switches / signaling symbols) which is generated for several switch types)...
 		; or using VLIDE 'manually' several times...
 		; ...then answer the additional question 'Redefine it?' which needs answer "_YES".
+		; Then "_Annotative" triggers question "Create annotative block?" which needs answers "Yes". Then set insertion point and select all graphics (_selectAll_ + _ENTER_ (Enter)).
 		;Redefine block definition:
-		; Then "_Annotative" triggers question "Create annotative block?" which needs answers "Yes". Then set insertion point and select all graphics ("_All" + "" (Enter)).
-		(command "._BLOCK" blockName "_YES" "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName _redefineBlock_ _annotativity_ _isAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	; else just create first-time block:
-		(command "._BLOCK" blockName         "_Annotative" "_Yes" "_No" "0,0" "_ALL" "")
+		(command "._BLOCK" blockName                 _annotativity_ _isAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1))
 	(setLayer layer_Zero)
@@ -1001,17 +1328,17 @@
 )
 
 
-(defun eraseSchematicBlock ( blockNames / ss )
+(defun eraseSchematicBlock ( blockNames / selectionSet )
 	; Removes all inserts and definition of block(s)
 	; usage (deleteBlock "blkname1,blkname2,blkname3,and_so_on")
-	(if (setq ss (ssget "x" (list (cons 0 "INSERT") (cons 2 blockNames)))) ; if any INSERTs found, erase them first
+	(if (setq selectionSet (ssget "x" (list (cons 0 "INSERT") (cons 2 blockNames)))) ; if any INSERTs found, erase them first
 		(progn
-			(command "-layer" "_U" "*" "")	; unlock all layers
-			(command "erase" ss "")			; erase 
+			(command _LAYER_ _unlockLayer_ _anyLayerName_ _ENTER_)
+			(command _ERASE_ selectionSet _ENTER_)
 		)
 	)
-	(command "._LAYERP") ; restore previous layer state
-	(command "._PURGE" "_B" blockNames "_N") ; Erase specified block(s) from block table
+	(command _LAYERP_) ; restore previous layer state
+	(command _PURGE_ _purgeBlocks_ blockNames _purgeWithoutVerification_) ; Erase specified block(s) from block table
 	(setLayer layer_Zero)
 	(setq nSchematicBlocks (- nSchematicBlocks 1)) ; One block removed...
 	(setDefaultObjectPropertiesToByBlock)

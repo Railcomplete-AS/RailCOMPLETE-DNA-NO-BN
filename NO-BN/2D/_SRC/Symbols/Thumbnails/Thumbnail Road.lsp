@@ -19,15 +19,16 @@
 
 
 (defun BILVEI ( / blockName ) 
-  (setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-BILVEI")
-	(command "._LINE" (list 0 0) (list 0 1) ""
-		"._LINE" (list 0 1.4) (list 0 2) ""
-		"._LINE" (list 0 1.4) (list 0 2) ""
-		"._LINE" (list 0 2.4) (list 0 2.8) ""
-		"._LINE" (list 0 3.125) (list 0 3.375) ""
-		"._LINE" (list 1.5 0) (list 0.5 3.375) ""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
-		)
-  (createSchematicBlockFromCurrentGraphics blockName)
-  blockName
-  )
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-BILVEI")
+	(command 
+		_LINE_ _origo_ (list 0 1) _ENTER_
+		_LINE_ (list 0 1.4) (list 0 2) _ENTER_
+		_LINE_ (list 0 1.4) (list 0 2) _ENTER_
+		_LINE_ (list 0 2.4) (list 0 2.8) _ENTER_
+		_LINE_ (list 0 3.125) (list 0 3.375) _ENTER_
+		_LINE_ (list 1.5 0) (list 0.5 3.375) _ENTER_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+	)
+	(createSchematicBlockFromCurrentGraphics blockName)
+	blockName
+)

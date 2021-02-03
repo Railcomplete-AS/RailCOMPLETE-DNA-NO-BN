@@ -19,44 +19,48 @@
 (defun round ( n / ) (fix (+ n (if (minusp n) -0.5 0.5))))
 
 (defun C:GENERATE-SYMBOL-OVERVIEW-TABLE ( /  
-	layerFrameName  
-	layerFrameColor
-	GENERATE-SYMBOL-OVERVIEW-TABLE
-	layerPointsColor
-	layerSymbolsName
-	layerSymbolsColor
-	layerTextsName
-	layerTextsColor
-	layerTopTextsName
-	layerTopTextsColor		  
-	x1	x2
-	x	y
-	a3
-	cols	rows
-	ty1	ty2
-	n
+		layerFrameName  
+		layerFrameColor
+		layerTableName
+		layerPointsColor
+		layerSymbolsName
+		layerSymbolsColor
+		layerTextsName
+		layerTextsColor
+		layerTopTextsName
+		layerTopTextsColor		  
+		x1	x2
+		x	y
+		a3
+		cols	rows
+		ty1	ty2
+		n
 	)
 
 	(setq
-		layerFrameName  "JBTSI_SYMBOLTABELL_RAMME"
-		GENERATE-SYMBOL-OVERVIEW-TABLE "JBTSI_SYMBOLTABELL_INNSETTINGSPUNKTER"
-		layerSymbolsName "JBTSI_SYMBOLER_TRV_500"
-		layerTextsName "JBTSI_SYMBOLTABELL_TEKSTER"
-		layerTopTextsName "JBTSI_SYMBOLTABELL_TOPPTEKSTER"
+		layerFrameName		"JBTFE_DIV_SYMBOLTABELL_RAMME"
+		layerTableName		"JBTFE_DIV_SYMBOLTABELL_INNSETTINGSPUNKTER"
+		layerSymbolsName	"JBTFE_DIV_SYMBOLER_TRV_500"
+		layerTextsName		"JBTFE_DIV_SYMBOLTABELL_TEKSTER"
+		layerTopTextsName	"JBTFE_DIV_SYMBOLTABELL_TOPPTEKSTER"
 	)
 	(command
-		"._LAYER"
-			"NEW" layerFrameName
-			"COLOR" "yellow" layerFrameName
-			"NEW" GENERATE-SYMBOL-OVERVIEW-TABLE
-			"COLOR" "yellow" GENERATE-SYMBOL-OVERVIEW-TABLE
-			"NEW" layerSymbolsName
-			"COLOR" "white" layerSymbolsName
-			"NEW" layerTextsName
-			"COLOR" "yellow" layerTextsName
-			"NEW" layerTopTextsName
-			"COLOR" "yellow" layerTopTextsName
-			""
+		_LAYER_
+			_createNewLayer_ layerFrameName
+			_colorizeLayer_ _colorYellow_ layerFrameName
+
+			_createNewLayer_ layerTableName
+			_colorizeLayer_ _colorYellow_ layerTableName
+
+			_createNewLayer_ layerSymbolsName
+			_colorizeLayer_ _colorWhite_ layerSymbolsName
+
+			_createNewLayer_ layerTextsName
+			_colorizeLayer_ _colorYellow_ layerTextsName
+
+			_createNewLayer_ layerTopTextsName
+			_colorizeLayer_ _colorYellow_ layerTopTextsName
+			_ENTER_
 	)
 	(setq
 		blockNames (GetBlockNames)
@@ -74,45 +78,61 @@
 		ty2 3.75
 	)
 	(command
-		"._Layer" "_SET" layerFrameName ""
-		"._RECTANGLE"
-			"0,0"
+		_LAYER_ _setLayer_ layerFrameName _ENTER_
+		
+		_RECTANGLE_
+			_origo_
 			(list x1 y)
-		"._RECTANGLE"
+		
+		_RECTANGLE_
 			(list x1 0)
 			(list (+ x1 x2) y)
-		"._ARRAY"
-			"_ALL" "" "R" 
-			rows cols	;number
-			y x			;separation
-		"._LAYER" "LOCK" layerFrameName "" 
+
+		_ARRAY_
+			_selectAll_ _ENTER_ 
+			_rectangularArray_ 
+				rows cols	;number
+				y x			;separation
+
+		_LAYER_ _lockLayer_ layerFrameName _ENTER_ 
+
 		;top frame:
-		"._Layer" "_SET" layerTopTextsName ""
-		"._RECTANGLE" 
+		_LAYER_ _setLayer_ layerTopTextsName _ENTER_
+
+		_RECTANGLE_ 
 			(list 0 (* y rows))
 			(list x1 (+ ty1 (* y rows)))
-		"._RECTANGLE"
+
+		_RECTANGLE_
 			(list x1 (* y rows)) (list (+ x1 x2) (+ ty1 (* y rows)))
-		"._RECTANGLE"
+
+		_RECTANGLE_
 			(list 0 (+ ty1 (* y rows)))
 			(list x1 (+ ty1 ty2 (* y rows)))
-		"._RECTANGLE"
+
+		_RECTANGLE_
 			(list x1 (+ ty1 (* y rows)))
 			(list (+ x1 x2) (+ ty1 ty2 (* y rows)))
-		"._TEXT" "STYLE" "iso" "_J" "_MC"
-			(list (/ x1 2) (+ ty1 (/ ty2 2) (* y rows))) 0.9 0 "SYMBOL"
-		"._TEXT" "STYLE" "iso" "_J" "_MC"
-			(list (+ x1 (/ x2 2)) (+ ty1 (/ ty2 2) (* y rows))) 0.9 0 "BETYDNING"
-		"._ARRAY" "_ALL" "" "R" 1 cols x
-		"._LAYER" "LOCK" layerTopTextsName ""
+
+		_TEXT_ _setTextStyle_ _rcTextStyle_ _justifyText_ _middleCenter_
+			(list (/ x1 2) (+ ty1 (/ ty2 2) (* y rows))) _th090_ _angleZero_ 
+			"SYMBOL"
+
+		_TEXT_ _setTextStyle_ _rcTextStyle_ _justifyText_ _middleCenter_
+			(list (+ x1 (/ x2 2)) (+ ty1 (/ ty2 2) (* y rows))) _th090_ _angleZero_ 
+			"BETYDNING"
+		
+		_ARRAY_ _selectAll_ _ENTER_ _rectangularArray_ 1 cols x
+
+		_LAYER_ _lockLayer_ layerTopTextsName _ENTER_
 	)
 	(setq i 0 j 0 n 0)
 	(while (and (< j cols) (< n #symbols))
 		(while (and (< i rows) (< n #symbols))
 			(if description
-				(insertFunction x y x1 x2 i j rows cols (nth n blockNames) (nth n descriptions) GENERATE-SYMBOL-OVERVIEW-TABLE layerSymbolsName layerTextsName)
+				(insertFunction x y x1 x2 i j rows cols (nth n blockNames) (nth n descriptions) layerTableName layerSymbolsName layerTextsName)
 				;else:
-				(insertFunction x y x1 x2 i j rows cols (nth n blockNames) nil GENERATE-SYMBOL-OVERVIEW-TABLE layerSymbolsName layerTextsName)
+				(insertFunction x y x1 x2 i j rows cols (nth n blockNames) nil layerTableName layerSymbolsName layerTextsName)
 			)
 			(setq
 				i (1+ i)
@@ -124,41 +144,43 @@
 			i 0
 		)
 	)
-	(command "._LAYER" "LOCK" GENERATE-SYMBOL-OVERVIEW-TABLE ""
-	   "._LAYER" "LOCK" layerTextsName ""
-	   )
+	(command 
+		_LAYER_ _lockLayer_ layerTableName _ENTER_
+		_LAYER_ _lockLayer_ layerTextsName _ENTER_
+	)
 ) ;end TABLE
 
 
 
 (defun insertFunction (x y x1 x2 i j rows cols blockName description
-		    GENERATE-SYMBOL-OVERVIEW-TABLE layerSymbolsName layerTextsName
+		    layerTableName layerSymbolsName layerTextsName
 		    / cellCorner radius insertBlock insertText
 		    )
 	(setq
 		cellCorner (list (* j x) (* (- rows i 1) y))
 		radius	   0.7321
-		insertBlock(polar (polar cellCorner 0 (/ x1 2)) (D->R 90) (/ y 4))
-		insertText (polar (polar cellCorner 0 (+ x1 radius)) (D->R 90) (- y radius))
+		insertBlock(polar (polar cellCorner 0 (/ x1 2)) (D->R _angle90_) (/ y 4))
+		insertText (polar (polar cellCorner 0 (+ x1 radius)) (D->R _angle90_) (- y radius))
 	)
 	(command
-		"._LAYER" "_SET" GENERATE-SYMBOL-OVERVIEW-TABLE ""
-		"._CIRCLE" insertBlock radius
-		"._CIRCLE" insertText radius
-		"._LAYER" "_SET" layerSymbolsName ""
-		"._INSERT" blockName	insertBlock "" "" ""
-		"._LAYER" "_SET" layerTextsName ""
-		"-MTEXT" insertText
-		"Height" 0.9
-		"Justify" "_TL"
-		"Line" "At" 1 ;line style at least
-		"Style" "iso"
-		(strcat "@" (rtos (- x2 (* 2 radius))) ","	(rtos (- (* 2 radius) y)))
-		; (list (+ (car insertText) (- x2 radius))
-		; (+ (cadr insertText) (- radius y)))
-		description ""
+		_LAYER__setLayer_ layerTableName _ENTER_
+		_CIRCLE_ insertBlock radius
+		_CIRCLE_ insertText radius
+		_LAYER_ _setLayer_ layerSymbolsName _ENTER_
+		_INSERT_ blockName insertBlock _ENTER_ _ENTER_ _ENTER_
+		_LAYER_ _setLayer_ layerTextsName _ENTER_
+		_MTEXT_
+			insertText
+			"Height" _th090_
+			"Justify" _topLeft_
+			"Line" "At" 1 ;line style at least
+			"Style" _rcTextStyle_
+			(strcat "@" (rtos (- x2 (* 2 radius))) ","	(rtos (- (* 2 radius) y)))
+			; (list (+ (car insertText) (- x2 radius))
+			; (+ (cadr insertText) (- radius y)))
+			description
+			_ENTER_
 	)
-	; (blockDescription "insertFunctionBlockDescription")
 )
 
 

@@ -216,7 +216,7 @@
 	
 	; Set locals
 	(setq 
-		config ""
+		config _ENTER_
 		blockName "NO-BN-2D-JBTSI-SIGNAL"
 		description "SIGNAL"
 		yokePole 2.0			; above lanterns if suspended from yoke.
@@ -405,7 +405,7 @@
 		freeSpaceBias		3.0 ; Use such as: 'Give priority to RIGHT side if freeSpaceRightSide >= freeSpaceLeftSide + freeSpaceBias'
 	)
 	; DEBUG: Use VLIDE or other means to set (setq _DEBUG_ T) to include model space cleanup and printing of globals:
-	(if _DEBUG_ (command "._ERASE" "_ALL" "")) ; For debugging - clean up modelspace (your computer screen)
+	(if _DEBUG_ (command _ERASE_ _selectAll_ _ENTER_)) ; For debugging - clean up modelspace (your computer screen)
 	(if _DEBUG_ (glob))
 )
 
@@ -434,7 +434,7 @@
 	; Force next items to start here, on the right side
 	; no pushing up
 	; Please comment out the next line - graphics only added in debug versions
-	;(command "._CIRCLE" "0,0" 0.5) ; For debugging - add small 'anchor' circle
+	;(command _CIRCLE_ _origo_ 0.5) ; For debugging - add small 'anchor' circle
 	(setq freeSpaceLeftSide 0.0)
 	(setq freeSpaceRightSide 0.0)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
@@ -443,7 +443,7 @@
 
 
 (defun shiftSignalItemsUp ( offs / )
-	(command "._MOVE" "_ALL" "" "0,0" (list 0 offs)) ; Shift everything up by 'd'. Negative 'd' shifts down.
+	(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 offs)) ; Shift everything up by 'd'. Negative 'd' shifts down.
 	(setq topOfMast (+ topOfMast offs))
 	(setq totalHeight (+ totalHeight offs))
 )
@@ -452,7 +452,7 @@
 
 (defun addMissingSymbol ( / )
 	(shiftSignalItemsUp 3.5) ; Update globals - make space for two lines of 1.25 height text plus line spacing
-	(addMText "MANGLER SYMBOL" (list 0 0) 1.25 9.0 0 "iso" "_BC") 
+	(addMText "MANGLER SYMBOL" _origo_ 1.25 9.0 0 _rcTextStyle_ _BottomCenter_) 
 )
 
 
@@ -475,7 +475,7 @@
 		itemHeight (* 2 r)
 	)
 	(shiftSignalItemsUp r)
-	(drawLantern "0,0" r) ; Centered on main pole
+	(drawLantern _origo_ r) ; Centered on main pole
 	(shiftSignalItemsUp r)
 	(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 	(addAnchor)
@@ -651,7 +651,7 @@
 	(if isTopmostItem ; centered
 		(progn
 			(shiftSignalItemsUp r)
-			(drawLantern "0,0" r)
+			(drawLantern _origo_ r)
 			(shiftSignalItemsUp r)
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			; No change to freeSpaceLeft or freeSpaceRight

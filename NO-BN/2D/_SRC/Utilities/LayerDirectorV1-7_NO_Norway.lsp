@@ -176,7 +176,7 @@ layerdirector:data
 ;;  Command Pattern  |  Layer Name    |       Description       |    Colour    |   Linetype   |    Lineweight    |       Plot       |    Plot Style    ;;
 ;;-----------------------------------------------------------------------------------------------------------------------------------------------------;;
 ;;     [string]      |   [string]     |         [string]        | 0 < int <256 |   [string]   | -3 = Default     |  1 = Will Plot   |     [string]     ;;
-;;                   |                |     Use "" for none     |              |              |  0 <= int <= 211 |  0 = Won't Plot  |  Use nil for CTB ;;
+;;                   |                |     Use _ENTER_ for none     |              |              |  0 <= int <= 211 |  0 = Won't Plot  |  Use nil for CTB ;;
 ;;-----------------------------------------------------------------------------------------------------------------------------------------------------;;
 
 ("[DM]TEXT,TEXT"     "NO_Tekst"       "Norconsult, Tekst"                7        "Continuous"           18                 1                 nil         )
@@ -257,10 +257,10 @@ layerdirector:xreflayer
 ;;   Layer Prefix   |  Layer Suffix   |       Description       |    Colour    |   Linetype   |    Lineweight    |       Plot       |    Plot Style    ;;
 ;;-----------------------------------------------------------------------------------------------------------------------------------------------------;;
 ;;    [string]      |    [string]     |         [string]        | 0 < int <256 |   [string]   | -3 = Default     |  1 = Will Plot   |     [string]     ;;
-;; Use "" for none  | Use "" for none |     Use "" for none     |              |              |  0 <= int <= 211 |  0 = Won't Plot  |  Use nil for CTB ;;
+;; Use _ENTER_ for none  | Use _ENTER_ for none |     Use _ENTER_ for none     |              |              |  0 <= int <= 211 |  0 = Won't Plot  |  Use nil for CTB ;;
 ;;-----------------------------------------------------------------------------------------------------------------------------------------------------;;
 
-;;'("NO_XREF_"             ""               "Norconsult XRef"           7        "Continuous"           -3                 1                 nil        )
+;;'("NO_XREF_"             _ENTER_               "Norconsult XRef"           7        "Continuous"           -3                 1                 nil        )
 'nil
 
 ;;-----------------------------------------------------------------------------------------------------------------------------------------------------;;
@@ -463,13 +463,13 @@ layerdirector:printcommand nil
                                 )
                                 (list (cons 390 (cdr (assoc -1 dic))))
                             )
-                            (if (and des (/= "" des))
+                            (if (and des (/= _ENTER_ des))
                                 (progn (regapp "AcAecLayerStandard")
                                     (list
                                         (list -3
                                             (list
                                                 "AcAecLayerStandard"
-                                               '(1000 . "")
+                                               '(1000 . _ENTER_)
                                                 (cons 1000 des)
                                             )
                                         )
@@ -516,7 +516,7 @@ layerdirector:printcommand nil
                                 (apply 'append
                                     (mapcar
                                        '(lambda ( dir ) (vl-directory-files dir "*.lin" 1))
-                                        (vl-remove "" (LM:layerdirector:str->lst (getenv "ACAD") ";"))
+                                        (vl-remove _ENTER_ (LM:layerdirector:str->lst (getenv "ACAD") ";"))
                                     )
                                 )
                             )

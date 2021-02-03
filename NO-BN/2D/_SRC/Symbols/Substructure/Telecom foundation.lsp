@@ -49,14 +49,14 @@
 	)
 	(defun localGraphics (/)
 		(command
-			"._RECTANGLE" (list (- s1) (- s2)) (list s1 s2)
-			"._RECTANGLE" (list (- h1) (- h2)) (list h1 h2)
-			"._LINE" (list h3 (- h2)) (strcat "@0," (rtos (- len))) ""
-			"._LINE" (list h3 (- (- h2) (* 2 len))) (strcat "@0," (rtos (- len))) ""
-			"._LINE" (list h3 (- (- h2) (* 4 len))) (strcat "@0," (rtos (- len))) ""
-			"._LINE" (list (- h3) (- h2)) (strcat "@0," (rtos (- len))) ""
-			"._LINE" (list (- h3) (- (- h2) (* 2 len))) (strcat "@0," (rtos (- len))) ""
-			"._LINE" (list (- h3) (- (- h2) (* 4 len))) (strcat "@0," (rtos (- len))) ""
+			_RECTANGLE_ (list (- s1) (- s2)) (list s1 s2)
+			_RECTANGLE_ (list (- h1) (- h2)) (list h1 h2)
+			_LINE_ (list h3 (- h2)) (strcat "@0," (rtos (- len))) _ENTER_
+			_LINE_ (list h3 (- (- h2) (* 2 len))) (strcat "@0," (rtos (- len))) _ENTER_
+			_LINE_ (list h3 (- (- h2) (* 4 len))) (strcat "@0," (rtos (- len))) _ENTER_
+			_LINE_ (list (- h3) (- h2)) (strcat "@0," (rtos (- len))) _ENTER_
+			_LINE_ (list (- h3) (- (- h2) (* 2 len))) (strcat "@0," (rtos (- len))) _ENTER_
+			_LINE_ (list (- h3) (- (- h2) (* 4 len))) (strcat "@0," (rtos (- len))) _ENTER_
 		)
 	)	
 
@@ -94,36 +94,36 @@
 	)
 	(defun localGraphics (/)
 		(command
-			"._RECTANGLE" (list (- s1) (- s1)) (list s1 s1)
-			"._CIRCLE" (list 0 0) radius1
-			"._CIRCLE" (list skrue_xy skrue_xy) radius_skrue
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._MIRROR" "_LAST" "" "0,0" "1,0" "_NO"
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._CIRCLE" "0,0" radius_roer
-			"._CIRCLE" (list (+ (* 2 radius_roer) dist1) 0) radius_roer
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO" ;neste fire LINE er de tre rørene som stikker ut nederst på den store sirkelen: y koordinat for brytning med sirkel er gitt av 
-			"._LINE"
+			_RECTANGLE_ (list (- s1) (- s1)) (list s1 s1)
+			_CIRCLE_ _origo_ radius1
+			_CIRCLE_ (list skrue_xy skrue_xy) radius_skrue
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_CIRCLE_ _origo_ radius_roer
+			_CIRCLE_ (list (+ (* 2 radius_roer) dist1) 0) radius_roer
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ;neste fire LINE er de tre rørene som stikker ut nederst på den store sirkelen: y koordinat for brytning med sirkel er gitt av 
+			_LINE_
 				(list (- radius_roer) roer_y) 
 				(list radius_roer roer_y) 
 				(list radius_roer (- (* radius1 (sin (acos (/ radius_roer radius1))))))  ;y=R*sin(arccos(x/R))
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._LINE"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_LINE_
 				(list (+ radius_roer dist1) roer_y) 
 				(list (+ (* 3 radius_roer) dist1) roer_y) 
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._LINE"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_LINE_
 				(list (+ radius_roer dist1) roer_y) 
 				(list (+ radius_roer dist1) (- (* radius1 (sin (acos (/ (+ radius_roer dist1) radius1)))))) 
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._LINE"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_LINE_
 				(list (+ (* 3 radius_roer) dist1) roer_y)
 				(list (+ (* 3 radius_roer) dist1) (- (* radius1 (sin (acos (/ (+ (* 3 radius_roer) dist1) radius1)))))) 
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		)
 	)
 	
@@ -161,33 +161,33 @@
 	)
 	(defun localGraphics (/)
 		(command 
-			"._RECTANGLE" (list (- s1) (- s1)) (list s1 s1)
-			"._CIRCLE" "0,0" radius1
-			"._CIRCLE" (list skrue_xy skrue_xy) radius_skrue
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._MIRROR" "_LAST" "" "0,0" "1,0" "_NO"
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._CIRCLE" "0,0" radius_roer
-			"._CIRCLE" (list (+ (* 2 radius_roer) dist1) 0) radius_roer
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO" ;neste fire LINES er de tre rørene som stikker ut nederst på den store sirkelen: y koordinat for brytning med sirkel er gitt av 
-			"._LINE"
+			_RECTANGLE_ (list (- s1) (- s1)) (list s1 s1)
+			_CIRCLE_ _origo_ radius1
+			_CIRCLE_ (list skrue_xy skrue_xy) radius_skrue
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_CIRCLE_ _origo_ radius_roer
+			_CIRCLE_ (list (+ (* 2 radius_roer) dist1) 0) radius_roer
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ;neste fire LINES er de tre rørene som stikker ut nederst på den store sirkelen: y koordinat for brytning med sirkel er gitt av 
+			_LINE_
 				(list (- radius_roer) roer_y)
 				(list radius_roer roer_y)
 				(list radius_roer (- (* radius1 (sin (acos (/ radius_roer radius1)))))) ;y=Rsin(arccos(x/R))
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._LINE" (list (+ radius_roer dist1) roer_y) (list (+ (* 3 radius_roer) dist1) roer_y) ""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._LINE"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_LINE_ (list (+ radius_roer dist1) roer_y) (list (+ (* 3 radius_roer) dist1) roer_y) _ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_LINE_
 				(list (+ radius_roer dist1) roer_y)
 				(list (+ radius_roer dist1) (- (* radius1 (sin (acos (/ (+ radius_roer dist1) radius1)))))) 
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._LINE"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_LINE_
 				(list (+ (* 3 radius_roer) dist1) roer_y)
 				(list (+ (* 3 radius_roer) dist1) (- (* radius1 (sin (acos (/ (+ (* 3 radius_roer) dist1) radius1))))))
-				""
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
+				_ENTER_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		)
 	)
 	
@@ -225,17 +225,17 @@
 	)
 	(defun localGraphics (/)
 		(command
-			"._RECTANGLE" (list (- s1) (- s1)) (list s1 s1)
-			"._CIRCLE" (list skrue_x skrue_y) radius_skrue
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._MIRROR" "_LAST" "" "0,0" "1,0" "_NO"
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-			"._CIRCLE" "0,0" radius_roer
-			"._CIRCLE" (list (+ (* 2 radius_roer) dist1) 0) radius_roer
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"  
-			"._RECTANGLE" (list radius_roer (- s1)) (list (- radius_roer) (- (- s1) lengde_roer))
-			"._RECTANGLE" (list (+ radius_roer dist1) (- s1)) (list (+ (* 3 radius_roer) dist1) (- (- s1) lengde_roer))
-			"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
+			_RECTANGLE_ (list (- s1) (- s1)) (list s1 s1)
+			_CIRCLE_ (list skrue_x skrue_y) radius_skrue
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+			_CIRCLE_ _origo_ radius_roer
+			_CIRCLE_ (list (+ (* 2 radius_roer) dist1) 0) radius_roer
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_  
+			_RECTANGLE_ (list radius_roer (- s1)) (list (- radius_roer) (- (- s1) lengde_roer))
+			_RECTANGLE_ (list (+ radius_roer dist1) (- s1)) (list (+ (* 3 radius_roer) dist1) (- (- s1) lengde_roer))
+			_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		)
 	)
 

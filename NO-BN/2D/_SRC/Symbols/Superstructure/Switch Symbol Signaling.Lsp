@@ -50,7 +50,7 @@
 		ang			(R->D (atan (/ 1.0 x))) ; sporvekselsymbol
 		radius		0.75
 	)
-	(setq str "")
+	(setq str _ENTER_)
 	(if (< x 10)
 		(setq str "0")
 	)
@@ -59,7 +59,7 @@
 		(cond 
 			((= i 0) (setq hatchVariant "FILLED")) ; signfies central control, interlocked switch
 			((= i 1) (setq hatchVariant "SPARSE")) ; signifies key-locked control in right / left / both position(s)
-			((= i 2) (setq hatchVariant _noHatch_)) ; signifies that the point's tongues position is neither controlled or detected
+			((= i 2) (setq hatchVariant _noHatch_)) ; signifies that the point's tongues position is neither controlled nor detected
 		)
 		(setq 
 			blockName (strcat "NO-BN-2D-JBTSI-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
@@ -69,27 +69,32 @@
 		(setLayer layer_Zero)
 
 		(command
-			"._LINE" "0,0" (list (- A radius) 0) ""
-			"._CIRCLE" (list A 0) radius
+			_LINE_ _origo_ (list (- A radius) 0) _ENTER_
+			_CIRCLE_ (list A 0) radius
 		)
 		; Switch symbol - from the Signaling discipline's viewpoint:
 		(command 
-			"._PLINE"
+			_POLYLINE_
 				(list (+ A radius) 0)
-				"_ARC" "_CE" (list A 0) "Angle" ang
-				"Line" (strcat "@" (rtos (- B radius)) "<" (rtos ang))
-				"_ARC" "_CE" (list A 0) "Angle" (- ang)
-				"Line"
-				"_CLOSE"
+				_setPolylineArcMode_
+				_setPolylineArcCenter_ (list A 0) 
+				_setPolylineArcAngle_ ang
+				_setPolylineLineMode_
+				(strcat "@" (rtos (- B radius)) "<" (rtos ang))
+				_setPolylineArcMode_
+				_setPolylineArcCenter_ (list A 0)
+				_setPolylineArcAngle_ (- ang)
+				_setPolylineLineMode_
+				_closedPolyline_
 		)
 		(cond ; Careful! Do not set comment on a single line here, this would deselect the previous drawing entity, on which the next (drawHatch command relies!
-			((= hatchVariant "FILLED") (drawHatch _filledHatch_))	; Tongue positions detected by external sensor or internally in point machine
+			((= hatchVariant "FILLED") (drawHatch _solidHatch_))	; Tongue positions detected by external sensor or internally in point machine
 			((= hatchVariant "SPARSE") (drawHatch _sparseHatch_)) 	; Tongue positions detected indirectly through a mechanical lock and electrically supervised key
 		)   
 		; Wipeout under sirkelen som markerer teoretisk kryss (vi skal kunne skjule sporlinjen som ligger under):
 		(drawWipedOutCircle Drawing_Number) 
 		; Mirror 0x, 1x eller 2x til korrekt kvadrant:
-		(moveToQuadrant quadrant "_ALL")
+		(moveToQuadrant quadrant _selectAll_)
 		(addDescriptionBelowOrigo description 1.0)
 		(createMetricBlockFromCurrentGraphics blockName)
 		(setq i (+ 1 i))
@@ -98,18 +103,18 @@
 
 
 
-(defun drawWipedOutCircle (Drawing_Number / switchParameters A radius)
+(defun drawWipedOutCircle (Drawing_Number / switchParameters A r )
 	; Wipeout under the circle at theoretical crossing in switch - a way of drawing Bane NOR switch symbols for signaling.
 	(setq
 		switchParameters (getSwitchParameters Drawing_Number)
-		A		  (/ (cadr (assoc "A" switchParameters)) 1000.0)
-		radius 	  0.75
+		A	(/ (cadr (assoc "A" switchParameters)) 1000.0)
+		r	0.75
 	)
 	(setLayer layer_Turnout_Wipeout)
 	(command
-		"._POLYGON" 16 (list A 0) "_INSCRIBED" radius
-		"._WIPEOUT" "_POLYLINE" "_LAST" "" "_YES"
-		"._DRAWORDER" "_LAST" "" "_Above" "_ALL" ""
+		_POLYGON_ 16 (list A 0) _inscribed_ r
+		_WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_
+		_DRAWORDER_ _lastSelection_ _ENTER_ _aboveObjects_ _selectAll_ _ENTER_
 	)
 )
 
@@ -125,12 +130,12 @@
 		(setLayer layer_Zero)
 		(if (or (= side "V") (= side "HV"))
 			(progn
-				(command "._RECTANGLE" (list 1.85 -0.75) (list 4.85 -1.50))
+				(command _RECTANGLE_ (list 1.85 -0.75) (list 4.85 -1.50))
 			)
 		)
 		(if (or (= side "H") (= side "HV"))
 			(progn
-			(command "._RECTANGLE" (list 1.85 0.75) (list 4.85 1.50))
+			(command _RECTANGLE_ (list 1.85 0.75) (list 4.85 1.50))
 			)
 		)
 		(createMetricBlockFromCurrentGraphics blockName)

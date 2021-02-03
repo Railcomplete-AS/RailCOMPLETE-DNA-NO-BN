@@ -25,7 +25,7 @@
 		; stitchWireLength 14
 		; systemHeight (* 1.8 5)  ; System height is exaggerated 10-fold in Z direction
 		; Contact wire, one spanlength:
-		w1 (list 0 0)
+		w1 _origo_
 		w2 (list 60 0)
 		; Catenary, one spanlength:
 		c1 (list 0 18)
@@ -59,20 +59,20 @@
 	)
 	; Draw one span, then mirror into two full span lengths:
 	(command
-		"._PLINE" w1 w2 ""
-		"._PLINE" c1 c2 c3 c4 c5 c6 c7 c8 ""
-		"._PLINE" s11 s12 s13 ""
-		"._PLINE" s21 s22 s23 ""
-		"._PLINE" d11 d12 ""
-		"._PLINE" d21 d22 ""
-		"._PLINE" d31 d32 ""
-		"._PLINE" d41 d42 ""
-		"._PLINE" d51 d52 ""
-		"._PLINE" d61 d62 ""
-		"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
+		_POLYLINE_ w1 w2 _ENTER_
+		_POLYLINE_ c1 c2 c3 c4 c5 c6 c7 c8 _ENTER_
+		_POLYLINE_ s11 s12 s13 _ENTER_
+		_POLYLINE_ s21 s22 s23 _ENTER_
+		_POLYLINE_ d11 d12 _ENTER_
+		_POLYLINE_ d21 d22 _ENTER_
+		_POLYLINE_ d31 d32 _ENTER_
+		_POLYLINE_ d41 d42 _ENTER_
+		_POLYLINE_ d51 d52 _ENTER_
+		_POLYLINE_ d61 d62 _ENTER_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
 	; Reduce to about 10 drawing units overall size (standard for alignment thumbnails, even if they will be auto-scaled in RailCOMPLETE)
-	(command "._SCALE" "_ALL" "" (list 0 0) "0.1")
+	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName
 )

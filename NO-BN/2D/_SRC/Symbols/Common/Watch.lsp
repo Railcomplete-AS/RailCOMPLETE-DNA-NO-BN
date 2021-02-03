@@ -27,7 +27,7 @@
 		blockName "NO-BN-2D-JBTFE-WATCH-SYMBOL"
 		textHeight 1.8
 	)
-	(addAtt "W" "Watch Object" "W" (list 0 0) textHeight 0 "iso" "_MC" (+ _multipleLines_ _lockPosition_))
+	(addAtt "W" "Watch Object" "W" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
@@ -40,8 +40,8 @@
 		textHeight 1.8
 		radius 2.75
 	)
-	(command "._CIRCLE" (list 0 0) radius)
-	(addAtt "W" "Watch Object" "W" (list 0 0) textHeight 0 "iso" "_MC" (+ _multipleLines_ _lockPosition_))
+	(command _CIRCLE_ _origo_ radius)
+	(addAtt "W" "Watch Object" "W" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

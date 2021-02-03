@@ -32,7 +32,7 @@
 		p1		(list (* 0.00 side) (* 0.60 side))
 		p2		(list (* 0.30 side) (* 0.70 side))
 		attTen	'("HAST_10" "Vent-hastighet (10-ere):" "12")
-		attFive	'("HAST_5" "Blank eller 5" "")
+		attFive	'("HAST_5" "Blank eller 5" _ENTER_)
 	)
 	(drawTriangle side) ; pointing down
 	(addTextAttributeAtPos layer_Zero _th250_ p1 attTen)
@@ -61,10 +61,10 @@
 		p1		(list (* 0.00 side) (* 0.30 side))
 		p2		(list (* 0.30 side) (* 0.15 side))
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
-		attFive	'("HAST_5" "Blank eller 5" "")
+		attFive	'("HAST_5" "Blank eller 5" _ENTER_)
 	)
 	(drawTriangle side) ; pointing down
-	(mirrorAboutXaxis _erase_)
+	(mirrorAboutXaxis _eraseMirrorSource_)
 	(moveUp (* (sqrt 0.75) side))
 	(addTextAttributeAtPos layer_Zero _th250_ p1 attTen)
 	(addTextAttributeAtPos layer_Zero _th100_ p2 attFive)
@@ -151,11 +151,11 @@
 		p11	'( 3.000 0.433)
 	)
 	(setLayer layer_Zero)
-	(command "._PLINE" p1 p4 p5 p7 p11 p10 _origo_ p9 p8 p6 p2 p3 _closed_) ; contour
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keep_)
-	(command "._PLINE" p1 p3 p4 _closed_)	(drawHatch _filledHatch_) ; top triangle
-	(command "._PLINE" p6 p8 p9 _closed_)	(drawHatch _filledHatch_) ; left triangle
-	(command "._PLINE" p7 p10 p11 _closed_)	(drawHatch _filledHatch_) ; right triangle
+	(command _POLYLINE_ p1 p4 p5 p7 p11 p10 _origo_ p9 p8 p6 p2 p3 _closedPolyline_) ; contour
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(command _POLYLINE_ p1 p3 p4 _closedPolyline_)	(drawHatch _solidHatch_) ; top triangle
+	(command _POLYLINE_ p6 p8 p9 _closedPolyline_)	(drawHatch _solidHatch_) ; left triangle
+	(command _POLYLINE_ p7 p10 p11 _closedPolyline_)	(drawHatch _solidHatch_) ; right triangle
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -191,12 +191,12 @@
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
 	)
 	(setLayer layer_Zero)
-	(command "._PLINE" p1 p2 p3 p4 p5 p6 p7 _closed_) ; contour
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keep_)
-	(command "._PLINE" p1 p2 p3 p6 p7 _closed_)
-	(drawHatchFromPoint _filledHatch_ (addVectors p1 _slightlyBelow_) 0 0) ; top 5-edge
-	(command "._PLINE" p3 p4 p5 p6 p8 _closed_)
-	(drawHatchFromPoint _filledHatch_ (addVectors p8 _slightlyBelow_) 0 0)
+	(command _POLYLINE_ p1 p2 p3 p4 p5 p6 p7 _closedPolyline_) ; contour
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(command _POLYLINE_ p1 p2 p3 p6 p7 _closedPolyline_)
+	(drawHatchFromPoint _solidHatch_ (addVectors p1 _slightlyBelow_) 0 0) ; top 5-edge
+	(command _POLYLINE_ p3 p4 p5 p6 p8 _closedPolyline_)
+	(drawHatchFromPoint _solidHatch_ (addVectors p8 _slightlyBelow_) 0 0)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -251,7 +251,7 @@
 	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
 	(drawBox layer_Zero x2 y2 _noWipeout_)
 	(moveUp (halfOf y))
-	(drawHatchFromPoint _filledHatch_ _slightlyAbove_ 0 0)
+	(drawHatchFromPoint _solidHatch_ _slightlyAbove_ 0 0)
 	(addTextAttributeAtPos layer_Zero _th350_ (list 0 (halfOf y)) attDef)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

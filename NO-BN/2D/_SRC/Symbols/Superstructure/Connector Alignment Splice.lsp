@@ -33,10 +33,10 @@
 		y (* _half_ 1.0)
 	)
 	(command
-		"._LINE" (list (- x) (- y)) (list (- x) y) ""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
-		"._LINE" (list (- x) (/ y 2.0)) (list x (/ y 2.0)) ""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 1 0) "_NO"
+		_LINE_ (list (- x) (- y)) (list (- x) y) _ENTER_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_LINE_ (list (- x) (/ y 2.0)) (list x (/ y 2.0)) _ENTER_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 	)
 	(if (= leftArrow 0)
 		(setq 
@@ -60,16 +60,16 @@
 		)
 	)
 	(command
-		"._LINE"
+		_LINE_
 			(list leftArrowStart (/ y 2.0))
 			(list leftArrowMid 0)
 			(list leftArrowStart (- (/ y 2.0))) 
-			""
-		"._LINE"
+			_ENTER_
+		_LINE_
 			(list rightArrowStart (/ y 2.0))
 			(list rightArrowMid 0)
 			(list rightArrowStart (- (/ y 2.0))) 
-			""
+			_ENTER_
 	)
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)

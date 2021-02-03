@@ -63,13 +63,13 @@
 	; But due to CAD symbol generation times being excessive, restrict to step=500 (gives about 2 minutes computing time for cirka 110 cantilevers)
 	(setq 
 		blockName	(strcat "NO-BN-2D-JBTKL-UTLIGGER-" variation "-" pushPull)
-		description	"" ; See below
+		description	_ENTER_ ; See below
 		; Integer values:
 		minLen 1000	; shortest cantilever symbol [mm]
 		maxLen 6000	; longest [mm]
 		len minLen
 		step 500	; step [mm]
-		cantileverName "" ; See below
+		cantileverName _ENTER_ ; See below
 	)
 	(setLayer layer_Zero)
 	(while (<= len maxLen)
@@ -82,14 +82,14 @@
 			(cond 
 				((= pushPull "S") ; 'Strekk' - Pull = The contact wire forces stretch the cantilever ----->
 					(command
-						"._LINE" (list 0 (+ (- lenM) (- 0.500))) "@1.25<45" ""
-						"._LINE" (list 0 (+ (- lenM) (- 0.500))) "@1.25<135" ""
+						_LINE_ (list 0 (+ (- lenM) (- 0.500))) "@1.25<45" _ENTER_
+						_LINE_ (list 0 (+ (- lenM) (- 0.500))) "@1.25<135" _ENTER_
 					)
 				)
 				((= pushPull "T") ; 'Trykk' - Push = The contact wire forces compress the cantilever -----<
 					(command
-						"._LINE" (list 0 (+ (- lenM) (+ 0.500))) "@1.25<-45" ""
-						"._LINE" (list 0 (+ (- lenM) (+ 0.500))) "@1.25<-135" ""
+						_LINE_ (list 0 (+ (- lenM) (+ 0.500))) "@1.25<-45" _ENTER_
+						_LINE_ (list 0 (+ (- lenM) (+ 0.500))) "@1.25<-135" _ENTER_
 					)
 				)
 			)

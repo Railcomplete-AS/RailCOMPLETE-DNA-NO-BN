@@ -31,12 +31,10 @@
 	(setq n 0)
 	(repeat #symbols
 		(subStep (nth n blocknames))
-		(setq descriptions (append descriptions (list (eval (list (read (nth n blocknames))))))) ; Call function
-		; Save block to separate file:
-		; (command "-wblock" (strcat dwgpath (nth n blocknames) ".dwg") "_YES" (nth n blocknames))
+		(setq descriptions (append descriptions (list (eval (list (read (nth n blocknames))))))) ; Call function, create object, return description
 		(setq n (1+ n))
 	)
 	; 2020-07-26 deprecated code, must be fixed if it is to be used:
 	; (TABLE #symbols blockNames descriptions)
-	; (command "._SAVE" (strcat (findfile "JBV") "\\" "Signs.dwg") "_YES")
+	; (command "._SAVEAS" (strcat (findfile "JBV") "\\" "Signs.dwg") _overwriteFile_)
 )

@@ -73,13 +73,13 @@
 	;
 	(list 0 (- (/ y 2.0) (* row (/ y (+ numberOfRows 1.0)))))
 )
-(defun pos11 ( y / ) (posNR 1 1 y)) ; 1 row, middle = "0,0"
+(defun pos11 ( y / ) (posNR 1 1 y)) ; 1 row, middle = _origo_
 
 (defun pos21 ( y / ) (posNR 2 1 y)) ; 2 rows, top
 (defun pos22 ( y / ) (posNR 2 2 y)) ; 2 rows, bottom
 
 (defun pos31 ( y / ) (posNR 3 1 y)) ; 3 rows, top
-(defun pos32 ( y / ) (posNR 3 2 y)) ; 3 rows, middle = "0,0"
+(defun pos32 ( y / ) (posNR 3 2 y)) ; 3 rows, middle = _origo_
 (defun pos33 ( y / ) (posNR 3 3 y)) ; 3 rows, bottom
 
 (defun pos41 ( y / ) (posNR 4 1 y)) ; 4 rows, top
@@ -102,10 +102,10 @@
 
 
 ; Move all current graphics up/down/left/right
-(defun moveUp    ( dist / ) (command "._MOVE" "_ALL" "" "0,0" (list 0 dist)))
-(defun moveDown  ( dist / ) (command "._MOVE" "_ALL" "" "0,0" (list 0 (- dist))))
-(defun moveLeft  ( dist / ) (command "._MOVE" "_ALL" "" "0,0" (list (- dist) 0)))
-(defun moveRight ( dist / ) (command "._MOVE" "_ALL" "" "0,0" (list dist 0)))
+(defun moveUp    ( dist / ) (command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 dist)))
+(defun moveDown  ( dist / ) (command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (- dist))))
+(defun moveLeft  ( dist / ) (command _MOVE_ _selectAll_ _ENTER_ _origo_ (list (- dist) 0)))
+(defun moveRight ( dist / ) (command _MOVE_ _selectAll_ _ENTER_ _origo_ (list dist 0)))
 
 
 
@@ -117,7 +117,7 @@
 	;     A-------------B
 	;
 	(setLayer layDef)
-	(command "._LINE" posA posB "")
+	(command _LINE_ posA posB _ENTER_)
 	'drawLine
 )
 
@@ -162,11 +162,11 @@
 	;       \___/ 
 	;
 	(setLayer layDef_mainLayer)
-	(command "._CIRCLE" pos r)
+	(command _CIRCLE_ pos r)
 	(if layer_wipeOutLayer
 		(progn
 			(setLayer layDef_wipeoutLayer)
-			(command "._WIPEOUT" "_POLYLINE" "_LAST" "" "_NO") ; Add wipeout, keep polyline
+			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
 			(setLayer layDef_mainLayer)
 		)
 	)
@@ -195,11 +195,11 @@
 	;    <-------- x wide ------->
     ;
 	(setLayer layDef_mainLayer)
-	(command "._RECTANGLE" (addVectors (posTL x y) pos) (addVectors (posBR x y) pos))
+	(command _RECTANGLE_ (addVectors (posTL x y) pos) (addVectors (posBR x y) pos))
 	(if layDef_wipeOutLayer
 		(progn
 			(setLayer layDef_wipeoutLayer)
-			(command "._WIPEOUT" "_POLYLINE" "_LAST" "" "_NO") ; Add wipeout, keep polyline
+			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
 			(setLayer layDef_mainLayer)
 		)
 	)
@@ -238,10 +238,10 @@
 ;;;;;		(alert "*** ERROR: drawClosedShape() needs a list with at least 2 points.")
 ;;;;;		(progn
 ;;;;;			(setLayer layDef_mainLayer)
-;;;;;			(command "._POLYLINE" pA pB ""=
+;;;;;			(command "._POLYLINE" pA pB _ENTER_=
 ;;;;;			
 ;;;;;	(foreach pB (cdr pointList)
-;;;;;		(command "._POLYLINE" pA pB ""=
+;;;;;		(command "._POLYLINE" pA pB _ENTER_=
 ;;;;;		; Hmmmmmmmmmmmmmm  JOIN benytter ikke SELECT, jeg får ikke pekt på det som skal legges til...	
 ;;;;;		)
 ;;;;;	)
@@ -272,7 +272,7 @@
 	)
 	(setLayer layDef)
 	(command
-		"._LINE" hingePos openPos "" ; The open door
+		_LINE_ hingePos openPos _ENTER_ ; The open door
 		"._ARC" lockPos "_C" hingePos "A" (- maxAngle)
 	)
 )
@@ -293,7 +293,7 @@
 		((= (strlen text) 1) (setq textHeight _oneLetterProxySymbolTextHeight_))
 		((= (strlen text) 2) (setq textHeight _twoLetterProxySymbolTextHeight_))
 		((= (strlen text) 3) (setq textHeight _threeLetterProxySymbolTextHeight_))
-		(T 					 (setq textHeight 0.50))
+		(T 					 (setq textHeight _th050_)) ; Default linewidth, font height is 10x linewidth
 	)
 	(addTextAtPos layDef textHeight _origo_ text)
 )

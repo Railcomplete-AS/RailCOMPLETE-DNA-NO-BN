@@ -29,12 +29,12 @@
         distFot (* (/ (* 2 bjelkeX) 10) 3)
 	)
 	(command
-		"._RECTANGLE" (list (- bjelkeX) (- bjelkeY)) (list bjelkeX bjelkeY)
-		"._RECTANGLE" (list (- (+ bjelkeX bjelke2X)) (- bjelkeY)) (list (- bjelkeX) bjelkeY)
-		"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
-		"._RECTANGLE" (list (- (+ distFot fotX)) bjelkeY) (list (- (- distFot fotX)) fotY)
-		"._ARRAY" "_LAST" "" "R" "2" "2" (- (+ bjelkeY fotY)) (* 2 distFot)
+		_RECTANGLE_ (list (- bjelkeX) (- bjelkeY)) (list bjelkeX bjelkeY)
+		_RECTANGLE_ (list (- (+ bjelkeX bjelke2X)) (- bjelkeY)) (list (- bjelkeX) bjelkeY)
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_RECTANGLE_ (list (- (+ distFot fotX)) bjelkeY) (list (- (- distFot fotX)) fotY)
+		"._ARRAY" _lastSelection_ _ENTER_ _rectangularArray_ 2 2 (- (+ bjelkeY fotY)) (* 2 distFot)
 	)
-	(command "._ROTATE" "_ALL" "" "0,0" "90")
+	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

@@ -57,37 +57,37 @@
 	; Metric symbol
 	(setLayerAndObjectColor layer_Balise_3m_Separation "_ByLayer")
 	(command 
-		"._PLINE" (list 3 0) "_ARC" "_CE" (list 0 0) "A" 15 ""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
-		"._MIRROR" "_LAST" "" (list 0 0) (list 1 0) "_NO"
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
+		_POLYLINE_ (list 3 0) _setPolylineArcMode_ "_CE" _origo_ "A" 15 _ENTER_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addText "3" (list (- 2.9) (- 0.5)) 0.2 0 "iso" "_TL")
-	(command "._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO")
+	(addText "3" (list (- 2.9) (- 0.5)) _th020_ _angleZero_ _rcTextStyle_ _topLeft_)
+	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 		
 	(setLayerAndObjectColor layer_Balise_8m_Separation "_ByLayer")
 	(command 
-		"._PLINE" (list 8 0) "_ARC" "_CE" (list 0 0) "A" 9 ""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
-		"._MIRROR" "_LAST" "" (list 0 0) (list 1 0) "_NO"
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
+		_POLYLINE_ (list 8 0) _setPolylineArcMode_ "_CE" _origo_ "A" 9 _ENTER_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addText "8" (list (- 7.9) (- 0.95)) 0.2 0 "iso" "_TL")
-	(command "._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO")
+	(addText "8" (list (- 7.9) (- 0.95)) _th020_ _angleZero_ _rcTextStyle_ _topLeft_)
+	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 
 	(setLayerAndObjectColor layer_Balise_12m_Separation "_ByLayer")
 	(command 
-		"._PLINE" (list 12 0) "_ARC" "_CE" (list 0 0) "A" 10 ""
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
-		"._MIRROR" "_LAST" "" (list 0 0) (list 1 0) "_NO"
-		"._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO"
+		_POLYLINE_ (list 12 0) _setPolylineArcMode_ "_CE" _origo_ "A" 10 _ENTER_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
+		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addText "12" (list (- 11.8) (- 1.8)) 0.2 0 "iso" "_TL")
-	(command "._MIRROR" "_LAST" "" (list 0 0) (list 0 1) "_NO")
+	(addText "12" (list (- 11.8) (- 1.8)) _th020_ _angleZero_ _rcTextStyle_ _topLeft_)
+	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 		
 	; Metal-free area:
 	(setLayerAndObjectColor layer_Balise_MetalFreeArea "_ByLayer")
-	(command "._RECTANGLE" (list (- mx) (- my))   (list (+ mx) (+ my)))
+	(command _RECTANGLE_ (list (- mx) (- my))   (list (+ mx) (+ my)))
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -100,16 +100,16 @@
 	; Equilateral triangle, side = 6, draw a dashed line (without using the CAD system's dash-line mechanism):
 	(setLayerAndObjectColor layer_Zero "_ByBlock")
 	(command
-		"._LINE" "0,1.5981" "-0.3,1.0785" ""
-		"._LINE" "-0.6,0.5588" "-0.9,0.0392" ""
-		"._LINE" "-1.2,-0.4804" "-1.5,-1" "-0.9,-1" ""
-		"._LINE" "-0.3,-1" "0,-1" ""
-		"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
-		"._MOVE" "_ALL" "" "0,0" "0,1"
+		_LINE_ "0,1.5981" "-0.3,1.0785" _ENTER_
+		_LINE_ "-0.6,0.5588" "-0.9,0.0392" _ENTER_
+		_LINE_ "-1.2,-0.4804" "-1.5,-1" "-0.9,-1" _ENTER_
+		_LINE_ "-0.3,-1" "0,-1" _ENTER_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MOVE_ _selectAll_ _ENTER_ _origo_ _yAxis_
 	)
 	
 	; Twice as big as balise symbol (Bane NOR wants it that way):
-	(command "._SCALE" "_ALL" "" _origo_ _two_)
+	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _two_)
 
 	(createSchematicBlockFromCurrentGraphics blockName) 
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -132,11 +132,11 @@
 	(setLayer layer_Zero)
 	(command 
 		"._COLOR" "_ByBlock"
-		"._PLINE"
+		_POLYLINE_
 			(list (/ side -2) 0)
 			(list (/ side 2) 0)
 			(strcat "@" (rtos side) "<120")
-			"_CLOSE"
+			_closedPolyline_
 	)
 	(cond 
 		((= variation 1)
@@ -145,7 +145,7 @@
 		((= variation 2)
 			(setq blockName "NO-BN-2D-JBTSI-ATC-BALISE-TOM-STYRT")
 			(command 
-				"._RECTANGLE" 
+				_RECTANGLE_ 
 					(list (/ side -2.0) h)
 					(list (/ side 2.0) (+ h dh))
 			)
@@ -159,14 +159,14 @@
 			(drawHatchFromPoint 0.02 "0.1,0.1" 0 0.1)
 			(setq blockName "NO-BN-2D-JBTSI-ATC-BALISE-FYLT-STYRT")
 			(command 
-				"._RECTANGLE"
+				_RECTANGLE_
 					(list (/ side -2.0) h)
 					(list (/ side 2.0) (+ h dh))
 			)
 			(drawHatch _denseHatch_)
 		)
 	)
-	(addAtt "TEKSTOVER" "Tekst over" "" (list 0 (* 1.333 side)) 1.0 0 "iso" "_MC" _lockPosition_)
-	(addAtt "TEKSTUNDER" "Tekst under" "" (list 0 (- (* 0.8 side))) 1.0 0 "iso" "_MC" _lockPosition_)
+	(addAtt "TEKSTOVER" "Tekst over" _ENTER_ (list 0 (* 1.333 side)) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "TEKSTUNDER" "Tekst under" _ENTER_ (list 0 (- (* 0.8 side))) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	blockName ; Must return block name to caller
 )

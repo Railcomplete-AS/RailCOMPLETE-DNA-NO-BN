@@ -34,12 +34,12 @@
 		pt2 (list (/ x -40) (+ (/ y -6) (/ y 18)))
 	)
 	(command
-		"._RECTANGLE" (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		"._LINE" (list (- halfWidth)  (+ (- halfHeight) frontlineHeight)) (list halfWidth  (+ (- halfHeight) frontlineHeight)) ""
-		"._LINE" (list (- halfWidth) (+ (- halfHeight) frontlineHeight)) pt1 pt2 (list halfWidth halfHeight) ""
+		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
+		_LINE_ (list (- halfWidth)  (+ (- halfHeight) frontlineHeight)) (list halfWidth  (+ (- halfHeight) frontlineHeight)) _ENTER_
+		_LINE_ (list (- halfWidth) (+ (- halfHeight) frontlineHeight)) pt1 pt2 (list halfWidth halfHeight) _ENTER_
 	)
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Fordelings- skap" "0,-0.6" _descriptionTextHeight_ 1.5 0 "ISO" "_TC")
+	(addMText "Fordelings- skap" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
@@ -59,12 +59,12 @@
 		pt2 (list (/ x -40) (+ (/ y -6) (/ y 18)))
 	)
 	(command
-		"._RECTANGLE" (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		"._LINE" (list (- halfWidth)  (+ (- halfHeight) frontlineHeight)) (list halfWidth  (+ (- halfHeight) frontlineHeight)) ""
-		"._LINE" (list (- halfWidth) (+ (- halfHeight) frontlineHeight)) pt1 pt2 (list halfWidth halfHeight) ""
+		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
+		_LINE_ (list (- halfWidth)  (+ (- halfHeight) frontlineHeight)) (list halfWidth  (+ (- halfHeight) frontlineHeight)) _ENTER_
+		_LINE_ (list (- halfWidth) (+ (- halfHeight) frontlineHeight)) pt1 pt2 (list halfWidth halfHeight) _ENTER_
 	)
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Gruppeskap" "0,-0.6" _descriptionTextHeight_ 1.5 0 "ISO" "_TC")
+	(addMText "Gruppeskap" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
@@ -81,12 +81,12 @@
 		halfHeight (/ y 2)
 	)
 	(command
-		"._RECTANGLE" (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		"._LINE" (list (* x -0.5) (* y -0.5)) (list (* x 0.5) (* y 0.5)) ""
-		"._LINE" (list (* x -0.5) (* y 0.5)) (list (* x 0.5) (* y -0.5)) ""
+		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
+		_LINE_ (list (* x -0.5) (* y -0.5)) (list (* x 0.5) (* y 0.5)) _ENTER_
+		_LINE_ (list (* x -0.5) (* y 0.5)) (list (* x 0.5) (* y -0.5)) _ENTER_
 	)
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Togvarme- post" "0,-0.6" _descriptionTextHeight_ 1.5 0 "ISO" "_TC")
+	(addMText "Togvarme- post" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

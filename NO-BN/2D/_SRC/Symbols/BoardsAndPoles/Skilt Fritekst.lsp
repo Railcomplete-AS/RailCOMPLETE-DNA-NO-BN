@@ -67,9 +67,9 @@
 	(addTextAttributeAtPos layer_Zero _th250_ _origo_ attFreeText)
 	(setLayer layer_Zero)
 	(command
-		"._LINE" p1 p4 ""
-		"._LINE" p2 p5 ""
-		"._LINE" p3 p6 ""
+		_LINE_ p1 p4 _ENTER_
+		_LINE_ p2 p5 _ENTER_
+		_LINE_ p3 p6 _ENTER_
 	)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)

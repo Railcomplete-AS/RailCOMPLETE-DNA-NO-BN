@@ -33,8 +33,8 @@
 	)
 	(drawCoil len r)
 	(command 
-		"._ROTATE" "_ALL" "" "0,0" 90
-		"._MOVE" "_ALL" "" "0,0" (list (* 4 r) 0)
+		_ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_
+		_MOVE_ _selectAll_ _ENTER_ _origo_ (list (* 4 r) 0)
 	)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -50,11 +50,11 @@
 	)
 	(drawCoil len r)
 	(command 
-		"._ROTATE" "_ALL" "" "0,0" 90
-		"._MOVE" "_ALL" "" "0,0" (list (* 4 r) 0)
+		_ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_
+		_MOVE_ _selectAll_ _ENTER_ _origo_ (list (* 4 r) 0)
 	)
 	(command
-		"._RECTANGLE" 
+		_RECTANGLE_ 
 			(list (* (- 5) r) (- r))
 			(list (* (+ 5) r) (+ len r r))
 	)
@@ -72,13 +72,13 @@
 	)
 	(drawCoil len r)
 	(command 
-		"._MOVE" "_ALL" "" (list len 0) "0,0" 
-		"._LINE" (list 0 0) (list (+ len r) 0) "" 
-		"._LINE" (list 0 (* 4 r)) (list (+ r len) (* 4 r)) ""
+		_MOVE_ _selectAll_ _ENTER_ (list len 0) _origo_ 
+		_LINE_ _origo_ (list (+ len r) 0) _ENTER_ 
+		_LINE_ (list 0 (* 4 r)) (list (+ r len) (* 4 r)) _ENTER_
 	)
 	(setLayer layer_AutoTransformerTerminals)
-	(addText "NL" (list (- (+ len r r)) (* 8 r)) 1.8 0 "iso" "_MC")
-	(addText "PL" (list (- (+ len r r)) 0) 1.8 0 "iso" "_MC")
+	(addText "NL" (list (- (+ len r r)) (* 8 r)) _th180_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(addText "PL" (list (- (+ len r r)) 0) _th180_ _angleZero_ _rcTextStyle_ _middleCenter_)
 	(setLayer layer_Zero)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -92,19 +92,27 @@
 ;==========================
 (defun drawCoil ( len r / )
 	(command
-		"._PLINE"
-			(list 0 0)
-			(list len 0)
-			"_ARC" "_RADIUS" r
-			(list len (* 2 r)) 
-			"_RADIUS" (- r)
-			(list len (* 4 r))
-			"_RADIUS" (- r)
-			(list len (* 6 r))
-			"_RADIUS" (- r)
-			(list len (* 8 r))
-			"_LINE"
-			(list 0 (* 8 r))
-			""
+		_POLYLINE_
+			_origo_
+			(list len 0) ; start leg of coil
+
+			_setPolylineArcMode_
+
+			_setPolylineArcRadius_ r
+			(list len (* 2 r)) ; endpoint of coil winding
+
+			_setPolylineArcRadius_ (- r)
+			(list len (* 4 r)) ; endpoint of coil winding
+			
+			_setPolylineArcRadius_ (- r)
+			(list len (* 6 r)) ; endpoint of coil winding
+
+			_setPolylineArcRadius_ (- r)
+			(list len (* 8 r)) ; endpoint of coil winding
+
+			_setPolylineLineMode_
+			(list 0 (* 8 r)) ; end leg
+			
+			_ENTER_
 	)
 )

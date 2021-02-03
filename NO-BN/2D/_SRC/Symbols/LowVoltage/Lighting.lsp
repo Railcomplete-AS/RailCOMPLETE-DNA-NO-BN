@@ -42,7 +42,7 @@
 		y (* (sqrt 8) rm)
 	)
 	(drawCircle layer_Zero rm _noWipeout_)
-	(drawHatch _filledHatch_)
+	(drawHatch _solidHatch_)
 	(drawStAndrewCross layer_Zero x y)
 	(addDescriptionBelowOrigo description rm)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -166,7 +166,7 @@
 		)
 		(T
 			(drawCircle layer_Zero rm _noWipeout_)
-			(drawHatch _filledHatch_)
+			(drawHatch _solidHatch_)
 			(addDescriptionBelowOrigo description (* 3 r)) ; well below...
 		)
 	)

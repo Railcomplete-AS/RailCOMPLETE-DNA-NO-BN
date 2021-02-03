@@ -37,11 +37,11 @@
 		blockName (strcat "NO-BN-2D-JBTUB-TREKKEKUM-RUND-" manholeDiameter)
 	)
 	(command
-		"._CIRCLE" (list 0 0) (/ (atof manholeDiameter) 2000.0)
-		"._CIRCLE" (list coverOffsetX coverOffsetY) (/ coverDiameter 2)
+		_CIRCLE_ _origo_ (/ (atof manholeDiameter) 2000.0)
+		_CIRCLE_ (list coverOffsetX coverOffsetY) (/ coverDiameter 2)
 	)
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText (strcat "TREKKEKUM RUND \U+00D8" manholeDiameter) (list 0 (- (/ (atof manholeDiameter) -2000) 0.5)) _descriptionTextHeight_ 1.5 0 "iso" "_TC") ; \U+00D8 = Ø
+	(addMText (strcat "TREKKEKUM RUND \U+00D8" manholeDiameter) (list 0 (- (/ (atof manholeDiameter) -2000) 0.5)) _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_) ; \U+00D8 = Ø
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
@@ -56,23 +56,23 @@
 	)
 	; Draw 'box':
 	(command
-		"._RECTANGLE" (list (/ (atof manholeLength) -2000.0) 0) (list (/ (atof manholeLength) 2000.0) (/ (atof manholeDepth) 1000.0))
+		_RECTANGLE_ (list (/ (atof manholeLength) -2000.0) 0) (list (/ (atof manholeLength) 2000.0) (/ (atof manholeDepth) 1000.0))
 	)
 	(if (= coverDiameter 0)
 		; Rectangular cover:
 		(command
-			"._RECTANGLE" 
+			_RECTANGLE_ 
 				(list (+ coverOffsetX (/ coverLength -2)) (+ coverOffsetY (/ coverDepth -2)))
 				(list (+ coverOffsetX (/ coverLength 2)) (+ coverOffsetY (/ coverDepth 2)))
 		)
 	;else
 		;Circular cover:
 		(command 
-			"._CIRCLE" (list coverOffsetX coverOffsetY) (/ coverDiameter 2)
+			_CIRCLE_ (list coverOffsetX coverOffsetY) (/ coverDiameter 2)
 		)
     )
 	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText (strcat "TREKKEKUM L=" manholeLength ", D=" manholeDepth) (list 0 -0.5) _descriptionTextHeight_ 1.5 0 "iso" "_TC")
+	(addMText (strcat "TREKKEKUM L=" manholeLength ", D=" manholeDepth) (list 0 -0.5) _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

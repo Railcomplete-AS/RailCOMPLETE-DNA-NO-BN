@@ -63,7 +63,7 @@
 		ang (R->D (atan (/ 1.0 x)))
 		radius 0.75
 	)
-	(setq str "")
+	(setq str _emptyString_)
 	(if (< x 10)
 		(setq str "0")
 	)
@@ -73,67 +73,87 @@
 	)
 	(setLayer layer_Zero)
  	(command
-		"._COLOR" "_ByBlock"
-		"._LINE" "0,0" (list A 0) ""
-		"._LINE" (list A 1) (list A -1) ""
-		"._LINE" (list 0 1) (list 0 -1) ""
-		"._ARC" (list L 0) "C" (list A 0) "Angle" (+ ang 1.5)
-		"._ARC" (list L 0) "C" (list A 0) "Angle" -1.5
-		"._PLINE"
+		_COLOR_ _ByBlock_
+		_LINE_ _origo_ (list A 0) _ENTER_
+		_LINE_ (list A 1) (list A -1) _ENTER_
+		_LINE_ (list 0 1) (list 0 -1) _ENTER_
+		_ARC_ (list L 0) _setArcCenter_ (list A 0) _setArcAngle_ (+ ang 1.5)
+		_ARC_ (list L 0) _setArcCenter_ (list A 0) _setArcAngle_ -1.5
+		_POLYLINE_
 			(list A 0)
 			(list (+ A C) 0)
-			"_ARC" "_CE" (list A 0) "Angle" ang 
-			"Line" "_CLOSE"
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0) _setArcAngle_ ang 
+			_setPolylineLineMode_
+			_closedPolyline_
 	)
 	(drawHatch _mediumHatch_)
 	(command 
-		"._PLINE" 
+		_POLYLINE_ 
 			(list (+ A C) 0)
-			"_ARC" "_CE" (list A 0)
-			"Angle" ang 
-			"Line" (strcat "@" (rtos D) "<" (rtos ang))
-			"_ARC" "_CE" (list A 0)
-			"Angle" (- ang)
-			"Line" "_CLOSE"
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0)
+			_setPolylineArcAngle_ ang 
+			_setPolylineLineMode_
+			(strcat "@" (rtos D) "<" (rtos ang))
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0)
+			_setPolylineArcAngle_ (- ang)
+			_setPolylineLineMode_
+			_closedPolyline_
 	)
 	(drawHatch _sparseHatch_)
 
 	; Deviating track / centreline
 	(setLayer layer_Turnout_TrackCenterLines)
 	(command
-		"._PLINE" 
-			"0,0"
-			"_ARC" "Direction" "1,0" (polar (list A 0) (D->R ang) C)
-			"Line" (strcat "@" (rtos D) "<" (rtos ang))
-			""
-		"._PLINE" "0,0" (list L 0) ""
+		_POLYLINE_ 
+			_origo_
+			_setPolylineArcMode_
+			_setPolylineArcDirection_ _xAxis_ (polar (list A 0) (D->R ang) C)
+			_setPolylineLineMode_
+			(strcat "@" (rtos D) "<" (rtos ang))
+			_openPolyline_
+		
+		_POLYLINE_ 
+			_origo_ (list L 0)
+			_openPolyline_
 	) 
   
 	; Show long-sleepers area outside back end of switch
 	(setLayer layer_Turnout_LongSleepers)
 	(command 
-		"._PLINE"
+		_POLYLINE_
 			(list L 0)
-			"_ARC" "_CE" (list A 0) "Angle" ang
-			"Line" (strcat "@" (rtos E) "<" (rtos ang))
-			"_ARC" "_CE" (list A 0) "Angle" (- ang)
-			"Line" 
-			"_CLOSE"
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0) 
+			_setPolylineArcAngle_ ang
+			_setPolylineLineMode_
+			(strcat "@" (rtos E) "<" (rtos ang))
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0)
+			_setPolylineArcAngle_ (- ang)
+			_setPolylineLineMode_
+			_closedPolyline_
 	)
 
 	; Show short-sleepers area outside back end of switch, after the long-sleeper area (if any)
 	(setLayer layer_Turnout_ShortSleepers)
 	(command
-		"._PLINE"
+		_POLYLINE_
 			(list (+ L E) 0)
-			"_ARC" "_CE" (list A 0) "Angle" ang
-			"Line" (strcat "@" (rtos F) "<" (rtos ang))
-			"_ARC" "_CE" (list A 0) "Angle" (- ang) 
-			"Line" "_CLOSE"
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0) _setArcAngle_ ang
+			_setPolylineLineMode_
+			(strcat "@" (rtos F) "<" (rtos ang))
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ (list A 0) _setArcAngle_ (- ang) 
+			_setPolylineLineMode_
+			_closePolyline_
     )
 	; Add 'division line' to illustrate that there are now one set of sleepers for each turnout leg:
 	(command
-		"._LINE" (list (+ A (* (+ B E) (cos (D->R(/ ang 2.0))))) (* (+ B E) (sin (D->R (/ ang 2.0))))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) ""
+		_LINE_ (list (+ A (* (+ B E) (cos (D->R(/ ang 2.0))))) (* (+ B E) (sin (D->R (/ ang 2.0))))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) _ENTER_
 	)
     
 ; TODO 2021-01-24 CLFEY: Deprecated - the 'forbidden area for sensors' has been moved to the sensor object itself (Axle Counter), "SA-TEL Tellepunkt".
@@ -142,13 +162,13 @@
 ;	; Split in two areas: One for XX cm separation => speeds less than 120 km/h allowed. Another (above 1.0 meter separation?) for speeds above 120 km/h. See new BN spec.
 ;	(setLayer layer_Turnout_ForbiddenAreaForAxleCounterSensor)
 ;	(setq pts (getAreaOne Drawing_Number))
-;	(command "._PLINE" (foreach pt pts (command pt)))
-;	(drawHatchOptions _sparseHatch_ 0 0.01 "ANSI37" "_LAST")
+;	(command _POLYLINE_ (foreach pt pts (command pt)))
+;	(drawHatchFromSelectionUsingStyle _sparseHatch_ _lastSelection_ _angleZero_ 0.01 _hatchPatternLosanges_)
 ;	(setq pts (getAreaTwo Drawing_Number))
-;	(command "._PLINE" (foreach pt pts (command pt)))
-;	(drawHatchOptions _sparseHatch_ 0 0.01 "ANSI37" "_LAST")
+;	(command _POLYLINE_ (foreach pt pts (command pt)))
+;	(drawHatchFromSelectionUsingStyle _sparseHatch_ _lastSelection_ _angleZero_ 0.01 _hatchPatternLosanges_)
 
-	(moveToQuadrant quadrant "_ALL")
+	(moveToQuadrant quadrant _selectAll_)
 	(addDescriptionBelowOrigo description 1.0)
 	(createMetricBlockFromCurrentGraphics blockName)
 )

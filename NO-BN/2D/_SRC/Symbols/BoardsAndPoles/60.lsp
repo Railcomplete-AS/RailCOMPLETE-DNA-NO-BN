@@ -33,8 +33,8 @@
 		r		(* 0.215 side)
   	)
 	(drawLosangeWithCircle)
-	(drawHatch _filledHatch_)
-	(moveUp (* (DDcos 45) side))
+	(drawHatch _solidHatch_)
+	(moveUp (* (DDcos _angle45_) side))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -65,9 +65,9 @@
 		p3 (list (*  0.00 x) (* -0.10 y))
 	)
 	(drawLosangeWithCircle)
-	(command "._PLINE" p1 p2 p3 _closed_) ; triangle
-	(drawHatch _filledHatch_)
-	(moveUp (* (DDcos 45) side))
+	(command _POLYLINE_ p1 p2 p3 _closedPolyline_) ; triangle
+	(drawHatch _solidHatch_)
+	(moveUp (* (DDcos _angle45_) side))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -95,8 +95,8 @@
 	)
 	(drawLosangeWithCircle)
 	(drawBox layer_Zero x y _noWipeout_) ; Add bar
-	(drawHatch _filledHatch_)
-	(moveUp (* (DDcos 45) (getLosangeSide)))
+	(drawHatch _solidHatch_)
+	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -121,7 +121,7 @@
 		description "SKILT SIGNAL 60D ATC REPETER HASTIGHET"
 	)	
 	(drawLosangeWithCircle)
-	(moveUp (* (DDcos 45) (getLosangeSide)))
+	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -147,7 +147,7 @@
 	)	
 	(drawLosangeWithCircle)
 	(addTextAtPos layer_Zero (* 0.45 (getLosangeSide)) _origo_ "1") ; Letter size is 45% of side
-	(moveUp (* (DDcos 45) (getLosangeSide)))
+	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -173,7 +173,7 @@
 	)	
 	(drawLosangeWithCircle)
 	(addTextAtPos layer_Zero (* 0.45 (getLosangeSide)) _origo_ "4") ; Letter size is 45% of side
-	(moveUp (* (DDcos 45) (getLosangeSide)))
+	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -197,16 +197,16 @@
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60E-ATC-VARSEL"
 		description "SKILT SIGNAL 60E ATC VARSEL"
 		side (getLosangeSide)
-		x (* 2 (DDcos 45) side) ; Virtual box
+		x (* 2 (DDcos _angle45_) side) ; Virtual box
 		y x
 		p1 (list (* -0.25 x) (*  0.10 y))
 		p2 (list (*  0.25 x) (*  0.10 y))
 		p3 (list (*  0.00 x) (* -0.34 y))
 	)
 	(drawLosange)
-	(command "._PLINE" p1 p2 p3 _closed_) ; inner triangle
-	(drawHatch _filledHatch_)
-	(moveUp (* (DDcos 45) (getLosangeSide)))
+	(command _POLYLINE_ p1 p2 p3 _closedPolyline_) ; inner triangle
+	(drawHatch _solidHatch_)
+	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -349,9 +349,9 @@
 	(addTextAtPos layer_Zero _th250_ _origo_ "ATC")
 	(setLayer layer_Zero)
 	(command
-		"._LINE" p1 p4 ""
-		"._LINE" p2 p5 ""
-		"._LINE" p3 p6 ""
+		_LINE_ p1 p4 _ENTER_
+		_LINE_ p2 p5 _ENTER_
+		_LINE_ p3 p6 _ENTER_
 	)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)

@@ -20,15 +20,15 @@
 
 (defun ALIGNMENT-SYKKELVEI ( / blockName ) 
 	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-SYKKELVEI")
-	(command "._PLINE" (list 0 0) (list 6 10) (list 19 10) (list 11 0) "_CLOSE"
-		"._LINE" (list 11 0) (list 5.25 11.5) ""
-		"._LINE" (list 4.25 11.5) (list 7.25 11.5) ""
-		"._LINE" (list 24 0) (list 18.25 11.5) ""
-		"._LINE" (list 18.25 11.5) (list 20.5 12.25) ""
-		"._CIRCLE" (list 0 0) "6.5"
-		"._CIRCLE" (list 24 0) "6.5"
-		"._MOVE" "_ALL" "" (list 11 0) (list 0 0)
-		"._SCALE" "_ALL" "" (list 0 0) "0.2"
+	(command _POLYLINE_ _origo_ (list 6 10) (list 19 10) (list 11 0) _closedPolyline_
+		_LINE_ (list 11 0) (list 5.25 11.5) _ENTER_
+		_LINE_ (list 4.25 11.5) (list 7.25 11.5) _ENTER_
+		_LINE_ (list 24 0) (list 18.25 11.5) _ENTER_
+		_LINE_ (list 18.25 11.5) (list 20.5 12.25) _ENTER_
+		_CIRCLE_ _origo_ "6.5"
+		_CIRCLE_ (list 24 0) "6.5"
+		_MOVE_ _selectAll_ _ENTER_ (list 11 0) _origo_
+		_SCALE_ _selectAll_ _ENTER_ _origo_ _fifth_
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName

@@ -23,8 +23,8 @@
 		blockName (strcat "NO-BN-2D-JBTOB-THUMBNAIL-SKINNE")
 	)
 	(command
-		"._PLINE" 
-			(list 0 0) ; Top-of-rail
+		_POLYLINE_ 
+			_origo_ ; Top-of-rail
 			(list 0.60  0.00)
 			(list 1.10 -0.10)
 			(list 1.30 -0.25)
@@ -43,12 +43,9 @@
 			(list 3.00 -6.80)
 			(list 2.95 -6.85)
 			(list 0.00 -6.85)
-			""
-		"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
-		"._MOVE" "_ALL" "" (list 0 0) (list 0 3.5)
-	)
-	(command
-		"._SCALE" "_ALL" "" (list 0 0) 1 ; Already drawn to a suitable scale (and all thumbnails auto-scale anyway...)
+			_ENTER_
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 3.5)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName

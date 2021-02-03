@@ -49,7 +49,7 @@
 			(drawLine layer_Zero p1 p2)
 			(drawHatchFromPoint _denseHatch_ _slightlyRight_ 0 0)
 			(moveRight r)
-			(mirrorAboutYaxis _keep_)
+			(mirrorAboutYaxis _keepMirrorSource_)
 		)
 		(T (alert (strcat "*** ERROR: SPORVEKSELSIGNAL() bad argument [" type "].")))
 	)

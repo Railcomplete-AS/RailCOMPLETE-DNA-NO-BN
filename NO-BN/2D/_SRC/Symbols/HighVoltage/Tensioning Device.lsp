@@ -72,7 +72,7 @@
 		p7	'(  1.0  4.5)
 		p10	'(  0.0  6.5)
 	)
-	(command "._PLINE" p1 _origo_ p2 _closed_)	; arrowhead
+	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
 	(drawLine layer_Zero p3 p10) ; shaft
 	(drawLine layer_Zero p6 p7) ; bar
@@ -107,7 +107,7 @@
 		p9	'(  1.0  5.0)
 		p10	'(  0.0  6.5)
 	)
-	(command "._PLINE" p1 _origo_ p2 _closed_)	; arrowhead
+	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
 	(drawLine layer_Zero p3 p10) ; shaft
 	(drawLine layer_Zero p4 p5) ; lower bar
@@ -145,9 +145,9 @@
 		p12	'(  1.0  6.6)
 		p13	'(  0.0  9.0)
 	)
-	(command "._PLINE" p1 _origo_ p2 _closed_)	; arrowhead
+	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(command "._PLINE" p11 p12 p13 _closed_)	; arrowhead
+	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
 	(drawLine layer_Zero p3 p10) ; shaft
 	(drawLine layer_Zero p6 p7) ; bar
@@ -186,9 +186,9 @@
 		p12	'(  1.0  6.6)
 		p13	'(  0.0  9.0)
 	)
-	(command "._PLINE" p1 _origo_ p2 _closed_)	; arrowhead
+	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(command "._PLINE" p11 p12 p13 _closed_)	; arrowhead
+	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
 	(drawLine layer_Zero p3 p10) ; shaft
 	(drawLine layer_Zero p4 p5) ; bar
@@ -226,9 +226,9 @@
 		p12	'(  1.0  6.6)
 		p13	'(  0.0  9.0)
 	)
-	(command "._PLINE" p1 _origo_ p2 _closed_)	; arrowhead
+	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(command "._PLINE" p11 p12 p13 _closed_)	; arrowhead
+	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
 	(drawLine layer_Zero p3 p10) ; shaft
 	(drawLine layer_Zero p6 p7) ; bar
@@ -268,9 +268,9 @@
 		p12	'(  1.0  6.6)
 		p13	'(  0.0  9.0)
 	)
-	(command "._PLINE" p1 _origo_ p2 _closed_)	; arrowhead
+	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(command "._PLINE" p11 p12 p13 _closed_)	; arrowhead
+	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
 	(drawLine layer_Zero p3 p10) ; shaft
 	(drawLine layer_Zero p4 p5) ; bar

@@ -42,7 +42,7 @@
 		railProfile	(cadr (assoc "RailProfile" switchParameters))
 		ang	  	(R->D (atan (/ 1.0 x))) ; sporvekselsymbol
 	)
-	(setq str "")
+	(setq str _ENTER_)
 	(if (< x 10)
 		(setq str "0")
 	)
@@ -59,22 +59,22 @@
 		(setLayer layer_Zero)
 		(if (= hatchVariant "LEDNING-ENKELT-SPOR")
 			(progn
-				(command "._PLINE" (list A 0) (list (+ A (/ B 2.0)) 0) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closed_)
-				(drawHatchOptions _mediumHatch_ 0 0 "ANSI37" "_LAST")
-				(command	"._PLINE" (list (+ A (/ B 2.0)) 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closed_)
+				(command _POLYLINE_ (list A 0) (list (+ A (/ B 2.0)) 0) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)
+				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _zero_ _hatchPatternLosanges_)
+				(command _POLYLINE_ (list (+ A (/ B 2.0)) 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)
 				(drawHatch _mediumHatch_)
 			)
 			(progn
-				(command "._PLINE" (list A 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) _closed_)
-				(drawHatchOptions _mediumHatch_ 0 0 "ANSI37" "_LAST")
+				(command _POLYLINE_ (list A 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) _closedPolyline_)
+				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _zero_ _hatchPatternLosanges_)
 			)
 		)
 		(command
-			"._LINE" (list (+ A (* B 0.75)) 0) (list (+ A B) 0) ""
-			"._LINE" (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) (list (+ A B) (* B (tan (D->R ang)))) ""
+			_LINE_ (list (+ A (* B 0.75)) 0) (list (+ A B) 0) _ENTER_
+			_LINE_ (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) (list (+ A B) (* B (tan (D->R ang)))) _ENTER_
 		)
 		;Mirror 0x, 1x eller 2x til korrekt kvadrant:
-		(moveToQuadrant quadrant "_ALL")
+		(moveToQuadrant quadrant _selectAll_)
 		(createMetricBlockFromCurrentGraphics blockName)
 		(setq i (+ 1 i))
 	);repeat

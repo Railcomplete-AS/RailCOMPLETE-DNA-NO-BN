@@ -53,38 +53,38 @@
 
 	 ; Quadrant 1
 	 (command 
-		"._PLINE" (list 0 u) (list 0 (* -1 u)) "" ; Stock rail joint
-		"._PLINE" (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) (list 0 0) ""
+		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
+		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
-	(drawHatchOptionsSelectPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
     (createMetricBlockFromCurrentGraphics (strcat blockName "-1"))
 
 	 ; Quadrant 2
 	(command 
-		"._PLINE" (list 0 u) (list 0 (* -1 u)) "" ; Stock rail joint
-		"._PLINE" (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) (list 0 0) ""
+		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
+		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
-	(drawHatchOptionsSelectPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(command "._MIRROR" "_ALL" "" (list 0 0) (list 0 1) "_YES")
+	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
     (createMetricBlockFromCurrentGraphics (strcat blockName "-2"))
 
 	 ; Quadrant 3
 	 (command 
-		"._PLINE" (list 0 u) (list 0 (* -1 u)) "" ; Stock rail joint
-		"._PLINE" (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) (list 0 0) ""
+		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
+		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
-	(drawHatchOptionsSelectPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(command "._MIRROR" "_ALL" "" (list 0 0) (list 0 1) "_YES")
-	(command "._MIRROR" "_ALL" "" (list 0 0) (list 1 0) "_YES")
+	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
+	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
     (createMetricBlockFromCurrentGraphics (strcat blockName "-3"))
 	
 	 ; Quadrant 4
 	(command 
-		"._PLINE" (list 0 u) (list 0 (* -1 u)) "" ; Stock rail joint
-		"._PLINE" (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) (list 0 0) ""
+		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
+		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
-	(drawHatchOptionsSelectPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(command "._MIRROR" "_ALL" "" (list 0 0) (list 1 0) "_YES")
+	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
     (createMetricBlockFromCurrentGraphics (strcat blockName "-4"))
 )
 
@@ -151,8 +151,8 @@
 	)
 	(setq blockName (strcat "NO-BN-2D-JBTSI-SWITCH-THROWING-METHOD" "-" (rtos A 2 3)))
 	(setLayerAndObjectColor layer_Zero "_ByBlock")
-	(command "._CIRCLE" (list A 0) radius)
-	(drawHatch _filledHatch_)
+	(command _CIRCLE_ (list A 0) radius)
+	(drawHatch _solidHatch_)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -166,15 +166,15 @@
 ;		(assoc Switch_Drawing_Number
 ;			(list	 
 ;				(list 	"KO-800157"	nil)
-;				(list 	"KO-701334"	(list "-0.43,-1.25" "15.5364,-1.2457" "15.4105,1.8757" "-0.43,1.25" "_CLOSE"))
+;				(list 	"KO-701334"	(list "-0.43,-1.25" "15.5364,-1.2457" "15.4105,1.8757" "-0.43,1.25" _closedPolyline_))
 ;						
 ;				(list 	"KO-701287"	nil)
 ;				(list 	"KO-701306"	nil)
 ;				(list 	"KO-701319"	nil)
 ;				
-;				(list 	"KO-701409"	(list "-0.4320,-1.2975" "19.2564,-1.2933" "19.1546,1.8757" "-0.4320,1.2975" "_CLOSE"))
-;				(list 	"KO-800068-2" (list "-0.4320,-1.2975" "24.7622,-1.2919" "24.6836,1.9032" "-0.4320,1.2975" "_CLOSE"))
-;				(list 	"KO-800068"	(list "-0.4320,-1.2975" "24.7622,-1.2919" "24.6836,1.9032" "-0.4320,1.2975" "_CLOSE"))
+;				(list 	"KO-701409"	(list "-0.4320,-1.2975" "19.2564,-1.2933" "19.1546,1.8757" "-0.4320,1.2975" _closedPolyline_))
+;				(list 	"KO-800068-2" (list "-0.4320,-1.2975" "24.7622,-1.2919" "24.6836,1.9032" "-0.4320,1.2975" _closedPolyline_))
+;				(list 	"KO-800068"	(list "-0.4320,-1.2975" "24.7622,-1.2919" "24.6836,1.9032" "-0.4320,1.2975" _closedPolyline_))
 ;				(list 	"KO-701372"	nil)
 ;				(list 	"KO-701382"	nil)
 ;						
@@ -198,15 +198,15 @@
 ;		(assoc Switch_Drawing_Number
 ;			(list	 
 ;				(list 	"KO-800157"	nil)
-;				(list 	"KO-701334"	(list "19.5777,-1.2575" "19.5258,-0.2513" "18.3102,-0.3116" "18.2375,1.1904" "19.4483,1.2506" "19.3964,2.2568" "27.3973,3.1264" "27.4662,1.8826" "30.0187,2.1662" "30.1387,0" "27.5705,0" "27.6393,-1.2433" "_CLOSE"))
+;				(list 	"KO-701334"	(list "19.5777,-1.2575" "19.5258,-0.2513" "18.3102,-0.3116" "18.2375,1.1904" "19.4483,1.2506" "19.3964,2.2568" "27.3973,3.1264" "27.4662,1.8826" "30.0187,2.1662" "30.1387,0" "27.5705,0" "27.6393,-1.2433" _closedPolyline_))
 ;						
 ;				(list 	"KO-701287"	nil)
 ;				(list 	"KO-701306"	nil)
 ;				(list 	"KO-701319"	nil)
 ;	
-;				(list 	"KO-701409"	(list "25.5829,-1.3027" "25.5366,-0.2189" "23.1623,-0.3150" "23.1033,1.2070" "25.4716,1.3032" "25.4253,2.3869" "33.4828,3.1717" "33.5542,1.8823" "35.9395,2.1473" "36.0585,0" "33.6585,0" "33.7299,-1.2894" "_CLOSE"))
-;				(list 	"KO-800068-2" (list "46.2083,0" "46.1204,2.1120" "41.9549,1.7646" "41.9012,3.0543" "33.5221,2.4215" "33.5591,1.3251" "29.9200,1.2094" "29.9658,-0.3127" "33.6104,-0.1970" "33.6104,-1.2934" "42.0820,-1.2910" "42.0283,0" "_CLOSE"))
-;				(list 	"KO-800068"	(list "46.2083,0" "46.1204,2.1120" "41.9549,1.7646" "41.9012,3.0543" "33.5221,2.4215" "33.5591,1.3251" "29.9200,1.2094" "29.9658,-0.3127" "33.6104,-0.1970" "33.6104,-1.2934" "42.0820,-1.2910" "42.0283,0" "_CLOSE"))
+;				(list 	"KO-701409"	(list "25.5829,-1.3027" "25.5366,-0.2189" "23.1623,-0.3150" "23.1033,1.2070" "25.4716,1.3032" "25.4253,2.3869" "33.4828,3.1717" "33.5542,1.8823" "35.9395,2.1473" "36.0585,0" "33.6585,0" "33.7299,-1.2894" _closedPolyline_))
+;				(list 	"KO-800068-2" (list "46.2083,0" "46.1204,2.1120" "41.9549,1.7646" "41.9012,3.0543" "33.5221,2.4215" "33.5591,1.3251" "29.9200,1.2094" "29.9658,-0.3127" "33.6104,-0.1970" "33.6104,-1.2934" "42.0820,-1.2910" "42.0283,0" _closedPolyline_))
+;				(list 	"KO-800068"	(list "46.2083,0" "46.1204,2.1120" "41.9549,1.7646" "41.9012,3.0543" "33.5221,2.4215" "33.5591,1.3251" "29.9200,1.2094" "29.9658,-0.3127" "33.6104,-0.1970" "33.6104,-1.2934" "42.0820,-1.2910" "42.0283,0" _closedPolyline_))
 ;				(list 	"KO-701372"	nil)
 ;				(list 	"KO-701382"	nil)
 ;	

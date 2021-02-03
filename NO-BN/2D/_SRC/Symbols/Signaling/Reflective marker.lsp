@@ -27,11 +27,11 @@
 	)
 	; Schematic symbol
 	(command
-		"._POLYGON" 6 "0,0" "_INSCRIBED" r
-		"._LINE" (list (- r) 0) (list r 0) ""
-		"._LINE" (list (- (/ r 2)) (* r (/ (sqrt 3) 2))) (list (/ r 2) (- (* r (/ (sqrt 3) 2)))) ""
-		"._LINE" (list (/ r 2) (* r (/ (sqrt 3) 2))) (list (- (/ r 2)) (- (* r (/ (sqrt 3) 2)))) ""
-		"._MOVE" "_ALL" "" "0,0" (list 0 (* r (/ (sqrt 3) 2)))
+		"._POLYGON" 6 _origo_ "_INSCRIBED" r
+		_LINE_ (list (- r) 0) (list r 0) _ENTER_
+		_LINE_ (list (- (/ r 2)) (* r (/ (sqrt 3) 2))) (list (/ r 2) (- (* r (/ (sqrt 3) 2)))) _ENTER_
+		_LINE_ (list (/ r 2) (* r (/ (sqrt 3) 2))) (list (- (/ r 2)) (- (* r (/ (sqrt 3) 2)))) _ENTER_
+		_MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (* r (/ (sqrt 3) 2)))
 	)
 	(addDescriptionBelowOrigo description r)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -50,15 +50,15 @@
 	)
 	; Schematic symbol
 	(command ; half of hexagon (three triangles forming half of a 6-cell hexagon)
-		"._LINE"
+		_LINE_
 			(list (- r) 0) (list r 0)
 			(list (/ r 2) (- (* r (/ (sqrt 3) 2))))
 			(list (- (/ r 2)) (- (* r (/ (sqrt 3) 2))))
 			(list (- r) 0) 
-			""
-		"._LINE" "0,0" (list (- (/ r 2)) (- (* r (/ (sqrt 3) 2)))) ""
-		"._LINE" "0,0"(list (/ r 2) (- (* r (/ (sqrt 3) 2)))) ""
-		"._MOVE" "_ALL" "" "0,0" (list 0 (* r (/ (sqrt 3) 2)))
+			_ENTER_
+		_LINE_ _origo_ (list (- (/ r 2)) (- (* r (/ (sqrt 3) 2)))) _ENTER_
+		_LINE_ _origo_(list (/ r 2) (- (* r (/ (sqrt 3) 2)))) _ENTER_
+		_MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (* r (/ (sqrt 3) 2)))
 	)
 	(addDescriptionBelowOrigo description r)
 	(createSchematicBlockFromCurrentGraphics blockName)

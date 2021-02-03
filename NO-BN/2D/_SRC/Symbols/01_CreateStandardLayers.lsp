@@ -288,11 +288,11 @@
 	;--------------
 	
 	; General / common layers
-	;(createLayer layer_Zero) - Exists already - and does not terminate the -LAYER _D dialog correctly, due to existing / nonexisting description - CLFEY didn't figure this out :-(
-	; (command "._LAYER" "_C" (nth 1 layer_Zero) "") ; Change color for layer zero (can't be the current layer when this is done)
-	; (command "._LAYER" "_D" (nth 2 layer_Zero) "") ; Change description for layer zero - no extra ENTER since description was void to start with - FAILS IF NON-VOID
+	; (createLayer layer_Zero) - Exists already - and does not terminate the -LAYER _D dialog correctly, due to existing / nonexisting description - CLFEY didn't figure this out :-(
+	; (command _LAYER_ _colorizeLayer_ (nth 1 layer_Zero) _ENTER_) ; Change color for layer zero (can't be the current layer when this is done)
+	; (command _LAYER_ _describeLayer_ (nth 2 layer_Zero) _ENTER_) ; Change description for layer zero - no extra ENTER since description was void to start with - FAILS IF NON-VOID
 	
-	;(createLayer layer_Defpoints) ; This one is also problematiqu (fails) when debugging and the lauyer already exists :-(
+	;(createLayer layer_Defpoints) ; This one is also problematic (it fails) when debugging and the layer already exists :-(
 	
 	(createLayer layer_UnknownLayerNameRequested)
 	(createLayer layer_InsertionPoint)

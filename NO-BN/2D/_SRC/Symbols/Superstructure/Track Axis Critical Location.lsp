@@ -24,6 +24,6 @@
 		blockName "NO-BN-2D-JBTOB-TRACK-AXIS-CRITICAL-LOCATION"
 		sideLength 1.5
 	)
-	(command "._LINE" (list 0 (- sideLength)) (list 0 sideLength) "" )
+	(command _LINE_ (list 0 (- sideLength)) (list 0 sideLength) _ENTER_ )
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

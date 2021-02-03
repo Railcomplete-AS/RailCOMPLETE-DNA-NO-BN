@@ -79,24 +79,24 @@
 ;
 ;	; 'command' executes AutoCAD commands. This is where the actual graphics for the sign is constructed. First line constructs a rectangle with a corner in (0,0) and (2,2)
 ;	; draws multiple polylines by calling the autoCAD command PLINE. This is where the arrow is constructed, pointing up, centered at origo.
-;	; "" gives 'enter', which ends the polyline. This has drawn the "bottom half" of the arrow.
-;	; At the end, we mirror the arrow halves. _LAST + "" selects the last object drawn, in this case the polyline. 
-;	; The two points defines the mirror axis. "_NO" mirrors without deleting the base object being mirrored.
+;	; _ENTER_ gives 'enter', which ends the polyline. This has drawn the "bottom half" of the arrow.
+;	; At the end, we mirror the arrow halves. _LAST + _ENTER_ selects the last object drawn, in this case the polyline. 
+;	; The two points define the mirror axis. _keepMirrorSource_ mirrors without deleting the base object being mirrored.
 ;
 ;	 ; Surrounding box:
-;	(command "._RECTANGLE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+;	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
 ;
 ;	 ; Arrow pointing straight up:
 ;	 (setq	
 ;	 (command
-;		"._PLINE" 
+;		_POLYLINE_ 
 ;			(list 0 (* 0.45 y))
 ;			(list (* 0.45 x) 0)
 ;			(list (* 0.10 x) 0)
 ;			(list (* 0.10 x) (* -0.45 y))
 ;			(list 0 (* -0.45 y))
-;			""					
-;		"._MIRROR" "_LAST" "" "0,0" "0,1" "_NO"
+;			_ENTER_					
+;		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 ;	)
 ;	(if (= variation "E35-STOPPSKILT")
 ;		(drawHatchFromPoint 0.02 (list (* 0.45 x) (* 0.45 y)) 0 0)
@@ -104,13 +104,13 @@
 ;
 ;	(cond 
 ;		((= dir "HSIDE")			 					;<-- checks if direction is "VSIDE" (left) and rotates into right orientation
-;			(command "._ROTATE" "_ALL" "" "0,0" "90") ; rotate box with arrow 90 deg CW, now arrow points towards the left
+;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate box with arrow 90 deg CW, now arrow points towards the left
 ;		)
 ;		((= dir "VSIDE")			 					;<-- checks if direction is "VSIDE" (left) and rotates into right orientation
-;			(command "._ROTATE" "_ALL" "" "0,0" "-90") ; rotate box with arrow 90 deg CCW, now arrow points towards the right
+;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate box with arrow 90 deg CCW, now arrow points towards the right
 ;		)
 ;		((= dir "OVER")
-;			(command "._ROTATE" "_ALL" "" "0,0" "180") ; rotate box with arrow 180 deg, now arrow points down
+;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle180_) ; rotate box with arrow 180 deg, now arrow points down
 ;		)
 ;	)
 ;
@@ -118,16 +118,16 @@
 ;	(if (= mounting "AAK")
 ;		(progn
 ;			(command
-;				"._MOVE" "_ALL" "" (list 0 (+ (/ y 2) yokePole)) "0,0" ; move down by half of surrounding box plus short pole
-;				"._LINE" "0,0" (list 0 (- yokePole)) "" ; add suspension pole from yoke
+;				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origo_ ; move down by half of surrounding box plus short pole
+;				_LINE_ _origo_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
 ;			)
 ;		)
 ;		(progn
-;			(command "._MOVE" "_ALL" "" "0,0" (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-;			(command "._ROTATE" "_ALL" "" "0,0" "-90") ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
+;			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
+;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
 ;			(drawLyingPole 0 pole)
 ;			(drawLyingHsBase)
-;			(command "._ROTATE" "_ALL" "" "0,0" "90") ; rotate back to upright orientation
+;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 ;		)
 ;	)
 ;	(createSchematicBlockFromCurrentGraphics blockName)
@@ -152,27 +152,27 @@
 	)
 	
 	; Surrounding box:
-	(command "._RECTANGLE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
 	
 	; Level Crossing symbol:
 	(command
-		"._RECTANGLE" (list (* -0.3 x) (* -0.4 y)) (list (* 0.30 x) (* -0.35 y)) 	; 'base'
-		"._RECTANGLE" (list (* -0.05 x) (* -0.35 y)) (list (* 0.05 x) (* 0.40 y))	; 'pole'
-		"._RECTANGLE" (list (* -0.30 x) (* 0.24 y)) (list (* 0.30 x) (* 0.26 y))	; 'arm1'...
-		"._ROTATE" "_LAST" "" (list 0 (* 0.25 y)) 30								; rotate arm1 by 30 deg CW
-		"._MIRROR" "_LAST" "" (list 0 (* 0.25 y)) (list 1 (* 0.25 y)) "_NO"			; mirror to make arm2
+		_RECTANGLE_ (list (* -0.3 x) (* -0.4 y)) (list (* 0.30 x) (* -0.35 y)) 	; 'base'
+		_RECTANGLE_ (list (* -0.05 x) (* -0.35 y)) (list (* 0.05 x) (* 0.40 y))	; 'pole'
+		_RECTANGLE_ (list (* -0.30 x) (* 0.24 y)) (list (* 0.30 x) (* 0.26 y))	; 'arm1'...
+		_ROTATE_ _lastSelection_ _ENTER_ (list 0 (* 0.25 y)) _angle30_							; rotate arm1 by 30 deg CW
+		_MIRROR_ _lastSelection_ _ENTER_ (list 0 (* 0.25 y)) (list 1 (* 0.25 y)) _keepMirrorSource_	; mirror to make arm2
 	)
 
 	; Add captions below yoke mount / above mast mount;
 	(if (= mounting "AAK")
 		(if (= distantSignal "FORSIGNAL")
-			(addText "PLO-Fs" (list 0 (* -0.55 y)) 1 0 "iso" "_TC") ; below surrounding box
-			(addText "PLO" (list 0 (* -0.55 y)) 1 0 "iso" "_TC") ; below surrounding box
+			(addText "PLO-Fs" (list 0 (* -0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _topCenter_) ; below surrounding box
+			(addText "PLO" (list 0 (* -0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _topCenter_) ; below surrounding box
 		)
 	;else
 		(if (= distantSignal "FORSIGNAL")
-			(addText "PLO-Fs" (list 0 (* 0.55 y)) 1 0 "iso" "_BC") ; above surrounding box
-			(addText "PLO" (list 0 (* 0.55 y)) 1 0 "iso" "_BC") ; above surrounding box
+			(addText "PLO-Fs" (list 0 (* 0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _BottomCenter_) ; above surrounding box
+			(addText "PLO" (list 0 (* 0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _BottomCenter_) ; above surrounding box
 		)
 	)
 
@@ -180,16 +180,16 @@
 	(if (= mounting "AAK")
 		(progn
 			(command
-				"._MOVE" "_ALL" "" (list 0 (+ (/ y 2) yokePole)) "0,0" ; move down by half of surrounding box plus short pole
-				"._LINE" "0,0" (list 0 (- yokePole)) "" ; add suspension pole from yoke
+				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origo_ ; move down by half of surrounding box plus short pole
+				_LINE_ _origo_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
 			)
 		)
 		(progn
-			(command "._MOVE" "_ALL" "" "0,0" (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-			(command "._ROTATE" "_ALL" "" "0,0" "-90") ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
+			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
 			(drawLyingPole 0 pole)
 			(drawLyingHsBase)
-			(command "._ROTATE" "_ALL" "" "0,0" "90") ; rotate back to upright orientation
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -212,17 +212,17 @@
 	)
 	
 	; Surrounding box:
-	(command "._RECTANGLE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
 	
 	; Text 'SH' for 'shunting':
-	(addMText "SH" "0,0" txtHeight 3 0 "iso" "_MC")
+	(addMText "SH" _origo_ txtHeight 3 0 _rcTextStyle_ _middleCenter_)
 
 	(if (= beginOrEnd "END")
 		; Add three inclined 'slash' lines (symbol is drawn upright here)
 		(command
-			"._LINE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)) "" ; Diagonal
-			"._LINE" (list (/ x -2) (/ y -3)) (list (/ x 3) (/ y 2)) "" ; Above diagonal
-			"._LINE" (list (/ x -3) (/ y -2)) (list (/ x 2) (/ y 3)) "" ; Below diagonal
+			_LINE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)) _ENTER_ ; Diagonal
+			_LINE_ (list (/ x -2) (/ y -3)) (list (/ x 3) (/ y 2)) _ENTER_ ; Above diagonal
+			_LINE_ (list (/ x -3) (/ y -2)) (list (/ x 2) (/ y 3)) _ENTER_ ; Below diagonal
 		)
 	)
 
@@ -230,16 +230,16 @@
 	(if (= mounting "AAK")
 		(progn
 			(command
-				"._MOVE" "_ALL" "" (list 0 (+ (/ y 2) yokePole)) "0,0" ; move down by half of surrounding box plus short pole
-				"._LINE" "0,0" (list 0 (- yokePole)) "" ; add suspension pole from yoke
+				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origo_ ; move down by half of surrounding box plus short pole
+				_LINE_ _origo_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
 			)
 		)
 		(progn
-			(command "._MOVE" "_ALL" "" "0,0" (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-			(command "._ROTATE" "_ALL" "" "0,0" "-90") ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
+			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
 			(drawLyingPole 0 pole)
 			(drawLyingHsBase)
-			(command "._ROTATE" "_ALL" "" "0,0" "90") ; rotate back to upright orientation
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -261,7 +261,7 @@
 	)
 	
 	; Surrounding box:
-	(command "._RECTANGLE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
 
 	;Draw a shunting signal symbol (for European style right-side driving)
 	(command
@@ -273,14 +273,19 @@
 			ptlm (list 0 (+ yoffs (/ y -4))) ; Point lower midpoint
 			ptbm (list 0 (+ yoffs (/ y -2))) ; Point bottom of pole midpoint
 		)
-		"._PLINE" ptul ptll ptlr "_ARC" "DI" 90 ptul ""
-		"._PLINE" ptlm ptbm ""
+		_POLYLINE_ 
+			ptul ptll ptlr 
+			 _setPolylineArcMode_ 
+			 _setPolylineArcDirection_ _angle90_
+			 ptul
+			 _ENTER_
+		_POLYLINE_ ptlm ptbm _ENTER_
 	)
 	(if (= beginOrEnd "END")
 		(command ; Add three inclined 'slash' lines:
-			"._LINE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)) "" ; Diagonal
-			"._LINE" (list (/ x -2) (/ y -3)) (list (/ x 3) (/ y 2)) "" ; Above diagonal
-			"._LINE" (list (/ x -3) (/ y -2)) (list (/ x 2) (/ y 3)) "" ; Below diagonal
+			_LINE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)) _ENTER_ ; Diagonal
+			_LINE_ (list (/ x -2) (/ y -3)) (list (/ x 3) (/ y 2)) _ENTER_ ; Above diagonal
+			_LINE_ (list (/ x -3) (/ y -2)) (list (/ x 2) (/ y 3)) _ENTER_ ; Below diagonal
 		)
 	)
 
@@ -288,16 +293,16 @@
 	(if (= mounting "AAK")
 		(progn
 			(command
-				"._MOVE" "_ALL" "" (list 0 (+ (/ y 2) yokePole)) "0,0" ; move down by half of surrounding box plus short pole
-				"._LINE" "0,0" (list 0 (- yokePole)) "" ; add suspension pole from yoke
+				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origo_ ; move down by half of surrounding box plus short pole
+				_LINE_ _origo_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
 			)
 		)
 		(progn
-			(command "._MOVE" "_ALL" "" "0,0" (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-			(command "._ROTATE" "_ALL" "" "0,0" "-90") ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
+			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
 			(drawLyingPole 0 pole)
 			(drawLyingHsBase)
-			(command "._ROTATE" "_ALL" "" "0,0" "90") ; rotate back to upright orientation
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 		)
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -322,15 +327,15 @@
 	)
 
 	; Surrounding box:
-	(command "._RECTANGLE" (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
 
 	; Add "LT ETCS" inside a circle:
-	;intentionally omitted: 		(command "._CIRCLE" "0,0" (* (/ 8.0 9.0) x) 
-	(addText "LT" (list 0 (* 0.25 y)) 1.8 0 "iso" "_MC")
-	(addText "ETCS" (list 0 (* -0.25 y)) 1.8 0 "iso" "_MC")
+	;intentionally omitted: 		(command _CIRCLE_ _origo_ (* (/ 8.0 9.0) x) 
+	(addText "LT" (list 0 (* 0.25 y)) 1.8 0 _rcTextStyle_ _middleCenter_)
+	(addText "ETCS" (list 0 (* -0.25 y)) 1.8 0 _rcTextStyle_ _middleCenter_)
 	
 	; Epilogue:
-	(command "._MOVE" "_ALL" "" "0,0" (list 0 (/ y 2))) ; move up by half of surrounding box, board insertion point is middle lower side
+	(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (/ y 2))) ; move up by half of surrounding box, board insertion point is middle lower side
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

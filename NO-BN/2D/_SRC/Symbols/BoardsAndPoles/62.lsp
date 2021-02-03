@@ -16,7 +16,7 @@
 ; For debugging:
 ; (62A)
 
-(defun 62A ( / blockName description ang x len offset xoff yoff pt0 pt1 pt2 pt3 pt4 pt5 pt6	pt7 pt8 pt9 )
+(defun 62A ( / blockName description angle x len offset xoff yoff pt0 pt1 pt2 pt3 pt4 pt5 pt6	pt7 pt8 pt9 )
 	; St Andrew Cross with white and black fields
 	;
 	;  ^     ^
@@ -39,10 +39,10 @@
 	)
 	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
 	(drawBoxAtPos layer_Zero x (halfOf y) (list 0 (halfOf (halfOf y))) _noWipeout_)
-	(drawHatch _filledHatch_)
-	(command "._ROTATE" "_ALL" "" _origo_ ang)
+	(drawHatch _solidHatch_)
+	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
 	(moveUp (halfOf (/ y (DDcos ang))))
-	(mirrorAboutYaxis _keep_)
+	(mirrorAboutYaxis _keepMirrorSource_)
 	(addDescriptionBelowOrigo description 0.5)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

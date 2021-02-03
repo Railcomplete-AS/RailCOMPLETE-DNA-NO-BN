@@ -38,9 +38,9 @@
 ;
 ; 5) 
 ; Subcommand names such as "Justify" in the ATTDEF command will lead to an error, write only "J" (or better, "_J") and you're fine when writing LISP.
-; This is NOT very consequently programmed in AutoLISP, since for instance '(command "._MOVE" "_ALL" "" "0,0" "0,1")' (move everything right by 1 unit) 
-; accepts both the unique abbreviation "AL" ("_AL") and the full text "ALL" ("_ALL"). 
-; But (command "._ATTDEF" "" "tagname" "prompt" "default_text" "Justify" "_MC" "0,0" 3.5 0) (middle center adjustment at (0,0) with 3.5 high letters, 
+; This is NOT very consequently programmed in AutoLISP, since for instance '(command _MOVE_ _selectAll_ _ENTER_ "0,0" "0,1")' (move everything right by 1 unit) 
+; accepts both the unique abbreviation "AL" ("_AL") and the full text "ALL" (_selectAll_). 
+; But (command "._ATTDEF" _ENTER_ "tagname" "prompt" "default_text" "Justify" _middleCenter_ "0,0" 3.5 0) (middle center adjustment at (0,0) with 3.5 high letters, 
 ; 0 deg rotation) does NOT work. The ATTDEF command requires you to use ONLY the letters that are highlighted when using the command-line version 
 ; command, i.e. "J" ("_J") instead of "Justify" ("_Justify"). Same goes for '"ARC" "CE"...' which works, but '"ARC" "CEnter"...' does NOT work.
 ;
@@ -89,12 +89,12 @@
 		(calledFromVlide
 			; non-nil if called from AutoCAD's Visual Lisp Integrated Development Environment
 			(step "Running under AutoCAD VLIDE...")
-			(command "._BCLOSE" "") ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
+			(command "._BCLOSE" _ENTER_) ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
 			(C:LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
 		) 
 		(calledFromBlade ; non-nil if called from BricsCAD Lisp Advanced Development Environment
 			(step "Running under BricsCAD BLADE...")
-			(command "._BCLOSE" "") ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
+			(command "._BCLOSE" _ENTER_) ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
 			(C:LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
 		) ; Do nothing if called from batch file...
 		(T 
@@ -107,11 +107,11 @@
 	(setvar 'CMDECHO 0) ; maximum speed, minimum verbosity
 	(setvar 'OSMODE 0) ; Otherwise LINE and other commands will produce bogus results, according to search on 'acad silent console mode'.
 	(command 
-		"._LAYER"
-			"_Color" "white" "0"			; Set layer zero color to White
-			"_New" "Defpoints"				; Create Defpoints layer, Yellow / No_plot
-			"_Color" "Yellow" "Defpoints"
-			"_Plot" "_NO" "Defpoints" ""
+		_LAYER_
+			_colorizeLayer_ _colorWhite_ "0"
+			_createNewLayer_ "Defpoints"
+			_colorizeLayer_ _colorYellow_ "Defpoints"
+			_plottability_ _isNotPlottable_ "Defpoints" _ENTER_
 	)
 	(step "Purge") (purgeAll)
 	(step "Set CAD defaults") (setCadSystemDefaults)
@@ -139,11 +139,11 @@
 	
 	; Store (as the name of two dummy blocks) the number of blocks generated (AutoCAD doesn't count them for you):
 	(step "Storing the number of generated 2D schematic and scaled symbols as the names of two dummy blocks.")
-	(command "._RECTANGLE" "-1,-1" "1,1" "") ; just add something to look at...
+	(command _RECTANGLE_ "-1,-1" "1,1" _ENTER_) ; just add something to look at...
 	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Schematic_Blocks__" (rtos nSchematicBlocks _decimal_ 0)))
-	(command "._RECTANGLE" "-1,-1" "1,1" "") ; just add something to look at...
-	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Annotative_Blocks___" (rtos nAnnotativeBlocks _decimal_ 0)))
-	(command "._RECTANGLE" "-1,-1" "1,1" "") ; just add something to look at...
+	(command _RECTANGLE_ "-1,-1" "1,1" _ENTER_) ; just add something to look at...
+	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_annotative_Blocks___" (rtos nAnnotativeBlocks _decimal_ 0)))
+	(command _RECTANGLE_ "-1,-1" "1,1" _ENTER_) ; just add something to look at...
 	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Metric_Blocks___" (rtos nMetricBlocks _decimal_ 0)))
 
 	; *** The file name "2D.dwg" is expected by other batch files taking care of the results:
@@ -155,22 +155,25 @@
 
 
 
-(defun SAVE-RESULT ( nn / fname )
+(defun SAVE-RESULT ( nn / fname tmpFiledia )
 	(if calledFromVlide
 		(setq fname (strcat rootFolder "\\" nn))
 		(setq fname (strcat (getvar "dwgprefix") nn))
 	)
+	(setq tmpFiledia (getvar 'FILEDIA))
 	(setvar 'FILEDIA 0) ; suppress window dialog when saving drawing
 	(if (findfile fname)
-		(command "._SAVEAS" "2018" fname "_YES") ; File exists already - accept to overwrite existing file
+		(command "._SAVEAS" "2018" fname _overwriteFile_) ; File exists already - accept to overwrite existing file
 	;else
 		(command "._SAVEAS" "2018" fname) ; File does not exist - just save it
 	)
 	(if calledFromVlide
 		(step "Cannot close current file from this VLIDE script since the VLIDE depends on it. Close manually and exit AutoCAD.")
+	;else
 		(progn
 			(step "Closing file...\n")
 			(command "._CLOSE")
 		)
 	)
+	(setvar *FILEDIA tmpFiledia)
 )

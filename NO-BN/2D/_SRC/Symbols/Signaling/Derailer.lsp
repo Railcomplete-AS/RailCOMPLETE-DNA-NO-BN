@@ -54,12 +54,12 @@
 						pt (list (+ (/ x 2) (* a1 (cos ang))) (+ (/ y 2) (* a1 (sin ang)))) ; Tip of the arrow head
 					)
 					(command ; Add one arrow
-						"._LINE" (list (- (/ x 2)) (- (/ y 2))) pt ""		; Arrow line (diagonal plus extension), pointing at quadrant I
-						"._PLINE"											; Arrow head
+						_LINE_ (list (- (/ x 2)) (- (/ y 2))) pt _ENTER_		; Arrow line (diagonal plus extension), pointing at quadrant I
+						_POLYLINE_											; Arrow head
 							(polar pt (+ (/ pi 2) ang) (/ a2 2))			
 							(polar pt (+ (/ pi 2) ang) (/ a2 -2))
 							(polar pt ang a2)
-							"_CLOSE"
+							_closedPolyline_
 					)
 					(drawHatch _denseHatch_)										; Filled arrow head
 				)
@@ -76,22 +76,22 @@
 						pt (list (+ 0 (* a1 (cos ang))) (+ (/ y 2) (* a1 (sin ang)))) ; Tip of first arrow
 					)
 					(command ; First arrow of two
-						"._LINE" (list (- (/ x 2)) (- (/ y 2))) pt ""
-						"._PLINE" ; First arrow
+						_LINE_ (list (- (/ x 2)) (- (/ y 2))) pt _ENTER_
+						_POLYLINE_ ; First arrow
 							(polar pt (+ (/ pi 2) ang) (/ a2 2))
 							(polar pt (+ (/ pi 2) ang) (/ a2 -2))
 							(polar pt ang a2)
-							"_CLOSE"
+							_closedPolyline_
 					)
 					(drawHatch _denseHatch_)
 					(setq pt (list (+ (/ x 2) (* a1 (cos ang))) (+ (/ y 2) (* a1 (sin ang))))) ; Tip of second arrow
 					(command ; Second arrow
-						"._LINE" (list 0 (- (/ y 2))) pt ""
-						"._PLINE" 
+						_LINE_ (list 0 (- (/ y 2))) pt _ENTER_
+						_POLYLINE_ 
 							(polar pt (+ (/ pi 2) ang) (/ a2 2))
 							(polar pt (+ (/ pi 2) ang) (/ a2 -2))
 							(polar pt ang a2)
-							"_CLOSE"
+							_closedPolyline_
 					)
 					(drawHatch _denseHatch_)
 				)
@@ -99,7 +99,7 @@
 		)
 	)
 	; Position the derailer in the specified quadrant, add text, then create blocks
-	(moveToQuadrant quadrant "_ALL"); Move to specified quadrant
+	(moveToQuadrant quadrant _selectAll_); Move to specified quadrant
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

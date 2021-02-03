@@ -56,8 +56,8 @@
 	(command "._ARC" p2 p6 p10)
 	; Wipeout between the two curved bars to remove the insulated part of wire under the line insulator:
 	(setLayer layer_CatenaryIsolator_Wipeout)
-	(command "._PLINE" p3 p4 p6 p8 p7 p5 p3 _closed_)
-	(command "._WIPEOUT" "_POLYLINE" "_LAST" "" "_YES") ; delete source shape after use
+	(command _POLYLINE_ p3 p4 p6 p8 p7 p5 p3 _closedPolyline_)
+	(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -95,8 +95,8 @@
 	(drawLine layer_Zero p2 p4)
 	; Wipeout to remove the insulated part of wire under the line insulator (no box!)
 	(setLayer layer_CatenaryIsolator_Wipeout)
-	(command "._PLINE" p5 p6 p8 p7 _closed_)
-	(command "._WIPEOUT" "_POLYLINE" "_LAST" "" "_YES") ; delete source shape after use
+	(command _POLYLINE_ p5 p6 p8 p7 _closedPolyline_)
+	(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

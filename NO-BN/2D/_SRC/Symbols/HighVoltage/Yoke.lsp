@@ -42,7 +42,7 @@
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawLine layer_Zero (list 0 0) (list 0 (- len)))
+	(drawLine layer_Zero _origo_ (list 0 (- len)))
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 

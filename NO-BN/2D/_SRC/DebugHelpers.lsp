@@ -34,8 +34,8 @@
 	(princ (strcat "\n\n" "VLIDE shortcuts:\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+Shift+C: AutoCAD (Command) mode\n    F6: Console window")) (prin1)
 	(princ (strcat "\n\n" "(mkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (mkAll)")) (prin1)
 	(princ (strcat "\n\n" "(ql)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (ql folderName)")) (prin1)
-	(princ (strcat "\n\n" "(loadAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (loadAll)")) (prin1)
-	(princ (strcat "\n\n" "(loadFolder2)\n    Loads all .lsp files in specified folder.\n    Usage: (loadfolder2 folderName)")) (prin1)
+	(princ (strcat "\n\n" "(ldAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (ldAll)")) (prin1)
+	(princ (strcat "\n\n" "(ldFolder)\n    Loads all .lsp files in specified folder.\n    Usage: (ldFolder folderName)")) (prin1)
 	(princ (strcat "\n\n" "(dir)\n    Lists all files and folders below 'rootFolder'.\n    Usage: (dir '<folderName>') or (dir '<folderName>'\\'<subFolderName>')")) (prin1)
 	(princ (strcat "\n\n" "(init)\n    Initializes CAD system, sets constants and scale variables, creates standard layers.\n    Usage: (init)")) (prin1)
 	(princ (strcat "\n\n" "(hlp)\n    Prints the help menu\n    Usage: (hlp)")) (prin1)
@@ -64,7 +64,7 @@
 
 (defun mkAll ( / )
 	; (Re-)load everything, then run MAIN
-	(loadAll)
+	(ldAll)
 	(princ (strcat "\n\n\n==> Running MAIN() routine...\n")) (prin1)
 	(setq calledFromVlide T)	; T (true) if used under AutoCAD VLIDE debugger, otherwise set to nil
 	(setq calledFromBlade nil)	; T (true) if used under BricsCAD BLADE debugger, otherwise set to nil
@@ -73,18 +73,18 @@
 )
 
 
-(defun loadAll ( / )
+(defun ldAll ( / )
 	(setvar 'SECURELOAD 0) ; Suppress AutoCAD's asking for every Lisp file loading whether it is a trusted file.
-	(princ (strcat "\n\n================= DEBUGHELPER - LOADALL ================= \n")) (prin1)
-	(loadFolder2 (strcat rootFolder "\\" "Fonts"))
-	(loadFolder2 (strcat rootFolder "\\" "Utilities"))
-	(loadFolder2 (strcat rootFolder "\\" "Symbols"))
+	(princ (strcat "\n\n================= DEBUGHELPER - ldAll ================= \n")) (prin1)
+	(ldFolder (strcat rootFolder "\\" "Fonts"))
+	(ldFolder (strcat rootFolder "\\" "Utilities"))
+	(ldFolder (strcat rootFolder "\\" "Symbols"))
 	(princ (strcat "============================================================= \n")) (prin1)
 )
 
 
 
-(defun loadFolder2 ( folderName / x ) ; 'Manual' lambda function...
+(defun ldFolder ( folderName / x ) ; 'Manual' lambda function...
 	(princ (strcat "Loading all files in folder " folderName "...\n"))
 	(if (findfile folderName)
 		(progn
@@ -110,7 +110,7 @@
 	)
 )
 
-(defun ql ( folderName / ) (loadFolder2 (strcat rootFolder "\\symbols\\" folderName)))
+(defun ql ( folderName / ) (ldFolder (strcat rootFolder "\\symbols\\" folderName)))
 
 
 (defun dir ( folderName / )
@@ -124,14 +124,15 @@
 
 
 (defun init ( / )
+	(ldAll)
 	(setvar 'CMDECHO 0)
 	(setvar 'OSMODE 0) ; Otherwise LINE and other commands will produce bogus results, according to search on 'acad silent console mode'.
 	(command 
-		"._LAYER"
-			"_Color" "white" "0"			; Set layer zero color to white
-			"_New" "Defpoints"				; Create Defpoints layer, white / No_plot
-			"_Color" "white" "Defpoints"
-			"_Plot" "_NO" "Defpoints" ""
+		_LAYER_
+			_colorizeLayer_ _colorWhite_ "0"			; Set layer zero color to white (special CAD layer name: Cannot be deleted / purged)
+			_createNewLayer_ "Defpoints"				; then create Defpoints layer (special CAD layer name: auto-exempt during plotting to PDF or paper)
+			_colorizeLayer_ _colorWhite_ "Defpoints"
+			_plottability_ _isNotPlottable_ "Defpoints" _ENTER_
 	)
 	(purgeAll)
 	(setCadSystemDefaults)
@@ -144,5 +145,3 @@
 	(setq nAnnotativeBlocks 0)
 	(setq nMetricBlocks 0)
 )
-
-;  (loadAll)

@@ -24,20 +24,29 @@
 		radiusLarge 0.4
 	)
 	(command
-		"._PLINE"
+		_POLYLINE_
 			(list 0 (- radiusWire)) 
-			"_ARC" "_CE" "0,0" "_ANGLE" "93"
-			"_RADIUS" radiusSmall "_ANGLE" "64" "122"
-			"_LINE" "@3.075<154"
-			"_ARC" "_RADIUS" radiusLarge "_ANGLE" "-104" "102"
-			"_LINE" "@2.092<50"
-			"_ARC" "_RADIUS" radiusSmall "_ANGLE" "84" "91.80051135"
-				"_CE" "0,0" (list 0 radiusWire) 
-			""
+			_setPolylineArcMode_
+			_setPolylineArcCenter_ _origo_
+			_setPolylineArcAngle_ "93"
+			_setPolylineArcRadius_ radiusSmall
+			_setPolylineArcAngle_ "64" "122"
+			_setPolylineLineMode_
+			"@3.075<154"
+			_setPolylineArcMode_
+			_setPolylineArcRadius_ radiusLarge 
+			_setPolylineArcAngle_ "-104" "102"
+			_setPolylineLineMode_
+			"@2.092<50"
+			_setPolylineArcMode_
+			_setPolylineArcRadius_ radiusSmall 
+			_setPolylineArcAngle_ "84" "91.80051135"
+			_setPolylineArcCenter_ _origo_ (list 0 radiusWire) 
+			_ENTER_
 	)
-	(command "._MIRROR" "_ALL" "" "0,0" "0,1" "_NO")
-  	(drawHatchFromPoint 0.4 (list 0 0) 0 0)
-	(command "._SCALE" "_ALL" "" (list 0 0) "0.2")
+	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
+  	(drawHatchFromPoint 0.4 _origo_ 0 0)
+	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _fifth_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName
 )

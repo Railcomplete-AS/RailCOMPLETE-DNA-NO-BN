@@ -116,21 +116,21 @@
 		lowerPole 2.5
 		upperPole 2.0
 	)
-	(command "._CIRCLE" (list r 0) r)
-	(command "._CIRCLE" (list (* 3 r) 0) r)
+	(command _CIRCLE_ (list r 0) r)
+	(command _CIRCLE_ (list (* 3 r) 0) r)
 	(if yokeMounted
 		(progn
 			(setq blockName (strcat blockName "-AAK"))
-			(command "._MOVE" "_ALL" "" "_Displacement" (list (- (+ (* 4 r) upperPole)) 0))
+			(command _MOVE_ _selectAll_ _ENTER_ _setMoveDisplacement_ (list (- (+ (* 4 r) upperPole)) 0))
 			(drawLyingPole 0 (- upperPole))
 		)
 		(progn
-			(command "._MOVE" "_ALL" "" "_Displacement" (list (+ lowerPole upperPole) 0))
+			(command _MOVE_ _selectAll_ _ENTER_ _setMoveDisplacement_ (list (+ lowerPole upperPole) 0))
 			(drawLyingPole 0 (+ lowerPole upperPole))
 			(drawLyingTsBase)
 		)
 	)
-	(command "._ROTATE" "_ALL" "" "0,0" "90")
+	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 )
 
 
@@ -144,30 +144,30 @@
 		lat (/ sidewaysSeparation 2.0)		; Lateral displacement of forked arms (from center pole)
 	)
 	(command
-		"._LINE" ; lower pole + left part of split mast
-			(list 0 0)
+		_LINE_ ; lower pole + left part of split mast
+			_origo_
 			(list lowerPole 0)
 			(list lowerPole lat)
 			(list (+ lowerPole upperPole) lat)
-			""
-		"._LINE" ; right part of split mast
+			_ENTER_
+		_LINE_ ; right part of split mast
 			(list lowerPole 0)
 			(list lowerPole (- lat))
 			(list (+ lowerPole upperPole) (- lat))
-			""
+			_ENTER_
 	)
-	(command "._CIRCLE" (list (+ lowerPole upperPole r) lat) r)				; lower left lantern
-	(command "._CIRCLE" (list (+ lowerPole upperPole (* 3 r)) lat) r)		; upper left lantern
-	(command "._CIRCLE" (list (+ lowerPole upperPole r) (- lat)) r)			; lower right lantern
-	(command "._CIRCLE" (list (+ lowerPole upperPole (* 3 r)) (- lat)) r)	; upper right lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole r) lat) r)				; lower left lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole (* 3 r)) lat) r)		; upper left lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole r) (- lat)) r)			; lower right lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole (* 3 r)) (- lat)) r)	; upper right lantern
 	(if yokeMounted
 		(progn ; rotate CW
 			(setq blockName (strcat blockName "-AAK"))
-			(command "._ROTATE" "_ALL" "" "0,0" "-90")
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_)
 		)
 		(progn ; add base, rotate CCW
 			(drawLyingHsBase)
-			(command "._ROTATE" "_ALL" "" "0,0" "90")
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 		)
 	)
 )
@@ -183,16 +183,16 @@
 		upperPole 2.0
 	)
 	(command
-		"._LINE"
-			(list 0 0)
+		_LINE_
+			_origo_
 			(list knee 0)
 			(list knee upperPole)
-			""
+			_ENTER_
 	)
-	(command "._CIRCLE" (list knee (+ upperPole r)) r)			; lower lantern
-	(command "._CIRCLE" (list knee (+ upperPole (* 3 r))) r)	; upper lantern
+	(command _CIRCLE_ (list knee (+ upperPole r)) r)			; lower lantern
+	(command _CIRCLE_ (list knee (+ upperPole (* 3 r))) r)	; upper lantern
 	(if (= side "VSIDE")	
-		(command "._MIRROR" "_ALL" "" "0,0" "0,1" "_YES")
+		(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
 	)
 )
 
@@ -208,26 +208,26 @@
 		lat (/ sidewaysSeparation 2.0)		; Lateral displacement of forked arms (from center pole)
 	)
 	(command
-		"._LINE" ; Lower pole + left part of split mast
-			(list 0 0)
+		_LINE_ ; Lower pole + left part of split mast
+			_origo_
 			(list lowerPole 0)
 			(list lowerPole lat)
 			(list (+ lowerPole upperPole) lat)
-			""
-		"._LINE" ; right part of split mast
+			_ENTER_
+		_LINE_ ; right part of split mast
 			(list lowerPole 0)
 			(list lowerPole (- lat))
 			(list (+ lowerPole upperPole) (- lat))
-			""
+			_ENTER_
 	)
-	(command "._CIRCLE" (list (+ lowerPole upperPole r) lat) r)				; lower left lantern
-	(command "._CIRCLE" (list (+ lowerPole upperPole (* 3 r)) lat) r)		; upper left lantern
-	(command "._CIRCLE" (list (+ lowerPole upperPole r) (- lat)) r)			; lower right lantern
-	(command "._CIRCLE" (list (+ lowerPole upperPole (* 3 r)) (- lat)) r)	; upper right lantern
-	(command "._MOVE" "_ALL" "" "_Displacement" (list 0 (+ lat knee)))		; Move "left"
-	(command "._LINE" "0,0" (list 0 (+ knee lat)) "")  						; Add horizontal "knee"
+	(command _CIRCLE_ (list (+ lowerPole upperPole r) lat) r)				; lower left lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole (* 3 r)) lat) r)		; upper left lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole r) (- lat)) r)			; lower right lantern
+	(command _CIRCLE_ (list (+ lowerPole upperPole (* 3 r)) (- lat)) r)	; upper right lantern
+	(command _MOVE_ _selectAll_ _ENTER_ "_Displacement" (list 0 (+ lat knee)))		; Move "left"
+	(command _LINE_ _origo_ (list 0 (+ knee lat)) _ENTER_)  						; Add horizontal "knee"
 	(if (= side "HSIDE")
-		(command "._MIRROR" "_ALL" "" "0,0" "1,0" "_YES")
+		(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
 	)
-	(command "._ROTATE" "_ALL" "" "0,0" "90")
+	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 )

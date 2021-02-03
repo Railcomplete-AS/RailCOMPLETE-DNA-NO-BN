@@ -26,7 +26,7 @@
 
 (defun VEISIGNAL ( variation yokeMounted / )
 	(setq 
-		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-" variation (if (= yokeMounted nil) "" "-AAK"))
+		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-" variation (if (= yokeMounted nil) _ENTER_ "-AAK"))
 		description "VEISIGNAL (SIGNAL MOT VEITRAFIKK)"
 	)
 	
@@ -95,18 +95,18 @@
 			(drawLantern (list 0 (+ r)) r)	; upper lantern, above origo
 			(command
 				; St Andrew cross at origo
-				"._LINE" (list (- x) (- y))   (list x (+ y)) ""
-				"._LINE" (list (- x) (+ y))   (list x (- y)) ""
+				_LINE_ (list (- x) (- y))   (list x (+ y)) _ENTER_
+				_LINE_ (list (- x) (+ y))   (list x (- y)) _ENTER_
 			)
 			(if yokeMounted
 				(progn
-					(command "._MOVE" "_ALL" "" "0,0" (list 0 (* -2 r)))	; shift down by one lantern
+					(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (* -2 r)))	; shift down by one lantern
 					(drawVerticalPole yokePole)								; add yoke pole
-					(command "._MOVE" "_ALL" "" "0,0" (list 0 (- yokePole)))	; shift down by one yoke pole
+					(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (- yokePole)))	; shift down by one yoke pole
 				)
 			;else - upright mast
 				(progn
-					(command "._MOVE" "_ALL" "" "0,0" (list 0 (+ (* 2 r) topOfPole))) ; shift up by one lantern + pole
+					(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (* 2 r) topOfPole))) ; shift up by one lantern + pole
 					(drawVerticalPole topOfPole)
 					(drawHorizontalHsBase)
 				)
@@ -114,30 +114,30 @@
 		)
 		((= variation "VS2")
 			; Draw forked part, based at x=0
-			(command "._LINE" (list (- lat) 0) (list (+ lat) 0) "") ; horizontal line between arms
-			(command "._LINE" (list (- lat) 0) (list (- lat) upperPole) "") ; left upright arm
-			(command "._LINE" (list (+ lat) 0) (list (+ lat) upperPole) "")	; right upright arm
+			(command _LINE_ (list (- lat) 0) (list (+ lat) 0) _ENTER_) ; horizontal line between arms
+			(command _LINE_ (list (- lat) 0) (list (- lat) upperPole) _ENTER_) ; left upright arm
+			(command _LINE_ (list (+ lat) 0) (list (+ lat) upperPole) _ENTER_)	; right upright arm
 			(drawLantern (list (- lat) (+ upperPole      r )) r)
 			(drawLantern (list (- lat) (+ upperPole (* 3 r))) r)
 			(drawLantern (list (+ lat) (+ upperPole      r)) r)
 			(drawLantern (list (+ lat) (+ upperPole (* 3 r))) r)
 			(command 
 				; Left arm's St Andrew cross
-				"._LINE" (list (+ (- lat) (- x)) (+ (+ upperPole (* 2 r)) (- y)))   (list (+ (- lat) (+ x)) (+ (+ upperPole (* 2 r)) (+ y))) "" ; Left '/'
-				"._LINE" (list (+ (- lat) (- x)) (+ (+ upperPole (* 2 r)) (+ y)))   (list (+ (- lat) (+ x)) (+ (+ upperPole (* 2 r)) (- y))) "" ; Left '\'
+				_LINE_ (list (+ (- lat) (- x)) (+ (+ upperPole (* 2 r)) (- y)))   (list (+ (- lat) (+ x)) (+ (+ upperPole (* 2 r)) (+ y))) _ENTER_ ; Left '/'
+				_LINE_ (list (+ (- lat) (- x)) (+ (+ upperPole (* 2 r)) (+ y)))   (list (+ (- lat) (+ x)) (+ (+ upperPole (* 2 r)) (- y))) _ENTER_ ; Left '\'
 				; Right arm's St Andrew cross
-				"._LINE" (list (+ (+ lat) (- x)) (+ (+ upperPole (* 2 r)) (- y)))   (list (+ (+ lat) (+ x)) (+ (+ upperPole (* 2 r)) (+ y))) "" ; Right '/'
-				"._LINE" (list (+ (+ lat) (- x)) (+ (+ upperPole (* 2 r)) (+ y)))   (list (+ (+ lat) (+ x)) (+ (+ upperPole (* 2 r)) (- y))) "" ; Right '\'
+				_LINE_ (list (+ (+ lat) (- x)) (+ (+ upperPole (* 2 r)) (- y)))   (list (+ (+ lat) (+ x)) (+ (+ upperPole (* 2 r)) (+ y))) _ENTER_ ; Right '/'
+				_LINE_ (list (+ (+ lat) (- x)) (+ (+ upperPole (* 2 r)) (+ y)))   (list (+ (+ lat) (+ x)) (+ (+ upperPole (* 2 r)) (- y))) _ENTER_ ; Right '\'
 			)
 			(if yokeMounted
 				(progn
-					(command "._MIRROR" "_ALL" "" "0,0" "1,0" "_YES")		; flip down around x=0
+					(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)		; flip down around x=0
 					(drawVerticalPole yokePole)								; add yoke pole
-					(command "._MOVE" "_ALL" "" (list 0 yokePole) "0,0")	; shift down by one yoke pole
+					(command _MOVE_ _selectAll_ _ENTER_ (list 0 yokePole) _origo_)	; shift down by one yoke pole
 				)
 			;else - upright mast
 				(progn
-					(command "._MOVE" "_ALL" "" "0,0" (list 0 lowerPole)) ; shift up by one lantern + lower pole
+					(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 lowerPole)) ; shift up by one lantern + lower pole
 					(drawVerticalPole lowerPole)
 					(drawHorizontalHsBase)
 				)

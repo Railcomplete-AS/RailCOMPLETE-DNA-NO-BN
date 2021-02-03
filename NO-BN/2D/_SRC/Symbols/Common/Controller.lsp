@@ -31,11 +31,11 @@
 
 (defun drawController ( / )
 	(command
-		"._LINE" "0,-0.875" "-0.875,0" ""
-		"._LINE" "0,0.875" "-1.0607,-0.1857" ""
-		"._CIRCLE" "-1.2676,-0.3926" 0.2927
-		"._MIRROR" "_ALL" "" "0,0" "0,1" "_NO"
-		"._LINE" "0,-2.125" "0,1.075" ""
+		_LINE_ "0,-0.875" "-0.875,0" _ENTER_
+		_LINE_ "0,0.875" "-1.0607,-0.1857" _ENTER_
+		_CIRCLE_ "-1.2676,-0.3926" 0.2927
+		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
+		_LINE_ "0,-2.125" "0,1.075" _ENTER_
 	)
 )
  

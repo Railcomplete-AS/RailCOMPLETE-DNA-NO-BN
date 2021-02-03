@@ -38,7 +38,7 @@
 	(setvar 'ATTDIA 0)
 	(setvar 'ATTREQ 0)
 	(setLayer layer_Zero)
-    (command "._LINE" toungePos (strcat "@" (rtos toungeLen) ",0") "")
+    (command _LINE_ toungePos (strcat "@" (rtos toungeLen) ",0") _ENTER_)
 	(createMetricBlockFromCurrentGraphics (strcat blockName "-" side))
 	; Just one zize - "scaleless" although it is geographical and not schematic...
 )

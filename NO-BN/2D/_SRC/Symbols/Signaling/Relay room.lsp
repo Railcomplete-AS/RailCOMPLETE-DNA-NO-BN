@@ -23,7 +23,7 @@
 		y 9.0
 	)
 	; Schematic symbol
-	(command "._RECTANGLE" (list (/ x -2) 0) (list (/ x 2) y))
+	(command _RECTANGLE_ (list (/ x -2) 0) (list (/ x 2) y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol

@@ -24,8 +24,8 @@
 
 
 (defun drawMarker ( / )
-	(command "._CIRCLE" "1,1" "0.4")
-	(command "._LINE" "0,0" "0.7563,0.6828" "")
-	(command "._LINE" "0,0" "0.6828,0.7563" "")
-	(addAtt "FARGE" "Farge" "" "1,2" 0.9 0 "iso" "_MC" _lockPosition_)
+	(command _CIRCLE_ "1,1" "0.4")
+	(command _LINE_ _origo_ "0.7563,0.6828" _ENTER_)
+	(command _LINE_ _origo_ "0.6828,0.7563" _ENTER_)
+	(addAtt "FARGE" "Farge" _ENTER_ "1,2" _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 )

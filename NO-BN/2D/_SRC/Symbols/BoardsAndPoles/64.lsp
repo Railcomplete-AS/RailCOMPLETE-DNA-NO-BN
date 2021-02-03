@@ -58,38 +58,38 @@
 	)
 	; Wipeout under pole
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR TR TL _closed_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _erase_)
+	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR p12 p11 _closed_) ; Bottom shaft
+	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
-	(command "._PLINE" p11 p12 p14 p13 _closed_) ; 1
+	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
 	(drawHatch _blackHatch_) 
 
-	(command "._PLINE" p13 p14 p22 p21 _closed_)
+	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p21 p22 p24 p23 _closed_) ; 2
+	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
 	(drawHatch _blackHatch_) 
 
-	(command "._PLINE" p23 p24 p32 p31 _closed_)
+	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p31 p32 p34 p33 _closed_) ; 3
+	(command _POLYLINE_ p31 p32 p34 p33 _closedPolyline_) ; 3
 	(drawHatch _blackHatch_) 
 
-	(command "._PLINE" p33 p34 p42 p41 _closed_)
+	(command _POLYLINE_ p33 p34 p42 p41 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p41 p42 p44 p43 _closed_) ; 4
+	(command _POLYLINE_ p41 p42 p44 p43 _closedPolyline_) ; 4
 	(drawHatch _blackHatch_) 
 
-	(command "._PLINE" p43 p44 p52 p51 _closed_)
+	(command _POLYLINE_ p43 p44 p52 p51 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p51 p52 TR TL _closed_) ; 5
+	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(drawHatch _blackHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ 90 "iso" "_MC" _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -133,23 +133,23 @@
 	)
 	; Wipeout under pole
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR TR TL _closed_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _erase_)
+	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR p12 p11 _closed_) ; Bottom shaft
+	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
-	(command "._PLINE" p11 p12 p14 p13 _closed_) ; 1
+	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
 	(drawHatch _redHatch_)
 
-	(command "._PLINE" p13 p14 p22 p21 _closed_)
+	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p21 p22 TR TL _closed_) ; 2
+	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
 	(drawHatch _redHatch_)
 	
-	(addAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ 90 "iso" "_MC" _lockPosition_)
-	(addAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ -90 "iso" "_MC" _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -200,38 +200,38 @@
 	)
 	; Wipeout under pole
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR TR TL _closed_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _erase_)
+	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR p12 p11 _closed_) ; Bottom shaft
+	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
-	(command "._PLINE" p11 p12 p14 p13 _closed_) ; 1
+	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
 	(drawHatch _yellowHatch_) 
 
-	(command "._PLINE" p13 p14 p22 p21 _closed_)
+	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p21 p22 p24 p23 _closed_) ; 2
+	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
 	(drawHatch _yellowHatch_) 
 
-	(command "._PLINE" p23 p24 p32 p31 _closed_)
+	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p31 p32 p34 p33 _closed_) ; 3
+	(command _POLYLINE_ p31 p32 p34 p33 _closedPolyline_) ; 3
 	(drawHatch _yellowHatch_) 
 
-	(command "._PLINE" p33 p34 p42 p41 _closed_)
+	(command _POLYLINE_ p33 p34 p42 p41 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p41 p42 p44 p43 _closed_) ; 4
+	(command _POLYLINE_ p41 p42 p44 p43 _closedPolyline_) ; 4
 	(drawHatch _yellowHatch_) 
 
-	(command "._PLINE" p43 p44 p52 p51 _closed_)
+	(command _POLYLINE_ p43 p44 p52 p51 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p51 p52 TR TL _closed_) ; 5
+	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(drawHatch _yellowHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Gul/Hvit" t1 _th180_ 90 "iso" "_MC" _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Gul/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -275,23 +275,23 @@
 	)
 	; Wipeout under pole
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR TR TL _closed_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _erase_)
+	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR p12 p11 _closed_) ; Bottom shaft
+	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	(drawHatch _blackHatch_)
-	(command "._PLINE" p11 p12 p14 p13 _closed_) ; 1
+	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
 	(drawHatch _yellowHatch_)
 
-	(command "._PLINE" p13 p14 p22 p21 _closed_)
+	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	(drawHatch _blackHatch_)
-	(command "._PLINE" p21 p22 TR TL _closed_) ; 2
+	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
 	(drawHatch _yellowHatch_)
 	
-	(addAtt "LeftUp" "LeftUp" "Gul/svart" t1 _th180_ 90 "iso" "_MC" _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Gul/svart" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -342,38 +342,38 @@
 	)
 	; Wipeout under pole
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR TR TL _closed_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _erase_)
+	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR p12 p11 _closed_) ; Bottom shaft
+	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
-	(command "._PLINE" p11 p12 p14 p13 _closed_) ; 1
+	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
 	(drawHatch _blueHatch_) 
 
-	(command "._PLINE" p13 p14 p22 p21 _closed_)
+	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p21 p22 p24 p23 _closed_) ; 2
+	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
 	(drawHatch _blueHatch_) 
 
-	(command "._PLINE" p23 p24 p32 p31 _closed_)
+	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p31 p32 p34 p33 _closed_) ; 3
+	(command _POLYLINE_ p31 p32 p34 p33 _closedPolyline_) ; 3
 	(drawHatch _blueHatch_) 
 
-	(command "._PLINE" p33 p34 p42 p41 _closed_)
+	(command _POLYLINE_ p33 p34 p42 p41 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p41 p42 p44 p43 _closed_) ; 4
+	(command _POLYLINE_ p41 p42 p44 p43 _closedPolyline_) ; 4
 	(drawHatch _blueHatch_) 
 
-	(command "._PLINE" p43 p44 p52 p51 _closed_)
+	(command _POLYLINE_ p43 p44 p52 p51 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p51 p52 TR TL _closed_) ; 5
+	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(drawHatch _blueHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ 90 "iso" "_MC" _lockPosition_)
-	(addAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ -90 "iso" "_MC" _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -415,28 +415,28 @@
 	)
 	; Wipeout under pole
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR TR TL _closed_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _erase_)
+	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
+	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
 	(setLayer layer_Zero)
-	(command "._PLINE" BL BR p12 p11 _closed_) ; Bottom shaft
+	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
-	(command "._PLINE" p11 p12 p14 p13 _closed_) ; 1
+	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
 	(drawHatch _blackHatch_) 
 
-	(command "._PLINE" p13 p14 p22 p21 _closed_)
+	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
-	(command "._PLINE" p21 p22 p24 p23 _closed_) ; 2
+	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
 	(drawHatch _blackHatch_) 
 
-	(command "._PLINE" p23 p24 p32 p31 _closed_) ; 2
+	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_) ; 2
 	; No hatch
-	(command "._PLINE" p31 p32 TR TL _closed_) ; 3
+	(command _POLYLINE_ p31 p32 TR TL _closedPolyline_) ; 3
 	(drawHatch _blackHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ 90 "iso" "_MC" _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ -90 "iso" "_MC" _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

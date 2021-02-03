@@ -28,12 +28,12 @@
 	)
 	(setLayer layer_Zero)
 	(command
-		"._LINE" (list (* -4 radius) 0) (list (* 4 radius) 0) "" ; long horizontal line
-		"._LINE" (list 0 (* -2 radius)) (list 0 (* 2 radius)) "" ; short vertical line
-		"_ARC" "_CE" (list (* -5 radius) 0) (list (* -5 radius) (* -1 radius)) (list (* radius -5) (* 1 radius)) ; Left arc
-		"_ARC" "_CE" (list (* 5 radius) 0) (list (* 5 radius) (* 1 radius)) (list (* radius 5) (* -1 radius)) ; Right arc
-		"_ARC" "_CE" (list 0 (* -3 radius)) (list (* 1 radius) (* -3 radius)) (list (* -1 radius) (* -3 radius)) ; Bottom arc
-		"_ARC" "_CE" (list 0 (* 3 radius)) (list (* -1 radius) (* 3 radius)) (list (* 1 radius) (* 3 radius)) ; Top arc
+		_LINE_ (list (* -4 radius) 0) (list (* 4 radius) 0) _ENTER_ ; long horizontal line
+		_LINE_ (list 0 (* -2 radius)) (list 0 (* 2 radius)) _ENTER_ ; short vertical line
+		_ARC_ _setArcCenter_ (list (* -5 radius) 0) (list (* -5 radius) (* -1 radius)) (list (* radius -5) (* 1 radius)) ; Left arc
+		_ARC_ _setArcCenter_ (list (* 5 radius) 0) (list (* 5 radius) (* 1 radius)) (list (* radius 5) (* -1 radius)) ; Right arc
+		_ARC_ _setArcCenter_ (list 0 (* -3 radius)) (list (* 1 radius) (* -3 radius)) (list (* -1 radius) (* -3 radius)) ; Bottom arc
+		_ARC_ _setArcCenter_ (list 0 (* 3 radius)) (list (* -1 radius) (* 3 radius)) (list (* 1 radius) (* 3 radius)) ; Top arc
 	)
 	(addDescriptionBelowOrigo description (* 4 radius))
 	(createSchematicBlockFromCurrentGraphics blockName)
