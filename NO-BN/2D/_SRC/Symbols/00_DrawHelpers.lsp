@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; DrawHelpers.lsp
+; 00_DrawHelpers.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -114,7 +114,7 @@
 (defun drawLine ( layDef posA posB / )
 	; A line fram A to B
 	;
-	;     A-------------B
+	;     A-------B
 	;
 	(setLayer layDef)
 	(command _LINE_ posA posB _ENTER_)
@@ -123,14 +123,22 @@
 
 
 
-(defun drawStAndrewCrossAtPos ( layDef x y pos / p1 p2 p3 p4 )
+(defun drawArc (layDef posA posB posC / )
+	(setLayer layDef)
+	(command _ARC_ posA posB posC)
+	'drawArc
+)
+
+
+
+(defun drawStAndrewCrossAtPos ( layDef pos x y / p1 p2 p3 p4 )
 	; The two diagonals in a x-by-y rectangle centered at pos
 	;	
-	;     TL'       TR' ; relative to pos
-	;        \   /   
-	;         pos       ; . = pos
-	;        /   \   
-	;     BL'       BR' ; relative to pos
+	;   1   4
+	;    \ /   
+	;     .
+	;    / \   
+	;   3   2
 	;
 	(setq
 		p1 (addVectors (posTL x y) pos)
@@ -147,13 +155,13 @@
 
 (defun drawStAndrewCross ( layDef x y / )
 	; The two diagonals in a x-by-y rectangle centered at ORIGO
-	(drawStAndrewCrossAtPos layDef x y _origo_)
+	(drawStAndrewCrossAtPos layDef _origo_ x y)
 	'drawStAndrewCross
 )
 
 
 
-(defun drawCircleAtPos ( layDef_mainLayer r pos layDef_wipeoutLayer / )
+(defun drawCircleAtPos ( layDef pos r layDef_wipeoutLayer / )
 	; A circle, centered at 'pos'.
 	; Wipeout is added if wipeoutlayer is non-nil.
 	;        ___    
@@ -161,13 +169,13 @@
 	;      |  .  |       ; . = pos
 	;       \___/ 
 	;
-	(setLayer layDef_mainLayer)
+	(setLayer layDef)
 	(command _CIRCLE_ pos r)
-	(if layer_wipeOutLayer
+	(if layDef_wipeOutLayer
 		(progn
 			(setLayer layDef_wipeoutLayer)
 			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
-			(setLayer layDef_mainLayer)
+			(setLayer layDef)
 		)
 	)
 	'drawCircleAtPos
@@ -175,15 +183,15 @@
 
 
 
-(defun drawCircle ( layDef_mainLayer r layDef_wipeoutLayer / )
+(defun drawCircle ( layDef r layDef_wipeoutLayer / )
 	; A circle, centered at ORIGO
-	(drawCircleAtPos layDef_mainLayer r _origo_ layDef_wipeoutLayer)
+	(drawCircleAtPos layDef _origo_ r layDef_wipeoutLayer)
 	'drawCircle
 )
 
 
 
-(defun drawBoxAtPos ( layDef_mainLayer x y pos layDef_wipeoutLayer / )
+(defun drawBoxAtPos ( layDef pos x y layDef_wipeoutLayer / )
 	; A rectangular x-by-y area on specified layer, centered at 'pos'.
 	; Wipeout is added if wipeoutlayer is non-nil.
 	;
@@ -194,22 +202,22 @@
 	;    BL----------BC---------BR  v
 	;    <-------- x wide ------->
     ;
-	(setLayer layDef_mainLayer)
+	(setLayer layDef)
 	(command _RECTANGLE_ (addVectors (posTL x y) pos) (addVectors (posBR x y) pos))
 	(if layDef_wipeOutLayer
 		(progn
 			(setLayer layDef_wipeoutLayer)
 			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
-			(setLayer layDef_mainLayer)
+			(setLayer layDef)
 		)
 	)
 	'drawBoxAtPos
 )
 
 
-(defun drawBox ( layDef_mainLayer x y layDef_wipeoutLayer)
-	; As drawBox, centered at ORIGO
-	(drawBoxAtPos layDef_mainLayer x y _origo_ layDef_wipeoutLayer)
+(defun drawBox ( layDef x y layDef_wipeoutLayer)
+	; As drawBoxAtPos, centered at ORIGO
+	(drawBoxAtPos layDef _origo_ x y  layDef_wipeoutLayer)
 	'drawBox
 )
 	
@@ -268,12 +276,15 @@
 	;                 open
 	(setq
 		doorWidth (- (car lockPos) (car hingePos))
-		openPos (list (+ (car hingePos) (* (cos (D->R doorAngle)) doorWidth))   (- (cadr hingePos) (* (sin (D->R doorAngle)) doorWidth)))
+		openPos (list 
+					(+ (car hingePos) (* (DDcos doorAngle) doorWidth))   
+					(- (cadr hingePos) (* (DDsin doorAngle) doorWidth))
+				)
 	)
 	(setLayer layDef)
 	(command
 		_LINE_ hingePos openPos _ENTER_ ; The open door
-		"._ARC" lockPos "_C" hingePos "A" (- maxAngle)
+		_ARC_ lockPos _setArcCenter_ hingePos _setArcAngle_ (- maxAngle)
 	)
 )
 (defun drawLeftDoor  ( layDef hingePos lockPos  / ) (drawDoor layDef hingePos lockPos  60  160))
@@ -307,7 +318,15 @@
 	; Adds MTEXT in a box of standard width and text size, at x=0 and y=suitably below the given distance below origo.
 	; The text is supposed to wrap inside a textbox with size _descriptionTextWidth_. We assume that character widths are on the average ca 0.7 of the text height.
 	; "THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG" is 44 characters, which in uppercase iso3098.shx textHeight 0.18 is 5.41 wide => 0.123/char => ratio 0.683.
-	(setq nLines (+ 1 (/ (* (strlen description) 0.683 _descriptionTextHeight_) _descriptionTextBoxWidth_))) ; round up
-	(addMTextAtPos layer_Description _descriptionTextHeight_ _descriptionTextBoxWidth_ (list 0 (- (+ distanceBelowOrigo (* nLines _descriptionTextHeight_)))) description)
+	(setq 
+		nLines	(+ 1 (/ (* (strlen description) 0.683 _descriptionTextHeight_) _descriptionTextBoxWidth_)) ; round up
+		pos		(list 0 (- (+ distanceBelowOrigo (* nLines _descriptionTextHeight_))))
+	)
+	(addMText
+		layDef_Description
+		_descriptionTextHeight_ 
+		_descriptionTextBoxWidth_
+		pos
+		description
+	)
 )
-

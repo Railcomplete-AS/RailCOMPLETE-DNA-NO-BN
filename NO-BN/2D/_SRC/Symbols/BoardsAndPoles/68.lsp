@@ -35,8 +35,8 @@
 		attFive	'("HAST_5" "Blank eller 5" _ENTER_)
 	)
 	(drawTriangle side) ; pointing down
-	(addTextAttributeAtPos layer_Zero _th250_ p1 attTen)
-	(addTextAttributeAtPos layer_Zero _th100_ p2 attFive)
+	(addTextAttributeAtPos layDef_Zero _th250_ p1 attTen)
+	(addTextAttributeAtPos layDef_Zero _th100_ p2 attFive)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -66,8 +66,8 @@
 	(drawTriangle side) ; pointing down
 	(mirrorAboutXaxis _eraseMirrorSource_)
 	(moveUp (* (sqrt 0.75) side))
-	(addTextAttributeAtPos layer_Zero _th250_ p1 attTen)
-	(addTextAttributeAtPos layer_Zero _th100_ p2 attFive)
+	(addTextAttributeAtPos layDef_Zero _th250_ p1 attTen)
+	(addTextAttributeAtPos layDef_Zero _th100_ p2 attFive)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -89,8 +89,8 @@
 		r 		2.75
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
 	)
-	(drawCircle layer_Zero r layer_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layer_Zero _th250_ _origo_ attTen)
+	(drawCircle layDef_Zero r layDef_BoardOrPole_Wipeout)
+	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attTen)
 	(moveUp r)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -150,9 +150,9 @@
 		p10	'( 0.250 0.433)
 		p11	'( 3.000 0.433)
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ p1 p4 p5 p7 p11 p10 _origo_ p9 p8 p6 p2 p3 _closedPolyline_) ; contour
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
 	(command _POLYLINE_ p1 p3 p4 _closedPolyline_)	(drawHatch _solidHatch_) ; top triangle
 	(command _POLYLINE_ p6 p8 p9 _closedPolyline_)	(drawHatch _solidHatch_) ; left triangle
 	(command _POLYLINE_ p7 p10 p11 _closedPolyline_)	(drawHatch _solidHatch_) ; right triangle
@@ -190,9 +190,9 @@
 		p9	'( 0.000 2.900)
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 p3 p4 p5 p6 p7 _closedPolyline_) ; contour
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
 	(command _POLYLINE_ p1 p2 p3 p6 p7 _closedPolyline_)
 	(drawHatchFromPoint _solidHatch_ (addVectors p1 _slightlyBelow_) 0 0) ; top 5-edge
 	(command _POLYLINE_ p3 p4 p5 p6 p8 _closedPolyline_)
@@ -219,8 +219,8 @@
 		y 4.0
 		attDef '("PLUSS_HAST" "Pluss-hastighet" "+5")
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layer_Zero _th250_ _origo_ attDef)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attDef)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -248,11 +248,11 @@
 		y2 5.0
 		attDef '("KRENGE_HAST" "Krengetoghastighet (km/h)" "160")
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(drawBox layer_Zero x2 y2 _noWipeout_)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x2 y2 _noWipeout_)
 	(moveUp (halfOf y))
 	(drawHatchFromPoint _solidHatch_ _slightlyAbove_ 0 0)
-	(addTextAttributeAtPos layer_Zero _th350_ (list 0 (halfOf y)) attDef)
+	(addTextAttributeAtPos layDef_Zero _th350_ (list 0 (halfOf y)) attDef)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

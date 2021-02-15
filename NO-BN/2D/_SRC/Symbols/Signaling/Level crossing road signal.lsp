@@ -34,15 +34,15 @@
 
 	; Schematic symbol
 	; Schematic 1-line signaling / schematic plan ('skjematisk plan') view
-	(setLayer layer_View_SchematicPlan)
+	(setLayer layDef_View_SchematicPlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "WIDE")
 	
 	; Schematic 1-line signaling / cable plan ('plan og kabelplan') view
-	(setLayer layer_View_CablePlan)
+	(setLayer layDef_View_CablePlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "SMALL" "WIDE")
 	
 	; Schematic 2-line signaling / track insulation plan OR high voltage / return current plan view
-	(setLayer layer_View_TrackIsolationPlan)
+	(setLayer layDef_View_TrackIsolationPlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "WIDE")
 	
 	; Create schematic symbol
@@ -51,15 +51,15 @@
 	
 	; Annotative symbol
 	; Geo 1-line signaling / schematic plan ('skjematisk plan') view
-	(setLayer layer_View_SchematicPlan)
+	(setLayer layDef_View_SchematicPlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
 	
 	; Geo 1-line signaling / cable plan ('plan og kabelplan') view
-	(setLayer layer_View_CablePlan)
+	(setLayer layDef_View_CablePlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "SMALL" "NARROW")
 	
 	; Geo 2-line signaling / track insulation plan OR high voltage / return current plan view
-	(setLayer layer_View_TrackIsolationPlan)
+	(setLayer layDef_View_TrackIsolationPlan)
 	(drawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
 	
 	(thawAllLayers)
@@ -144,5 +144,5 @@
 			)
 		)
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 )

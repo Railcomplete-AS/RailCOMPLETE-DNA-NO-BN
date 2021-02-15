@@ -174,7 +174,7 @@
 	(subSubStep blockName)
 	
 	; Schematic symbol
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(localGraphics)
 	(addDescriptionBelowOrigo description 0.5)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -183,7 +183,7 @@
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	
 	; Metric symbol
-	(setLayer layer_MetricDetails)
+	(setLayer layDef_MetricDetails)
 	(localGraphics)
 	(createMetricBlockFromCurrentGraphics blockName)
 )

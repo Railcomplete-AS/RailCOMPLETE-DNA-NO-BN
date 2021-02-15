@@ -59,14 +59,14 @@
 		(cond 
 			((= i 0) (setq hatchVariant "FILLED")) ; signfies central control, interlocked switch
 			((= i 1) (setq hatchVariant "SPARSE")) ; signifies key-locked control in right / left / both position(s)
-			((= i 2) (setq hatchVariant _noHatch_)) ; signifies that the point's tongues position is neither controlled nor detected
+			((= i 2) (setq hatchVariant "EMPTY")) ; signifies that the point's tongues position is neither controlled nor detected
 		)
 		(setq 
 			blockName (strcat "NO-BN-2D-JBTSI-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
 			description	(strcat "SPORVEKSEL / SIGNAL-SYMBOL, "   str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
 		)
 		; A circle marks the theoretical crossing (where the two end-of-switch tangent extensions meet);
-		(setLayer layer_Zero)
+		(setLayer layDef_Zero)
 
 		(command
 			_LINE_ _origo_ (list (- A radius) 0) _ENTER_
@@ -110,7 +110,7 @@
 		A	(/ (cadr (assoc "A" switchParameters)) 1000.0)
 		r	0.75
 	)
-	(setLayer layer_Turnout_Wipeout)
+	(setLayer layDef_Turnout_Wipeout)
 	(command
 		_POLYGON_ 16 (list A 0) _inscribed_ r
 		_WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_
@@ -120,20 +120,20 @@
 
 
 
-(defun SWITCH-SYMBOL-SIGNALING-CONTROL-METHOD ( / blockName sides side i )
-	; Kontrollåst pos H/V - vis firkant for låsesymbolet på H side, V side eller begge sider
-	(setq sides (list "V" "H" "HV"))
+(defun SWITCH-SYMBOL-SIGNALING-KEYLOCKED ( / blockName sides side i )
+	; Key locked tongues in position LEFT, RIGHT or BOTH - show a rectangle symoblizing the lock(s)
+	(setq sides (list "LEFT" "RIGHT" "BOTH"))
 	(setq i 0)
 	(repeat 3
 		(setq side (nth i sides))
-		(setq blockName (strcat "NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KONTROLL-" side))
-		(setLayer layer_Zero)
-		(if (or (= side "V") (= side "HV"))
+		(setq blockName (strcat "NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KEYLOCKED-" side))
+		(setLayer layDef_Zero)
+		(if (or (= side "LEFT") (= side "BOTH"))
 			(progn
 				(command _RECTANGLE_ (list 1.85 -0.75) (list 4.85 -1.50))
 			)
 		)
-		(if (or (= side "H") (= side "HV"))
+		(if (or (= side "LEFT") (= side "BOTH"))
 			(progn
 			(command _RECTANGLE_ (list 1.85 0.75) (list 4.85 1.50))
 			)

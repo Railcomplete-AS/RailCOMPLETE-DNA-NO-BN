@@ -1,7 +1,7 @@
 echo off
 echo     ENTER _DefineDnaVersion.bat
 
-rem There is no 'NOBN'in the batch file's name because it will be called from also the 3D symbol library batch file, which accesses it without specific adm name.
+rem There is no 'NOBN' in the batch file's name because it will be called from also the 3D symbol library batch file, which accesses it without specific adm name.
 rem Set LOG to no or yes to decide if logging to file is needed or not.
 rem Set COPY3D to no or yes to decide if copying the whole 3D object library is needed or not.
 rem Set TUTORIALS to no or yes to decide if copying the tutorials files is needed or not.
@@ -10,7 +10,7 @@ rem Set CLEAN to no or yes to decide if existing files in target folders shall b
 set       ADM=NO-BN
 set   RELEASE=2021.a
 set       LOG=no
-set    COPY3D=yes
+set    COPY3D=no
 set TUTORIALS=yes
 set     CLEAN=no
 

@@ -49,7 +49,7 @@
 		p1	'(-0.72 0)
 		p2	'( 0.72 0)
 	)
-	(drawLine layer_Zero p1 p2)
+	(drawLine layDef_Zero p1 p2)
 	(addDescriptionBelowOrigo description 0) 
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -71,14 +71,14 @@
 		step 500	; step [mm]
 		cantileverName _ENTER_ ; See below
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(while (<= len maxLen)
 		(setq lenM (/ len 1000.0)) ; length in decimal meters
 		(progn
 			; Push:
 			; The cantilever 'trunk' is always visible (layer zero):
-			(drawLine layer_Zero _origo_ (list 0 (- lenM))) ; The 'arm'
-			(setLayer layer_PushPullDirection)
+			(drawLine layDef_Zero _origo_ (list 0 (- lenM))) ; The 'arm'
+			(setLayer layDef_PushPullDirection)
 			(cond 
 				((= pushPull "S") ; 'Strekk' - Pull = The contact wire forces stretch the cantilever ----->
 					(command
@@ -93,7 +93,7 @@
 					)
 				)
 			)
-			(addTextAtPos layer_CantileverType _th070_ (list 2.5 (+ lenM -2)) (strcat  variation "/" pushPull))
+			(addTextAtPos layDef_CantileverType _th070_ (list 2.5 (+ lenM -2)) (strcat  variation "/" pushPull))
 		)
 		(setq lenString (rtos len 2 0)) ; from 50 to 6000, say (i.e. 2 to 4 digits)
 		(while (< (strlen lenString) 4) (setq lenString (strcat "0" lenString))) ; Leftsided zero-padding till we have 4 digits
@@ -127,8 +127,8 @@
 		p2	'(2.0 -2.7) ; Push-Pull text (letter S/T)
 	)
 	; S symbol:
-	(drawLine layer_Zero _origo_ p1)  ; Just one size Cariboni cantilever
-	(addTextAtPos layer_CantileverType _th070_ p2 "Car")
+	(drawLine layDef_Zero _origo_ p1)  ; Just one size Cariboni cantilever
+	(addTextAtPos layDef_CantileverType _th070_ p2 "Car")
 	(addDescriptionBelowOrigo description -3)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

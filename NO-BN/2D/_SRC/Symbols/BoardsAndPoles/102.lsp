@@ -25,7 +25,7 @@
 		y 3.0
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(drawRightArrow x y)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
@@ -45,7 +45,7 @@
 		y 3.0
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(drawLeftArrow x y)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
@@ -68,7 +68,7 @@
 		y 3.0
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(drawDoubleArrow x y)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)

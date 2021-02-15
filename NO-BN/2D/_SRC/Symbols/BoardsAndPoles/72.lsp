@@ -29,8 +29,8 @@
 		x 9.0
 		y 6.0
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(addTextAtPos layer_Zero _th250_ _origo_ "FJS")
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(addTextAtPos layDef_Zero _th250_ _origo_ "FJS")
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -61,9 +61,9 @@
 		p5 (list (*  0.5 x) (*  0.5 y))
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(addTextAtPos layer_Zero _th250_ _origo_ "FJS")
-	(setLayer layer_Zero)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(addTextAtPos layDef_Zero _th250_ _origo_ "FJS")
+	(setLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_
 		_LINE_ p2 p5 _ENTER_

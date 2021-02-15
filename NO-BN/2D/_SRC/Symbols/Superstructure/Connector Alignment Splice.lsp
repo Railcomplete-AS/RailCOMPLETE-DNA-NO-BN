@@ -26,51 +26,60 @@
 
 
 
-(defun CONNECTOR-SPLICE ( leftArrow rightArrow / blockName x y leftArrowStart leftArrowMid rightArrowStart rightArrowMid )
+(defun CONNECTOR-SPLICE ( leftArrow rightArrow / blockName description p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 )
+	;
+	; 1                   3
+	; |         x         | 
+	; TL--5--6-----7--8--TR   ^
+	; |    \        \     |   |
+	; |     \        \    |   |
+	; |   9 10    11 12   |   y
+	; |     /        /    |   |
+	; |    /        /     |   |
+	; BL-13-14----15-16--BR   v
+	; |                   |
+	; 2                   4
+	;
 	(setq
 		blockName (strcat "NO-BN-2D-JBTOB-CONNECTOR-SPLICE-" (rtos leftArrow 2 0) "-" (rtos rightArrow 2 0))
-		x (* _half_ 1.5)
-		y (* _half_ 1.0)
+		description (strcat "SPLICE " (if (= leftArrow 0) ">" "<") (if (= rightArrow 0) ">" "<"))
+		x	3.0
+		y	1.0
+		p1	(list (* -0.500 x) (*  1.000 y))
+		p2	(list (* -0.500 x) (* -1.000 y))
+		p3	(list (*  0.500 x) (*  1.000 y))
+		p4	(list (*  0.500 x) (* -1.000 y))
+
+		p5	(list (* -0.333 x) (*  0.500 y))
+		p6	(list (* -0.167 x) (*  0.500 y))
+		p7	(list (*  0.167 x) (*  0.500 y))
+		p8	(list (*  0.333 x) (*  0.500 y))
+		
+		p9	(list (* -0.333 x) (*  0.000 y))
+		p10 (list (* -0.167 x) (*  0.000 y))
+		p11 (list (*  0.167 x) (*  0.000 y))
+		p12	(list (*  0.333 x) (*  0.000 y))
+
+		p13 (list (* -0.333 x) (* -0.500 y))
+		p14 (list (* -0.167 x) (* -0.500 y))
+		p15 (list (*  0.167 x) (* -0.500 y))
+		p16	(list (*  0.333 x) (* -0.500 y))
+		
 	)
-	(command
-		_LINE_ (list (- x) (- y)) (list (- x) y) _ENTER_
-		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
-		_LINE_ (list (- x) (/ y 2.0)) (list x (/ y 2.0)) _ENTER_
-		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
-	)
+
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawLine layDef_Zero p1 p2)
+	(drawLine layDef_Zero p3 p4)
+
 	(if (= leftArrow 0)
-		(setq 
-			leftArrowStart (- (* 2.0 (/ x 3.0)))
-			leftArrowMid (- (/ x 3.0))
-		)
-		;else:
-		(setq 
-			leftArrowStart (- (/ x 3.0))
-			leftArrowMid (- (* 2.0 (/ x 3.0)))
-		)
+		(command _POLYLINE_ p5 p10 p13 _openPolyline_)
+		(command _POLYLINE_ p6 p9 p14 _openPolyline_)
 	)
 	(if (= rightArrow 0)
-		(setq 
-			rightArrowStart (/ x 3.0)
-			rightArrowMid (* 2.0 (/ x 3.0))
-		)
-		(setq 
-			rightArrowStart (* 2.0 (/ x 3.0))
-			rightArrowMid (/ x 3.0)
-		)
+		(command _POLYLINE_ p7 p12 p15 _openPolyline_)
+		(command _POLYLINE_ p8 p11 p16 _openPolyline_)
 	)
-	(command
-		_LINE_
-			(list leftArrowStart (/ y 2.0))
-			(list leftArrowMid 0)
-			(list leftArrowStart (- (/ y 2.0))) 
-			_ENTER_
-		_LINE_
-			(list rightArrowStart (/ y 2.0))
-			(list rightArrowMid 0)
-			(list rightArrowStart (- (/ y 2.0))) 
-			_ENTER_
-	)
+
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

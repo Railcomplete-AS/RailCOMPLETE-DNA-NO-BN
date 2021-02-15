@@ -32,9 +32,9 @@
 		y 4.5
 		r 1.5
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(drawCircle layer_Zero r _noWipeout_)
-	(addTextAtPos layer_Zero (* 0.5 x) _origo_ "R") ; Letter size is 45% of side
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(drawCircle layDef_Zero r _noWipeout_)
+	(addTextAtPos layDef_Zero (* 0.5 x) _origo_ "R") ; Letter size is 45% of side
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

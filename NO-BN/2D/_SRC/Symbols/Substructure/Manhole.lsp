@@ -13,13 +13,14 @@
 ; Manhole
 
 (defun C:MANHOLE ( / )
+	; Manhole radius, manholeLength and manholeDepth are given in mm, the others in meters.
 
 	; Diameter, cover diameter, cover offset X and Y
 	(TREKKEKUM-RUND "1400" 0.700 0.126 0.137)
 	
 	; Length (mm along track), depth [mm] (across track), cover diameter [m]  (or zero), cover length [m] (or don't care) 
 	; cover depth [m] (or don't care), cover offset X and Y [m]
-	(TREKKEKUM-REKTANGULAER "1600"  "900" 0 1.32 0.68  0.000 0.450) 
+	(TREKKEKUM-REKTANGULAER "1600"  "900" 0 1.32 0.68  0.000 0.450) ; radius=0 ==> rectangular cover size (1.32 0.68) at (0 .450)
 	
 	; Length [mm] (along track), depth [mm] (across track), cover diameter [m] (or zero), cover length [m] (or don't care) 
 	; cover depth [m] (or don't care), cover offset X and Y [m]
@@ -32,47 +33,62 @@
 
 
 	
-(defun TREKKEKUM-RUND ( manholeDiameter coverDiameter coverOffsetX coverOffsetY / blockName )
+(defun TREKKEKUM-RUND ( manholeDiameter coverDiameter coverOffsetX coverOffsetY / blockName description mr cr p1 )
+	; Manholeradius is given in mm, the others in meters.
+	;   _____
+	;  /    _\
+	; |    (1)|
+ 	; |   .   |
+	; |       |
+	;  \_____/
+	;   
 	(setq				   
 		blockName (strcat "NO-BN-2D-JBTUB-TREKKEKUM-RUND-" manholeDiameter)
+		description (strcat "TREKKEKUM RUND " _uOE_ manholeDiameter) 
+		mr	(/ (atof manholeDiameter) 2000.0)
+		cr	(halfOf coverDiameter)	
+		p1 	(list coverOffsetX coverOffsetY)
 	)
-	(command
-		_CIRCLE_ _origo_ (/ (atof manholeDiameter) 2000.0)
-		_CIRCLE_ (list coverOffsetX coverOffsetY) (/ coverDiameter 2)
-	)
-	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText (strcat "TREKKEKUM RUND \U+00D8" manholeDiameter) (list 0 (- (/ (atof manholeDiameter) -2000) 0.5)) _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_) ; \U+00D8 = Ø
+	(drawCircleAtPos layDef_Zero _origo_ mr _noWipeout_)
+	(drawCircleAtPos layDef_Zero p1 cr _noWipeout_)
+	(addDescriptionBelowOrigo description mr)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun TREKKEKUM-REKTANGULAER ( manholeLength manholeDepth coverDiameter coverLength coverDepth coverOffsetX coverOffsetY / blockName )
-	; Sizes are given in mm.
+(defun TREKKEKUM-REKTANGULAER ( manholeLength manholeDepth coverDiameter coverLength coverDepth coverOffsetX coverOffsetY / blockName description x y p1 )
+	; ManholeLength and manholeDepth are given in mm, the others in meters.
 	; Interpreted as inside measures (open to debate...)
+	;
+	;  TL-------TR
+	;  |         |
+	;  |         |
+ 	;  | +----+  |
+	;  | | p1 |  |
+	;  | +----+  |
+	;  |         |
+	;  BL---.---BR
+	;
 	(setq				   
 		blockName (strcat "NO-BN-2D-JBTUB-TREKKEKUM-L" manholeLength "-D" manholeDepth)
+		description (strcat "TREKKEKUM L=" manholeLength ", D=" manholeDepth)
+		x	(/ (atof manholeLength) 1000.0)
+		y	(/ (atof manholeDepth) 1000.0)
+		cr	(halfOf coverDiameter)
+		p1	(list coverOffsetX coverOffsetY)
 	)
-	; Draw 'box':
-	(command
-		_RECTANGLE_ (list (/ (atof manholeLength) -2000.0) 0) (list (/ (atof manholeLength) 2000.0) (/ (atof manholeDepth) 1000.0))
-	)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(moveUp (halfOf y))
 	(if (= coverDiameter 0)
 		; Rectangular cover:
-		(command
-			_RECTANGLE_ 
-				(list (+ coverOffsetX (/ coverLength -2)) (+ coverOffsetY (/ coverDepth -2)))
-				(list (+ coverOffsetX (/ coverLength 2)) (+ coverOffsetY (/ coverDepth 2)))
-		)
+		(drawBoxAtPos layDef_Zero p1 coverLength coverDepth _noWipeout_)
 	;else
 		;Circular cover:
-		(command 
-			_CIRCLE_ (list coverOffsetX coverOffsetY) (/ coverDiameter 2)
-		)
+		(drawCircleAtPos layDef_Zero p1 cr _noWipeout_)
     )
-	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText (strcat "TREKKEKUM L=" manholeLength ", D=" manholeDepth) (list 0 -0.5) _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
+	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

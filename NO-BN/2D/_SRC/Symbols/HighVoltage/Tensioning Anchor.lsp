@@ -41,7 +41,7 @@
 		x	1.5
 		y	2.0
 	)
-	(drawStAndrewCross layer_Zero x y)
+	(drawStAndrewCross layDef_Zero x y)
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -69,13 +69,13 @@
 	)
 	; Schematic symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; arrow
-	(drawLine layer_Zero _origo_ p10)	; shaft
+	(drawLine layDef_Zero _origo_ p10)	; shaft
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; arrow
-	(drawLine layer_Zero _origo_ p3) 	; SHORT shaft
+	(drawLine layDef_Zero _origo_ p3) 	; SHORT shaft
 	(addDescriptionBelowOrigo description 0)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 )		
@@ -109,14 +109,14 @@
 	; Schematic symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; lower arrow
 	(command _POLYLINE_ p4 p3 p5 _openPolyline_)			; upper arrow
-	(drawLine layer_Zero _origo_ p10) 	; shaft
+	(drawLine layDef_Zero _origo_ p10) 	; shaft
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; lower arrow
 	(command _POLYLINE_ p4 p3 p5 _openPolyline_)			; upper arrow
-	(drawLine layer_Zero _origo_ p6) 	; SHORT shaft
+	(drawLine layDef_Zero _origo_ p6) 	; SHORT shaft
 	(addDescriptionBelowOrigo description 0)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 )
@@ -164,7 +164,7 @@
 		_POLYLINE_ "0.050,-0.153" "0.366,-0.779" "0.415,-0.754" "0.102,-0.128" _closedPolyline_ ; right side spanner
 		_POLYLINE_ "0.028,-0.071" "0.066,-0.146" "0.086,-0.135" "0.049,-0.060" _closedPolyline_ ; right side spanner's fastening to clamp ring
 		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; mirror to make left side
-		_POLYLINE_ "-0.125,-0.749_ENTER_-0.125,-0.851_ENTER_0.125,-0.851" "0.125,-0.749" _closedPolyline_ ; baseplate center part
+		_POLYLINE_ "-0.125,-0.749" "-0.125,-0.851" "0.125,-0.851" "0.125,-0.749" _closedPolyline_ ; baseplate center part
 		_CIRCLE_ _origo_ 0.060 ; Inside of Ø16 U iron clamp around Ø120 suspension mast
 		_CIRCLE_ _origo_ 0.076 ; Outside of clamp
 	)

@@ -57,12 +57,12 @@
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
@@ -132,12 +132,12 @@
 		t1  '(-2.0  5.0)    t2  '(2.0  5.0)
 	)
 	; Wipeout under pole
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
@@ -199,12 +199,12 @@
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
@@ -274,12 +274,12 @@
 		t1  '(-2.0  5.0)    t2  '(2.0  5.0)
 	)
 	; Wipeout under pole
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	(drawHatch _blackHatch_)
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
@@ -341,12 +341,12 @@
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
@@ -414,12 +414,12 @@
 		t1  '(-2.0  4.0)    t2  '(2.0  4.0)
 	)
 	; Wipeout under pole
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1

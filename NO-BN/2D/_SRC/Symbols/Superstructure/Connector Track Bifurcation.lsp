@@ -37,19 +37,19 @@
 
 (defun C:CONNECTOR-SWITCH ( / )
 	(setCadSystemDefaults)  
-	(CONNECTOR-SWITCH-UNSPECIFIED) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
+	(CONNECTOR-SWITCH-SCHEMATIC) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
 	(CONNECTOR-SWITCH-WITH-GEOMETRY) 	; Turnout - switch - point with recognized geometry (fixed 1:1 scale)
 )
 
 
 
-(defun CONNECTOR-SWITCH-UNSPECIFIED ( / blockNameBase blockName u )
+(defun CONNECTOR-SWITCH-SCHEMATIC ( / blockNameBase blockName u )
 	(setq
-		blockName "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-UNSPECIFIED"
+		blockName "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-SCHEMATIC"
 		u 1.0 ; unit
 	)
-	(subStep (strcat "Unspecified switch"))
-	(setLayer layer_Zero)
+	(subStep (strcat "Schematic switch symbol"))
+	(setLayer layDef_Zero)
 
 	 ; Quadrant 1
 	 (command 
@@ -57,6 +57,7 @@
 		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
 	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(moveLeft (* 2 u))
     (createMetricBlockFromCurrentGraphics (strcat blockName "-1"))
 
 	 ; Quadrant 2
@@ -65,6 +66,7 @@
 		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
 	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(moveLeft (* 2 u))
 	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
     (createMetricBlockFromCurrentGraphics (strcat blockName "-2"))
 
@@ -74,6 +76,7 @@
 		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
 	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(moveLeft (* 2 u))
 	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
 	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
     (createMetricBlockFromCurrentGraphics (strcat blockName "-3"))
@@ -84,6 +87,7 @@
 		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
 	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
+	(moveLeft (* 2 u))
 	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
     (createMetricBlockFromCurrentGraphics (strcat blockName "-4"))
 )
@@ -122,7 +126,7 @@
 		)
 	)
 	(subStep "Switches:")
-	(SWITCH-SYMBOL-SIGNALING-CONTROL-METHOD)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
+	(SWITCH-SYMBOL-SIGNALING-KEYLOCKED)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
 	(setq element_no 0)
 	(repeat (length Switch_Drawing_List)
 		(setq Drawing_Number (nth element_no Switch_Drawing_List))
@@ -150,7 +154,7 @@
 		radius 	  	0.75
 	)
 	(setq blockName (strcat "NO-BN-2D-JBTSI-SWITCH-THROWING-METHOD" "-" (rtos A 2 3)))
-	(setLayerAndObjectColor layer_Zero "_ByBlock")
+	(setLayerAndObjectColor layDef_Zero "_ByBlock")
 	(command _CIRCLE_ (list A 0) radius)
 	(drawHatch _solidHatch_)
 	(createMetricBlockFromCurrentGraphics blockName)

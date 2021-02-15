@@ -68,26 +68,26 @@
 		gText "AS"
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBox layer_Zero gx gy _noWipeout_)
-	(drawStAndrewCross layer_Zero gx gy)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
-	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
+	(drawBox layDef_Zero gx gy _noWipeout_)
+	(drawStAndrewCross layDef_Zero gx gy)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
+	(addTextAtPos layDef_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "DOBBEL")
-			(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBC gx gy))
-			(drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBC gx gy))
+			(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBC gx gy))
+			(drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBC gx gy))
 		)
 		((= door "VHENGSLET")
-			(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy))
+			(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy))
 		)
 		((= door "HHENGSLET")
-			(drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy))
+			(drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy))
 		)
 	)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
@@ -121,20 +121,20 @@
 		gText "AS"
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBox layer_Zero gx gy _noWipeout_)
+	(drawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
-	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
+	(addTextAtPos layDef_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
-		((= door "VHENGSLET")(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
-		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
+		((= door "VHENGSLET")(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
+		((= door "HHENGSLET") (drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
 	(createAnnotativeBlockFromCurrentGraphics blockName)
@@ -168,20 +168,20 @@
 		gText "NS"
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBox layer_Zero gx gy _noWipeout_)
+	(drawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
-	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
+	(addTextAtPos layDef_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
-		((= door "VHENGSLET")(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
-		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
+		((= door "VHENGSLET")(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
+		((= door "HHENGSLET") (drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
 	(createAnnotativeBlockFromCurrentGraphics blockName)
@@ -215,20 +215,20 @@
 		gText "SV"
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBox layer_Zero gx gy _noWipeout_)
+	(drawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
-	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
+	(addTextAtPos layDef_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
-		((= door "VHENGSLET")(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
-		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
+		((= door "VHENGSLET")(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
+		((= door "HHENGSLET") (drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
 	(createAnnotativeBlockFromCurrentGraphics blockName)
@@ -262,20 +262,20 @@
 		gText "KB"
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y _noWipeout_)
+	(drawBox layDef_Zero x y _noWipeout_)
 	; (no cross)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBox layer_Zero gx gy _noWipeout_)
+	(drawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
-	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
+	(addTextAtPos layDef_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
-		((= door "VHENGSLET")(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
-		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
+		((= door "VHENGSLET")(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
+		((= door "HHENGSLET") (drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
 	(createAnnotativeBlockFromCurrentGraphics blockName)
@@ -308,22 +308,22 @@
 		gb	0.500	; geo baseplate width (exaggerated)
 	)
 	; Schematic symbol
-	(drawLine layer_Zero (posTL b y) (posTR b y)) 
-	(drawBox layer_Zero x y _noWipeout_)
+	(drawLine layDef_Zero (posTL b y) (posTR b y)) 
+	(drawBox layDef_Zero x y _noWipeout_)
 	(drawHatch 0.25) ; 0.25 - don't change, there shall be exactly 7 lines in this hatch
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) description)
 	(moveDown (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawLine layer_Zero (posTL gb gy) (posTR gb gy)) 
-	(drawBox layer_Zero gx gy _noWipeout_)
+	(drawLine layDef_Zero (posTL gb gy) (posTR gb gy)) 
+	(drawBox layDef_Zero gx gy _noWipeout_)
 	(drawHatch _sparseHatch_)
-	(addTextAtPos layer_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
-	(addTextAtPos layer_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
+	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) description)
+	(addTextAtPos layDef_Zero (* 0.7 gy) _origo_ gText) ; Text height is 0.7 of total box height
 	(cond 
-		((= door "VHENGSLET")(drawLeftDoor layer_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
-		((= door "HHENGSLET") (drawRightDoor layer_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
+		((= door "VHENGSLET")(drawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (posBL gx gy) (posBR gx gy)))
+		((= door "HHENGSLET") (drawRightDoor layDef_Cabinet_ReservedSpaceForDoors (posBR gx gy) (posBL gx gy)))
 	)
 	(moveDown (halfOf gy))
 	(createAnnotativeBlockFromCurrentGraphics blockName)

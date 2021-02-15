@@ -156,7 +156,7 @@
 		p31	(list (*  0.00 x) (*  0.45 y))
 	)
 	; Surrounding box:
-	(drawBoxAtPos layer_Zero x y _origo_ layer_BoardOrPole_Wipeout )
+	(drawBoxAtPos layDef_Zero _origo_ x y layDef_BoardOrPole_Wipeout )
 
 	; Arrow pointing straight up:
 	(command _POLYLINE_ p11 p12 p23 p24 p31 p21 p22 p11 _openPolyline_)
@@ -171,27 +171,27 @@
 
 
 
-(defun drawTVs ( posX posY /  pt1 r1 pt2 pt3 pt4 pt5 pt6 pt7 pt8 diff )
+(defun drawTVs ( posX posY /  p1 r1 p2 p3 p4 p5 p6 p7 p8 diff )
 	; Signal 66 'Togvei Slutt'
 	; Draw an upright 'S' shape with its lowest point located at (posX,posY)
 	(setq 
-		pt0 "0.00,1.25" ; center for first arc, to give directions
-		pt1 (list (+ posX -1.0) (+ posY 0.5))
+		p0 "0.00,1.25" ; center for first arc, to give directions
+		p1 (list (+ posX -1.0) (+ posY 0.5))
 		r1 1.25
-		pt2 (list (+ posX 1.0) (+ posY 0.5))
+		p2 (list (+ posX 1.0) (+ posY 0.5))
 		r2 1.00
-		pt3 (list (+ posX 0.75) (+ posY 1.75))
+		p3 (list (+ posX 0.75) (+ posY 1.75))
 		r3 1.50
-		pt4 (list (+ posX 0.00) (+ posY 2.00))
+		p4 (list (+ posX 0.00) (+ posY 2.00))
 		r4 -1.50
-		pt5 (list (+ posX -0.75) (+ posY 2.25))
+		p5 (list (+ posX -0.75) (+ posY 2.25))
 		r5 -1.00
-		pt6 (list (+ posX -1.0) (+ posY 3.5))
+		p6 (list (+ posX -1.0) (+ posY 3.5))
 		r6 -1.25
-		pt7 (list (+ posX 1.0) (+ posY 3.5))
+		p7 (list (+ posX 1.0) (+ posY 3.5))
 	)
 	(command 
-		_POLYLINE_ pt1 _setPolylineArcMode_ "CE" pt0 pt2 pt3 pt4 pt5 pt6 pt7 _ENTER_
+		_POLYLINE_ p1 _setPolylineArcMode_ "CE" p0 p2 p3 p4 p5 p6 p7 _ENTER_
 	)
 )
 
@@ -226,7 +226,7 @@
 		centerPos (list posX (+ posY s2))
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addText text centerPos 1.8 0 _rcTextStyle_ _middleCenter_)
+	(addTextAtPos layDef_Zero _th180_ centerPos text)
 )
 
 
@@ -240,7 +240,7 @@
 		defaultText "A/D"
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LS" "Linjesignal" defaultText centerPos 1.0 0 _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addAtt "LS" "Linjesignal" defaultText centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 )
 
 
@@ -254,7 +254,7 @@
 		defaultSpeed "6/7"
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos 1.0 0 _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 )
 
 
@@ -276,7 +276,7 @@
 
 
 
-(defun drawMKs ( posX posY / side pt1 pt2 pt3 x y pt4 )
+(defun drawMKs ( posX posY / side p1 p2 p3 x y p4 )
 	; Signal 4C 'Middelkontrolllampe'
 	(setq r (getMediumLanternRadius))
 	(command _CIRCLE_ (list posX posY) r)
@@ -284,7 +284,7 @@
 
 
 
-(defun drawDs ( / side pt1 pt2 pt3 x y pt4 )
+(defun drawDs ( / side p1 p2 p3 x y p4 )
 	; Signal 43/44/45/46 'Dvergsignal'
 	;
 	;  1----
@@ -296,24 +296,24 @@
 	;
 	(setq
 		side 4.0
-		pt1 (list (- (/ side 2)) side) 	; upper left corner of centered Ds head
-		pt2 (list (- (/ side 2)) 0) 	; lower left corner
-		pt3 (list (+ (/ side 2)) 0) 	; lower right corner
+		p1 (list (- (/ side 2)) side) 	; upper left corner of centered Ds head
+		p2 (list (- (/ side 2)) 0) 	; lower left corner
+		p3 (list (+ (/ side 2)) 0) 	; lower right corner
 		x (* side (DDcos _angle45_))
 		
 		y (* side (DDsin _angle45_))
-		pt4 (list (- x (/ side 2)) y) ; diagonal point
+		p4 (list (- x (/ side 2)) y) ; diagonal point
 	)
 	(command ; Draw Ds head
-		_LINE_ pt1 pt2 pt3 _ENTER_
-		_LINE_ pt2 pt4 _ENTER_
-		_ARC_ _setArcCenter_ pt2 pt3 _setArcAngle_ _angle90_
+		_LINE_ p1 p2 p3 _ENTER_
+		_LINE_ p2 p4 _ENTER_
+		_ARC_ _setArcCenter_ p2 p3 _setArcAngle_ _angle90_
 	)
 )
 
 
 
-(defun drawDsMKs ( / side pt1 pt2 pt3 x y pt4 r )
+(defun drawDsMKs ( / side p1 p2 p3 x y p4 r )
 	(setq
 		side 4.0
 		r (getMediumLanternRadius)

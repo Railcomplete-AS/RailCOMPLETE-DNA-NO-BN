@@ -41,9 +41,9 @@
 		x (* (sqrt 8) rm)
 		y (* (sqrt 8) rm)
 	)
-	(drawCircle layer_Zero rm _noWipeout_)
+	(drawCircle layDef_Zero rm _noWipeout_)
 	(drawHatch _solidHatch_)
-	(drawStAndrewCross layer_Zero x y)
+	(drawStAndrewCross layDef_Zero x y)
 	(addDescriptionBelowOrigo description rm)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -71,8 +71,8 @@
 		y (* 4 0.250) ; Cross in the middle
 		len (* 4 1.200) ; Box length
 	)
-	(drawBox layer_Zero x len _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
+	(drawBox layDef_Zero x len _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
 	(addDescriptionBelowOrigo description (halfOf len))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -165,7 +165,7 @@
 			(addDescriptionBelowOrigo description r)
 		)
 		(T
-			(drawCircle layer_Zero rm _noWipeout_)
+			(drawCircle layDef_Zero rm _noWipeout_)
 			(drawHatch _solidHatch_)
 			(addDescriptionBelowOrigo description (* 3 r)) ; well below...
 		)
@@ -199,15 +199,15 @@
 		pY (* (nth 1 pos) r)
 		h (sqrt (+ (* pX pX) (* pY pY))) ; distance from origo to center light bulb
 	)
-	(drawCircleAtPos layer_Zero r (list pX pY) _noWipeout_)
-	(drawStAndrewCrossAtPos layer_Zero x y (list pX pY))
+	(drawCircleAtPos layDef_Zero (list pX pY) r _noWipeout_)
+	(drawStAndrewCrossAtPos layDef_Zero (list pX pY) x y)
 	(cond
 		((> h (+ rm r)) 
 			(setq 
 				p1 (list (* (/ rm h) pX)   (* (/ rm h) pY)) ; start of arm closest to origo where mast symbol ends
 				p2 (list (* (/ (- h r) h) pX)   (* (/ (- h r) h) pY)) ; end of arm where light bulb circle starts
 			)
-			(drawLine layer_Zero p1 p2)
+			(drawLine layDef_Zero p1 p2)
 		)
 	)
 )

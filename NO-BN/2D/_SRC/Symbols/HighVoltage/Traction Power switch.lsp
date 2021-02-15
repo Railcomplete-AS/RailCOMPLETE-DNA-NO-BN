@@ -26,7 +26,7 @@
 
 
 
-(defun SKILLEBRYTER ( / blockName )
+(defun SKILLEBRYTER ( / blockName description )
 	;--------- manuelle brytere ---------
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-AAPEN"
@@ -480,7 +480,7 @@
 		len2 6.4
 		len3 2.4
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(if (= variation "AAPEN")
 		(command 
 			_LINE_ (list 0 y) (list len2 y) _ENTER_
@@ -500,7 +500,7 @@
 		len2 6.0
 		len3 2.4
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(if (= variation "AAPEN")
 		(command
 			_LINE_ (list 0 y) (list len y) _ENTER_
@@ -516,18 +516,21 @@
 
 
 
-(defun drawMotor ( variation / dist r textHeight )
+(defun drawMotor ( variation / dist r p1 p2 p3 p4 )
 	(setq 
 		dist 3.0
 		r 1.65
-		textHeight 2.0
+		p1	(list dist (+ dist r))
+		p2	(list dist dist)
+		p3	(list dist (- dist 1.2679))
+		p4	(list dist 0)
 	)
-	(setLayer layer_Zero)
-	(command _CIRCLE_ (list dist (+ dist r)) r)
-	(addText "M" (list dist (+ dist r)) textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
+	(drawCircleAtPos layDef_Zero p1 r _noWipeout_)
+	(addTextAtPos layDef_Zero _th180_ p1 "M")
 	(if (= variation "AAPEN")
-		(command _LINE_ (list dist dist) (list dist (- dist 1.2679)) _ENTER_)
-		(command _LINE_ (list dist dist) (list dist 0) _ENTER_)
+		(command _LINE_ p2 p3 _ENTER_)
+	;else
+		(command _LINE_ p2 p4 _ENTER_)
     )
 )
 
@@ -541,15 +544,13 @@
 		x (/ 2.5 2.0)
 		y 0.9
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command 
 		_LINE_ _origo_ (list len1 0) _ENTER_
 		_LINE_ (list len1 len2) (list len1 (- len2)) _ENTER_
 		_CIRCLE_ (list len1 (+ len2 r)) r
 		_RECTANGLE_ (list (- len1 x) (- len2)) (list (+ len1 x) (- (+ len2 y)))
 	)
-	(drawHatchFromPoint 0.02 (list len1 (- (+ len2 (/ y 2.0)))) 0 0)
-	(if offset
-		(command _MOVE_ _selectAll_ _ENTER_ _origo_ offset)
-    )
+	(drawHatchFromPoint _solidHatch_ (list len1 (- (+ len2 (/ y 2.0)))) _angleZero_ _offsetZero_)
+	(if offset (moveUp offset))
 )

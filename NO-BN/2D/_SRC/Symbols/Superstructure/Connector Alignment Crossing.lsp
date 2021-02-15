@@ -20,22 +20,31 @@
 	(CONNECTOR-CROSSING)
 )
 
-(defun CONNECTOR-CROSSING ( / blockName radius )
+(defun CONNECTOR-CROSSING ( / blockName description r )
+	;
+	; A cross (8r wide, 4r high) with four "cusps" 
+	;
+	;        U
+	;        |
+	;  )-----.-----(
+	;        |
+	;        A    
+	;
 	(setq
 		blockName	"NO-BN-2D-JBTOB-CONNECTOR-CROSSING"
 		description	"CONNECTOR, CROSSING"
-		radius 0.5 ; Radius of 180 deg half-circle arc, to be shown at the ends of a long horizontal and short vertical line meeting at the crossing
+		r 0.5 ; r of 180 deg half-circle arc, to be shown at the ends of a long horizontal and short vertical line meeting at the crossing
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command
-		_LINE_ (list (* -4 radius) 0) (list (* 4 radius) 0) _ENTER_ ; long horizontal line
-		_LINE_ (list 0 (* -2 radius)) (list 0 (* 2 radius)) _ENTER_ ; short vertical line
-		_ARC_ _setArcCenter_ (list (* -5 radius) 0) (list (* -5 radius) (* -1 radius)) (list (* radius -5) (* 1 radius)) ; Left arc
-		_ARC_ _setArcCenter_ (list (* 5 radius) 0) (list (* 5 radius) (* 1 radius)) (list (* radius 5) (* -1 radius)) ; Right arc
-		_ARC_ _setArcCenter_ (list 0 (* -3 radius)) (list (* 1 radius) (* -3 radius)) (list (* -1 radius) (* -3 radius)) ; Bottom arc
-		_ARC_ _setArcCenter_ (list 0 (* 3 radius)) (list (* -1 radius) (* 3 radius)) (list (* 1 radius) (* 3 radius)) ; Top arc
+		_LINE_ (list (* -4 r) 0) (list (* 4 r) 0) _ENTER_ ; long horizontal line
+		_LINE_ (list 0 (* -2 r)) (list 0 (* 2 r)) _ENTER_ ; short vertical line
+		_ARC_ _setArcCenter_ (list (* -5 r) 0) (list (* -5 r) (* -1 r)) (list (* r -5) (* 1 r)) ; Left arc
+		_ARC_ _setArcCenter_ (list (* 5 r) 0) (list (* 5 r) (* 1 r)) (list (* r 5) (* -1 r)) ; Right arc
+		_ARC_ _setArcCenter_ (list 0 (* -3 r)) (list (* 1 r) (* -3 r)) (list (* -1 r) (* -3 r)) ; Bottom arc
+		_ARC_ _setArcCenter_ (list 0 (* 3 r)) (list (* -1 r) (* 3 r)) (list (* 1 r) (* 3 r)) ; Top arc
 	)
-	(addDescriptionBelowOrigo description (* 4 radius))
+	(addDescriptionBelowOrigo description (* 4 r))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

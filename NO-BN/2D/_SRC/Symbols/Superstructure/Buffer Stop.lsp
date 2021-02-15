@@ -25,7 +25,7 @@
 		x 10.0
 		y 8.5
 	)
-	(drawBox layer_Zero x y _noWipeout_)
+	(drawBox layDef_Zero x y _noWipeout_)
 	(if (= variation "GLIDBAR")
 		(drawHatch _mediumHatch_)
 	)

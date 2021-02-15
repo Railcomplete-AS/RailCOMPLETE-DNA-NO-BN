@@ -8,7 +8,7 @@
    <AgentCountry>NO</AgentCountry>
    <AgentDelimiter>.</AgentDelimiter>
    <AgentCode>0001</AgentCode>
-   <DateTime>2021-01-01T20:17+01:00</DateTime>
+   <DateTime>2021-01-06T20:40+01:00</DateTime>
    <VersionNumber>2021.a</VersionNumber>
   </DnaIri>
   <Description>RailCOMPLETE(r) Definisjon  nettverkselementer for Bane NOR</Description>
@@ -50,8 +50,8 @@
  <DefaultUnresolved3DModelFileName>NO-BN-3D-FE-DIV-UKJENT</DefaultUnresolved3DModelFileName>
  <Export3DSettings/>
  <Units>
-  <DistanceUnitFormat Precision="3">Decimal</DistanceUnitFormat>
-  <AngularUnitFormat Precision="3" Clockwise="false">Decimal Degrees</AngularUnitFormat>
+  <DistanceUnit Precision="3">Decimal</DistanceUnit>
+  <AngularUnit Precision="3" Clockwise="false">Decimal Degrees</AngularUnit>
   <InsertionScaleUnit>Meters</InsertionScaleUnit>
   <LightingUnits>International</LightingUnits>
  </Units>
@@ -896,114 +896,6 @@ function NOBN_com_assistAssignEarthingPosBias(obj)
 	end
 end
         </Formula>
- </LuaFunction>
- <FoulingPointSetting Name="1 Ny bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceNewTrain" FoulingPointGraphicsType="0"/>
- <FoulingPointSetting Name="2 Ny bane, skift/skift" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceNewShunting" FoulingPointGraphicsType="1"/>
- <FoulingPointSetting Name="3 Eks. bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceExistingTrain" FoulingPointGraphicsType="2"/>
- <FoulingPointSetting Name="4 Eks. bane, skift/skift" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceExistingShunting" FoulingPointGraphicsType="3"/>
- <LuaFunction Name="NOBN_trk_getFoulingPointDistanceNewTrain()" ReturnType="Double" Description="Returns fouling point distance for new line's switch when one or both legs carry train traffic." HideFromUser="false">
-  <Constructor>Double NOBN_trk_getFoulingPointDistanceNewTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
-  <Formula>
-			function NOBN_trk_getFoulingPointDistanceNewTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
-				return math.max(4.000, 2.120 + 1.700 + 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
-			end
-		</Formula>
- </LuaFunction>
- <LuaFunction Name="NOBN_trk_getFoulingPointDistanceNewShunting()" ReturnType="Double" Description="Returns fouling point distance for new line's switch when no legs carry train traffic." HideFromUser="false">
-  <Constructor>Double NOBN_trk_getFoulingPointDistanceNewShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
-  <Formula>
-			function NOBN_trk_getFoulingPointDistanceNewShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
-				return math.max(4.000, 2.120 + 1.700 - 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
-			end
-		</Formula>
- </LuaFunction>
- <LuaFunction Name="NOBN_trk_getFoulingPointDistanceExistingTrain()" ReturnType="Double" Description="Returns fouling point distance for existing line's switch when one or both legs carry train traffic." HideFromUser="false">
-  <Constructor>Double NOBN_trk_getFoulingPointDistanceExistingTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
-  <Formula>
-			function NOBN_trk_getFoulingPointDistanceExistingTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
-				return math.max(0.000, 2.120 + 1.700 + 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
-			end
-		</Formula>
- </LuaFunction>
- <LuaFunction Name="NOBN_trk_getFoulingPointDistanceExistingShunting()" ReturnType="Double" Description="Returns fouling point distance for existing line's switch when no legs carry train traffic." HideFromUser="false">
-  <Constructor>Double NOBN_trk_getFoulingPointDistanceExistingShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
-  <Formula>
-			function NOBN_trk_getFoulingPointDistanceExistingShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
-				return math.max(0.000, 2.120 + 1.700 - 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
-			end
-		</Formula>
- </LuaFunction>
- <LuaFunction Name="NOBN_trk_getFoulingPointLocalContribution()" ReturnType="Double" Description="Returns the extra coach separation needed due to local curvatures (Kinner=81/2R, Kouter=63/2R) and to local cants (2.3*SignficantCantDifference)." HideFromUser="false">
-  <Constructor>Double NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
-  <Formula>
-			function NOBN_trk_getFoulingPointLocalContribution(
-				foulingPointCandidate,	--Point2d: a candidate fouling point, from which we will calculate the instantaneous required FP separation.
-				path1,					--RailwayPath: a structure containing a list of AlignmentIntervals, which is an interval on an alignment represented by the alignment's ObjectId, two positions, and a direction.
-				path2,					--RailwayPath: a structure containing a list of AlignmentIntervals.
-				path1IsLeftOfPath2		--Boolean: true iff path1 is to the left of path2 when vieweing the switch from the WCS positive Z axis, looking into the tip-of-tongues.
-			)
-			
-				function Kinner(R) 
-					--First term of a Taylor series, b^2/2r, assuming b=9 meter (standard Bane NOR assumption for halfAxleSeparation)
-					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
-					return 81.0 / (2*R)
-				end
-
-				function Kouter(R)
-					--First term of a Taylor series, (2bc+c^2)/2r, assuming c=3 meter (standard Bane NOR assumption for tail/nose extension from end/nose axle)
-					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
-					return 63.0 / (2*R)
-				end
-
-				--Retrieve alignment geometry info:
-				local path1Info = getAlignmentInfo(foulingPointCandidate.X, foulingPointCandidate.Y, path1)
-				local path2Info = getAlignmentInfo(foulingPointCandidate.X, foulingPointCandidate.Y, path2)
-				local t1 = path1Info.Segment.Type 
-				local t2 = path2Info.Segment.Type 
-				local cw1 = (path1Info.SignedRadius &gt; 0) --CW (true) or not CW (false)
-				local cw2 = (path2Info.SignedRadius &gt; 0) --CW (true) or not CW (false)
-				local r1 = math.abs(path1Info.SignedRadius) --Note: Reading path1Info.Radius fails for clothoids
-				local r2 = math.abs(path2Info.SignedRadius) --Note: Reading path2Info.Radius fails for clothoids
-
-				--Deduce contributions from inner/outer curves:
-				local curveContribution = 0.0
-				if path1IsLeftOfPath2 then
-					if t1 ~= "Straight" then curveContribution = curveContribution + (cw1 and Kouter(r1) or Kinner(r1)) end
-					if t2 ~= "Straight" then curveContribution = curveContribution + (cw2 and Kinner(r2) or Kouter(r2)) end
-				else
-					--path1 is right of path2
-					if t1 ~= "Straight" then curveContribution = curveContribution + (cw1 and Kinner(r1) or Kouter(r1)) end
-					if t2 ~= "Straight" then curveContribution = curveContribution + (cw2 and Kouter(r2) or Kinner(r2)) end
-				end
-											
-				--Retrieve alignment superelevation info [mm], convert to [m]:
-				local c1 = RC__isNan(path1Info.Cant) and 0.0 or path1Info.Cant/1000.0
-				local c2 = RC__isNan(path2Info.Cant) and 0.0 or path2Info.Cant/1000.0
-				local cr1 = path1Info.CantRotation == nil and "CW" or path1Info.CantRotation --Treat as "CW" if no cant present
-				local cr2 = path2Info.CantRotation == nil and "CW" or path2Info.CantRotation --Treat as "CW" if no cant present
-
-				--Deduce contributions from cant, checking whether the cants lean 'net' towards each other or not.
-				local cantContribution = 0.0
-				if path1IsLeftOfPath2 then 
-					if cr1 == "CW" and cr2 == "CCW" then cantContribution = 2.3 * (c1+c2) --both leaning towards each other
-					elseif cr1 == "CW" and cr2 == "CW" then cantContribution = 2.3 * math.max(0,c1-c2) --both leaning to the right
-					elseif cr1 == "CCW" and cr2 == "CCW" then cantContribution = 2.3 * math.max(0,c2-c1) --both leaning to the left
-					elseif cr1 == "CCW" and cr2 == "CW" then cantContribution = 0.0 --both leaning away from each other
-					else return 98.0 --error
-					end
-				else
-					--path1 is right of path2
-					if cr1 == "CW" and cr2 == "CCW" then cantContribution = 0.0 --both leaning away from each other
-					elseif cr1 == "CW" and cr2 == "CW" then cantContribution = 2.3 * math.max(0,c2-c1) --both leaning to the right
-					elseif cr1 == "CCW" and cr2 == "CCW" then cantContribution = 2.3 * math.max(0,c1-c2) --both leaning to the left
-					elseif cr1 == "CCW" and cr2 == "CW" then cantContribution = 2.3 * (c1+c2) --both leaning towards each other
-					else return 99.0 --error
-					end
-				end
-
-				return curveContribution + cantContribution
-			end
-		</Formula>
  </LuaFunction>
  <LuaFunction Name="NOBN_trk_getLiftFromCant()" ReturnType="Double" Description="Returns a track-bound object's Z-coordinate offset above TopOfRail [m], consistent with own alignment's local cant. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument.">
   <Constructor>Double NOBN_trk_getLiftFromCant([_position])</Constructor>
@@ -1878,7 +1770,114 @@ end
  <PropertyOverride Name="model" Description="The 'model' built-in railML property specifies the object's model (general model info). Use the various metadata entries for storing specific model information."/>
  <PropertyOverride Name="kind" Description="The 'kind' built-in railML property [blockDerail | singleCatchPoints | doubleCatchPoints] identifies the kind of derailer."/>
  <PropertyOverride Name="derailSide" DisplayName="Avsporingsretning" Description="The 'derailSide' built-in railML property [left | right] denotes the side of the track that a derailing train will take."/>
- <FoulingPointSetting Name="1 Ny bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceTrainNew" FoulingPointGraphicsType="0"/>
+ <FoulingPointSetting Name="1 Ny bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceNewTrain" FoulingPointGraphicsType="0"/>
+ <FoulingPointSetting Name="2 Ny bane, skift/skift" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceNewShunting" FoulingPointGraphicsType="1"/>
+ <FoulingPointSetting Name="3 Eks. bane, tog/*" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceExistingTrain" FoulingPointGraphicsType="2"/>
+ <FoulingPointSetting Name="4 Eks. bane, skift/skift" MaxSearchLength="200" LuaFunctionName="NOBN_trk_getFoulingPointDistanceExistingShunting" FoulingPointGraphicsType="3"/>
+ <LuaFunction Name="NOBN_trk_getFoulingPointDistanceNewTrain()" ReturnType="Double" Description="Returns fouling point distance for new line's switch when one or both legs carry train traffic." HideFromUser="false">
+  <Constructor>Double NOBN_trk_getFoulingPointDistanceNewTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+  <Formula>
+			function NOBN_trk_getFoulingPointDistanceNewTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(4.000, 2.120 + 1.700 + 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>
+ </LuaFunction>
+ <LuaFunction Name="NOBN_trk_getFoulingPointDistanceNewShunting()" ReturnType="Double" Description="Returns fouling point distance for new line's switch when no legs carry train traffic." HideFromUser="false">
+  <Constructor>Double NOBN_trk_getFoulingPointDistanceNewShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+  <Formula>
+			function NOBN_trk_getFoulingPointDistanceNewShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(4.000, 2.120 + 1.700 - 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>
+ </LuaFunction>
+ <LuaFunction Name="NOBN_trk_getFoulingPointDistanceExistingTrain()" ReturnType="Double" Description="Returns fouling point distance for existing line's switch when one or both legs carry train traffic." HideFromUser="false">
+  <Constructor>Double NOBN_trk_getFoulingPointDistanceExistingTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+  <Formula>
+			function NOBN_trk_getFoulingPointDistanceExistingTrain(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(0.000, 2.120 + 1.700 + 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>
+ </LuaFunction>
+ <LuaFunction Name="NOBN_trk_getFoulingPointDistanceExistingShunting()" ReturnType="Double" Description="Returns fouling point distance for existing line's switch when no legs carry train traffic." HideFromUser="false">
+  <Constructor>Double NOBN_trk_getFoulingPointDistanceExistingShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+  <Formula>
+			function NOBN_trk_getFoulingPointDistanceExistingShunting(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)
+				return math.max(0.000, 2.120 + 1.700 - 0.100 + NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2))
+			end
+		</Formula>
+ </LuaFunction>
+ <LuaFunction Name="NOBN_trk_getFoulingPointLocalContribution()" ReturnType="Double" Description="Returns the extra coach separation needed due to local curvatures (Kinner=81/2R, Kouter=63/2R) and to local cants (2.3*SignficantCantDifference)." HideFromUser="false">
+  <Constructor>Double NOBN_trk_getFoulingPointLocalContribution(foulingPointCandidate,path1,path2,path1IsLeftOfPath2)</Constructor>
+  <Formula>
+			function NOBN_trk_getFoulingPointLocalContribution(
+				foulingPointCandidate,	--Point2d: a candidate fouling point, from which we will calculate the instantaneous required FP separation.
+				path1,					--RailwayPath: a structure containing a list of AlignmentIntervals, which is an interval on an alignment represented by the alignment's ObjectId, two positions, and a direction.
+				path2,					--RailwayPath: a structure containing a list of AlignmentIntervals.
+				path1IsLeftOfPath2		--Boolean: true iff path1 is to the left of path2 when vieweing the switch from the WCS positive Z axis, looking into the tip-of-tongues.
+			)
+			
+				function Kinner(R) 
+					--First term of a Taylor series, b^2/2r, assuming b=9 meter (standard Bane NOR assumption for halfAxleSeparation)
+					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
+					return 81.0 / (2*R)
+				end
+
+				function Kouter(R)
+					--First term of a Taylor series, (2bc+c^2)/2r, assuming c=3 meter (standard Bane NOR assumption for tail/nose extension from end/nose axle)
+					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
+					return 63.0 / (2*R)
+				end
+
+				--Retrieve alignment geometry info:
+				local path1Info = getAlignmentInfo(foulingPointCandidate.X, foulingPointCandidate.Y, path1)
+				local path2Info = getAlignmentInfo(foulingPointCandidate.X, foulingPointCandidate.Y, path2)
+				local t1 = path1Info.Segment.Type 
+				local t2 = path2Info.Segment.Type 
+				local cw1 = (path1Info.SignedRadius &gt; 0) --CW (true) or not CW (false)
+				local cw2 = (path2Info.SignedRadius &gt; 0) --CW (true) or not CW (false)
+				local r1 = math.abs(path1Info.SignedRadius) --Note: Reading path1Info.Radius fails for clothoids
+				local r2 = math.abs(path2Info.SignedRadius) --Note: Reading path2Info.Radius fails for clothoids
+
+				--Deduce contributions from inner/outer curves:
+				local curveContribution = 0.0
+				if path1IsLeftOfPath2 then
+					if t1 ~= "Straight" then curveContribution = curveContribution + (cw1 and Kouter(r1) or Kinner(r1)) end
+					if t2 ~= "Straight" then curveContribution = curveContribution + (cw2 and Kinner(r2) or Kouter(r2)) end
+				else
+					--path1 is right of path2
+					if t1 ~= "Straight" then curveContribution = curveContribution + (cw1 and Kinner(r1) or Kouter(r1)) end
+					if t2 ~= "Straight" then curveContribution = curveContribution + (cw2 and Kouter(r2) or Kinner(r2)) end
+				end
+											
+				--Retrieve alignment superelevation info [mm], convert to [m]:
+				local c1 = RC__isNan(path1Info.Cant) and 0.0 or path1Info.Cant/1000.0
+				local c2 = RC__isNan(path2Info.Cant) and 0.0 or path2Info.Cant/1000.0
+				local cr1 = path1Info.CantRotation == nil and "CW" or path1Info.CantRotation --Treat as "CW" if no cant present
+				local cr2 = path2Info.CantRotation == nil and "CW" or path2Info.CantRotation --Treat as "CW" if no cant present
+
+				--Deduce contributions from cant, checking whether the cants lean 'net' towards each other or not.
+				local cantContribution = 0.0
+				if path1IsLeftOfPath2 then 
+					if cr1 == "CW" and cr2 == "CCW" then cantContribution = 2.3 * (c1+c2) --both leaning towards each other
+					elseif cr1 == "CW" and cr2 == "CW" then cantContribution = 2.3 * math.max(0,c1-c2) --both leaning to the right
+					elseif cr1 == "CCW" and cr2 == "CCW" then cantContribution = 2.3 * math.max(0,c2-c1) --both leaning to the left
+					elseif cr1 == "CCW" and cr2 == "CW" then cantContribution = 0.0 --both leaning away from each other
+					else return 98.0 --error
+					end
+				else
+					--path1 is right of path2
+					if cr1 == "CW" and cr2 == "CCW" then cantContribution = 0.0 --both leaning away from each other
+					elseif cr1 == "CW" and cr2 == "CW" then cantContribution = 2.3 * math.max(0,c2-c1) --both leaning to the right
+					elseif cr1 == "CCW" and cr2 == "CCW" then cantContribution = 2.3 * math.max(0,c1-c2) --both leaning to the left
+					elseif cr1 == "CCW" and cr2 == "CW" then cantContribution = 2.3 * (c1+c2) --both leaning towards each other
+					else return 99.0 --error
+					end
+				end
+
+				return curveContribution + cantContribution
+			end
+		</Formula>
+ </LuaFunction>
  <PositionToolSettings Name="SNCF1" LuaKmFormattingFunctionName="SNCF_placeholder1"/>
  <LuaFunction Name="NOBN_com_chkNumberOfOcpAreas()" ReturnType="String" Description="Model check assessing the number of (visible) Operation / Control Point (OCP) areas that the object belongs to.">
   <Constructor>String NOBN_com_chkNumberOfOcpAreas()</Constructor>
@@ -2907,7 +2906,35 @@ end
   <Variants DefaultValue="Knappenål">
    <Variant Name="Knappenål"/>
    <Variant Name="Posisjonsmarkering">
-    <SetValue Key="Annotations3D" Value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt; &lt;Formula&gt;Alignment&lt;/Formula&gt; &lt;Offset X=&quot;-0.75&quot; Y=&quot;0&quot; Z=&quot;1.00&quot; /&gt; &lt;JigSymbolAppearance X=&quot;90&quot; Y=&quot;0&quot; Z=&quot;0&quot; /&gt; &lt;/PlacedElementCadAnnotation&gt; &lt;PlacedElementCadAnnotation Tag=&quot;LKm&quot; Invisible=&quot;false&quot; Height=&quot;0.25&quot;&gt;        &lt;Formula&gt;ReferenceMileage&lt;/Formula&gt; &lt;Offset X=&quot;-0.75&quot; Y=&quot;0&quot; Z=&quot;0.50&quot; /&gt;        &lt;JigSymbolAppearance X=&quot;90&quot; Y=&quot;0&quot; Z=&quot;0&quot; /&gt; &lt;/PlacedElementCadAnnotation&gt;"/>
+    <SetValue Key="Annotations3D" Value='
+					&lt;?xml version="1.0" encoding="utf-8"?&gt;
+					&lt;ArrayOfPlacedElementCadAnnotation 
+						xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+						xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" &gt;  
+
+						&lt;PlacedElementCadAnnotation 
+								Tag="3D spornavn" 
+								Invisible="false" 
+								Oblique="0" 
+								WidthFactor="1" 
+								TextHeight="0.15"&gt;
+							&lt;Formula&gt;Alignment.name&lt;/Formula&gt;       
+							&lt;Offset X="-0.75" Y="0.00" Z="1.00" /&gt;       
+							&lt;Rotation X="90" Y="0" Z="0" /&gt;    
+						&lt;/PlacedElementCadAnnotation&gt;  
+
+						&lt;PlacedElementCadAnnotation 
+								Tag="3D Km" 
+								Invisible="false" 
+								Oblique="0" 
+								WidthFactor="1" 
+								TextHeight="0.25"&gt;
+							&lt;Formula&gt;ReferenceMileage&lt;/Formula&gt;       
+							&lt;Offset X="-0.75" Y="0.00" Z="0.50" /&gt;       
+							&lt;Rotation X="90" Y="0" Z="0" /&gt;    
+						&lt;/PlacedElementCadAnnotation&gt;  
+
+					&lt;/ArrayOfPlacedElementCadAnnotation&gt;'/>
     <SetValue Key="Farge" Value="Gul"/>
    </Variant>
   </Variants>
@@ -2967,7 +2994,7 @@ end
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}</BlockNameFormat>
    <SymbolAttribute Tag="FARGE">
     <Value>{{markerColor}}</Value>
@@ -3032,7 +3059,7 @@ end
    <SetValue Key="Model3DName" Value="NO-BN-3D-FE-MARKØR-KNAPPENÅL-RØD"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}</BlockNameFormat>
   </SymbolDefinition>
  </ObjectType>
@@ -4294,7 +4321,7 @@ end
 						return NOBN_bnp_getEscapeDistanceBoardTexts(step,offset)["Left"] 
 					else 
 						return "-",_info("Relate escape distance board to a marker with relation 'Har markør'.")
-					end
+				end
 			end
 		</Formula>
  </LuaFunction>
@@ -4434,7 +4461,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-REFLEKS-HEL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -4644,7 +4671,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-65A-JORDETSEKSJON-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -4804,7 +4831,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-66-TOGVEI-SLUTT-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -4976,7 +5003,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-67A-ORIENTERINGSIGNAL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -5272,7 +5299,7 @@ end
    <SetValue Key="Model3DOffsetTowardsAlignment" Value="-1.75"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-68A-NEDSATT-HASTIGHET-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -5459,7 +5486,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-UNDERSKILT-METERANGIVELSE-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -5697,7 +5724,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-UNKNOWN-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -5860,7 +5887,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-BALISE-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -6024,7 +6051,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-61A-AVSTAND1-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -6212,7 +6239,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60E-ATC-VARSEL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -6370,7 +6397,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-63A-FALLVISER-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -6562,7 +6589,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64A-GRENSESTOLPE-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -6724,7 +6751,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-TREDJEPERSON-NOEDTELEFON-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -6887,7 +6914,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-74-1-TOGLENGDE1-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -7078,7 +7105,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SPORNUMMER-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -7309,7 +7336,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-101-1-ID-3-LINJER-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -7495,7 +7522,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-102-3-PIL-HV-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -7653,7 +7680,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-1000V-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -7802,7 +7829,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-BEVEGELIG-KRYSS-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -7989,7 +8016,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIGNAL-75A-1-KILOMETER-ENKELSIDET-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -8208,7 +8235,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-ANLEGGSOMRAADE-BEGYNNER-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -8367,7 +8394,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="180" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-KJOERENDE-SIDESPOR-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -8557,7 +8584,7 @@ end
    <JigSymbolAppearance RotateIfLeftSideOfAlignment="false" AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-SIGNAL-75C-1-HEV-HSIDE-Schematic">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -8788,7 +8815,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-SIGNAL-75E-1-KJEDEBRUDD-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -9029,7 +9056,7 @@ end
    <SetValue Key="TEKST5" Value="OSL 1 - OSL 3"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-3-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -9257,7 +9284,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-TREDJEPERSON-ROEMNINGSVEI-VH-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -9423,7 +9450,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="180" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-TREDJEPERSON-STOPPSEOGLYTT-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -9579,7 +9606,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-SKILT-TREDJEPERSON-138-MOT-VEI-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
 														{% elsif dir == 'both' and LeftSided %}{{0|plus:0}}
@@ -9871,7 +9898,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -14524,7 +14551,7 @@ return s</Data>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-TREKKEKUM-RUND-1400-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -14870,7 +14897,7 @@ return s</Data>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-APPARATSKAP-LANGSIDE-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -15273,7 +15300,7 @@ return s</Data>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTKL-FUNDAMENT-BETONG-BJELKEMAST-1600x1800-000-191x374xM36-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -15462,7 +15489,7 @@ return s</Data>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-FRI-LINJE-300xM24-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -15478,8 +15505,7 @@ return s</Data>
 				{% elsif Variant == 'Betong Ds fundament, Ø76, konisk' %}BETONG-DS-Ø76-KONISK
 				{% elsif Variant == 'Betong Ds fundament, Ø76, rettsidet' %}BETONG-DS-Ø76-RETTSIDET
 				{% elsif Variant == 'Boret Hs fundament, Ø555' %}BETONG-BORET-Ø555-164x164xM32
-				{% elsif Variant == 'Betong veibomdrivmaskin fundament, Ø680' 
-					%}BETONG-VEIBOMDRIVMASKIN-Ø680-210x210xM20-{{SignalFoundationShaftHeight}}
+				{% elsif Variant == 'Betong veibomdrivmaskin fundament, Ø680' %}BETONG-VEIBOMDRIVMASKIN-Ø680-210x210xM20-{{SignalFoundationShaftHeight}}
 				{% else %}BAD_VARIANT
 				{% endif %}
 				{{SymbolMode}}
@@ -15640,7 +15666,7 @@ return s</Data>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-3D-KU-FUN-ANVISERSYØYLE-1500x1500x1000-Ø600-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -15851,7 +15877,7 @@ return s</Data>
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" EnableDirectionSetting="true" AddAngle="0"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTUB-SKILTFESTE-BETONG-60-225-700-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -16091,7 +16117,7 @@ return s</Data>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLB-018" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTFE-ETIKETT
 				{% if    Variant == 'A-1-0-VLB-018' %}A-1-0-VLB-018
@@ -16141,7 +16167,7 @@ return s</Data>
    </SymbolAttribute>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
   </SymbolDefinition>
  </ObjectType>
  <ObjectType DataType="RailCOMPLETELabel" Class="RailwayPlacedObject" Name="FE-DIV Etikett for sporveksel" Layer="JBTFE_ETIKETTER" Color="ByLayer" Group="Overbygning/Etiketter">
@@ -16211,7 +16237,7 @@ return s</Data>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRB-025-018" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTFE-ETIKETT
 				{% if Variant == 'D-1-2-HLB-025-018-SPV' %}D-1-2-HLB-025-018
@@ -16229,7 +16255,7 @@ return s</Data>
    </SymbolAttribute>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
   </SymbolDefinition>
  </ObjectType>
  <LuaFunction Name="NOBN_trk_getFoulingPointReferenceMileage()" ReturnType="String" Description="Returns the reference mileage for the fouling point being farthest from the stock rail joint, using reference alignment mileage. Assumes caller is a switch unless argument 'v' is given.">
@@ -16459,7 +16485,7 @@ end
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-SPLICE-0-0" AllowSymbolMove="true" Layer="JBTOB__KO_SPF" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTOB-CONNECTOR-SPLICE
 				{% if ExtendingFromEnd == 'True' %}
@@ -16470,7 +16496,7 @@ end
 			</BlockNameFormat>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-SPLICE-0-0" AllowSymbolMove="true" Layer="JBTOB__KO_DIV_TOPOLOGI">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTOB-CONNECTOR-SPLICE
 				{% if ExtendingFromEnd == 'True' %}
@@ -16653,7 +16679,7 @@ end
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-CROSSING" AllowSymbolMove="true" Layer="JBTOB__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="0"/>
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="0"/>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-CROSSING" AllowSymbolMove="true" Layer="JBTOB__KO_DIV_TOPOLOGI"/>
  </ObjectType>
@@ -17052,230 +17078,243 @@ end
     <SetValue Key="Thumbnail3DModel" Value="NO-BN-3D-KO-SPV-60E1-1-26.1-R2500-H-BX"/>
    </Variant>
   </Variants>
-  <InsertPointObject VariantName="Non-standard switch" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-UNSPECIFIED-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Non-standard switch" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-SCHEMATIC-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:7 R190 FX 54E3 (KO-800157)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-07-R190-H-54E3-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:7 R190 FX 54E3 (KO-800157)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-07-R190-54E3-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R190 FX 54E3 (KO-701334)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R190-H-54E3-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R190 FX 54E3 (KO-701334)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R190-54E3-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R300 FX 54E3 (KO-701287)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-H-54E3-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R300 FX 54E3 (KO-701287)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-54E3-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:12 R500 FX 54E3 (KO-701306)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-H-54E3-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:12 R500 FX 54E3 (KO-701306)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-54E3-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:14 R760 FX 54E3 (KO-701319)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-H-54E3-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:14 R760 FX 54E3 (KO-701319)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-54E3-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R300 FX 60E1 (KO-701409)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-H-60E1-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R300 FX 60E1 (KO-701409)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-60E1-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:11,66 R500 FX 60E1 (KO-800068)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-11.66-R500-H-60E1-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:11,66 R500 FX 60E1 (KO-800068)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-11.66-R500-60E1-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:12 R500 FX 60E1 (KO-800068)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-H-60E1-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:12 R500 FX 60E1 (KO-800068)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-60E1-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:14 R760 FX 60E1 (KO-701372)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-H-60E1-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:14 R760 FX 60E1 (KO-701372)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-60E1-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:15 R760 FX 60E1 (KO-701382)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-H-60E1-FX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:15 R760 FX 60E1 (KO-701382)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-60E1-FX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R300 BX 60E1 (KO-800099)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R300 BX 60E1 (KO-800099)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:8.21 R300 BX 60E1 (KO-065306)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-08.21-R300-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:8.21 R300 BX 60E1 (KO-065306)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-08.21-R300-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:12 R500 BX 60E1 (KO-800090)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:12 R500 BX 60E1 (KO-800090)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:14 R760 BX 60E1 (KO-800108)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:14 R760 BX 60E1 (KO-800108)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:15 R760 BX 60E1 (KO-800164)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:15 R760 BX 60E1 (KO-800164)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:18.4 R1200 BX 60E1 (KO-800081)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-18.4-R1200-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:18.4 R1200 BX 60E1 (KO-800081)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-18.4-R1200-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:26.1 R2500 BX 60E1 (KO-701399)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-26.1-R2500-H-60E1-BX-1" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:26.1 R2500 BX 60E1 (KO-701399)" DisplayBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-26.1-R2500-60E1-BX-1-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-UNSPECIFIED-1" AllowSymbolMove="true" Layer="JBTOB__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="0"/>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="0"/>
    <BlockNameFormat JoinBy="-">
-			{% if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-07-R190-H-54E3-FX
-			{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R190-H-54E3-FX
-			
-			{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-H-54E3-FX
-			{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-H-54E3-FX
-			{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-H-54E3-FX
-			
-			{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-H-60E1-FX
-			{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-11.66-R500-H-60E1-FX
-			{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-H-60E1-FX
-			{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-H-60E1-FX
-			{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-H-60E1-FX
-			
-			{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-H-60E1-BX
-			{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-08.21-R300-H-60E1-BX
-			{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-H-60E1-BX
-			{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-H-60E1-BX
-			{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-H-60E1-BX
-			{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-18.4-R1200-H-60E1-BX
-			{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-26.1-R2500-H-60E1-BX
-			{% else %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-UNSPECIFIED
-			{% endif %}
-			{{quadrant}}
+				{% if SymbolMode == 'Geographic' %}
+					{% if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-07-R190-54E3-FX
+					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R190-54E3-FX
+					
+					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-54E3-FX
+					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-54E3-FX
+					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-54E3-FX
+					
+					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-60E1-FX
+					{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-11.66-R500-60E1-FX
+					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-60E1-FX
+					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-60E1-FX
+					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-60E1-FX
+					
+					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-09-R300-60E1-BX
+					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-08.21-R300-60E1-BX
+					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-12-R500-60E1-BX
+					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-14-R760-60E1-BX
+					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-15-R760-60E1-BX
+					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-18.4-R1200-60E1-BX
+					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-26.1-R2500-60E1-BX
+					{% else %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-SCHEMATIC
+					{% endif %}
+					{{quadrant}}
+					Metric
+				{% else %}NO-BN-2D-JBTOB-CONNECTOR-SWITCH-SCHEMATIC-{{quadrant}}-Metric
+				{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTKL__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="0"/>
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="0"/>
    <BlockNameFormat JoinBy="-">
-			{% if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-07-R190-54E3-FX
-			{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R190-54E3-FX
-			
-			{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R300-54E3-FX
-			{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-12-R500-54E3-FX
-			{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-14-R760-54E3-FX
-			
-			{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R300-60E1-FX
-			{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-11.66-R500-60E1-FX
-			{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-12-R500-60E1-FX
-			{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-14-R760-60E1-FX
-			{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-15-R760-60E1-FX
-			
-			{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R300-60E1-BX
-			{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-08.21-R300-60E1-BX
-			{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-12-R500-60E1-BX
-			{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-14-R760-60E1-BX
-			{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-15-R760-60E1-BX
-			{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-18.4-R1200-60E1-BX
-			{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-26.1-R2500-60E1-BX
-			{% endif %}
-			{% if Variant != 'Non-standard switch' %}
-				{% if SwitchElectrification == 'Both' %}LEDNING-BEGGE-SPOR{% else %}LEDNING-ENKELT-SPOR{% endif %}
-				{{quadrant}}
-			{% endif %}
+				{% if SymbolMode == 'Geographic' %}
+					{% if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-07-R190-54E3-FX
+					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R190-54E3-FX
+					
+					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R300-54E3-FX
+					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-12-R500-54E3-FX
+					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-14-R760-54E3-FX
+					
+					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R300-60E1-FX
+					{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-11.66-R500-60E1-FX
+					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-12-R500-60E1-FX
+					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-14-R760-60E1-FX
+					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-15-R760-60E1-FX
+					
+					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-09-R300-60E1-BX
+					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-08.21-R300-60E1-BX
+					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-12-R500-60E1-BX
+					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-14-R760-60E1-BX
+					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-15-R760-60E1-BX
+					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-18.4-R1200-60E1-BX
+					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}NO-BN-2D-JBTKL-CONNECTOR-SWITCH-26.1-R2500-60E1-BX
+					{% endif %}
+					{% if Variant != 'Non-standard switch' %}
+						{% if SwitchElectrification == 'Both' %}LEDNING-BEGGE-SPOR{% else %}LEDNING-ENKELT-SPOR{% endif %}
+						{{quadrant}}
+					{% endif %}
+					Metric
+				{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-UNSPECIFIED-1" AllowSymbolMove="true" Layer="JBTSI__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="0"/>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-CONNECTOR-SWITCH-SCHEMATIC-{{quadrant}}-Metric" AllowSymbolMove="true" Layer="JBTSI__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="0"/>
    <BlockNameFormat JoinBy="-">
-			{% if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-07-R190-54E3-FX
-			{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09-R190-54E3-FX
-
-			{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09-R300-54E3-FX
-			{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-12-R500-54E3-FX
-			{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-14-R760-54E3-FX
-
-			{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09-R300-60E1-FX
-			{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-11.66-R500-60E1-FX
-			{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-12-R500-60E1-FX
-			{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-14-R760-60E1-FX
-			{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-15-R760-60E1-FX
-
-			{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09.00-R300-60E1-BX
-			{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-08.21-R300-60E1-BX
-			{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-12-R500-60E1-BX
-			{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-14-R760-60E1-BX
-			{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-15-R760-60E1-BX
-			{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-18.4-R1200-60E1-BX
-			{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-26.1-R2500-60E1-BX
-			{% endif %}
-			{% if Variant != 'Non-standard switch' %} 
-				{% if SwitchControlAndLocking == 'Sentralstilt, maskinlåst' or SwitchControlAndLocking == 'Sentralstilt, kontrollåst H'or SwitchControlAndLocking == 'Sentralstilt, kontrollåst V' or SwitchControlAndLocking == 'Sentralstilt, kontrollåst HV' %}FYLT
-				{% elsif SwitchControlAndLocking == 'Trykknapp, uforriglet' or SwitchControlAndLocking == 'Kastelodd, uforriglet' %}TOM
-				{% else %}LETT
+				{% if SymbolMode == 'Geographic' %}
+					{% if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-07-R190-54E3-FX
+					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09-R190-54E3-FX
+				
+					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09-R300-54E3-FX
+					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-12-R500-54E3-FX
+					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-14-R760-54E3-FX
+				
+					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09-R300-60E1-FX
+					{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-11.66-R500-60E1-FX
+					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-12-R500-60E1-FX
+					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-14-R760-60E1-FX
+					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-15-R760-60E1-FX
+				
+					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-09.00-R300-60E1-BX
+					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-08.21-R300-60E1-BX
+					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-12-R500-60E1-BX
+					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-14-R760-60E1-BX
+					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-15-R760-60E1-BX
+					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-18.4-R1200-60E1-BX
+					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-26.1-R2500-60E1-BX
+					{% endif %}
+					{% if Variant != 'Non-standard switch' %} 
+						{% if SwitchControlAndLocking == 'Sentralstilt, maskinlåst' or SwitchControlAndLocking == 'Sentralstilt, kontrollåst H'or SwitchControlAndLocking == 'Sentralstilt, kontrollåst V' or SwitchControlAndLocking == 'Sentralstilt, kontrollåst HV' %}FILLED
+						{% elsif SwitchControlAndLocking == 'Trykknapp, uforriglet' or SwitchControlAndLocking == 'Kastelodd, uforriglet' %}EMPTY
+						{% else %}SPARSE
+						{% endif %}
+						{{quadrant}}
+					{% endif %}
+					Metric
 				{% endif %}
-				{{quadrant}}
-			{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="true" DrawOrder="top" Layer="JBTSI__KO_SPV">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="{% if Dir == 'down' %}180{% else %}0{% endif %}"/>
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if Dir == 'down' %}180{% else %}0{% endif %}"/>
    <BlockNameFormat>
-			{% if variant != 'Non-standard switch' %}
-					{% if SwitchControlAndLocking == 'Trykknapp, kontrollåst H' or SwitchControlAndLocking == 'Trykknapp, kontrollåst V' or SwitchControlAndLocking == 'Trykknapp, kontrollåst HV' or SwitchControlAndLocking == 'Trykknapp, uforriglet' %}NO-BN-2D-JBTSI-CONNECTOR-FILLED-CIRCLE-
-					{% if    Variant == '1:7 R190 FX 54E3 (KO-800157)' %}13.503
-					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}10.523
-					
-					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}16.616
-					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}20.797
-					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}27.108
+				{% if SymbolMode == 'Geographic' %}
+					{% if Variant != 'Non-standard switch' %}
+						{% if SwitchControlAndLocking == 'Trykknapp, kontrollåst H' or SwitchControlAndLocking == 'Trykknapp, kontrollåst V' or SwitchControlAndLocking == 'Trykknapp, kontrollåst HV' or SwitchControlAndLocking == 'Trykknapp, uforriglet' %}NO-BN-2D-JBTSI-CONNECTOR-FILLED-CIRCLE
+							{% if    Variant == '1:7 R190 FX 54E3 (KO-800157)' %}13.503
+							{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}10.523
 						
-					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}16.615
-					{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}21.393
-					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}20.797
-					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}27.108
-					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}25.305
-						
-					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}16.615
-					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}18.188
-					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}20.797
-					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}27.108
-					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}25.305
-					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}32.829
-					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}48.109
+							{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}16.616
+							{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}20.797
+							{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}27.108
+							
+							{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}16.615
+							{% elsif Variant == '1:11,66 R500 FX 60E1 (KO-800068)' %}21.393
+							{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}20.797
+							{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}27.108
+							{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}25.305
+							
+							{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}16.615
+							{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}18.188
+							{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}20.797
+							{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}27.108
+							{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}25.305
+							{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}32.829
+							{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}48.109
+							{% else %}BAD_VARIANT
+							{% endif %}
+							Metric
+						{% endif %}
 					{% endif %}
 				{% endif %}
-			{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB__KO_DIV_TOPOLOGI">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="0"/>
-   <BlockNameFormat>NO-BN-2D-JBTOB-CONNECTOR-SWITCH-UNSPECIFIED-{{quadrant}}</BlockNameFormat>
-  </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTSI__KO_SPV" Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="{% if Dir == 'down' %}180{% else %}0{% endif %}"/>
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if Dir == 'down' %}180{% else %}0{% endif %}"/>
    <BlockNameFormat>
-			{% if Variant != 'Non-standard switch' %}
-				{% if SwitchControlAndLocking == 'Sentralstilt, kontrollåst H' or SwitchControlAndLocking == 'Trykknapp, kontrollåst H' or SwitchControlAndLocking == 'Kastelodd, kontrollåst H' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KONTROLL-H
-				{% elsif SwitchControlAndLocking == 'Sentralstilt, kontrollåst V' or SwitchControlAndLocking == 'Trykknapp, kontrollåst V' or SwitchControlAndLocking == 'Kastelodd, kontrollåst V' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KONTROLL-V
-				{% elsif SwitchControlAndLocking == 'Sentralstilt, kontrollåst HV' or SwitchControlAndLocking == 'Trykknapp, kontrollåst HV' or SwitchControlAndLocking == 'Kastelodd, kontrollåst HV' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KONTROLL-HV
+				{% if SymbolMode == 'Geographic' %}
+					{% if Variant != 'Non-standard switch' %}
+						{% if SwitchControlAndLocking == 'Sentralstilt, kontrollåst H' or SwitchControlAndLocking == 'Trykknapp, kontrollåst H' or SwitchControlAndLocking == 'Kastelodd, kontrollåst H' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KEYLOCKED-RIGHT
+						{% elsif SwitchControlAndLocking == 'Sentralstilt, kontrollåst V' or SwitchControlAndLocking == 'Trykknapp, kontrollåst V' or SwitchControlAndLocking == 'Kastelodd, kontrollåst V' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KEYLOCKED-LEFT
+						{% elsif SwitchControlAndLocking == 'Sentralstilt, kontrollåst HV' or SwitchControlAndLocking == 'Trykknapp, kontrollåst HV' or SwitchControlAndLocking == 'Kastelodd, kontrollåst HV' %}NO-BN-2D-JBTSI-CONNECTOR-SWITCH-KEYLOCKED-BOTH
+						{% endif %}
+						Metric
+					{% endif %}
 				{% endif %}
-			{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
   <DockPointDefinitions>
@@ -17596,56 +17635,56 @@ end
     <Value DisplayName="Høyre">Right</Value>
    </Values>
   </CustomAttribute>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:9 R190" VariantName="1:9 R190" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-09-R190-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:9 R190" VariantName="1:9 R190" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-09-R190-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:9 R300" VariantName="1:9 R300" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-09-R300-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:9 R300" VariantName="1:9 R300" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-09-R300-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:11,66 R500" VariantName="1:11,66 R500" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-11.66-R500-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:11,66 R500" VariantName="1:11,66 R500" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-11.66-R500-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:12 R500" VariantName="1:12 R500" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-12-R500-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:12 R500" VariantName="1:12 R500" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-12-R500-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:14 R760" VariantName="1:14 R760" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-14-R760-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:14 R760" VariantName="1:14 R760" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-14-R760-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:15 R760" VariantName="1:15 R760" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-15-R760-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:15 R760" VariantName="1:15 R760" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-15-R760-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:18.4 R1200" VariantName="1:18.4 R1200" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-18.4-R1200-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:18.4 R1200" VariantName="1:18.4 R1200" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-18.4-R1200-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <InsertPointObject DisplayName="Sporvekseltunge 1:26.1 R2500" VariantName="1:26.1 R2500" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-26.1-R2500-V" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Sporvekseltunge 1:26.1 R2500" VariantName="1:26.1 R2500" DisplayBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-26.1-R2500-V-Metric" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-09-R190-V" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPORVEKSELTUNGE-09-R190-V-Metric" AllowSymbolMove="true">
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTOB-SPORVEKSELTUNGE
 				{% if Variant == '1:9 R190' %}09-R190
@@ -17661,6 +17700,7 @@ end
 				{% elsif NormalPosition == 'Left' %}V
 				{% else %}H
 				{% endif %}
+				Metric
 			</BlockNameFormat>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
@@ -18759,7 +18799,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-FAST" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -18885,7 +18925,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -20098,7 +20138,7 @@ end
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-MAST-BJELKEMAST-{{SymbolMode}}">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -20512,7 +20552,7 @@ end
    <JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-BRU-OG-TUNNEL-{{SymbolMode}}">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -20961,7 +21001,7 @@ end
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-{{SymbolMode}}">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -21413,7 +21453,7 @@ end
    <SetValue Key="RelativeElevation" Value="7.90"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-AAK-11000-{{SymbolMode}}">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -21571,7 +21611,7 @@ end
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-KONSOLL-FOR-SEKSJONSUTLIGGER">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -22095,7 +22135,7 @@ end
    <SetValue Key="CantileverLength" Value="1.2"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-UTLIGGER-20B-Schematic">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
@@ -22282,7 +22322,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-KLEMPUNKT-KONTAKTTRAADKLEMME">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -22548,7 +22588,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-BARDUN-ENKEL">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -22672,7 +22712,7 @@ end
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-TUNNELBARDUN">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23096,7 +23136,7 @@ end
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-AVSPENNING-FIXPUNKT">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23233,7 +23273,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23372,7 +23412,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23566,7 +23606,7 @@ end
    <SetValue Key="RelativeElevation" Value="6.8"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-1">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23689,7 +23729,7 @@ end
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-JORDING-JORDPOTENSIAL">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23810,7 +23850,7 @@ end
    <JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-JORDING-SKINNEJORD">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -23932,7 +23972,7 @@ end
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-JORDING-JORDINGSSKINNE-10x50x290">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -24054,7 +24094,7 @@ end
    <SetValue Key="name" Value="Svevende kryss"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-FORBINDELSE-SVEVENDE-KRYSS">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -24158,7 +24198,7 @@ end
    <SetValue Key="name" Value="Strømbro"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-H">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -24398,7 +24438,7 @@ end
    <SetValue Key="Motorized" Value="Yes"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-AAPEN">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -24526,7 +24566,7 @@ end
    <SetValue Key="name" Value="Sugetrafo i kiosk"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-TRANSFORMATOR-SUGETRAFO">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -24637,7 +24677,7 @@ end
    <SetValue Key="name" Value="Autotrafo"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-TRANSFORMATOR-AUTOTRAFO">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -25213,7 +25253,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SAMLELAAS-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -25427,7 +25467,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ROERMAST-127-MED-LJERN-FOR-SIGNAL-3200-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -25570,7 +25610,7 @@ end
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-DIVERSE-AVSPORINGSINDIKATOR-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
@@ -25761,7 +25801,7 @@ end
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSPERRE-ENKEL-1-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="0"/>
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="0"/>
    <BlockNameFormat JoinBy="-">
 			NO-BN-2D-JBTOB-SPOROBJEKT
 			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-ENKEL
@@ -25911,7 +25951,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-VHENGSLET-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -26128,7 +26168,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-VHENGSLET-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -26272,7 +26312,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-TEKNISK-BEBYGGELSE-RELEROM-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="{% if RightSided %}0{% else %}180{% endif %}"/>
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if RightSided %}0{% else %}180{% endif %}"/>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
@@ -26645,7 +26685,7 @@ end
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SENSOR-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -26836,7 +26876,7 @@ end
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTSI-TOGDETEKSJON-TELLEPUNKT-SOPP-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -26993,7 +27033,7 @@ end
   <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTOB-SKINNESKJOET-0-0-0-0-{{SymbolMode}}" AllowSymbolMove="true">
    <JigSymbolAppearance AddAngle="0"/>
   </SymbolDefinition>
-  <SymbolDefinition X="0" Y="0" RotationCenter="OwnPosition" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB_KO_SKJ">
+  <SymbolDefinition X="0" Y="0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB_KO_SKJ">
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTOB-SKINNESKJOET
 				{% if UpSectionRightRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
@@ -27308,7 +27348,7 @@ end
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORVEKSEL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
   </SymbolDefinition>
   <Model3DDefinition>
    <Attribute Tag="T01">
@@ -27449,7 +27489,7 @@ end
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-DRIVMASKIN-SPORSPERRE-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
   </SymbolDefinition>
   <Model3DDefinition>
    <Attribute Tag="T01">
@@ -27670,7 +27710,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIKRINGSANLEGG-LOKALSTILLER-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -28445,7 +28485,7 @@ end
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-FIKTIVT-PUNKT-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true"/>
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
 			NO-BN-2D-JBTSI-SIGNAL
 			{% if Variant == 'Viapunkt for betjeningsanlegg' %}VIAPUNKT
@@ -28845,7 +28885,7 @@ end
 					if (BrakeTestSignal ~= "-") then t = t.."-BPS" end --Bremseprøvesignal
 					if Sunscreen == "-" then t = t.."-UTEN-SKJERM" end
 					if Yokemounted then t = t.."-ÅK" end
-					if t:match("%-NSI63%-DS") and not t:match("ÅK") then t = t.."-2000" --Add '-2000' pole total length to shunting signal if free-standing shunting signal
+					if t:match("%-NSI63%-DS") and not t:match("ÅK") then t = t.."-2000" end --Add '-2000' pole total length to shunting signal if free-standing shunting signal
 					return t
 				end
 			</Formula>
@@ -29614,7 +29654,7 @@ end
    <SetValue Key="ruleCode" Value=""/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-UNKNOWN" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="true" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -29870,7 +29910,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-ERTMS-E35-HSIDE-Schematic">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -30088,7 +30128,7 @@ end
    <SetValue Key="ruleCode" Value=""/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-UNKNOWN" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -30284,7 +30324,7 @@ end
    <SetValue Key="Yokemounted" Value="False"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-41-HOEYT-SKIFTESIGNAL" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -30432,7 +30472,7 @@ end
    <SetValue Key="ruleCode" Value=""/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-HS3" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -30579,7 +30619,7 @@ end
    <SetValue Key="ruleCode" Value=""/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-HS3" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -30751,7 +30791,7 @@ end
    <SetValue Key="ruleCode" Value=""/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-HS2" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -30897,7 +30937,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-SIGNAL-VEISIGNAL-1" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -31012,7 +31052,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTTE-TELERACK" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -31116,7 +31156,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTTE-TELEFON-LANGS-SPOR" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -31230,7 +31270,7 @@ end
    <SetValue Key="Model3DName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-BELYSNING-ARMATUR" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -31655,7 +31695,7 @@ end
    <SetValue Key="Model3DName" Value="NO-BN-3D-EL-LYA-ARMATUR-I-ÅK"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-BELYSNING-ARMATUR" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -31797,7 +31837,7 @@ end
    <SetValue Key="name" Value="Fordelingsskap"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-SKAP-FORDELINGSSKAP" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -31907,7 +31947,7 @@ end
    <SetValue Key="name" Value="Gruppeskap"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-SKAP-GRUPPESKAP" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -32013,7 +32053,7 @@ end
    <SetValue Key="name" Value="Togvarmepost"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-SKAP-TOGVARMEPOST" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -32119,7 +32159,7 @@ end
    <SetValue Key="name" Value="Transformator"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-TRANSFORMATOR" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
@@ -32225,7 +32265,7 @@ end
    <SetValue Key="name" Value="UPS fordeler"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTEL-UPS-FORDELER" AllowSymbolMove="true">
-   <JigSymbolAppearance Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}

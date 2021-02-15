@@ -154,30 +154,28 @@
 
 (defun insertFunction (x y x1 x2 i j rows cols blockName description
 		    layerTableName layerSymbolsName layerTextsName
-		    / cellCorner radius insertBlock insertText
+		    / cellCorner radius blockPos textPos
 		    )
 	(setq
 		cellCorner (list (* j x) (* (- rows i 1) y))
 		radius	   0.7321
-		insertBlock(polar (polar cellCorner 0 (/ x1 2)) (D->R _angle90_) (/ y 4))
-		insertText (polar (polar cellCorner 0 (+ x1 radius)) (D->R _angle90_) (- y radius))
+		blockPos(polar (polar cellCorner 0 (/ x1 2)) (D->R _angle90_) (/ y 4))
+		textPos (polar (polar cellCorner 0 (+ x1 radius)) (D->R _angle90_) (- y radius))
 	)
 	(command
 		_LAYER__setLayer_ layerTableName _ENTER_
-		_CIRCLE_ insertBlock radius
-		_CIRCLE_ insertText radius
+		_CIRCLE_ blockPos radius
+		_CIRCLE_ textPos radius
 		_LAYER_ _setLayer_ layerSymbolsName _ENTER_
-		_INSERT_ blockName insertBlock _ENTER_ _ENTER_ _ENTER_
+		_INSERT_ blockName blockPos _ENTER_ _ENTER_ _ENTER_
 		_LAYER_ _setLayer_ layerTextsName _ENTER_
 		_MTEXT_
-			insertText
-			"Height" _th090_
-			"Justify" _topLeft_
-			"Line" "At" 1 ;line style at least
-			"Style" _rcTextStyle_
-			(strcat "@" (rtos (- x2 (* 2 radius))) ","	(rtos (- (* 2 radius) y)))
-			; (list (+ (car insertText) (- x2 radius))
-			; (+ (cadr insertText) (- radius y)))
+			textPos
+			_setMtextHeight_ _th090_
+			_setMtextJustifcation_ _topLeft_
+			_setMtextLineSpacing_ _mTextLineSpaceinIsAtLeast_ _one_
+			_setMtextStyle_ _rcTextStyle_
+			(strcat "@" (rtos (- x2 (* 2 radius))) ","	(rtos (- (* 2 radius) y))) ; opposite Mtext box corner
 			description
 			_ENTER_
 	)

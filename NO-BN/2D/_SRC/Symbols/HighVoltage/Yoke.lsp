@@ -32,7 +32,7 @@
 
 	; Schematic symbol
 	; Adapt to schematic plan with 21 units between center tracks (instead of standard ~4.7 in shunting yards
-	(drawLine layer_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
+	(drawLine layDef_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
 	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
 	(createSchematicBlockFromCurrentGraphics blockName)
 
@@ -42,7 +42,7 @@
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawLine layer_Zero _origo_ (list 0 (- len)))
+	(drawLine layDef_Zero _origo_ (list 0 (- len)))
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -57,7 +57,7 @@
 
 	; Schematic symbol
 	; Adapt to schematic plan with _schematicTrackSpacing_ units between center tracks (instead of standard ~4.7 in shunting yards
-	(drawLine layer_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
+	(drawLine layDef_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
 	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
 	(createSchematicBlockFromCurrentGraphics blockName)
 
@@ -67,6 +67,6 @@
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawLine layer_Zero _origo_ (list 0 (- len)))
+	(drawLine layDef_Zero _origo_ (list 0 (- len)))
 	(createMetricBlockFromCurrentGraphics blockName)
 )

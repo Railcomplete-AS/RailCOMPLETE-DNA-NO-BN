@@ -35,11 +35,11 @@
 		p3 (list (*  0.00 x) (* -0.3 y))
 		attMetersLeft	'("VDIST" (strcat "Avstand til r" _oe_ "mning mot venstre") "275")
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(addTextAtPos layer_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
-	(addTextAttributeAtPos layer_Zero _th180_ p3 attMetersLeft)
+	(addTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
 
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
@@ -69,11 +69,11 @@
 		p4 (list (*  0.00 x) (* -0.3 y))
 		attMetersRight	'("HDIST" (strcat "Avstand til r" _oe_ "mning mot h" _oe_ "yre") "625")
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(addTextAtPos layer_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
-	(addTextAttributeAtPos layer_Zero _th180_ p4 attMetersRight)
+	(addTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
 
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
@@ -106,15 +106,15 @@
 		attMetersLeft	'("VDIST" (strcat "Avstand til r" _oe_ "mning mot venstre") "275")
 		attMetersRight	'("HDIST" (strcat "Avstand til r" _oe_ "mning mot h" _oe_ "yre") "625")
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(addTextAtPos layer_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
-	(addTextAttributeAtPos layer_Zero _th180_ p3 attMetersLeft)
+	(addTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
 
-	(addTextAtPos layer_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
-	(addTextAttributeAtPos layer_Zero _th180_ p4 attMetersRight)
+	(addTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
 
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)

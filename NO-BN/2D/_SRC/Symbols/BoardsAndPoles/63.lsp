@@ -39,11 +39,11 @@
 		attPrompt		"FAll"
 		attDefaultValue	"18"
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ p1 p2 p3 _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layer_BoardOrPole_Wipeout _eraseWipeoutSource_)
-	(setLayer layer_Zero)
-	(addAtt attTag attPrompt attDefaultValue p4 _th180_ 315 _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(setLayer layDef_Zero)
+	(addAtt attTag attPrompt attDefaultValue p4 _th180_ _angle315_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -74,11 +74,11 @@
 		attPrompt		"Stigning"
 		attDefaultValue	"11"
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ p1 p2 p3 _closedPolyline_)
-	(setLayer layer_BoardOrPole_Wipeout)
+	(setLayer layDef_BoardOrPole_Wipeout)
 	(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(addAtt attTag attPrompt attDefaultValue p4 _th180_ _angle45_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

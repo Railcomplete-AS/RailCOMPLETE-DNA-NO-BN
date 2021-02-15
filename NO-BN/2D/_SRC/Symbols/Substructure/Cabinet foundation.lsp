@@ -78,20 +78,20 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(localGraphics)
 	(scaleAll _four_)
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layer_MetricDetails)
+	(setLayer layDef_MetricDetails)
 	(localGraphics)
 	(createMetricBlockFromCurrentGraphics blockName)
 )

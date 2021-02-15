@@ -56,7 +56,7 @@
 			blockName	(strcat "NO-BN-2D-JBTKL-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
 			description	(strcat "SPORVEKSEL / KL-SYMBOL, "         str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
 		)
-		(setLayer layer_Zero)
+		(setLayer layDef_Zero)
 		(if (= hatchVariant "LEDNING-ENKELT-SPOR")
 			(progn
 				(command _POLYLINE_ (list A 0) (list (+ A (/ B 2.0)) 0) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)

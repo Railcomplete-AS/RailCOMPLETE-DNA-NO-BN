@@ -120,18 +120,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -172,18 +172,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -212,18 +212,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -252,18 +252,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -288,24 +288,24 @@
 			_CIRCLE_ (list x x) r
 			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R ang) R2) _setArcAngle_ d_ang
 			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (/ d_ang -2)) R1) _setArcAngle_ d_ang
-			"._ARRAY" _selectAll_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
+			_ARRAY_ _selectAll_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
 			_CIRCLE_ _origo_ R_pole
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -326,7 +326,7 @@
 		; make three of them:
 		(command	
 			_MIRROR_ _selectAll_ _ENTER_ (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) _eraseMirrorSource_
-			"._ARRAY" _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
+			_ARRAY_ _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
 			_CIRCLE_ _origo_ 0.0413
 			_CIRCLE_ _origo_ 0.0445
 		)
@@ -351,7 +351,7 @@
 				(list (- s1) (- s1))
 				(list (- s2) (- s2))
 				_ENTER_
-			"._ARRAY" 
+			_ARRAY_ 
 				_lastSelection_ _ENTER_ _polarArray_ _origo_ 4 360 _rotateObjects_
 			_RECTANGLE_
 				(list (/ dim1 -2) -0.24)
@@ -360,18 +360,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -392,7 +392,7 @@
 		(drawSmallBolt layDef)
 		(command
 			_MIRROR_ _selectAll_ _ENTER_ (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) _eraseMirrorSource_
-			"._ARRAY" _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
+			_ARRAY_ _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
 			_CIRCLE_  _origo_ 0.0413
 			_CIRCLE_ _origo_ 0.0445
 		)
@@ -415,18 +415,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "S")
+	(drawProxySymbol layDef_FoundationLocator "S")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -470,18 +470,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -528,18 +528,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -586,18 +586,18 @@
 	)
 	
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -680,18 +680,18 @@
 	)	
 	
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -722,30 +722,30 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(drawLine layer_Zero _origo_ (posTR x y))					; ./ line from origo
-	(drawCircleAtPos layer_Zero br (posTR bx by) _noWipeout_)	; ( ) bolt
-	(drawLine layer_Zero (posTR x1 y1) (posTR x2 y2))			; (/) hatch over bolt
+	(drawLine layDef_Zero _origo_ (posTR x y))					; ./ line from origo
+	(drawCircleAtPos layDef_Zero (posTR bx by) br _noWipeout_)	; ( ) bolt
+	(drawLine layDef_Zero (posTR x1 y1) (posTR x2 y2))			; (/) hatch over bolt
 	(mirrorAboutXaxis _keepMirrorSource_)
 	(mirrorAboutYaxis _keepMirrorSource_)
 	(mirrorAboutDiagonal _keepMirrorSource_) ; Now we have 8 bolts
-	(drawCircle layer_Zero pr _noWipeout_) ; Foundation concrete pole
+	(drawCircle layDef_Zero pr _noWipeout_) ; Foundation concrete pole
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(drawLine layer_MetricDetails _origo_ (posTR x y))					
-	(drawCircleAtPos layer_MetricDetails br (posTR bx by) _noWipeout_)	
-	(drawLine layer_MetricDetails (posTR x1 y1) (posTR x2 y2))			
+	(drawLine layDef_MetricDetails _origo_ (posTR x y))					
+	(drawCircleAtPos layDef_MetricDetails (posTR bx by) br _noWipeout_)	
+	(drawLine layDef_MetricDetails (posTR x1 y1) (posTR x2 y2))			
 	(mirrorAboutXaxis _keepMirrorSource_)
 	(mirrorAboutYaxis _keepMirrorSource_)
 	(mirrorAboutDiagonal _keepMirrorSource_)
-	(drawCircle layer_MetricDetails pr _noWipeout_)
+	(drawCircle layDef_MetricDetails pr _noWipeout_)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -769,20 +769,20 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(drawBoltGroup191x374xM36 layer_Zero)
-	(drawCircle layer_Zero pr _noWipeout_)
+	(drawBoltGroup191x374xM36 layDef_Zero)
+	(drawCircle layDef_Zero pr _noWipeout_)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(drawBoltGroup191x374xM36 layer_MetricDetails)
-	(drawCircle layer_MetricDetails pr _noWipeout_)
+	(drawBoltGroup191x374xM36 layDef_MetricDetails)
+	(drawCircle layDef_MetricDetails pr _noWipeout_)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -804,20 +804,20 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBoltGroup layer_Zero bx by bd)
-	(drawStAndrewCross layer_Zero x y)
+	(drawBoltGroup layDef_Zero bx by bd)
+	(drawStAndrewCross layDef_Zero x y)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawBoltGroup layer_MetricDetails bx by bd)
-	(drawStAndrewCross layer_MetricDetails x y)
+	(drawBoltGroup layDef_MetricDetails bx by bd)
+	(drawStAndrewCross layDef_MetricDetails x y)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -842,20 +842,20 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBoxAtPos layer_Zero bd bl (list (* -0.5 bx) (* 0.5 bl)) _noWipeout_) ; Left bolts, viewed from above
-	(drawBoxAtPos layer_Zero bd bl (list (*  0.5 bx) (* 0.5 bl)) _noWipeout_) ; Right bolts, viewed from above
+	(drawBoxAtPos layDef_Zero (list (* -0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Left bolts, viewed from above
+	(drawBoxAtPos layDef_Zero (list (*  0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Right bolts, viewed from above
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawBoxAtPos layer_MetricDetails bd bl (list (* -0.5 bx) (* 0.5 bl)) _noWipeout_) ; Left bolts, viewed from above
-	(drawBoxAtPos layer_MetricDetails bd bl (list (*  0.5 bx) (* 0.5 bl)) _noWipeout_) ; Right bolts, viewed from above
+	(drawBoxAtPos layDef_MetricDetails (list (* -0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Left bolts, viewed from above
+	(drawBoxAtPos layDef_MetricDetails (list (*  0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Right bolts, viewed from above
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -913,18 +913,18 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(localGraphics layer_Zero)
+	(localGraphics layDef_Zero)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(localGraphics layer_MetricDetails)
+	(localGraphics layDef_MetricDetails)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -957,20 +957,20 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "KL")
+	(drawProxySymbol layDef_FoundationLocator "KL")
 	(addDescriptionBelowOrigo description _proxySymbolRadius_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBoltGroup191x374xM36 layer_Zero)
-	(drawStAndrewCross layer_Zero x y)
+	(drawBoltGroup191x374xM36 layDef_Zero)
+	(drawStAndrewCross layDef_Zero x y)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric symbol
-	(drawBoltGroup191x374xM36 layer_MetricDetails)
-	(drawStAndrewCross layer_MetricDetails x y)
+	(drawBoltGroup191x374xM36 layDef_MetricDetails)
+	(drawStAndrewCross layDef_MetricDetails x y)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
 
@@ -1032,10 +1032,10 @@
 	(drawLine layDef (posTR x1 y1) (posTR x2 y2))
 	(drawLine layDef (posBL x1 y1) (posBL x2 y2))
 	(drawLine layDef (posBR x1 y1) (posBR x2 y2))
-	(drawCircleAtPos layDef br (posTL bx by) _noWipeout_)
-	(drawCircleAtPos layDef br (posTR bx by) _noWipeout_)
-	(drawCircleAtPos layDef br (posBL bx by) _noWipeout_)
-	(drawCircleAtPos layDef br (posBR bx by) _noWipeout_)
+	(drawCircleAtPos layDef (posTL bx by) br _noWipeout_)
+	(drawCircleAtPos layDef (posTR bx by) br _noWipeout_)
+	(drawCircleAtPos layDef (posBL bx by) br _noWipeout_)
+	(drawCircleAtPos layDef (posBR bx by) br _noWipeout_)
 )
 
 
@@ -1044,10 +1044,10 @@
 	(setq
 		br 	(* _half_ bd) ; Bolt radius
 	)
-	(drawCircleAtPos layDef br (posTL bx by) _noWipeout_)
-	(drawCircleAtPos layDef br (posTR bx by) _noWipeout_)
-	(drawCircleAtPos layDef br (posBL bx by) _noWipeout_)
-	(drawCircleAtPos layDef br (posBR bx by) _noWipeout_)
+	(drawCircleAtPos layDef (posTL bx by) br _noWipeout_)
+	(drawCircleAtPos layDef (posTR bx by) br _noWipeout_)
+	(drawCircleAtPos layDef (posBL bx by) br _noWipeout_)
+	(drawCircleAtPos layDef (posBR bx by) br _noWipeout_)
 )
 
 

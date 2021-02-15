@@ -60,38 +60,38 @@
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 
 	; Metric symbol
-	(setLayerAndObjectColor layer_Balise_3m_Separation "_ByLayer")
+	(setLayer layDef_Balise_3m_Separation)
 	(command 
-		_POLYLINE_ (list 3 0) _setPolylineArcMode_ "_CE" _origo_ "A" 15 _ENTER_
+		_POLYLINE_ (list 3 0) _setPolylineArcMode_ _setPolylineArcCenter_ _origo_ _setPolylineArcAngle_ 15 _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addText "3" (list (- 2.9) (- 0.5)) _th020_ _angleZero_ _rcTextStyle_ _topLeft_)
+	(addTextAtPosWithJustification layDef_Balise_3m_Separation _th020_ (list (- 2.9) (- 0.5)) "3" _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 		
-	(setLayerAndObjectColor layer_Balise_8m_Separation "_ByLayer")
+	(setLayer layDef_Balise_8m_Separation)
 	(command 
-		_POLYLINE_ (list 8 0) _setPolylineArcMode_ "_CE" _origo_ "A" 9 _ENTER_
+		_POLYLINE_ (list 8 0) _setPolylineArcMode_ _setPolylineArcCenter_ _origo_ _setPolylineArcAngle_ 9 _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addText "8" (list (- 7.9) (- 0.95)) _th020_ _angleZero_ _rcTextStyle_ _topLeft_)
+	(addTextAtPosWithJustification layDef_Balise_8m_Separation _th020_ (list (- 7.9) (- 0.95)) "8" _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 
-	(setLayerAndObjectColor layer_Balise_12m_Separation "_ByLayer")
+	(setLayer layDef_Balise_12m_Separation)
 	(command 
-		_POLYLINE_ (list 12 0) _setPolylineArcMode_ "_CE" _origo_ "A" 10 _ENTER_
+		_POLYLINE_ (list 12 0) _setPolylineArcMode_ _setPolylineArcCenter_ _origo_ _setPolylineArcAngle_ 10 _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addText "12" (list (- 11.8) (- 1.8)) _th020_ _angleZero_ _rcTextStyle_ _topLeft_)
+	(addTextAtPosWithJustification layDef_Balise_12m_Separation _th020_  (list (- 11.8) (- 1.8)) "12" _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 		
 	; Metal-free area:
-	(setLayerAndObjectColor layer_Balise_MetalFreeArea "_ByLayer")
+	(setLayerAndObjectColor layDef_Balise_MetalFreeArea "_ByLayer")
 	(command _RECTANGLE_ (list (- mx) (- my))   (list (+ mx) (+ my)))
 	(createMetricBlockFromCurrentGraphics blockName)
 )
@@ -103,7 +103,7 @@
 		blockName "NO-BN-2D-JBTSI-ATC-BALISEGRUPPE"
 	)
 	; Equilateral triangle, side = 6, draw a dashed line (without using the CAD system's dash-line mechanism):
-	(setLayerAndObjectColor layer_Zero "_ByBlock")
+	(setLayerAndObjectColor layDef_Zero "_ByBlock")
 	(command
 		_LINE_ "0,1.5981" "-0.3,1.0785" _ENTER_
 		_LINE_ "-0.6,0.5588" "-0.9,0.0392" _ENTER_
@@ -134,9 +134,9 @@
 		dh 0.10  ; The height of the "controlled balise" bar above the triangle
 	)
 	
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(command 
-		"._COLOR" "_ByBlock"
+		_COLOR_ _ByBlock_
 		_POLYLINE_
 			(list (/ side -2) 0)
 			(list (/ side 2) 0)

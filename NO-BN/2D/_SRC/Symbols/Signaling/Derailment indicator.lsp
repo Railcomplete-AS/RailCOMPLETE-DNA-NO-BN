@@ -32,13 +32,13 @@
         x2		0.6	; Width of vertical hatched bar (1234) in geo symbol
 	)
 	; Schematic symbol
-	(drawBox layer_Zero x y _noWipeout_)
+	(drawBox layDef_Zero x y _noWipeout_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	; Add hatched vertical bar to geo symbol:
-	(drawBox layer_Zero x2 y _noWipeout_)
+	(drawBox layDef_Zero x2 y _noWipeout_)
 	(drawHatch _denseHatch_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 )

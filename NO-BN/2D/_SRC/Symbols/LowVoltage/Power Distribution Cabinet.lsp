@@ -21,73 +21,89 @@
 
 
  
-(defun FORDELINGSSKAP ( / blockName x y halfWidth halfHeight )
+(defun FORDELINGSSKAP ( / blockName description x y y2 p1 p2 p3 p4 p5 )
+	;
+	; +-----------------5
+	; |               / |
+	; |             /   |
+	; |        3  /     |
+	; |       /./       |    
+	; |     /  4        |
+	; |   /             |
+	; | /               |
+	; 1-----------------2
+	; |                 |  y2
+	; +-----------------+
+	;
 	(setq 
 		blockName "NO-BN-2D-JBTEL-SKAP-FORDELINGSSKAP"
+		description "LAVSPENT FORDELINGSSKAP"
 		; TRV:  4.5 x 2.25
-		x 2.0 	; Not drawn to scale
-		y 1.0  	; Not drawn to scale
-		halfWidth (/ x 2)
-		halfHeight (/ y 2)
-		frontlineHeight (/ y 9)
-		pt1 (list (/ x 40) (+ (/ y 6) (/ y 18)))
-		pt2 (list (/ x -40) (+ (/ y -6) (/ y 18)))
+		x 4.5 	
+		y 2.25  
+		y2 (/ y 9) 
+		p1 (addVectors (posBL x y) (list 0 y2))
+		p2 (addVectors (posBR x y) (list 0 y2))
+		p3 (list (/ x 40) (+ (/ y 6) (/ y 18)))
+		p4 (list (/ x -40) (+ (/ y -6) (/ y 18)))
+		p5 (posTR x y)
 	)
-	(command
-		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		_LINE_ (list (- halfWidth)  (+ (- halfHeight) frontlineHeight)) (list halfWidth  (+ (- halfHeight) frontlineHeight)) _ENTER_
-		_LINE_ (list (- halfWidth) (+ (- halfHeight) frontlineHeight)) pt1 pt2 (list halfWidth halfHeight) _ENTER_
-	)
-	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Fordelings- skap" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawLine layDef_Zero p1 p2)
+	(command _POLYLINE_ p1 p3 p4 p5 _openPolyline_)
+	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun GRUPPESKAP ( / blockName x y halfWidth halfHeight )
+(defun GRUPPESKAP ( / blockName description x y y2 p1 p2 p3 p4 p5 )
+	; Same graphics as FORDELINGSSKAP
 	(setq 
 		blockName "NO-BN-2D-JBTEL-SKAP-GRUPPESKAP"
+		description "LAVSPENT GRUPPESKAP"
 		; TRV:  4.5 x 2.25
-		x 2.0 ; Not drawn to scale
-		y 1.0 ; Not drawn to scale
-		halfWidth (/ x 2)
-		halfHeight (/ y 2)
-		frontlineHeight (/ y 9)
-		pt1 (list (/ x 40) (+ (/ y 6) (/ y 18)))
-		pt2 (list (/ x -40) (+ (/ y -6) (/ y 18)))
+		x 4.5 	
+		y 2.25  
+		y2 (/ y 9) 
+		p1 (addVectors (posBL x y) (list 0 y2))
+		p2 (addVectors (posBR x y) (list 0 y2))
+		p3 (list (/ x 40) (+ (/ y 6) (/ y 18)))
+		p4 (list (/ x -40) (+ (/ y -6) (/ y 18)))
+		p5 (posTR x y)
 	)
-	(command
-		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		_LINE_ (list (- halfWidth)  (+ (- halfHeight) frontlineHeight)) (list halfWidth  (+ (- halfHeight) frontlineHeight)) _ENTER_
-		_LINE_ (list (- halfWidth) (+ (- halfHeight) frontlineHeight)) pt1 pt2 (list halfWidth halfHeight) _ENTER_
-	)
-	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Gruppeskap" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawLine layDef_Zero p1 p2)
+	(command _POLYLINE_ p1 p3 p4 p5 _openPolyline_)
+	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun TOGVARMEPOST ( / blockName halfWidth halfHeight )
+(defun TOGVARMEPOST ( / blockName description x y )
+	;
+	;  TL-------TR
+	;  | \     / |
+	;  |  \   /  |
+ 	;  |   \./   |
+	;  |   / \   |
+	;  |  /   \  |
+	;  | /     \ |
+	;  BL-------BR
+	;
 	(setq 
 		blockName "NO-BN-2D-JBTEL-SKAP-TOGVARMEPOST"
+		description "LAVSPENT TOGVARMEPOST"
 		; TRV:  4.5 x 2.25
-		x 2.0 ; Not drawn to scale
-		y 1.0 ; Not drawn to scale
-		halfWidth (/ x 2)
-		halfHeight (/ y 2)
+		x 4.5 	
+		y 2.25  
 	)
-	(command
-		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		_LINE_ (list (* x -0.5) (* y -0.5)) (list (* x 0.5) (* y 0.5)) _ENTER_
-		_LINE_ (list (* x -0.5) (* y 0.5)) (list (* x 0.5) (* y -0.5)) _ENTER_
-	)
-	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Togvarme- post" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
+	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
-

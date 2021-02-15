@@ -452,9 +452,8 @@
 
 (defun addMissingSymbol ( / )
 	(shiftSignalItemsUp 3.5) ; Update globals - make space for two lines of 1.25 height text plus line spacing
-	(addMText "MANGLER SYMBOL" _origo_ 1.25 9.0 0 _rcTextStyle_ _BottomCenter_) 
+	(addMText layDef_Zero _th125_ (* 90 _th125_) _origo_ "MANGLER SYMBOL") 
 )
-
 
 
 (defun addMb ( dir / )
@@ -896,7 +895,7 @@
 
 
 
-(defun addDs ( / itemHeight curvedHeight pt1 pt2 pt3 x y pt4 extraMastAbove )
+(defun addDs ( / itemHeight curvedHeight p1 p2 p3 x y p4 extraMastAbove )
 	(setq
 		itemHeight 4.0   ; Height of dwarf + extra space above dwarf, for instance in combination TVs/AVs/BPs+Ds
 		curvedHeight (* itemHeight (/ (sqrt 3.0) 2)) ; Ds height measured along main pole axis, where the curved Ds arc intersects with the main axis
@@ -921,7 +920,7 @@
 
 
 
-(defun addDsMKs ( / itemHeight curvedHeight pt1 pt2 pt3 x y pt4 extraMastAbove )
+(defun addDsMKs ( / itemHeight curvedHeight p1 p2 p3 x y p4 extraMastAbove )
 	(setq
 		itemHeight 4.0   ; Height of dwarf
 		curvedHeight (* itemHeight (/ (sqrt 3.0) 2)) ; Ds height measured along main pole axis, where the curved Ds arc intersects with the main axis

@@ -31,8 +31,8 @@
 		x 3.0
 		y 4.5
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(addTextAtPos layer_Zero _th250_ _origo_ "V")
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(addTextAtPos layDef_Zero _th250_ _origo_ "V")
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

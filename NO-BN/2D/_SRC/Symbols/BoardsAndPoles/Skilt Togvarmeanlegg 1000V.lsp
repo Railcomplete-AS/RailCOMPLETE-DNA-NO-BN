@@ -29,8 +29,8 @@
 		x (* 25 0.280) ; =7.0
 		y (* 25 0.080) ; =3.0
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(addTextAtPos layer_Zero _th180_ _origo_ "1000 V")
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(addTextAtPos layDef_Zero _th180_ _origo_ "1000 V")
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

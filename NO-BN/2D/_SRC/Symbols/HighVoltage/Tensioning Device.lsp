@@ -41,9 +41,9 @@
 		y	x
 		r	1.0 ; The hatched circle's radius
 	)
-	(drawCircle layer_Zero r _noWipeout_)
+	(drawCircle layDef_Zero r _noWipeout_)
 	(drawHatch _denseHatch_)
-	(drawStAndrewCross layer_Zero x y)
+	(drawStAndrewCross layDef_Zero x y)
 	(addDescriptionBelowOrigo description (* 1.5 r))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -74,8 +74,8 @@
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(drawLine layer_Zero p3 p10) ; shaft
-	(drawLine layer_Zero p6 p7) ; bar
+	(drawLine layDef_Zero p3 p10) ; shaft
+	(drawLine layDef_Zero p6 p7) ; bar
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -109,9 +109,9 @@
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(drawLine layer_Zero p3 p10) ; shaft
-	(drawLine layer_Zero p4 p5) ; lower bar
-	(drawLine layer_Zero p8 p9) ; upper bar
+	(drawLine layDef_Zero p3 p10) ; shaft
+	(drawLine layDef_Zero p4 p5) ; lower bar
+	(drawLine layDef_Zero p8 p9) ; upper bar
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -149,8 +149,8 @@
 	(drawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(drawLine layer_Zero p3 p10) ; shaft
-	(drawLine layer_Zero p6 p7) ; bar
+	(drawLine layDef_Zero p3 p10) ; shaft
+	(drawLine layDef_Zero p6 p7) ; bar
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -190,9 +190,9 @@
 	(drawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(drawLine layer_Zero p3 p10) ; shaft
-	(drawLine layer_Zero p4 p5) ; bar
-	(drawLine layer_Zero p8 p9) ; bar
+	(drawLine layDef_Zero p3 p10) ; shaft
+	(drawLine layDef_Zero p4 p5) ; bar
+	(drawLine layDef_Zero p8 p9) ; bar
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -230,8 +230,8 @@
 	(drawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(drawLine layer_Zero p3 p10) ; shaft
-	(drawLine layer_Zero p6 p7) ; bar
+	(drawLine layDef_Zero p3 p10) ; shaft
+	(drawLine layDef_Zero p6 p7) ; bar
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -272,9 +272,9 @@
 	(drawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
 	(drawHatch _denseHatch_)
-	(drawLine layer_Zero p3 p10) ; shaft
-	(drawLine layer_Zero p4 p5) ; bar
-	(drawLine layer_Zero p8 p9) ; bar
+	(drawLine layDef_Zero p3 p10) ; shaft
+	(drawLine layDef_Zero p4 p5) ; bar
+	(drawLine layDef_Zero p8 p9) ; bar
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

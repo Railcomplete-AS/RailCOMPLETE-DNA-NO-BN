@@ -65,21 +65,31 @@
 
 
 
-(defun AUTOTRANSFORMATOR ( len r / blockName )
+(defun AUTOTRANSFORMATOR ( len r / blockName description p1 p2 p3 p4 p5 )
+	;
+	; NL=5 ---+
+	;          )
+	;          )
+	;          2__3
+	;          )
+	;          )
+	; PL=4 ---.---1
+	;
 	(setq 
 		blockName "NO-BN-2D-JBTKL-TRANSFORMATOR-AUTOTRAFO"
 		description	(strcat "KL TRANSFORMATOR, AUTOTRAFO")
+		p1	(list (+ len r) 0)
+		p2	(list 0 (* 4 r))
+		p3	(list (+ len r) (* 4 r))
+		p4	(list (- (+ len r r)) 0)
+		p5	(list (- (+ len r r)) (* 8 r))
 	)
 	(drawCoil len r)
-	(command 
-		_MOVE_ _selectAll_ _ENTER_ (list len 0) _origo_ 
-		_LINE_ _origo_ (list (+ len r) 0) _ENTER_ 
-		_LINE_ (list 0 (* 4 r)) (list (+ r len) (* 4 r)) _ENTER_
-	)
-	(setLayer layer_AutoTransformerTerminals)
-	(addText "NL" (list (- (+ len r r)) (* 8 r)) _th180_ _angleZero_ _rcTextStyle_ _middleCenter_)
-	(addText "PL" (list (- (+ len r r)) 0) _th180_ _angleZero_ _rcTextStyle_ _middleCenter_)
-	(setLayer layer_Zero)
+	(moveLeft len)
+	(drawLine layDef_Zero _origo_ p1)
+	(drawLine layDef_Zero p2 p3)
+	(addTextAtPos layDef_AutoTransformerTerminals _th180_ p4 "PL")
+	(addTextAtPos layDef_AutoTransformerTerminals _th180_ p5 "NL")
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -91,6 +101,12 @@
 ; draw...X...() functions
 ;==========================
 (defun drawCoil ( len r / )
+	;   ---
+	;      )
+	;      )
+	;      )    8r high (each coil winding = 2r high)
+	;      )
+	;  .---		Line is len long
 	(command
 		_POLYLINE_
 			_origo_

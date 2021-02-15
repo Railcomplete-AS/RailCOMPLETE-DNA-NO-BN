@@ -71,7 +71,7 @@
 		blockName	(strcat "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-"  str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" (rtos quadrant 2 0))
 		description	(strcat "SPORVEKSEL / OVERBYGNING-SYMBOL, " str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" (rtos quadrant 2 0))
 	)
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
  	(command
 		_COLOR_ _ByBlock_
 		_LINE_ _origo_ (list A 0) _ENTER_
@@ -105,7 +105,7 @@
 	(drawHatch _sparseHatch_)
 
 	; Deviating track / centreline
-	(setLayer layer_Turnout_TrackCenterLines)
+	(setLayer layDef_Turnout_TrackCenterLines)
 	(command
 		_POLYLINE_ 
 			_origo_
@@ -121,7 +121,7 @@
 	) 
   
 	; Show long-sleepers area outside back end of switch
-	(setLayer layer_Turnout_LongSleepers)
+	(setLayer layDef_Turnout_LongSleepers)
 	(command 
 		_POLYLINE_
 			(list L 0)
@@ -138,7 +138,7 @@
 	)
 
 	; Show short-sleepers area outside back end of switch, after the long-sleeper area (if any)
-	(setLayer layer_Turnout_ShortSleepers)
+	(setLayer layDef_Turnout_ShortSleepers)
 	(command
 		_POLYLINE_
 			(list (+ L E) 0)
@@ -153,20 +153,8 @@
     )
 	; Add 'division line' to illustrate that there are now one set of sleepers for each turnout leg:
 	(command
-		_LINE_ (list (+ A (* (+ B E) (cos (D->R(/ ang 2.0))))) (* (+ B E) (sin (D->R (/ ang 2.0))))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) _ENTER_
+		_LINE_ (list (+ A (* (+ B E) (DDcos (/ ang 2.0)))) (* (+ B E) (DDsin (/ ang 2.0)))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) _ENTER_
 	)
-    
-; TODO 2021-01-24 CLFEY: Deprecated - the 'forbidden area for sensors' has been moved to the sensor object itself (Axle Counter), "SA-TEL Tellepunkt".
-;	; Forbidden area for axle counter sensors
-;	; TODO 2020-08-20 CLFEY: Adjust areas.
-;	; Split in two areas: One for XX cm separation => speeds less than 120 km/h allowed. Another (above 1.0 meter separation?) for speeds above 120 km/h. See new BN spec.
-;	(setLayer layer_Turnout_ForbiddenAreaForAxleCounterSensor)
-;	(setq pts (getAreaOne Drawing_Number))
-;	(command _POLYLINE_ (foreach pt pts (command pt)))
-;	(drawHatchFromSelectionUsingStyle _sparseHatch_ _lastSelection_ _angleZero_ 0.01 _hatchPatternLosanges_)
-;	(setq pts (getAreaTwo Drawing_Number))
-;	(command _POLYLINE_ (foreach pt pts (command pt)))
-;	(drawHatchFromSelectionUsingStyle _sparseHatch_ _lastSelection_ _angleZero_ 0.01 _hatchPatternLosanges_)
 
 	(moveToQuadrant quadrant _selectAll_)
 	(addDescriptionBelowOrigo description 1.0)

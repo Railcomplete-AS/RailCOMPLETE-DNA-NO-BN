@@ -34,7 +34,9 @@
 		blockName "NO-BN-2D-JBTFE-SECTION-SYMBOL"
 		textHeight 1.8
 	)
-	(addAtt "X" "Section Object" "X" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addAtt
+		"X" "Section Object" "X"
+		_origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

@@ -27,8 +27,8 @@
 		x 1.5
 		y 2.0
 	)
-	(drawBox layer_Zero x y _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -44,8 +44,8 @@
 		y 2.0
 		offset 0.075 ; offset pga kort utligger og masten må plasseres nær sporet
 	)
-	(drawBox layer_Zero x y _noWipeout_)
-	(drawStAndrewCross layer_Zero x y)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawStAndrewCross layDef_Zero x y)
 	(addDescriptionBelowOrigo description (halfOf y))
 	(moveUp (- y offset))
 	(createSchematicBlockFromCurrentGraphics blockName)
@@ -60,7 +60,7 @@
 		description (strcat "HENGEMAST I " _uAA_ "K")
 		r 0.525
 	)
-	(drawCircle layer_Zero r _noWipeout_)
+	(drawCircle layDef_Zero r _noWipeout_)
 	(drawHatch _denseHatch_)
 	(addDescriptionBelowOrigo description r)
 	(createSchematicBlockFromCurrentGraphics blockName)

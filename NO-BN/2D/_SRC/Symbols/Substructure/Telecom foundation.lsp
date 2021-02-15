@@ -62,18 +62,18 @@
 
 	; Schematic symbol
 	(addDescriptionBelowOrigo description s1)
-	(drawProxySymbol layer_FoundationLocator "T")
+	(drawProxySymbol layDef_FoundationLocator "T")
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(localGraphics)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layer_MetricDetails)
+	(setLayer layDef_MetricDetails)
 	(localGraphics)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
@@ -129,18 +129,18 @@
 	
 	; Schematic symbol
 	(addDescriptionBelowOrigo description (- (+ s1 radius1)))
-	(drawProxySymbol layer_FoundationLocator "T")
+	(drawProxySymbol layDef_FoundationLocator "T")
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(localGraphics)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layer_MetricDetails)
+	(setLayer layDef_MetricDetails)
 	(localGraphics)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
@@ -192,19 +192,19 @@
 	)
 	
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "T")
+	(drawProxySymbol layDef_FoundationLocator "T")
 	(addDescriptionBelowOrigo description (- (+ s1 radius1)))
 	(createSchematicBlockFromCurrentGraphics blockName)
 		
 	; Annotative symbol
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(localGraphics)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layer_MetricDetails)
+	(setLayer layDef_MetricDetails)
 	(localGraphics)
 	(createMetricBlockFromCurrentGraphics blockName)
 )
@@ -240,19 +240,19 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layer_FoundationLocator "T")
+	(drawProxySymbol layDef_FoundationLocator "T")
 	(addDescriptionBelowOrigo description s1)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(localGraphics)
 	(scaleAll _four_)
 	(addGraphicsFromScaledSchematicBlock blockName _one_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layer_MetricDetails)
+	(setLayer layDef_MetricDetails)
 	(localGraphics)
 	(createMetricBlockFromCurrentGraphics blockName)
 )

@@ -82,15 +82,15 @@
 	
 	; Schematic symbol
 	; Schematic 1-line signaling / schematic plan ('skjematisk plan') view
-	(setLayer layer_View_SchematicPlan)
+	(setLayer layDef_View_SchematicPlan)
 	(drawIsolatedJointThickBarSymbol _one_)
 
 	; Schematic 1-line signaling / cable plan ('plan og kabelplan') view
-	(setLayer layer_View_CablePlan)
+	(setLayer layDef_View_CablePlan)
 	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; No scaling, no offset from centre track
 
 	; Schematic 2-line signaling / track insulation plan OR high voltage / return current plan view
-	(setLayer layer_View_TrackIsolationPlan)
+	(setLayer layDef_View_TrackIsolationPlan)
 	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _schematicGauge_)) ; No scaling, then offset with half of schematic gauge from centre track
 
 	; Schematic symbol
@@ -99,15 +99,15 @@
 
 	; Annotative symbol
 	; Geo 1-line signaling view showing just a thick bar
-	; (setLayer layer_View_SchematicPlan)  -   not meaningful for geo symbols
+	; (setLayer layDef_View_SchematicPlan)  -   not meaningful for geo symbols
 	; (drawIsolatedJointThickBarSymbol _one_)
 
 	; Geo 1-line signaling view showing a bar with ears, centered on the track axis
-	; (setLayer layer_View_CablePlan)
+	; (setLayer layDef_View_CablePlan)
 	; (drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; Scale, no offset
 
 	; Geo 2-line signaling / return current view showing a bar with ear(s), centered on the left or right rail
-	(setLayer layer_View_TrackIsolationPlan)
+	(setLayer layDef_View_TrackIsolationPlan)
 	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _cantReferenceGauge_)) ; Scale, then offset with half of normal gauge reference width
 	
 	(addDescriptionBelowOrigo description (* _threeQuarters_ _cantReferenceGauge_))
@@ -135,7 +135,7 @@
 
 
 
-(defun drawIsolatedJointSymbolWithEars ( q4 q3 q2 q1 scale offset / bar ear y x pt11 pt12 pt13 pt22 pt32 pt41 pt42 pt43 )
+(defun drawIsolatedJointSymbolWithEars ( q4 q3 q2 q1 scale offset / bar ear y x p11 p12 p13 p22 p32 p41 p42 p43 )
 	; Points:
 	;
 	;  -x     0    +x
@@ -153,25 +153,25 @@
 		ear		1.5							; Length of "ear" along track
 		y		(* (/ bar 2) scale)			; Half-length of scaled bar across track
 		x		(* ear scale)				; Length of scaled ear along track
-		pt11	(list (- x) (- (+ offset y)))
-		pt12	(list (+ 0) (- (+ offset y)))
-		pt13	(list (+ x) (- (+ offset y)))
-		pt22	(list (+ 0) (- (- offset y)))
-		pt32	(list (+ 0) (+ (- offset y)))
-		pt41	(list (- x) (+ (+ offset y)))
-		pt42	(list (+ 0) (+ (+ offset y)))
-		pt43	(list (+ x) (+ (+ offset y)))
+		p11	(list (- x) (- (+ offset y)))
+		p12	(list (+ 0) (- (+ offset y)))
+		p13	(list (+ x) (- (+ offset y)))
+		p22	(list (+ 0) (- (- offset y)))
+		p32	(list (+ 0) (+ (- offset y)))
+		p41	(list (- x) (+ (+ offset y)))
+		p42	(list (+ 0) (+ (+ offset y)))
+		p43	(list (+ x) (+ (+ offset y)))
 	)
-	(if (> (+ q1 q2) 0) (command _LINE_ pt32 pt42 _ENTER_)) ; upper bar
-	(if (> (+ q3 q4) 0) (command _LINE_ pt22 pt12 _ENTER_)) ; lower bar
-	(if (= q1 1) (command _LINE_ pt42 pt43 _ENTER_)) ; quadrant I
-	(if (= q2 1) (command _LINE_ pt42 pt41 _ENTER_)) ; quadrant II
-	(if (= q3 1) (command _LINE_ pt12 pt11 _ENTER_)) ; quadrant III
-	(if (= q4 1) (command _LINE_ pt12 pt13 _ENTER_)) ; quadrant IV
+	(if (> (+ q1 q2) 0) (command _LINE_ p32 p42 _ENTER_)) ; upper bar
+	(if (> (+ q3 q4) 0) (command _LINE_ p22 p12 _ENTER_)) ; lower bar
+	(if (= q1 1) (command _LINE_ p42 p43 _ENTER_)) ; quadrant I
+	(if (= q2 1) (command _LINE_ p42 p41 _ENTER_)) ; quadrant II
+	(if (= q3 1) (command _LINE_ p12 p11 _ENTER_)) ; quadrant III
+	(if (= q4 1) (command _LINE_ p12 p13 _ENTER_)) ; quadrant IV
 	(if (= (+ q4 q3 q2 q1) 0) ; Add two small circles to "0000" symbol, meaning "UNFINISHED - not configured yet"
 		(progn 
-			(command _CIRCLE_ pt12 y)
-			(command _CIRCLE_ pt42 y)
+			(command _CIRCLE_ p12 y)
+			(command _CIRCLE_ p42 y)
 		)
 	)
 )

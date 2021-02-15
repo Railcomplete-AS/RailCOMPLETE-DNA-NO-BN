@@ -152,7 +152,7 @@
 	)
 	
 	; Surrounding box:
-	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+	(drawBox layDef_Zero x y _noWipeout_)
 	
 	; Level Crossing symbol:
 	(command
@@ -166,13 +166,13 @@
 	; Add captions below yoke mount / above mast mount;
 	(if (= mounting "AAK")
 		(if (= distantSignal "FORSIGNAL")
-			(addText "PLO-Fs" (list 0 (* -0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _topCenter_) ; below surrounding box
-			(addText "PLO" (list 0 (* -0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _topCenter_) ; below surrounding box
+			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO-Fs" _topCenter_) ; below surrounding box
+			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO" _topCenter_) ; below surrounding box
 		)
 	;else
 		(if (= distantSignal "FORSIGNAL")
-			(addText "PLO-Fs" (list 0 (* 0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _BottomCenter_) ; above surrounding box
-			(addText "PLO" (list 0 (* 0.55 y)) _th100_ _angleZero_ _rcTextStyle_ _BottomCenter_) ; above surrounding box
+			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO-Fs" _BottomCenter_) ; above surrounding box
+			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO" _BottomCenter_) ; above surrounding box
 		)
 	)
 
@@ -212,10 +212,10 @@
 	)
 	
 	; Surrounding box:
-	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
+	(drawBox layDef_Zero x y _noWipeout_)
 	
 	; Text 'SH' for 'shunting':
-	(addMText "SH" _origo_ txtHeight 3 0 _rcTextStyle_ _middleCenter_)
+	(addTextAtPos layDef_Zero txtHeight _origo_ "SH")
 
 	(if (= beginOrEnd "END")
 		; Add three inclined 'slash' lines (symbol is drawn upright here)
@@ -327,16 +327,12 @@
 	)
 
 	; Surrounding box:
-	(command _RECTANGLE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)))
-
-	; Add "LT ETCS" inside a circle:
-	;intentionally omitted: 		(command _CIRCLE_ _origo_ (* (/ 8.0 9.0) x) 
-	(addText "LT" (list 0 (* 0.25 y)) 1.8 0 _rcTextStyle_ _middleCenter_)
-	(addText "ETCS" (list 0 (* -0.25 y)) 1.8 0 _rcTextStyle_ _middleCenter_)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(addTextAtPos layDef_Zero  _th180_ (list 0 (* 0.25 y)) "LT")
+	(addTextAtPos layDef_Zero  _th180_ (list 0 (* -0.25 y)) "ETCS")
 	
 	; Epilogue:
-	(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (/ y 2))) ; move up by half of surrounding box, board insertion point is middle lower side
+	(moveUp (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
-

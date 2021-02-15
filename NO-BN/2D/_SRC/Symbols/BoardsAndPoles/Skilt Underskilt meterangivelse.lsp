@@ -30,8 +30,8 @@
 		y 3.0
 		attMeters '("AVSTAND" "Avstand (m):" "300m")
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layer_Zero _th250_ _origo_ attMeters)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attMeters)
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

@@ -39,9 +39,9 @@
 		pt nil  	; see below
 	)
 	; Centered basic box with wipeout
-	(drawBox layer_Zero x y layer_Derailer_Wipeout)
+	(drawBox layDef_Zero x y layDef_Derailer_Wipeout)
 	(addDescriptionBelowOrigo description (halfOf y))
-	(setLayer layer_Zero)
+	(setLayer layDef_Zero)
 	(cond 
 		((= variation _single_)
 			(cond

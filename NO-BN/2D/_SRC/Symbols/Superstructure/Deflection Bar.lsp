@@ -33,7 +33,7 @@
 		_RECTANGLE_ (list (- (+ bjelkeX bjelke2X)) (- bjelkeY)) (list (- bjelkeX) bjelkeY)
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_RECTANGLE_ (list (- (+ distFot fotX)) bjelkeY) (list (- (- distFot fotX)) fotY)
-		"._ARRAY" _lastSelection_ _ENTER_ _rectangularArray_ 2 2 (- (+ bjelkeY fotY)) (* 2 distFot)
+		_ARRAY_ _lastSelection_ _ENTER_ _rectangularArray_ 2 2 (- (+ bjelkeY fotY)) (* 2 distFot)
 	)
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 	(createAnnotativeBlockFromCurrentGraphics blockName)

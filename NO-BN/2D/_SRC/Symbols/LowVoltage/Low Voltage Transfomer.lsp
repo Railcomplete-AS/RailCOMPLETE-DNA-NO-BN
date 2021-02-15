@@ -12,29 +12,36 @@
 
 ; Low-voltage transformer
 
-(defun C:LOW-VOLTAGE-TRANSFORMER ( )
+(defun C:LOW-VOLTAGE-TRANSFORMER ( / )
 	(TRANSFORMATOR-H-TIL-L) ; Fra høyspent til lavspent (15 kV til 220 VAC)
 )
 
 
 
-(defun TRANSFORMATOR-H-TIL-L ( / blockName x y halfWidth halfHeight radius dx )
+(defun TRANSFORMATOR-H-TIL-L ( / blockName description x y r dx p1 p2 )
+	;
+	; TL------------TR
+	; |   _______    |
+	; |  /  / \  \   |
+	; | (  1 . 2  )  |  Circles at p1 and p2 inside box
+	; |  \__\_/__/   |
+	; |              |
+	; BL------------BR
+	;
 	(setq
-		blockName "NO-BN-2D-JBTEL-TRANSFORMATOR"
+		blockName	"NO-BN-2D-JBTEL-TRANSFORMATOR"
+		description "LAVSPENT TRANSFORMATOR"
 		x 2.0
 		y 1.0
-		halfWidth (/ x 2)
-		halfHeight (/ y 2)
-		radius (* halfHeight 0.8)
-		dx (* radius 0.6)
+		r (* 0.4 y)
+		dx (* r 0.6)
+		p1 (list (- dx) 0)
+		p2 (list (+ dx) 0)
 	)
-	(command
-		_RECTANGLE_ (list (- halfWidth) (- halfHeight)) (list halfWidth halfHeight)
-		_CIRCLE_ (list (- dx) 0) radius
-		_CIRCLE_ (list dx 0) radius
-	)
-	(setLayerAndObjectColor layer_Description "_ByLayer")
-	(addMText "Transformator" "0,-0.6" _descriptionTextHeight_ 1.5 0 _rcTextStyle_ _topCenter_)
+	(drawBox layDef_Zero x y _noWipeout_)
+	(drawCircleAtPos layDef_Zero p1 r _noWipeout_)
+	(drawCircleAtPos layDef_Zero p2 r _noWipeout_)
+	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

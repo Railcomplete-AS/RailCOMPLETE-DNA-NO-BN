@@ -31,7 +31,7 @@
 (defun hlp ( / )
 	(princ (strcat "\n=============================== DebugHelper - HLP ===============================")) (prin1)
 	(princ (strcat "\n\n*** Root folder = " rootFolder " ***")) (prin1)
-	(princ (strcat "\n\n" "VLIDE shortcuts:\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+Shift+C: AutoCAD (Command) mode\n    F6: Console window")) (prin1)
+	(princ (strcat "\n\n" "VLIDE shortcuts:\n    TAB/Shift+TAB: Previous/next command\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+R: Reset from break loop\n    Ctrl+Shift+C: AutoCAD (Command) mode\n    F6: Console window")) (prin1)
 	(princ (strcat "\n\n" "(mkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (mkAll)")) (prin1)
 	(princ (strcat "\n\n" "(ql)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (ql folderName)")) (prin1)
 	(princ (strcat "\n\n" "(ldAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (ldAll)")) (prin1)
@@ -49,7 +49,7 @@
 	; Error handler - Visual LISP BackTrace function - shows call stack upon error.
 	; In VLIDE, you can access the same info by pressing Ctrl+Shift+T which brings up a callback trace window.
 	; Press Ctrl+F9 to locate the source code for the error, where you can set a suitable breakpoint with F9
-	; and add wathces with Ctrl+W.
+	; and add watches with Ctrl+W.
 	(vl-bt)
 	(princ)
 )

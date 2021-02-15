@@ -175,7 +175,7 @@
 		x 4.5
 		y 3.0
 	)
-	(drawBox layer_Zero x y layer_BoardOrPole_Wipeout)
+	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(command _POLYLINE_ (posBL x y) (posBR x y ) (posTR x y) _closedPolyline_)
 	(drawHatchFromPoint _solidHatch_ _slightlyBelow_ 0 0)
 	(moveUp (halfOf y))

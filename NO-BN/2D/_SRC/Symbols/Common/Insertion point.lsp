@@ -17,7 +17,7 @@
 		radius 0.05
 		blockName "NO-BN-2D-INSERTION-POINT" ;2D symbol block insertion point
 	)
-	(setLayer layer_InsertionPoint)
+	(setLayer layDef_InsertionPoint)
 	(command
 ;		_CIRCLE_ _origo_ radius
 ;		_LINE_ (list (- radius) 0) (list radius 0) _ENTER_
