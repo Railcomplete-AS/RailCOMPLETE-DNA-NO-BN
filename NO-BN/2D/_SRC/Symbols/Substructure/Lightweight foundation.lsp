@@ -137,14 +137,14 @@
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-JORDFUNDAMENT-60-700"
 		description	(strcat "SKILTFESTE, JORDFUNDAMENT " _uOE_ "60/H700")
-		pr	0.030 ; Ø060 pole
+		pr		0.030 ; Ø060 pole
 		rad2	0.181 ; 0.151 side wings from the inner pole/tube
 		ang		_angle45_
 	)
 	(defun localGraphics (/)
 		(command 
 			_CIRCLE_ _origo_ pr
-			_LINE_ (list (* rad1 (DDcos ang)) (* rad1 (DDsin ang))) (list (* rad2 (DDcos ang)) (* rad2 (DDsin ang))) _ENTER_
+			_LINE_ (list (* pr (DDcos ang)) (* pr (DDsin ang))) (list (* rad2 (DDcos ang)) (* rad2 (DDsin ang))) _ENTER_
 			_ARRAY_ _lastSelection_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
 		)
 	)
