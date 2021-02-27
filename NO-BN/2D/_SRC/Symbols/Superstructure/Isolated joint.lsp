@@ -16,7 +16,7 @@
 ;
 ; Test cases:
 ;		(setq  q4 1  q3 0  q2 1  q1 1)
-;		(SKINNESKJOET q4 q3 q2 1)
+;		(RAILJOINT q4 q3 q2 1)
 
 
 (defun C:ISOLATED-JOINT ( / ) 
@@ -32,27 +32,27 @@
 	;             | | +----- q2 = Quadrant II  = Signal current entering into left rail's joint in the direction of increasing mileage
 	;             | | | +--- q1 = Quadrant I   = Signal current exiting from left rail's joint in the direction of increasing mileage
 	;             | | | | 
-	(SKINNESKJOET 0 0 0 0) ; No preceding signal current, no following signal current: Planned but yet UNFINISHED isolation.
-	(SKINNESKJOET 0 0 0 1)
-	(SKINNESKJOET 0 0 1 0)
-	(SKINNESKJOET 0 0 1 1)
-	(SKINNESKJOET 0 1 0 0)
-	(SKINNESKJOET 0 1 0 1)
-	(SKINNESKJOET 0 1 1 0)
-	(SKINNESKJOET 0 1 1 1)
-	(SKINNESKJOET 1 0 0 0)
-	(SKINNESKJOET 1 0 0 1)
-	(SKINNESKJOET 1 0 1 0)
-	(SKINNESKJOET 1 0 1 1)
-	(SKINNESKJOET 1 1 0 0)
-	(SKINNESKJOET 1 1 0 1)
-	(SKINNESKJOET 1 1 1 0)
-	(SKINNESKJOET 1 1 1 1)
+	(subSubStep "RAILJOINT 0")	(RAILJOINT 0 0 0 0) ; No preceding signal current, no following signal current: Planned but yet UNFINISHED isolation.
+	(subSubStep "RAILJOINT 1")	(RAILJOINT 0 0 0 1)
+	(subSubStep "RAILJOINT 2")	(RAILJOINT 0 0 1 0)
+	(subSubStep "RAILJOINT 3")	(RAILJOINT 0 0 1 1)
+	(subSubStep "RAILJOINT 4")	(RAILJOINT 0 1 0 0)
+	(subSubStep "RAILJOINT 5")	(RAILJOINT 0 1 0 1)
+	(subSubStep "RAILJOINT 6")	(RAILJOINT 0 1 1 0)
+	(subSubStep "RAILJOINT 7")	(RAILJOINT 0 1 1 1)
+	(subSubStep "RAILJOINT 8")	(RAILJOINT 1 0 0 0)
+	(subSubStep "RAILJOINT 9")	(RAILJOINT 1 0 0 1)
+	(subSubStep "RAILJOINT A")	(RAILJOINT 1 0 1 0)
+	(subSubStep "RAILJOINT B")	(RAILJOINT 1 0 1 1)
+	(subSubStep "RAILJOINT C")	(RAILJOINT 1 1 0 0)
+	(subSubStep "RAILJOINT D")	(RAILJOINT 1 1 0 1)
+	(subSubStep "RAILJOINT E")	(RAILJOINT 1 1 1 0)
+	(subSubStep "RAILJOINT F")	(RAILJOINT 1 1 1 1)
 )
 
 
 
-(defun SKINNESKJOET ( q4 q3 q2 q1 / blockName schematicGauge geoGauge )
+(defun RAILJOINT ( q4 q3 q2 q1 / blockName schematicGauge geoGauge )
 	;
 	; Isolated joint ('Skinneskjøt').
 	;
@@ -76,7 +76,7 @@
 	; You can toggle between 1-line and 2-line mode in RailCOMPLETE using the command RC-ShowTwoRails.
 	;
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTOB-SKINNESKJOET-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
+		blockName	(strcat "NO-BN-2D-JBTOB-RAILJOINT-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
 		description (strcat "ISOLERT SKINNESKJ" _uOE_ "T, KVADRANT IV-III-II-I = " (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
 	)
 	

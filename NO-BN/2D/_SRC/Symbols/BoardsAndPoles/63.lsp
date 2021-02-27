@@ -43,7 +43,7 @@
 	(command _POLYLINE_ _origo_ p1 p2 p3 _closedPolyline_)
 	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 	(setLayer layDef_Zero)
-	(addAtt attTag attPrompt attDefaultValue p4 _th180_ _angle315_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt attTag attPrompt attDefaultValue p4 _th180_ _angleMinus45_ _rcTextStyle_ _middleCenter_ _lockPosition_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

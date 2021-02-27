@@ -434,8 +434,8 @@
 		_angle45_						45
 		_angle90_						90
 		_angle180_						180
-		_angle315_					315
-		_angleMinus90_					-90
+		_angleMinus45_					315
+		_angleMinus90_					270
 		
 		; 2D points		
 		_origo_							'( 0.00  0.00)
@@ -1132,7 +1132,7 @@
 		)
 		((= quadrant 3)
 			(command _MIRROR_ selection _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
-			(command _MIRROR_ selection _ENTER_ _origo_ _xAxis_ _eraseSource)
+			(command _MIRROR_ selection _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
 		)
 		((= quadrant 4)
 			(command _MIRROR_ selection _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
@@ -1148,15 +1148,14 @@
 ;
 ; See also definition of global constants - standard hatch densities
 ;
-(defun drawHatch ( scale )
+(defun drawHatch ( hatchDensity / )
 	(command 
 		_HATCH_ 
 			_selectHatchObjects_ _lastSelection_ _ENTER_ 
-			_setHatchProperties_ _hatchPatternSlantedLines_ scale _angleZero_ 
+			_setHatchProperties_ _hatchPatternSlantedLines_ hatchDensity _angleZero_ 
 			_selectHatchOrigin_ _setNewHatchOrigin_ _slightlyAbove_ _doNotStoreHatchOriginAsDefault_
 			_ENTER_
 	)
-;	(command "._-HATCH" "S" "Last" ""  "Properties" "ANSI31" 0.02 "0"  "O" "S" "0,0.01" "N" "")
 	(command _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_)
 	(command _EXPLODE_ _lastSelection_ _ENTER_)
 	'drawHatch
@@ -1164,11 +1163,11 @@
 
 
 
-(defun drawHatchFromPoint ( scale pt ang offset )
+(defun drawHatchFromPoint ( hatchDensity pt ang offset / )
 	(command 
 		_HATCH_ 
 			pt
-			_setHatchProperties_ _hatchPatternSlantedLines_ scale ang 
+			_setHatchProperties_ _hatchPatternSlantedLines_ hatchDensity ang 
 			_selectHatchOrigin_ _setNewHatchOrigin_ (strcat "0.0," (rtos offset)) _doNotStoreHatchOriginAsDefault_
 			_ENTER_
 	   _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_
@@ -1179,29 +1178,16 @@
 
 
 
-(defun drawHatchFromSelectionUsingStyle ( scale selectionSet ang offset style )
+(defun drawHatchFromSelectionUsingStyle ( hatchDensity selectionSet ang offset style / )
 	(command 
 		_HATCH_ 
 			_selectHatchObjects_ selectionSet _ENTER_ 
-			_setHatchProperties_ style scale ang 
+			_setHatchProperties_ style hatchDensity ang 
 			_selectHatchOrigin_ _setNewHatchOrigin_ (strcat "0.0," (rtos offset)) _doNotStoreHatchOriginAsDefault_
 			_ENTER_
 	   _EXPLODE_ _lastSelection_ _ENTER_
 	)
 	'drawHatchFromSelectionUsingStyle
-)
-
-
-(defun drawHatchFromPointUsingStyle ( scale pt ang offset style )
-	(command
-		_HATCH_
-			pt
-			_setHatchProperties_ style scale ang
-			_selectHatchOrigin_ _setNewHatchOrigin_ (strcat "0.0," (rtos offset)) _doNotStoreHatchOriginAsDefault_
-			_ENTER_
-	   _EXPLODE_ _lastSelection_ _ENTER_
-	)
-	'drawHatchFromPointUsingStyle
 )
 
 

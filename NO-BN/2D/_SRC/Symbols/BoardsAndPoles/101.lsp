@@ -117,7 +117,7 @@
 	; Round, 3 lines for block signals and for distant signals on the line block
 	;      _____ 
 	;     /  A  \  
-	;    ( 15891 ) . = center circle
+	;    ( 15.91 ) . = center circle
 	;     \ ZYX / 
 	;       ---
 	;

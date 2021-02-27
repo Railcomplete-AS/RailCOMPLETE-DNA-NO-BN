@@ -234,7 +234,7 @@
 	
 	(if (and (not MB) (= 0 (+ HS FS TVS ZS AVS BPS MKS FKS LS LHS DS)))
 		(progn
-			(setq blockName (strcat blockName "-UNKNOWN"))
+			(setq blockName (strcat blockName "")) ; Nothing added => then RC will choose this one.
 			(addMissingSymbol)
 		)
 	)

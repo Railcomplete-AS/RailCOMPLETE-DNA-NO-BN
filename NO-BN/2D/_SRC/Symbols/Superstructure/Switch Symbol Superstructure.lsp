@@ -43,6 +43,7 @@
 
 (defun SWITCH-SYMBOL-SUPERSTRUCTURE (quadrant Drawing_Number 
 	/ 	blockName
+		description
 		switchParameters
 		crossType  A B C D E F L R x railProfile ang radius
 		str pt pts
@@ -104,7 +105,7 @@
 	)
 	(drawHatch _sparseHatch_)
 
-	; Deviating track / centreline
+	; Deviating track / geometry axis
 	(setLayer layDef_Turnout_TrackCenterLines)
 	(command
 		_POLYLINE_ 
@@ -120,7 +121,7 @@
 			_openPolyline_
 	) 
   
-	; Show long-sleepers area outside back end of switch
+	; Show long-sleepers area outside rear end of switch
 	(setLayer layDef_Turnout_LongSleepers)
 	(command 
 		_POLYLINE_
@@ -137,7 +138,7 @@
 			_closedPolyline_
 	)
 
-	; Show short-sleepers area outside back end of switch, after the long-sleeper area (if any)
+	; Show short-sleepers area outside rear end of switch, after the long-sleeper area (if any)
 	(setLayer layDef_Turnout_ShortSleepers)
 	(command
 		_POLYLINE_
@@ -149,7 +150,7 @@
 			_setPolylineArcMode_
 			_setPolylineArcCenter_ (list A 0) _setArcAngle_ (- ang) 
 			_setPolylineLineMode_
-			_closePolyline_
+			_closedPolyline_
     )
 	; Add 'division line' to illustrate that there are now one set of sleepers for each turnout leg:
 	(command

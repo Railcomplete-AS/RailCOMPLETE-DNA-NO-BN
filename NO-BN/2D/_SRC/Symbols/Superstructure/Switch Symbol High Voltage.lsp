@@ -46,12 +46,7 @@
 	(if (< x 10)
 		(setq str "0")
 	)
-	(setq i 0)
-	(repeat 2
-		(cond
-			((= i 0) (setq hatchVariant "LEDNING-ENKELT-SPOR"))
-			((= i 1) (setq hatchVariant "LEDNING-BEGGE-SPOR"))
-		)
+	(foreach hatchVariant '("LEDNING-ENKELT-SPOR" "LEDNING-BEGGE-SPOR")
 		(setq
 			blockName	(strcat "NO-BN-2D-JBTKL-CONNECTOR-SWITCH-" str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
 			description	(strcat "SPORVEKSEL / KL-SYMBOL, "         str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" hatchVariant "-" (rtos quadrant 2 0))
@@ -60,13 +55,13 @@
 		(if (= hatchVariant "LEDNING-ENKELT-SPOR")
 			(progn
 				(command _POLYLINE_ (list A 0) (list (+ A (/ B 2.0)) 0) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)
-				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _zero_ _hatchPatternLosanges_)
+				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _offsetZero_ _hatchPatternLosanges_)
 				(command _POLYLINE_ (list (+ A (/ B 2.0)) 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)
 				(drawHatch _mediumHatch_)
 			)
 			(progn
 				(command _POLYLINE_ (list A 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) _closedPolyline_)
-				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _zero_ _hatchPatternLosanges_)
+				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _offsetZero_ _hatchPatternLosanges_)
 			)
 		)
 		(command
@@ -76,6 +71,5 @@
 		;Mirror 0x, 1x eller 2x til korrekt kvadrant:
 		(moveToQuadrant quadrant _selectAll_)
 		(createMetricBlockFromCurrentGraphics blockName)
-		(setq i (+ 1 i))
-	);repeat
+	)
 )

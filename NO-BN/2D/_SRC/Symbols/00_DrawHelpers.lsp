@@ -161,7 +161,7 @@
 
 
 
-(defun drawCircleAtPos ( layDef pos r layDef_wipeoutLayer / )
+(defun drawCircleAtPos ( layDef pos r wipeout / )
 	; A circle, centered at 'pos'.
 	; Wipeout is added if wipeoutlayer is non-nil.
 	;        ___    
@@ -171,11 +171,13 @@
 	;
 	(setLayer layDef)
 	(command _CIRCLE_ pos r)
-	(if layDef_wipeOutLayer
+	(if wipeout
 		(progn
-			(setLayer layDef_wipeoutLayer)
-			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
-			(setLayer layDef)
+			(setLayer wipeout)
+			(command 
+				_POLYGON_ 16 pos _inscribed_ r)
+				_WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource
+				_DRAWORDER_ _lastSelection_ _ENTER_ _aboveObjects_ _selectAll_ _ENTER_
 		)
 	)
 	'drawCircleAtPos
@@ -183,15 +185,15 @@
 
 
 
-(defun drawCircle ( layDef r layDef_wipeoutLayer / )
+(defun drawCircle ( layDef r wipeout / )
 	; A circle, centered at ORIGO
-	(drawCircleAtPos layDef _origo_ r layDef_wipeoutLayer)
+	(drawCircleAtPos layDef _origo_ r wipeout)
 	'drawCircle
 )
 
 
 
-(defun drawBoxAtPos ( layDef pos x y layDef_wipeoutLayer / )
+(defun drawBoxAtPos ( layDef pos x y wipeout / )
 	; A rectangular x-by-y area on specified layer, centered at 'pos'.
 	; Wipeout is added if wipeoutlayer is non-nil.
 	;
@@ -204,9 +206,9 @@
     ;
 	(setLayer layDef)
 	(command _RECTANGLE_ (addVectors (posTL x y) pos) (addVectors (posBR x y) pos))
-	(if layDef_wipeOutLayer
+	(if wipeout
 		(progn
-			(setLayer layDef_wipeoutLayer)
+			(setLayer wipeout)
 			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
 			(setLayer layDef)
 		)
@@ -215,9 +217,9 @@
 )
 
 
-(defun drawBox ( layDef x y layDef_wipeoutLayer)
+(defun drawBox ( layDef x y wipeout)
 	; As drawBoxAtPos, centered at ORIGO
-	(drawBoxAtPos layDef _origo_ x y  layDef_wipeoutLayer)
+	(drawBoxAtPos layDef _origo_ x y  wipeout)
 	'drawBox
 )
 	

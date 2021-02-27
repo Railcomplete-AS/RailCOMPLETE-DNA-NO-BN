@@ -335,8 +335,3 @@
 	
 	(setLayer layDef_Zero)
 )
-
-
-
-
-

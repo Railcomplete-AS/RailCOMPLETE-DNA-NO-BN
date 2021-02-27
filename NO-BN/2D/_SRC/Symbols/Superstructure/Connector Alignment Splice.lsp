@@ -18,15 +18,15 @@
 	; Connects an alignment to another alignment when it has been recognized as a valid extension of the first alignment.
 	; The symbols look like this: [>>], [><], [<>], and [<<]. The arrows represent each alignment's direction of increasing mileages.
 	(setCadSystemDefaults)  
-	(CONNECTOR-SPLICE 0 0) ; [>>]
-	(CONNECTOR-SPLICE 0 1) ; [><]
-	(CONNECTOR-SPLICE 1 0) ; [<>]
-	(CONNECTOR-SPLICE 1 1) ; [<<]
+	(CONNECTOR-SPLICE 0 0) ; [> >]
+	(CONNECTOR-SPLICE 0 1) ; [> <]
+	(CONNECTOR-SPLICE 1 0) ; [< >]
+	(CONNECTOR-SPLICE 1 1) ; [< <]
 )
 
 
 
-(defun CONNECTOR-SPLICE ( leftArrow rightArrow / blockName description p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 )
+(defun CONNECTOR-SPLICE ( leftArrow rightArrow / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 )
 	;
 	; 1                   3
 	; |         x         | 
@@ -42,7 +42,7 @@
 	;
 	(setq
 		blockName (strcat "NO-BN-2D-JBTOB-CONNECTOR-SPLICE-" (rtos leftArrow 2 0) "-" (rtos rightArrow 2 0))
-		description (strcat "SPLICE " (if (= leftArrow 0) ">" "<") (if (= rightArrow 0) ">" "<"))
+		description (strcat "SPLICE " (if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))
 		x	3.0
 		y	1.0
 		p1	(list (* -0.500 x) (*  1.000 y))
@@ -64,7 +64,6 @@
 		p14 (list (* -0.167 x) (* -0.500 y))
 		p15 (list (*  0.167 x) (* -0.500 y))
 		p16	(list (*  0.333 x) (* -0.500 y))
-		
 	)
 
 	(drawBox layDef_Zero x y _noWipeout_)

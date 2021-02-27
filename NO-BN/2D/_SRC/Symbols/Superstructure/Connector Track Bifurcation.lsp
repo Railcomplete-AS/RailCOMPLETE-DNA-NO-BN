@@ -37,197 +37,12 @@
 
 (defun C:CONNECTOR-SWITCH ( / )
 	(setCadSystemDefaults)  
-	(CONNECTOR-SWITCH-SCHEMATIC) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
+	(CONNECTOR-SWITCH-ANONYMOUS) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
 	(CONNECTOR-SWITCH-WITH-GEOMETRY) 	; Turnout - switch - point with recognized geometry (fixed 1:1 scale)
 )
 
 
 
-(defun CONNECTOR-SWITCH-SCHEMATIC ( / blockNameBase blockName u )
-	(setq
-		blockName "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-SCHEMATIC"
-		u 1.0 ; unit
-	)
-	(subStep (strcat "Schematic switch symbol"))
-	(setLayer layDef_Zero)
-
-	 ; Quadrant 1
-	 (command 
-		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
-		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
-	)
-	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(moveLeft (* 2 u))
-    (createMetricBlockFromCurrentGraphics (strcat blockName "-1"))
-
-	 ; Quadrant 2
-	(command 
-		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
-		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
-	)
-	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(moveLeft (* 2 u))
-	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
-    (createMetricBlockFromCurrentGraphics (strcat blockName "-2"))
-
-	 ; Quadrant 3
-	 (command 
-		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
-		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
-	)
-	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(moveLeft (* 2 u))
-	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_)
-	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
-    (createMetricBlockFromCurrentGraphics (strcat blockName "-3"))
-	
-	 ; Quadrant 4
-	(command 
-		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
-		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
-	)
-	(drawHatchFromPointUsingStyle _denseHatch_ (list (* 3 u) (* 0.5 u)) -45 0 "ANSI31")
-	(moveLeft (* 2 u))
-	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
-    (createMetricBlockFromCurrentGraphics (strcat blockName "-4"))
-)
-
-
-
-(defun CONNECTOR-SWITCH-WITH-GEOMETRY ( / Switch_Drawing_List element_no Drawing_Number quadrant )
-	; Ref: Bane NOR standard tegninger for sporveksler (tegningsnummer KO.nnnnnn)
-	; TODO: Include details on guard rails, tongue hinge / swivel point etc.
-	(setq 
-		Switch_Drawing_List (list
-			; Enkel 54E3
-			"KO-800157" ;1:7 R190 mangler tegning
-			"KO-701334" ;1:9 R190   OK
-			
-			; Fast kryss 54E3
-			"KO-701287" ;1:9 R300
-			"KO-701306" ;1:12 R500
-			"KO-701319" ;1:14 R760
-	
-			; Fast kryss 60E1
-			"KO-701409" ;1:9 R300
-			"KO-800068-2" ;1:11.66 R500
-			"KO-800068" ;1:12 R500
-			"KO-701372" ;1:14 R760
-			"KO-701382" ;1:15 R760
-			
-			; Bevegelig kryss 60E1
-			"KO-800099" ; 1:9 R300
-			"KO-065306" ; 1:8.21 R300
-			"KO-800090" ;1:12 R500
-			"KO-800108" ;1:14 R760
-			"KO-800164" ;1:15 R760
-			"KO-800081" ;1:18,4 R12001 klotoideveksel mangler forbudtområde
-			"KO-701399" ;1:26,1 R25001 klotoideveksel
-		)
-	)
-	(subStep "Switches:")
-	(SWITCH-SYMBOL-SIGNALING-KEYLOCKED)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
-	(setq element_no 0)
-	(repeat (length Switch_Drawing_List)
-		(setq Drawing_Number (nth element_no Switch_Drawing_List))
-		(setq quadrant 1)
-		(SWITCH-SYMBOL-SIGNALING-THROWING-METHOD Drawing_Number) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
-		(subSubStep (strcat "Switch " Drawing_Number))
-		(repeat 4
-			(SWITCH-SYMBOL-SIGNALING quadrant Drawing_Number) ; Signaling discipline symbols in switch object
-			(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant Drawing_Number) ; Track discipline symbols in switch object
-			(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant Drawing_Number) ; Catenary discipline symbols in switch object
-			(setq quadrant (+ 1 quadrant))
-		)
-		(setq element_no (+ 1 element_no))
-	)
-)
-
-
-
-(defun SWITCH-SYMBOL-SIGNALING-THROWING-METHOD (Drawing_Number / blockName switchParameters A radius )
-	; Generate symbol for filled circle at theoretical crossing in switch - used to signify "motorized hand-thrown with push-button operation"
-	; German: "Elektrisch Ortsgestellte Weichen", EOW.
-	(setq
-		switchParameters (getSwitchParameters Drawing_Number)
-		A	  		(/ (cadr (assoc "A" switchParameters)) 1000.0)
-		radius 	  	0.75
-	)
-	(setq blockName (strcat "NO-BN-2D-JBTSI-SWITCH-THROWING-METHOD" "-" (rtos A 2 3)))
-	(setLayerAndObjectColor layDef_Zero "_ByBlock")
-	(command _CIRCLE_ (list A 0) radius)
-	(drawHatch _solidHatch_)
-	(createMetricBlockFromCurrentGraphics blockName)
-)
-
-
-
-; TODO 2021-01-24 CLFEY Deprecated - the Axle counter sensor now has its own "forbidden area", which depends on the type of axle counter - not the switch.
-; TODO 2019-05-08 CLFEY: Data is missing for almost all switches
-;(defun getAreaOne (Switch_Drawing_Number)
-;	; Forbidden area for axle counter sensors - area 1 of 2
-;	(cadr
-;		(assoc Switch_Drawing_Number
-;			(list	 
-;				(list 	"KO-800157"	nil)
-;				(list 	"KO-701334"	(list "-0.43,-1.25" "15.5364,-1.2457" "15.4105,1.8757" "-0.43,1.25" _closedPolyline_))
-;						
-;				(list 	"KO-701287"	nil)
-;				(list 	"KO-701306"	nil)
-;				(list 	"KO-701319"	nil)
-;				
-;				(list 	"KO-701409"	(list "-0.4320,-1.2975" "19.2564,-1.2933" "19.1546,1.8757" "-0.4320,1.2975" _closedPolyline_))
-;				(list 	"KO-800068-2" (list "-0.4320,-1.2975" "24.7622,-1.2919" "24.6836,1.9032" "-0.4320,1.2975" _closedPolyline_))
-;				(list 	"KO-800068"	(list "-0.4320,-1.2975" "24.7622,-1.2919" "24.6836,1.9032" "-0.4320,1.2975" _closedPolyline_))
-;				(list 	"KO-701372"	nil)
-;				(list 	"KO-701382"	nil)
-;						
-;				(list 	"KO-800099"	nil)
-;				(list 	"KO-065306"	nil)
-;				(list 	"KO-800090"	nil)
-;				(list 	"KO-800108"	nil)
-;				(list 	"KO-800164"	nil)
-;				(list 	"KO-800081"	nil)
-;				(list 	"KO-701399"	nil)
-;			);list																												
-;	);assoc
-;  );cadr
-;)
-;
-;
-; TODO 2021-01-24 CLFEY Deprecated - the Axle counter sensor now has its own "forbidden area", which depends on the type of axle counter - not the switch.
-;(defun getAreaTwo (Switch_Drawing_Number)
-;	; Forbidden area for axle counter sensors - area 2 of 2
-;	(cadr
-;		(assoc Switch_Drawing_Number
-;			(list	 
-;				(list 	"KO-800157"	nil)
-;				(list 	"KO-701334"	(list "19.5777,-1.2575" "19.5258,-0.2513" "18.3102,-0.3116" "18.2375,1.1904" "19.4483,1.2506" "19.3964,2.2568" "27.3973,3.1264" "27.4662,1.8826" "30.0187,2.1662" "30.1387,0" "27.5705,0" "27.6393,-1.2433" _closedPolyline_))
-;						
-;				(list 	"KO-701287"	nil)
-;				(list 	"KO-701306"	nil)
-;				(list 	"KO-701319"	nil)
-;	
-;				(list 	"KO-701409"	(list "25.5829,-1.3027" "25.5366,-0.2189" "23.1623,-0.3150" "23.1033,1.2070" "25.4716,1.3032" "25.4253,2.3869" "33.4828,3.1717" "33.5542,1.8823" "35.9395,2.1473" "36.0585,0" "33.6585,0" "33.7299,-1.2894" _closedPolyline_))
-;				(list 	"KO-800068-2" (list "46.2083,0" "46.1204,2.1120" "41.9549,1.7646" "41.9012,3.0543" "33.5221,2.4215" "33.5591,1.3251" "29.9200,1.2094" "29.9658,-0.3127" "33.6104,-0.1970" "33.6104,-1.2934" "42.0820,-1.2910" "42.0283,0" _closedPolyline_))
-;				(list 	"KO-800068"	(list "46.2083,0" "46.1204,2.1120" "41.9549,1.7646" "41.9012,3.0543" "33.5221,2.4215" "33.5591,1.3251" "29.9200,1.2094" "29.9658,-0.3127" "33.6104,-0.1970" "33.6104,-1.2934" "42.0820,-1.2910" "42.0283,0" _closedPolyline_))
-;				(list 	"KO-701372"	nil)
-;				(list 	"KO-701382"	nil)
-;	
-;				(list 	"KO-800099"	nil)
-;				(list 	"KO-065306"	nil)
-;				(list 	"KO-800090"	nil)
-;				(list 	"KO-800108"	nil)
-;				(list 	"KO-800164"	nil)
-;				(list 	"KO-800081"	nil)
-;				(list 	"KO-701399"	nil)
-;			);list																												
-;		);assoc
-;	);cadr
-;)
-  
-  
-  
 (defun getSwitchParameters (Switch_Drawing_Number)
 	; Inserted from Excel file Sporveksler.xlsx. 
 	; Basic information was extracted from Bane NOR TRV (Technical Regulations), 'Overbygning/Prosjektering/Sporveksler/4. Hovedmål/4. Enkel sporveksel'.
@@ -245,18 +60,20 @@
 	;  |<--A-->|<------B------>|<--E-->|<-F->| 
 	;  |<-----------L--------->|
 	;
-	; Tegnforklaring:
-	; SS: stokkskinneskjøt
-	; BK: bakkant sporveksel
-	; R2: sirkelkurvens endepunkt i avvik
-	; TK: teoretisk kryss
-	; L: byggelengde
-	; A: tangentlengde/lengde i X-retning før teoretisk kryss
-	; C: tangentlengde til sirkelkurven etter teoretisk kryss
-	; B: lengde i X-retning av C + D
-	; D: rettlinjet parti i avvik
-	; E: lengde av parti med langsviller utenfor BK
-	; F: lengde av parti med kortviller utenfor BK	
+	; Symbolism:
+	; **: Dense hatch pattern
+	; //: Sparse hatch pattern
+	; SS: stokkskinneskjøt / stock rail joint
+	; BK: bakkant sporveksel / rear end of turnout
+	; R2: sirkelkurvens endepunkt i avvik / circular arc's end in the deviating track
+	; TK: teoretisk kryss / Theoretical Crossing = point of tangent intersections from rear ends of straight and deviating tracks
+	; L: byggelengde / Constructive length
+	; A: tangentlengde/lengde i X-retning før teoretisk kryss / Tangent line from Stock rail joint to TK
+	; C: tangentlengde til sirkelkurven etter teoretisk kryss / Tangent line from rear end of deviating track's circular arc part
+	; D: rettlinjet parti i avvik / straight part in deviating track, after the circular arc part, up to the end of the factory-delivered constructive length
+	; B: lengde i X-retning av C + D / Sum of C and D
+	; E: lengde av parti med langsviller utenfor BK / Part with long sleepers (both tracks on same sleeper) after turnout's constructive end
+	; F: lengde av parti med kortviller utenfor BK	/ Part with shortened sleepers up to the point where normal sleepers can be used (with enough track separation)
 	;
 	; Tabell 1: Enkel sporveksel for spor uten persontrafikk i avvik, hovedmål
 	; ------------------------------------------------------------------------
@@ -325,4 +142,101 @@
 			);list																														
 		);assoc
 	);cadr
+)
+
+
+
+(defun CONNECTOR-SWITCH-ANONYMOUS ( / blockNameBase blockName u bn q )
+	(setq
+		blockName "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-ANONYMOUS"
+		u 1.0 ; unit
+	)
+	(subStep (strcat "SWITCH: ANONYMOUS"))
+	(setLayer layDef_Zero)
+	(command 
+		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
+		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
+	)
+	(drawHatchFromPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) _angleMinus45_ _offsetZero_)
+	(createSchematicBlockFromCurrentGraphics "tmp")
+
+	(foreach q '(1 2 3 4)
+		(setq bn (strcat blockname "-" (rtos q _decimal_ _zero_)))
+		(addGraphicsFromScaledSchematicBlock "tmp" _one_)
+		(moveLeft (* 2 u))
+		(moveToQuadrant q _selectAll_)
+		(createSchematicBlockFromCurrentGraphics bn)
+		(addGraphicsFromScaledSchematicBlock "tmp" _one_)
+		(moveToQuadrant q _selectAll_)
+		(createMetricBlockFromCurrentGraphics bn)
+		(eraseSchematicBlock "tmp")
+	)
+)
+
+
+
+(defun CONNECTOR-SWITCH-WITH-GEOMETRY ( / Switch_Drawing_List element_no Drawing_Number quadrant )
+	; Ref: Bane NOR standard tegninger for sporveksler (tegningsnummer KO.nnnnnn)
+	; TODO: Include details on guard rails, tongue hinge / swivel point etc.
+	(setq 
+		Switch_Drawing_List (list
+			; Enkel 54E3
+			"KO-800157" ;1:7 R190 mangler tegning
+			"KO-701334" ;1:9 R190   OK
+			
+			; Fast kryss 54E3
+			"KO-701287" ;1:9 R300
+			"KO-701306" ;1:12 R500
+			"KO-701319" ;1:14 R760
+	
+			; Fast kryss 60E1
+			"KO-701409" ;1:9 R300
+			"KO-800068-2" ;1:11.66 R500
+			"KO-800068" ;1:12 R500
+			"KO-701372" ;1:14 R760
+			"KO-701382" ;1:15 R760
+			
+			; Bevegelig kryss 60E1
+			"KO-800099" ; 1:9 R300
+			"KO-065306" ; 1:8.21 R300
+			"KO-800090" ;1:12 R500
+			"KO-800108" ;1:14 R760
+			"KO-800164" ;1:15 R760
+			"KO-800081" ;1:18,4 R12001 klotoideveksel
+			"KO-701399" ;1:26,1 R25001 klotoideveksel
+		)
+	)
+	(subStep "Switches:")
+	(SWITCH-SYMBOL-SIGNALING-KEYLOCKED)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
+	(setq element_no 0)
+	(repeat (length Switch_Drawing_List)
+		(setq Drawing_Number (nth element_no Switch_Drawing_List))
+		(setq quadrant 1)
+		(SWITCH-SYMBOL-SIGNALING-THROWING-METHOD Drawing_Number) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
+		(subSubStep (strcat "SWITCH: " Drawing_Number))
+		(repeat 4
+			(SWITCH-SYMBOL-SIGNALING quadrant Drawing_Number) ; Signaling discipline symbols in switch object
+			(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant Drawing_Number) ; Track discipline symbols in switch object
+			(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant Drawing_Number) ; Catenary discipline symbols in switch object
+			(setq quadrant (+ 1 quadrant))
+		)
+		(setq element_no (+ 1 element_no))
+	)
+)
+
+
+
+(defun SWITCH-SYMBOL-SIGNALING-THROWING-METHOD (Drawing_Number / blockName switchParameters A radius )
+	; Generate symbol for filled circle at theoretical crossing in switch - used to signify "motorized hand-thrown with push-button operation"
+	; German: "Elektrisch Ortsgestellte Weichen", EOW.
+	(setq
+		switchParameters (getSwitchParameters Drawing_Number)
+		A	  		(/ (cadr (assoc "A" switchParameters)) 1000.0)
+		radius 	  	0.75
+	)
+	(setq blockName (strcat "NO-BN-2D-JBTSI-SWITCH-THROWING-METHOD" "-" (rtos A 2 3)))
+	(setLayerAndObjectColor layDef_Zero "_ByBlock")
+	(command _CIRCLE_ (list A 0) radius)
+	(drawHatch _solidHatch_)
+	(createMetricBlockFromCurrentGraphics blockName)
 )
