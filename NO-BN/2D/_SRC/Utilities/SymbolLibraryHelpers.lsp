@@ -194,6 +194,7 @@
 		_defaultFontShx_							"iso3098.shx"
 		_textStyleAnnotativity_						"_A"
 		_textStyleIsAnnotative_						"_Y"
+		_textStyleIsNonAnnotative_						"_Y"
 		_textStyleOrientationIsNotMatchedToLayout_	"_N"
 		_textStyleHeightZeroMeansScalable_			"0.0"
 		_textStyleWidthFactorOne_					"1.0"
@@ -640,16 +641,24 @@
 
 (defun createIsoTextStyle ( / )
 	;
-	;   'Iso3098'will result in an error if not present in the appropriate AutoCAD folder.
-	;	Place the preferred font file in the GitHub RailCOMPLETE folder "...\Customization\NO-BN\2D\_SRC\Fonts".
-	;	When debugging on your computer, make sure this font also resides in "C:\Program Files\Autodesk\AutoCAD 2020\Fonts".
-	;	Change the folder name according to your AutoCAD application (2018, 2019, 2020...)
+	; 'Iso3098' will result in an error if not present in the appropriate AutoCAD folder.
+	; Place the preferred font file in the GitHub RailCOMPLETE folder "...\Customization\NO-BN\2D\_SRC\Fonts".
+	; When debugging on your computer, make sure this font also resides in "C:\Program Files\Autodesk\AutoCAD 2020\Fonts".
+	; Change the folder name according to your AutoCAD application (2018, 2019, 2020...)
+	;
+	; NB! Inlcude this line: <<<_textStyleAnnotativity_ _textStyleIsAnnotative_ _textStyleOrientationIsNotMatchedToLayout_>>> after
+	; the "_defaultFontShx_" line if the tect style should be annotative.
+	; Note that a non-annotative text style used in a non-annotative TEXT / MTEXT / ATTDEF inside an annotative block, will behave
+	; as an annotative entity. Also note that if the text style is annotative, then a non-annotative TEXT / MTEXT / ATTDEF inside a 
+	; non-annotative block definition will behave annotatively, probably contraty to what you would need.
+	; ==> I.e. only non-anno text style will be needed in your DNA's symbol library.
 	;
 	; "TextHeight = 0.0" means that the text can vary in size (after creation). 'Width' is the width ratio, 0.8 makes narrow letters etc.
+	;
 	(command _STYLE_ 
 		_rcTextStyle_
 		_defaultFontShx_ 
-		_textStyleAnnotativity_ _textStyleIsAnnotative_ _textStyleOrientationIsNotMatchedToLayout_
+;		_textStyleAnnotativity_ _textStyleIsAnnotative_ _textStyleOrientationIsNotMatchedToLayout_
 		_textStyleHeightZeroMeansScalable_
 		_textStyleWidthFactorOne_
 		_textStyleNoObliquing_
