@@ -171,7 +171,7 @@
 			(drawHatch _denseHatch_)
 		)
 	)
-	(addAtt "TEKSTOVER" "Tekst over" _ENTER_ (list 0 (* 1.333 side)) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "TEKSTUNDER" "Tekst under" _ENTER_ (list 0 (- (* 0.8 side))) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "TEKSTOVER" "Tekst over" _ENTER_ (list 0 (* 1.333 side)) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(addAtt "TEKSTUNDER" "Tekst under" _ENTER_ (list 0 (- (* 0.8 side))) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 	blockName ; Must return block name to caller
 )

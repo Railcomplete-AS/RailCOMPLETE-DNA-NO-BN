@@ -88,8 +88,8 @@
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(drawHatch _blackHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -148,8 +148,8 @@
 	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
 	(drawHatch _redHatch_)
 	
-	(addAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -230,8 +230,8 @@
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(drawHatch _yellowHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Gul/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Gul/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -290,8 +290,8 @@
 	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
 	(drawHatch _yellowHatch_)
 	
-	(addAtt "LeftUp" "LeftUp" "Gul/svart" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Gul/svart" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -372,8 +372,8 @@
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(drawHatch _blueHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -435,8 +435,8 @@
 	(command _POLYLINE_ p31 p32 TR TL _closedPolyline_) ; 3
 	(drawHatch _blackHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

@@ -240,7 +240,7 @@
 		defaultText "A/D"
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LS" "Linjesignal" defaultText centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addAtt "LS" "Linjesignal" defaultText centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 )
 
 
@@ -254,7 +254,7 @@
 		defaultSpeed "6/7"
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 )
 
 

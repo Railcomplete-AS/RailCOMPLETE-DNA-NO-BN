@@ -22,26 +22,28 @@
 
 
 
-(defun WATCH-SYMBOL ( / blockName textHeight )
+(defun WATCH-SYMBOL ( / blockName att )
 	(setq 
 		blockName "NO-BN-2D-JBTFE-WATCH-SYMBOL"
-		textHeight 1.8
+		description "WATCH"
+		att '("W" "Watch Object" "W")
 	)
-	(addAtt "W" "Watch Object" "W" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addTextAttributeAtPos layDef_Zero _th180_ _origo_ att)
+	(addDescriptionBelowOrigo description _one_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun WATCH-JIGSYMBOL ( / radius blockName textHeight )
+(defun WATCH-JIGSYMBOL ( / blockName att radius )
 	(setq 
 		blockName "NO-BN-2D-JBTFE-WATCH-JIGSYMBOL"
-		textHeight 1.8
+		att '("W" "Watch Object" "W")
 		radius 2.75
 	)
 	(command _CIRCLE_ _origo_ radius)
-	(addAtt "W" "Watch Object" "W" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_ (+ _multipleLines_ _lockPosition_))
+	(addTextAttributeAtPos layDef_Zero _th180_ _origo_ att)
 	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	; No need for annotative version, DNA doesn't use it anyway
 )

@@ -50,7 +50,7 @@
  <DefaultUnresolved3DModelFileName>NO-BN-3D-FE-DIV-UKJENT</DefaultUnresolved3DModelFileName>
  <Export3DSettings/>
  <Units>
-  <DistanceUnit Precision="3">Decimal</DistanceUnit>
+  <LinearUnit Precision="3">Decimal</LinearUnit>
   <AngularUnit Precision="3" Clockwise="false">Decimal Degrees</AngularUnit>
   <InsertionScaleUnit>Meters</InsertionScaleUnit>
   <LightingUnits>International</LightingUnits>
@@ -695,7 +695,7 @@ function NOBN__setSymbolFrame()
 	elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count > 0) then
 		return "Warning"
 	elseif RcType == "SA-SPF Tellepunktavsnitt" then 
-		return "TvdSectionFrame-2.75"
+		return "SectionFrame-2.75"
 	else 
 		return ""
 	end
@@ -1712,7 +1712,7 @@ end
  <PropertyCategory Name="Patch" Collapsed="false"/>
  <PropertyCategory Name="Basic" Collapsed="true"/>
  <PropertyCategory Name="General" Collapsed="false"/>
- <PropertyCategory Name="Aligned object" Collapsed="false"/>
+ <PropertyCategory Name="Alignment object" Collapsed="true"/>
  <PropertyCategory Name="3D" Collapsed="true"/>
  <PropertyCategory Name="Model check" Collapsed="false"/>
  <PropertyCategory Name="Custom properties" Collapsed="false"/>
@@ -1740,7 +1740,7 @@ end
  <PropertyOverride Name="Variant" DisplayName="Variant" Category="General" Description="The 'Variant' built-in property [Enum] holds the currently selected Variant for the object. If the DNA object type declaration does not define any Variants, then the Variant property is void."/>
  <PropertyOverride Name="code" DisplayName="Code" Category="General" Description="The 'code' built-in railML property typically holds an alphanumerical string which is suitable for machine interpretation, identfying the object in a limited context. E.g., a point machine could derive its code (e.g.: '501_3') from its position within a switch ('3') and the switch's own code ('501'). The same code may appear several times within one model, but in different contexts (e.g.: different stations)."/>
  <PropertyOverride Name="name" DisplayName="Name" Category="General" Description="The 'name' built-in railML property typically holds a more ornamented version of the object's code, making it suitable for human reading but not for further parsing. Example: 'Drv.501_3' ('point drive machine 501.3'). Most objects will show their 'name' property as a text element in the CAD drawing, along with the symbol's 2D graphics. Hide/unhide text in the drawing using the ShowLayer tool."/>
- <PropertyOverride Name="lang" DisplayName="Language" Suppressed="false" Description="The embedded 'lang' (language) shall not be available to this railway administration."/>
+ <PropertyOverride Name="lang" DisplayName="Language" Suppressed="true" Description="The embedded 'lang' (language) shall not be available to this railway administration."/>
  <PropertyOverride Name="Stage" DisplayName="Stage" Category="General" Description="The 'Stage' built-in property holds a free-format string encoding the object's placement in the succession of construction stages for your project. Hint: Append '_stage2000-6000' etc to your object layer names and assign a formula: Stage = layer:sub(-9), then use the ManageStagesUsinglayerNames tool to select the active stage."/>
  <PropertyOverride Name="dir" DisplayName="Retning" Category="Aligned object" Description="The 'dir' built-in railML enum property [up, down, both, none, unknown] holds the basic orientation of a point object. "/>
  <PropertyOverride Name="Alignment" DisplayName="Tilhører linje" Category="Aligned object" Description="The 'Alignment' built-in property [TrackRef] refers to the alignment that the object belongs to, also referred to as its 'own alignment'. The point object's mileage property is the mileage  found perpendicularly to this own alignment."/>
@@ -2653,11 +2653,10 @@ end
    <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
   </LuaExpression>
   <Variants DefaultValue="Watch">
-   <Variant Name="Watch">
-    <SetValue Key="name" Value="Relate Watch with 'Is watch for anything' or edit the 'Text' property directly."/>
-   </Variant>
+   <Variant Name="Watch"/>
   </Variants>
-  <LuaExpression Name="text">
+  <SetValue Key="name" Value="Watch"/>
+  <LuaExpression Name="Text">
    <Formula>_FE_DIV_text()</Formula>
   </LuaExpression>
   <LuaFunction Name="_FE_DIV_text()" ReturnType="String" HideFromUser="false" Description="Returns a text to be displayed inside the Watch symbol's frame. The text consists of the code from each visible object related with 'Is watch for anything'.">
@@ -2667,7 +2666,7 @@ end
 					local r,n,t,i
 					r,n = RC__getCollectionOfRelatedObjects("Is watch for anything")
 					if n == 0 then 
-						t = "?"
+						t = "UNFINISHED - Relate with 'Is watch for anything' or edit its formula directly."
 					else
 						t = r[0].code
 						for i = 1, n-1 do
@@ -2679,14 +2678,14 @@ end
 			</Formula>
   </LuaFunction>
   <LuaExpression Name="SymbolFrame">
-   <Formula>"Watch-"..Scale</Formula>
+   <Formula>"Watch"</Formula>
   </LuaExpression>
   <InsertPointObject VariantName="Watch" DisplayBlockName="NO-BN-2D-JBTFE-WATCH-JIGSYMBOL-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3" SnapSensitivityDistance="6">
    <JigSymbolAppearance EnableDirectionSetting="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}</BlockNameFormat>
    <SymbolAttribute Tag="W">
     <Value>{{Text}}</Value>
@@ -2712,13 +2711,12 @@ function NOBN_com_getKof05Records(ThemeCode, SearchArea)
 	if SearchArea == "" then 
 		d = DocumentData.ObjectCollection
 	else
-		areas = DocumentData.ObjectCollection:filter(function (x) return x.RcType:lower():match("area") ~= nil end)
+		areas = DocumentData.ObjectCollection:filter(function (x) return x.RcType:lower():match("område") and x:isVisible() end)
 		areas = areas:filter(function (x) return x.code == SearchArea end)
 		if getCollectionLength(areas) == 0 then 
 			return "No search area was found with code '"..SearchArea.."'.",_warning
 		else
-			d = DocumentData.ObjectCollection:filter(function (x) return x.area.code == areas[0].code end) --TODO: Doesn't work as expected!
-			return "Object search with specified area name such as '"..SearchArea.."' is not yet implemented - sorry about that.",_warning
+			d = DocumentData.ObjectCollection:filter(function (x) return x.RcArea.code == areas[0].code end)
 		end
 	end
 	r = Relations["Is watch for anything"]
@@ -2827,7 +2825,7 @@ end
    <Formula>NOBN_com_getKof05Records(KofThemeCode,KofSearchArea)</Formula>
   </LuaExpression>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}</BlockNameFormat>
    <SymbolAttribute Tag="W">
     <Value>{{Text}}</Value>
@@ -3145,11 +3143,11 @@ end
    <JigSymbolAppearance EnableDirectionSetting="true"/>
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-   <SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75"/>
+   <SetValue Key="SymbolFrame" Value="SectionFrame-2.75"/>
    <SetValue Key="DelimiterType" Value="FE-DIV Sporbrukgrense"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-SECTION-SYMBOL-{{SymbolMode}}</BlockNameFormat>
    <SymbolAttribute Tag="X">
     <Value>{{Variant}}</Value>
@@ -3254,7 +3252,7 @@ end
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}</BlockNameFormat>
    <SymbolAttribute Tag="FARGE">
     <Value>{{code}}</Value>
@@ -18470,11 +18468,11 @@ end
   <InsertPointObject VariantName="Horisontal Traseseksjon" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-   <SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75"/>
+   <SetValue Key="SymbolFrame" Value="SectionFrame-2.75"/>
    <SetValue Key="DelimiterType" Value="KO-HOT Horisontaltrasepunkt"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <SymbolAttribute Tag="X">
     <Value>{{code}}</Value>
    </SymbolAttribute>
@@ -18568,11 +18566,11 @@ end
   <InsertPointObject VariantName="Vertikal Traseseksjon" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-   <SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75"/>
+   <SetValue Key="SymbolFrame" Value="SectionFrame-2.75"/>
    <SetValue Key="DelimiterType" Value="KO-VET Vertikaltrasepunkt"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <SymbolAttribute Tag="X">
     <Value>{{code}}</Value>
    </SymbolAttribute>
@@ -26436,7 +26434,7 @@ end
    <SetValue Key="DelimiterType" Value="SA-TEL Tellepunkt"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <SymbolAttribute Tag="X">
     <Value>{{code}}</Value>
    </SymbolAttribute>
@@ -27022,17 +27020,17 @@ end
 				end
 			</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Isolert skjøt" DisplayBlockName="NO-BN-2D-JBTOB-SKINNESKJOET-0-0-0-0-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0">
+  <InsertPointObject VariantName="Isolert skjøt" DisplayBlockName="NO-BN-2D-JBTOB-RAILJOINT-0-0-0-0-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="false"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTOB-SKINNESKJOET-0-0-0-0-{{SymbolMode}}" AllowSymbolMove="true">
+  <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTOB-RAILJOINT-0-0-0-0-{{SymbolMode}}" AllowSymbolMove="true">
    <JigSymbolAppearance AddAngle="0"/>
   </SymbolDefinition>
   <SymbolDefinition X="0" Y="0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB_KO_SKJ">
    <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTOB-SKINNESKJOET
+				NO-BN-2D-JBTOB-RAILJOINT
 				{% if UpSectionRightRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
 				{% if DownSectionRightRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
 				{% if DownSectionLeftRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
@@ -27128,14 +27126,14 @@ end
   <Variants>
    <Variant Name="Sporfelt"/>
   </Variants>
-  <InsertPointObject VariantName="Togdeteksjonsavsnitt for isolerte skjøter" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Sporfelt" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-   <SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75"/>
+   <SetValue Key="SymbolFrame" Value="SectionFrame-2.75"/>
    <SetValue Key="DelimiterType" Value="KO-SKJ Skinneskjøt"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <SymbolAttribute Tag="X">
     <Value>{{code}}</Value>
    </SymbolAttribute>
@@ -27918,7 +27916,7 @@ end
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
   </SymbolDefinition>
  </ObjectType>
  <ObjectType DataType="tBalise" Class="RailwayPlacedObject" Name="SA-ATB Balise" Layer="JBTSI_SA_ATB" Color="ByLayer" Group="Signal/ATC" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
@@ -28130,7 +28128,7 @@ end
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ATC-BALISE-TOM-FAST-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSI-ATC-BALISE
 				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
@@ -28149,7 +28147,7 @@ end
    </SymbolAttribute>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ATC-BALISE-TOM-FAST-Metric" AllowSymbolMove="false">
-   <JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
+   <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSI-ATC-BALISE
 				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
@@ -28882,6 +28880,7 @@ end
 					if (BrakeTestSignal ~= "-") then t = t.."-BPS" end --Bremseprøvesignal
 					if Sunscreen == "-" then t = t.."-UTEN-SKJERM" end
 					if Yokemounted then t = t.."-ÅK" end
+					if KneeTowardsTrack then if KneeTowardsTrack ~= "-" then t = t..(RightSided and "-VKNE" or "-HKNE") end end
 					if t:match("%-NSI63%-DS") and not t:match("ÅK") then t = t.."-2000" end --Add '-2000' pole total length to shunting signal if free-standing shunting signal
 					return t
 				end

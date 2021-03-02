@@ -106,12 +106,12 @@
 
 	; left box
 	(drawBoxAtPos layDef_Zero pLeft x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HEL_KM"  "Hel km"              "462" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "HALV_KM" "Halv km (0 eller 5)" "5"   p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "HEL_KM"  "Hel km"              "462" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "HALV_KM" "Halv km (0 eller 5)" "5"   p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
 	; right box
 	(drawBoxAtPos layDef_Zero pRight x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HALV_KM2" "Halv km (0 eller 5)" "5"   p3 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "HEL_KM2"  "Hel km"              "462" p4 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "HALV_KM2" "Halv km (0 eller 5)" "5"   p3 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "HEL_KM2"  "Hel km"              "462" p4 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	; connect the boxes
 	(drawLine layDef_Zero p5 p6)
 
@@ -157,18 +157,18 @@
 	; NB: Can't use addTextAttributeAtPos() here because it doesn't rotate attributes by 90 degrees.
 	; left box
 	(drawBoxAtPos layDef_Zero pLeft x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HUNDRE_KM" "100 km" "4" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "TI_KM"     "10 km" "6" p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "EN_KM"     "1 km" "2" p3 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "HUNDRE_KM" "100 km" "4" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "TI_KM"     "10 km" "6" p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "EN_KM"     "1 km" "2" p3 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
 	(drawLine layDef_Zero p4a p4b)
-	(addAtt "HALV_KM"   "Halv km (0 eller 5)" "5" p5 _th180_ _angle90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "HALV_KM"   "Halv km (0 eller 5)" "5" p5 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
 	; right box
 	(drawBoxAtPos layDef_Zero pRight x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HALV_KM2"   "Halv km (0 eller 5)" "5" p6 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "HALV_KM2"   "Halv km (0 eller 5)" "5" p6 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(drawLine layDef_Zero p7a p7b)
-	(addAtt "EN_KM2"     "1 km" "2" p8 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "TI_KM2"     "10 km" "6" p9 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
-	(addAtt "HUNDRE_KM2" "100 km" "4" p10 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "EN_KM2"     "1 km" "2" p8 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "TI_KM2"     "10 km" "6" p9 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(addAtt "HUNDRE_KM2" "100 km" "4" p10 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	; connect the boxes
 	(drawLine layDef_Zero p11 p12)
 

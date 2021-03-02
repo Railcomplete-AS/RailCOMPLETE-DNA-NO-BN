@@ -376,7 +376,7 @@
 		
 		; BLOCK command
 		_BLOCK_							"._BLOCK"
-		_redefineBlock_					"_Y"		; Conirm overwrite of existing block
+		_redefineBlock_					"_Y"		; Confirm overwrite of existing block
 		_blockAnnotativity_				"_A"		; Initiate the 'annotative?' dialogue
 		_blockIsAnnotative_				"_Y"		; Confirm that block shall be created as annotative
 		_blockIsNotAnnotative_			"_N"		; Decline that block shall not created as non-annotative
@@ -390,6 +390,8 @@
 
 		; INSERT command
 		_INSERT_						"._INSERT"
+		_setInsertionScale_ 			"_S"
+		_setInsertionRotation_			"_R"
 
 		
 		; SAVEAS command
@@ -911,13 +913,11 @@
 
 ; CAD system text ATTRIBUTE entities
 ;----------------------------------------------------------
-
-(defun addAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification aflags / tmp )
-	; NB! All attribute texts are added as ANNOTATIVE.
+(defun addAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification / tmp )
 	; Low-level access to CAD system Text Attribute entity creation
 	; Add text attribute (a named storage for text in a symbol, which can be read and written to later).
 	; Features the TAG, PROMPT amd VALUE field, a POSITION and lots of attribute flags (see global contants elsewhere).
-	; ATTDEF is a 'drive me crazy' command - the inputs vary wildly with AFLAGS settings.
+	; (Note...: ATTDEF is a 'drive me crazy' command - the inputs vary wildly with AFLAGS settings.)
 	;
 	; See definition of symbolic constants _xxxx_ elsewhere.
 	; 0		No attribute mode selected
@@ -928,83 +928,111 @@
 	; 16	Lock position in block
 	; 32	Multiple lines allowed
 	;
-	; Test cases when debugging LISP code:
+	; Strangely, the 'Annotative' flag does not belong to the same byte as the six flags listed above.
 	;
-	; (defun x0() (setq tag "TAG0" prom "PromptZero" val _ENTER_ pos (list 0 (* 1.333 3.0)) height 1.0 rot 0 textStyle _rcTextStyle_ justification _middleCenter_ aflags 16)) ; LockPosition / Single line
-	; (defun x1() (setq tag "TAG1" prom nil          val "TEXT1" pos "1.1,1.1" height 1.1 rot 11.11 textStyle _rcTextStyle_ justification _middleCenter_ aflags 16)) ; LockPosition / Single line / no prompt
-	; (defun x2() (setq tag "TAG2" prom "PromptTwo"  val "TEXT2" pos "2.2,2.2" height 2.2 rot 22.22 textStyle _rcTextStyle_ justification _middleCenter_ aflags 16)) ; LockPosition / Single line / with prompt
-	; (defun x3() (setq tag "TAG3" prom nil          val "TEXT3" pos "3.3,3.3" height 3.3 rot 33.33 textStyle _rcTextStyle_ justification _middleCenter_ aflags 48)) ; LockPosition / Multiple lines ( no prompt
-	; (defun x4() (setq tag "TAG4" prom "PromptFour" val "TEXT4" pos "4.3,4.4" height 4.4 rot 44.44 textStyle _rcTextStyle_ justification _middleCenter_ aflags 48)) ; LockPosition / Multiple lines ( no prompt
-	; (defun vals() (foreach x '(tag prom val pos height rot textStyle justification aflags) (print (eval x))))
-	; (defun test0() (progn (x0) (addAtt tag prom val pos height rot textStyle justification aflags)))
-	; (defun test1() (progn (x1) (addAtt tag prom val pos height rot textStyle justification aflags)))
-	; (defun test2() (progn (x2) (addAtt tag prom val pos height rot textStyle justification aflags)))
-	; (defun test3() (progn (x3) (addAtt tag prom val pos height rot textStyle justification aflags)))
-	; (defun test4() (progn (x4) (addAtt tag prom val pos height rot textStyle justification aflags)))
+	; An annotative block can only contain non-annotative stuff. This 'stuff' will scale annotatively along with the rest of the block.
+	; (and beware - if we *did* include an annotative TEXT, MTEXT or ATTDEF inside an annotative block, then AutoCAD would make themn into non-annotative
+	; entities, to stay consistent.)
+	;
+	; A non-annotative block may contain both annotative and non-annotative TEXT, MTEXT and ATTDEF entities.
+	;
+	(princ (strcat "\n==>addAtt: attTag=" attTag " attPrompt=" attPrompt " attDefaultValue=" attDefaultValue " pos=" pos " textHeight=" textHeight " rotation=" rotation " textStyle=" textStyle " justification=" justification))
 
 	(setq tmp (getvar 'AFLAGS))
-	(setvar 'AFLAGS aflags)
+	(setvar 'AFLAGS _lockPosition_) ; We do not need multiple line attributes with our DNA's.
 	(if (= attPrompt nil) 
 		; Add 'empty prompt' since 'attPrompt' argument is nil
 		(setq attPrompt "(no prompt)")	
 	)
-;	(princ ; DEBUG
-;		(strcat "<<<"_attDefIsAnnotative_ "/" _ENTER_ "/" attTag "/" attPrompt 
-;					"/" attDefaultValue "/" textStyle "/" justification "/" pos 
-;					"/" (rtos textHeight) "/" (rtos rotation) ">>>"
-;					"\n"
+;	(if (= (logand aflags _multipleLines_) 0) ; Use LISP bitwise AND (NB - only nil is false. all numerical values are 'T' (true))
+;		; Single line attribute:
+;		(if (= annotativity _attDefIsAnnotative_)
+;			; Annotative (for use in geo symbol)
+;			(command
+;				_ATTDEF_		
+;					_attDefIsAnnotative_					; Toggle 'annotative' flag ON. All the other parameters were set when writing to 'AFLAGS.
+;					_ENTER_ 								; The 'Done' selection: accept current AFLAGS settings (including the multiline-bit in AFLAGS)
+;					attTag									; Name of attribute tag - which must correspond to RailCOMPLETE DNA syntax
+;					attPrompt								; Prompt
+;					attDefaultValue							; Default single-line text.
+;					_setAttdefTextStyle_ textStyle			; 
+;					_setAttdefJustifcation_ justification	; Must be "_J" (not "_Justify")
+;					pos 									; First corner of multiline 'box'
+;					textHeight								; No qualifier first since AutoCAD demands text height here.
+;					rotation								; No qualifier first since AutoCAD demands text rotation here.
+;					_ENTER_
+;			)
+;		; else: Non-annotative (for use in schematic symbol)
+			(command
+				_ATTDEF_		
+					_ENTER_ 								; Accept current AFLAGS settings (including the multiline-bit in AFLAGS). We didn't set 'annotative'.
+					attTag									; Name of attribute tag - which must correspond to RailCOMPLETE DNA syntax
+					attPrompt								; Prompt
+					attDefaultValue							; Default single-line text.
+					_setAttdefTextStyle_ textStyle			; 
+					_setAttdefJustifcation_ justification	; Must be "_J" (not "_Justify")
+					pos 									; First corner of multiline 'box'
+					textHeight								; No qualifier first since AutoCAD demands text height here.
+					rotation								; No qualifier first since AutoCAD demands text rotation here.
+					_ENTER_
+			)
 ;		)
-;	)
-	(if (= (logand aflags _multipleLines_) 0) ; LISP bitwise AND (NB - only nil is false. all numerical values are 'T' (true))
-		; Single line attribute:
-		(command
-			_ATTDEF_		
-				_attDefIsAnnotative_					; Text will be annotative (must be first argument, or omitted)
-				_ENTER_ 								; Accept current AFLAGS settings (including the multiline-bit in AFLAGS)
-				attTag									; Name of attribute tag - which must correspond to RailCOMPLETE DNA syntax
-				attPrompt								; Prompt
-				attDefaultValue							; Default single-line text.
-				_setAttdefTextStyle_ textStyle			; 
-				_setAttdefJustifcation_ justification	; Must be "_J" (not "_Justify")
-				pos 									; First corner of multiline 'box'
-				textHeight								; No qualifier first since AutoCAD demands text height here.
-				rotation								; No qualifier first since AutoCAD demands text rotation here.
-				_ENTER_
-		)
-	;else
-		; Multiple line attribute:
-		(command 
-			_ATTDEF_ 
-				_attDefIsAnnotative_					; Text will be annotative (must be first argument, or omitted)
-				_ENTER_ 								; Accept current AFLAGS settings (including the multiline-bit in AFLAGS)
-				attTag									; Name of attribute tag - which must correspond to RailCOMPLETE DNA syntax
-				attPrompt								; Prompt
-				attDefaultValue							; Default multiline text. Use '\P' inside text string as the 'newline' character.
-				_ENTER_									; Stop asking for multiple lines (AutoCAD asks: 'Next line or done')
-				pos 									; First corner of multiline 'box'
-				_setAttdefTextHeight_ textHeight		; Text (letter) height. Ignore the 'line spacing' setting, i.e. keep default.
-				_setAttdefRotation_ rotation			; 
-				_setAttdefTextStyle_ textStyle
-				_setAttdefJustifcation_ justification	; Must be "_J" (not "_Justify")
-				_setAttdefTextWidth_ 					; Set text box width - only when  _multipleLines_ bit is set,
-				_zero_									; A width of 0 (zero) sets it to auto-width, instead of giving a pos 
-														; for the other corner of the 'box' and thereby setting a 'hard' text width.
-		)
-    )
+;	;else
+;		; Multiple line attribute:
+;		(if (= annotativity _attDefIsAnnotative_)
+;			; Annotative (for use in geo symbol)
+;			(command 
+;				_ATTDEF_ 
+;					_attDefIsAnnotative_					; Toggle 'annotative' flag ON. All the other parameters were set when writing to 'AFLAGS.
+;					_ENTER_ 								; Accept current AFLAGS settings (including the multiline-bit in AFLAGS)
+;					attTag									; Name of attribute tag - which must correspond to RailCOMPLETE DNA syntax
+;					attPrompt								; Prompt
+;					attDefaultValue							; Default multiline text. Use '\P' inside text string as the 'newline' character.
+;					_ENTER_									; Stop asking for multiple lines (AutoCAD asks: 'Next line or done')
+;					pos 									; First corner of multiline 'box'
+;					_setAttdefTextHeight_ textHeight		; Text (letter) height. Ignore the 'line spacing' setting, i.e. keep default.
+;					_setAttdefRotation_ rotation			; 
+;					_setAttdefTextStyle_ textStyle
+;					_setAttdefJustifcation_ justification	; Must be "_J" (not "_Justify")
+;					_setAttdefTextWidth_ 					; Set text box width - only when  _multipleLines_ bit is set,
+;					_zero_									; A width of 0 (zero) sets it to auto-width, instead of giving a pos 
+;															; for the other corner of the 'box' and thereby setting a 'hard' text width.
+;			)
+;		; else: Non-annotative (for use in schematic symbol)
+;			(command 
+;				_ATTDEF_ 
+;					_ENTER_ 								; Accept current AFLAGS settings (including the multiline-bit in AFLAGS). We didn't set 'annotative'.
+;					attTag									; Name of attribute tag - which must correspond to RailCOMPLETE DNA syntax
+;					attPrompt								; Prompt
+;					attDefaultValue							; Default multiline text. Use '\P' inside text string as the 'newline' character.
+;					_ENTER_									; Stop asking for multiple lines (AutoCAD asks: 'Next line or done')
+;					pos 									; First corner of multiline 'box'
+;					_setAttdefTextHeight_ textHeight		; Text (letter) height. Ignore the 'line spacing' setting, i.e. keep default.
+;					_setAttdefRotation_ rotation			; 
+;					_setAttdefTextStyle_ textStyle
+;					_setAttdefJustifcation_ justification	; Must be "_J" (not "_Justify")
+;					_setAttdefTextWidth_ 					; Set text box width - only when  _multipleLines_ bit is set,
+;					_zero_									; A width of 0 (zero) sets it to auto-width, instead of giving a pos 
+;															; for the other corner of the 'box' and thereby setting a 'hard' text width.
+;			)
+;		)
+;    )
 	(setvar "AFLAGS" tmp)
 	'addAtt
 )
 
 
+
+(defun addTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue )
+	;
+	; API access to CAD system Text Attribute entity creation
+	; Single line text attribute, no line breaking
+	;
 	; 'Struct attDef' definition:
 	;
 	; item 0 = Attribute's tag name (NB! Cannot contain spaces)
 	; item 1 = Attribute's prompt text
 	; item 2 = Attribute's default value
-
-(defun addTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue )
-	; API access to CAD system Text Attribute entity creation
-	; Single line text attribute, no line breaking
 	;
 	; Example: (setq myAttDef '("Tag-name-without-spaces" "Prompt text can contain spaces" "Default value can contain spaces"))
 	;
@@ -1013,24 +1041,9 @@
 		attPrompt		(eval (nth 1 attDef))
 		attDefaultValue	(eval (nth 2 attDef))
 	)
-	(setLayer layDef) ; Set layer and drawing color
-	(addAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(setLayer layDef)
+	(addAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
 	'addTextAttributeAtPos
-)
-
-
-
-(defun addMTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue )
-	; API access to CAD system Text Attribute entity creation
-	; Multiple line attribute text, automatic line breaking
-	(setq
-		attTag				(eval (nth 0 attDef))
-		attPrompt			(eval (nth 1 attDef))
-		attDefaultValue		(eval (nth 2 attDef))
-	)
-	(setLayer layDef) ; Set layer and drawing color
-	(addAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_  _rcTextStyle_ _middleCenter_ (+ _lockPosition_ _multipleLines_))
-	'addMTextAttributeAtPos
 )
 
 
@@ -1193,20 +1206,12 @@
 
 
 (defun addWipeoutToLastClosedPolyline ( wipeoutLayDef keepOrErase / currentLayer )
+	; Use predefined values for keepOrErase, see above at _WIPEOUT_ definitions.
 	(if (not wipeoutLayDef) (alert (strcat "*** ERROR: addWipeoutToLastClosedPolyline( ) called with bad or nil wipeoutLayDef")))
 	(setq currentLayer (getvar 'CLAYER)) ; stash current layer in local variable
 	(setLayer wipeoutLayDef)
-	(cond 
-		((= keepOrErase _keepWipeoutSource_) 
-			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
-			(command _DRAWORDER_ _lastSelection_ _ENTER_ _underAllObjects_)
-		)
-		((= keepOrErase _eraseWipeoutSource_)
-			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_)
-			(command _DRAWORDER_ _lastSelection_ _ENTER_ _underAllObjects_)
-		)
-		(T (alert (strcat "*** ERROR: addWipeoutToLastClosedPolyline( ) called with bad keepOrErase argument [" keepOrErase "].")))
-	)
+	(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ keepOrErase)
+	(command _DRAWORDER_ _lastSelection_ _ENTER_ _underAllObjects_)
 	(setvar 'CLAYER currentLayer) ; retrieve stashed value
 )
 
@@ -1236,8 +1241,8 @@
 	; Insert, scale and explode an existing block.
 	; NB: No checking - the block must exist in the block table.
 	(command 
-		"._INSERT" (strcat blockName _schematic_) "_S" scale "_R" _angleZero_ _origo_	; Retrieve schematic symbol - Set overall scale, rotation and position
-		_EXPLODE_ _selectAll_ _ENTER_															; Convert inserted block to modelspace graphics entities
+		_INSERT_ (strcat blockName _schematic_) _setInsertionScale_ scale _setInsertionRotation_ _angleZero_ _origo_	; Retrieve schematic symbol - Set overall scale, rotation and position
+		_EXPLODE_ _selectAll_ _ENTER_													; Convert inserted block to modelspace graphics entities
 	)
 	(setLayer layDef_Zero)
 )

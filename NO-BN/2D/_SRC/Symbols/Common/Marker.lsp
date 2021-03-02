@@ -27,5 +27,5 @@
 	(command _CIRCLE_ "1,1" "0.4")
 	(command _LINE_ _origo_ "0.7563,0.6828" _ENTER_)
 	(command _LINE_ _origo_ "0.6828,0.7563" _ENTER_)
-	(addAtt "FARGE" "Farge" _ENTER_ "1,2" _th100_ _angleZero_ _rcTextStyle_ _middleCenter_ _lockPosition_)
+	(addAtt "FARGE" "Farge" _ENTER_ "1,2" _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 )

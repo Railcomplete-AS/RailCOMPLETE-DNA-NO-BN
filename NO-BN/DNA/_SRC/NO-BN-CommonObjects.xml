@@ -206,11 +206,12 @@
 		
 		<Variants DefaultValue="Watch">
 			<Variant Name="Watch" >
-				<SetValue Key="name" Value="Relate Watch with 'Is watch for anything' or edit the 'Text' property directly." />
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="text"><Formula>_FE_DIV_text()</Formula></LuaExpression>
+		<SetValue Key="name" Value="Watch" />
+
+		<LuaExpression Name="Text"><Formula>_FE_DIV_text()</Formula></LuaExpression>
 		<LuaFunction Name="_FE_DIV_text()" ReturnType="String"
 			HideFromUser="false"
 			Description="Returns a text to be displayed inside the Watch symbol's frame. The text consists of the code from each visible object related with 'Is watch for anything'." >
@@ -220,7 +221,7 @@
 					local r,n,t,i
 					r,n = RC__getCollectionOfRelatedObjects("Is watch for anything")
 					if n == 0 then 
-						t = "?"
+						t = "UNFINISHED - Relate with 'Is watch for anything' or edit its formula directly."
 					else
 						t = r[0].code
 						for i = 1, n-1 do
@@ -231,8 +232,8 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
-		<LuaExpression Name="SymbolFrame"><Formula>"Watch-"..Scale</Formula></LuaExpression>
+
+		<LuaExpression Name="SymbolFrame"><Formula>"Watch"</Formula></LuaExpression>
 
 		<InsertPointObject VariantName="Watch" DisplayBlockName="NO-BN-2D-JBTFE-WATCH-JIGSYMBOL-Schematic"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3" SnapSensitivityDistance="6" >
@@ -241,7 +242,7 @@
 		</InsertPointObject>      
 		
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-			<JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}</BlockNameFormat>
 			<SymbolAttribute Tag="W">
 				<Value>{{Text}}</Value>
@@ -280,13 +281,12 @@ function NOBN_com_getKof05Records(ThemeCode, SearchArea)
 	if SearchArea == "" then 
 		d = DocumentData.ObjectCollection
 	else
-		areas = DocumentData.ObjectCollection:filter(function (x) return x.RcType:lower():match("area") ~= nil end)
+		areas = DocumentData.ObjectCollection:filter(function (x) return x.RcType:lower():match("område") and x:isVisible() end)
 		areas = areas:filter(function (x) return x.code == SearchArea end)
 		if getCollectionLength(areas) == 0 then 
 			return "No search area was found with code '"..SearchArea.."'.",_warning
 		else
-			d = DocumentData.ObjectCollection:filter(function (x) return x.area.code == areas[0].code end) --TODO: Doesn't work as expected!
-			return "Object search with specified area name such as '"..SearchArea.."' is not yet implemented - sorry about that.",_warning
+			d = DocumentData.ObjectCollection:filter(function (x) return x.RcArea.code == areas[0].code end)
 		end
 	end
 	r = Relations["Is watch for anything"]
@@ -371,7 +371,7 @@ end
 		<LuaExpression Name="Text"><Formula>NOBN_com_getKof05Records(KofThemeCode,KofSearchArea)</Formula></LuaExpression>
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-			<JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-WATCH-SYMBOL-{{SymbolMode}}</BlockNameFormat>
 			<SymbolAttribute Tag="W">
 				<Value>{{Text}}</Value>
@@ -617,13 +617,13 @@ end
 			<JigSymbolAppearance EnableDirectionSetting="true" />
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
-			<SetValue Key="SymbolFrame" Value="TvdSectionFrame-2.75" />
+			<SetValue Key="SymbolFrame" Value="SectionFrame-2.75" />
 			<SetValue Key="DelimiterType" Value="FE-DIV Sporbrukgrense" />
 		</InsertPointObject>
 		
 		<!-- NB - The RailCOMPLETE SymbolFrame forms the frame around the section's visible text. -->
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL-{{SymbolMode}}" AllowSymbolMove="true">
-			<JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-SECTION-SYMBOL-{{SymbolMode}}</BlockNameFormat>
 			<SymbolAttribute Tag="X">
 				<Value>{{Variant}}</Value>
@@ -698,7 +698,7 @@ end
 		</InsertPointObject>
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}" AllowSymbolMove="true">
-			<JigSymbolAppearance AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}</BlockNameFormat>
 			<SymbolAttribute Tag="FARGE">
 				<Value>{{code}}</Value>
