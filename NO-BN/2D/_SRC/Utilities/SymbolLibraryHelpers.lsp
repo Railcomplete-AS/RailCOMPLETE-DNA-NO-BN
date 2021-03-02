@@ -440,7 +440,7 @@
 		_angleMinus90_					270
 		
 		; 2D points		
-		_origo_							'( 0.00  0.00)
+		_origo_							"0,0" ;'( 0.00  0.00)
 		_slightlyBelow_					'( 0.00 -0.01)
 		_slightlyAbove_					'( 0.00  0.01)
 		_slightlyLeft_					'(-0.01  0.00)
@@ -936,7 +936,10 @@
 	;
 	; A non-annotative block may contain both annotative and non-annotative TEXT, MTEXT and ATTDEF entities.
 	;
-	(princ (strcat "\n==>addAtt: attTag=" attTag " attPrompt=" attPrompt " attDefaultValue=" attDefaultValue " pos=" pos " textHeight=" (rtos textHeight) " rotation=" (rtos rotation) " textStyle=" textStyle " justification=" justification))
+;	(if (= (nth 0 pos) nil) 
+		(princ (strcat "\n==>addAtt: attTag=" attTag " attPrompt=" attPrompt " attDefaultValue=" attDefaultValue " pos=" pos " textHeight=" (rtos textHeight) " rotation=" (rtos rotation) " textStyle=" textStyle " justification=" justification))
+;		(princ (strcat "\n==>addAtt: attTag=" attTag " attPrompt=" attPrompt " attDefaultValue=" attDefaultValue " pos=(" (rtos (nth 0 pos)) "," (rtos (nth 1 pos)) ") textHeight=" (rtos textHeight) " rotation=" (rtos rotation) " textStyle=" textStyle " justification=" justification))
+;	)
 
 	(setq tmp (getvar 'AFLAGS))
 	(setvar 'AFLAGS _lockPosition_) ; We do not need multiple line attributes with our DNA's.
