@@ -936,7 +936,7 @@
 	;
 	; A non-annotative block may contain both annotative and non-annotative TEXT, MTEXT and ATTDEF entities.
 	;
-	(princ (strcat "\n==>addAtt: attTag=" attTag " attPrompt=" attPrompt " attDefaultValue=" attDefaultValue " pos=" pos " textHeight=" textHeight " rotation=" rotation " textStyle=" textStyle " justification=" justification))
+	(princ (strcat "\n==>addAtt: attTag=" attTag " attPrompt=" attPrompt " attDefaultValue=" attDefaultValue " pos=" pos " textHeight=" (rtos textHeight) " rotation=" (rtos rotation) " textStyle=" textStyle " justification=" justification))
 
 	(setq tmp (getvar 'AFLAGS))
 	(setvar 'AFLAGS _lockPosition_) ; We do not need multiple line attributes with our DNA's.
