@@ -4728,6 +4728,9 @@ end
 	EH-FOR Forbindelse (Strømbro "C" mellom kontaktledning og bæreline i to ledninger, med "M" mellom dem)
 	Dvs elektrisk sammenkobling av to kontakttråder i et vekslingsfelt (seksjonsfelt har bryter)
 	Ref. EH.705051.
+
+	TODO 2020-09-26: Add 3D symbols to the library: Single / double Strømbro
+
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-FOR KL-forbindelse"
 				Layer="JBTKL_EH_FOR" Color="ByLayer"
@@ -4751,27 +4754,24 @@ end
 			</Variant>
 		</Variants>
 		
-		<!-- TODO 2020-09-26: Add 3D symbols to the library: Single / double Størmbro -->
+		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
-		<InsertPointObject VariantName="Strømbro" DisplayBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-H" 
+		<InsertPointObject VariantName="Strømbro" DisplayBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-H-Schematic"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true" />
+			<OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace> 
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace> 
 			<SetValue Key="name" Value="Strømbro" />
 		</InsertPointObject>
 		
-		<SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-H" >
-			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}" />	
-			<!-- TODO 2020-09-26 There are two types of Strømbro 2D symbols, "STROEMBRO" and "STROEMBRO-V" - why? -->
+		<SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" 
+				DefaultBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-{% if dir == 'up' %}{% if RightSided %}H{% else %}V{% endif %}{% else %}{% if LeftSided %}H{% else %}V{% endif %}{% endif %}" >
+			<Rotation Add180DegreesIfDirIsDown="false" 
+				AddAngle="{% if RightSided %}{{0.0|plus:AngularOffset}}{% else %}{{180.0|plus:AngularOffset}}{% endif %}" />	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTKL-FORBINDELSE
-				{% if Variant == 'Strømbro' %}STROEMBRO-H
+				{% if Variant == 'Strømbro' %}STROEMBRO
+					{% if dir == 'up' %}{% if RightSided %}H{% else %}V{% endif %}{% else %}{% if RightSided %}V{% else %}H{% endif %}{% endif %}
 				{% else %}BAD_VARIANT
 				{% endif %}
 				{{SymbolMode}}

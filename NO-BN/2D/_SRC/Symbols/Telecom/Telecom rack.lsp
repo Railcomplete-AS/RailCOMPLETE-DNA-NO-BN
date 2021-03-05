@@ -18,10 +18,11 @@
 
 
 
-(defun TELERACK ( / blockName x y r gx gy gr )
+(defun TELERACK ( / blockName description x y r gx gy gr )
 	; Box with circle, centered on origo (large cabinet to be placed on a suitable foundation)
 	(setq
 		blockName "NO-BN-2D-JBTTE-TELERACK"
+		description "TELERACK"
 		x 9.0
 		y 4.5
 		r (* 0.1 y)
@@ -33,7 +34,7 @@
 	(drawBox layDef_Zero x y layDef_Cabinet_Wipeout)
 	(drawBottomEmphasis layDef_Zero x y)
 	(drawCircle layDef_Zero r _noWipeout_)
-	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ y) "Telerack")
+	(addDescriptionBelowOrigo description (halfOf y))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
@@ -41,7 +42,7 @@
 	(drawBottomEmphasis layDef_Zero gx gy)
 	(drawCircle layDef_Zero gr _noWipeout_)
 	(addTextAtPos layDef_Zero (* 0.8 gy) _origo_ "TR")
-	(addTextAtPos layDef_Description _descriptionTextHeight_ (posBelow _descriptionTextHeight_ gy) "Telerack")
+	(addDescriptionBelowOrigo description gy)
 	(createAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric symbol

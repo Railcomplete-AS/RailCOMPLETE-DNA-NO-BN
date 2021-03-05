@@ -73,7 +73,7 @@
 	)
 	(command _MOVE_ _selectAll_ _ENTER_ p1 _origo_)
 	(if (= dir "V") (mirrorAboutYaxis _eraseMirrorSource_))
-	(addDescriptionBelowOrigo description r)
+	(addDescriptionBelowOrigo description (halfOf r))
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

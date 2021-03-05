@@ -19,10 +19,10 @@
 	)
 	(setLayer layDef_InsertionPoint)
 	(command
-;		_CIRCLE_ _origo_ radius
-;		_LINE_ (list (- radius) 0) (list radius 0) _ENTER_
-;		_LINE_ (list 0 (- radius)) (list 0 radius) _ENTER_
-		_POINT_ _origo_ _ENTER_
+		_CIRCLE_ _origo_ radius
+		_LINE_ (list (- radius) 0) (list radius 0) _ENTER_
+		_LINE_ (list 0 (- radius)) (list 0 radius) _ENTER_
+;		_POINT_ _origo_ _ENTER_ ; 2021-03-05 CLFEY Hmmmm didn't like it - they are too big and overlap when I zoom in/out
 	)
 	(createSchematicBlockFromCurrentGraphics blockName)
 )

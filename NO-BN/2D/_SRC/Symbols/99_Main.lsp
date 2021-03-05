@@ -111,14 +111,14 @@
 			_colorizeLayer_		_colorWhite_ "0"
 			_createNewLayer_	"Defpoints"
 			_colorizeLayer_		_colorYellow_ "Defpoints"
-			_plottability_			_isNotPlottable_ "Defpoints" _ENTER_
+			_plottability_		_isNotPlottable_ "Defpoints" _ENTER_
 	)
-	(step "Purge") (purgeAll)
-	(step "Define global CAD constants") (defineGlobalCadSystemConstants)
-	(step "Set CAD defaults") (setCadSystemDefaults)
-	(step "Create ISO text style") (createIsoTextStyle)
-	(step "Create standard RailCOMPLETE layers") (createStandardLayers)
-	(step "Set default object properties to ByBlock") (setDefaultObjectPropertiesToByBlock)
+	(step "Purge")										(purgeAll)
+	(step "Define global CAD constants")				(defineGlobalCadSystemConstants)
+	(step "Set CAD defaults")							(setCadSystemDefaults)
+	(step "Create ISO text style")						(createIsoTextStyle)
+	(step "Create standard RailCOMPLETE layers")		(createStandardLayers)
+	(step "Set default object properties to ByBlock")	(setDefaultObjectPropertiesToByBlock)
 
 	(setq nSchematicBlocks 0)
 	(setq nAnnotativeBlocks 0)
