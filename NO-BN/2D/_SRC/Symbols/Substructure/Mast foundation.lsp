@@ -500,7 +500,7 @@
 	;
 	; For å sette inn mastefundament med motsatt kraftretning, snu om dir fra both til none.
 	(setq
-		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-BETONG-B3-1600x1800-000-240x800xM36"
+		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-BETONG-B3-B6-1600x1800-000-240x800xM36"
 		description	"BETONG KL- FUNDAMENT B3- OG B6-MAST 1600x1800-000 600x1200 240x800xM36"
 		baseX 1.600 ; Langs med sporet
 		baseY 1.800 ; På tvers av sporet
@@ -881,7 +881,7 @@
 	;    |  |  (/) (\) |  |
 	;    |  |          |  |
 	;    11-12--------13-14       ... -(wy+sy) = -(wy+by)
-	;    <sx >        < sx>
+	;    <sx>          <sx>
 	;
 	;
 	(setq
