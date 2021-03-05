@@ -500,8 +500,8 @@
 	;
 	; For å sette inn mastefundament med motsatt kraftretning, snu om dir fra both til none.
 	(setq
-		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-BETONG-B3-B6-1600x1800-000-240x800xM36"
-		description	"BETONG KL- FUNDAMENT B3- OG B6-MAST 1600x1800-000 600x1200 240x800xM36"
+		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-BETONG-B3-B6-LAV-1600x1800-000-240x800xM36"
+		description	"BETONG KL- FUNDAMENT B3 OG B6 LAV MAST 1600x1800-000 600x1200 240x800xM36"
 		baseX 1.600 ; Langs med sporet
 		baseY 1.800 ; På tvers av sporet
 		; baseZ 0.500 ; Sålehøyde - irrelevant for 2D
@@ -558,8 +558,8 @@
 	;
 	; For å sette inn mastefundament med motsatt kraftretning, snu om dir fra both til none.
 	(setq
-		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-BETONG-B6-1600x1800-000-260x940xM36"
-		description	"BETONG KL- FUNDAMENT B6-MAST 1600x1800-000 600x1200 260x940xM36"
+		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-BETONG-B6-HOEY-1600x1800-000-260x940xM36"
+		description	"BETONG KL- FUNDAMENT HOEY B6-MAST 1600x1800-000 600x1200 260x940xM36"
 		baseX 1.600 ; Langs med sporet
 		baseY 1.800 ; På tvers av sporet
 		baseOffsetY 0.000 ; Såle offset fra ytterste posisjon
