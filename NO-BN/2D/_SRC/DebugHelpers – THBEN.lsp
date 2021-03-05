@@ -25,7 +25,7 @@
 
 (princ (strcat "\n================================= DebugHelper.lsp =================================")) (prin1)
 (vl-load-com) ; Load AutoCAD's Visual LISP environment (if not already loaded)
-(setq rootFolder "c:\\users\\Claus Feyling\\documents\\github\\railcomplete-no-bn\\NO-BN\\2D\\_src")
+(setq rootFolder "C:\\Users\\Norctest\\Documents\\GitHub\\RailCOMPLETE-NO-BN\\NO-BN\\2D\\_SRC")
 
 
 (defun hlp ( / )
