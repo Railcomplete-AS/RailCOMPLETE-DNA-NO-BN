@@ -15,7 +15,7 @@
 (defun C:OCS-MAST ( / )
 
 	(subSubStep "BJELKEMAST")	(BJELKEMAST)
-;	(subSubStep "GMBMAST")		(GMBMAST)
+	(subSubStep "GMBMAST")		(GMBMAST)
 	(subSubStep "GITTERMAST-B")	(GITTERMAST-B)
 	(subSubStep "GITTERMAST-H")	(GITTERMAST-H)
 	(subSubStep "BETONGMAST")	(BETONGMAST)
