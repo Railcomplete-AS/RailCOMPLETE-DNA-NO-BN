@@ -551,6 +551,6 @@
 		_CIRCLE_ (list len1 (+ len2 r)) r
 		_RECTANGLE_ (list (- len1 x) (- len2)) (list (+ len1 x) (- (+ len2 y)))
 	)
-	(drawHatchFromPoint _solidHatch_ (list len1 (- (+ len2 (/ y 2.0)))) _angleZero_ _offsetZero_)
+	(drawHatchFromPoint _solidHatch_ (list len1 (- (+ len2 (halfOf y)))) _angleZero_ _offsetZero_)
 	(if offset (moveUp offset))
 )

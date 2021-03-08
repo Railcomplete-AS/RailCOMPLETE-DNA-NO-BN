@@ -173,11 +173,8 @@
 	(command _CIRCLE_ pos r)
 	(if wipeout
 		(progn
-			(setLayer wipeout)
-			(command 
-				_POLYGON_ 16 pos _inscribed_ r)
-				_WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource
-				_DRAWORDER_ _lastSelection_ _ENTER_ _aboveObjects_ _selectAll_ _ENTER_
+			(command _POLYGON_ 16 pos _inscribed_ r)
+			(addWipeoutToLastClosedPolyline wipeout _keepWipeoutSource_)
 		)
 	)
 	'drawCircleAtPos
@@ -207,11 +204,7 @@
 	(setLayer layDef)
 	(command _RECTANGLE_ (addVectors (posTL x y) pos) (addVectors (posBR x y) pos))
 	(if wipeout
-		(progn
-			(setLayer wipeout)
-			(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _keepWipeoutSource_)
-			(setLayer layDef)
-		)
+		(addWipeoutToLastClosedPolyline wipeout _keepWipeoutSource_)
 	)
 	'drawBoxAtPos
 )

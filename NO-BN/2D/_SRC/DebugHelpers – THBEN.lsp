@@ -31,7 +31,7 @@
 (defun hlp ( / )
 	(princ (strcat "\n=============================== DebugHelper - HLP ===============================")) (prin1)
 	(princ (strcat "\n\n*** Root folder = " rootFolder " ***")) (prin1)
-	(princ (strcat "\n\n" "VLIDE shortcuts:\n    TAB/Shift+TAB: Previous/next command\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+R: Reset from break loop\n    Ctrl+Shift+C: AutoCAD (Command) mode\n    F6: Console window")) (prin1)
+	(princ (strcat "\n\n" "VLIDE shortcuts:\n    TAB/Shift+TAB: Previous/next command\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+R: Reset from break loop\n    Ctrl+Shift+C: Toggle AutoCAD (Command) mode\n    F6: Console window")) (prin1)
 	(princ (strcat "\n\n" "(mkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (mkAll)")) (prin1)
 	(princ (strcat "\n\n" "(ql)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (ql folderName)")) (prin1)
 	(princ (strcat "\n\n" "(ldAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (ldAll)")) (prin1)

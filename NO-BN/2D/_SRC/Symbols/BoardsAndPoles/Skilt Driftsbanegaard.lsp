@@ -33,6 +33,10 @@
 	(addTextAtPos layDef_Zero _th250_ _origo_ "DBG")
 	(moveUp (halfOf y))
 	(addDescriptionBelowOrigo description 0)
+	(addDescriptionBelowOrigo description 2)
+	(addDescriptionBelowOrigo description 4)
+	(addDescriptionBelowOrigo description 6)
+	(addDescriptionBelowOrigo description 8)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created

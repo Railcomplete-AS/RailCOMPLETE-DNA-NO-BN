@@ -58,7 +58,7 @@
 	(command _POLYLINE_ p4 p5 p6 p7 _openPolyline_)
 	(mirrorAboutYaxis _keepMirrorSource_)
 	(mirrorAboutXaxis _keepMirrorSource_)
-	(drawHatch _denseHatch_)
+	(drawHatchFromPoint _denseHatch_ _origo_ _angleZero_ _offsetZero_)
 	(addDescriptionBelowOrigo description y)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

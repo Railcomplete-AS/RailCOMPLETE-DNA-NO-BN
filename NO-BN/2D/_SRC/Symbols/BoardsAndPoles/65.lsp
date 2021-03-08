@@ -16,7 +16,7 @@
 ; For debugging:
 ; (65A) (65B) (65C) (65D) (65E) (65F) (65G-1) (65G-2) (65G-3)
 
-(defun 65A ( / blockName description x y r1 r2 )
+(defun 65A ( / blockName description x y p11 p12 p21 p22 )
 	; Unpowered section, dead-end track - "Jordet seksjon"
 	;
 	; TL-----------TR
@@ -43,7 +43,7 @@
 	(moveUp (halfOf y))
 	(setLayer layDef_Zero)
 	(command _POLYLINE_ p11 p12 p22 p21 _closedPolyline_)
-	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.1 y)) 0 0)
+	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.1 y)) _angleZero_ _offsetZero_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -60,7 +60,7 @@
 	;  | p11-p12     p21-p22 |
 	;  | |     |     |     | |
 	;  | |     |  _  |     | | ; Black bars on white background
-	;  | |     | (0) |     | | ; Circle at p99 represents optional white lamp
+	;  | |     | (0) |     | | ; Circle at p0 represents optional white lamp
 	;  | |     |     |     | |
 	;  | |     |     |     | |
 	;  | p13-p14     p23-p24 | 
@@ -101,7 +101,7 @@
 
 
 
-(defun 65C ( / blockName description x y r p11 p12 p13 p14 p21 p22 p23 p24 p31 p32 p33 p34 )
+(defun 65C ( / blockName description x y r p0 p11 p12 p13 p14 p21 p22 p23 p24 p31 p32 p33 p34 )
 	; Disconnection before unpowered section
 	; 
 	;  TL-------------------TR
@@ -109,7 +109,7 @@
 	;  | p11-p12     p21-p22 |
 	;  | |     |     |     | |
 	;  | |     |  _  |     | | ; Black bars on white background
-	;  | |     | (_) |     | | ; Circle at p99 represents optional white lamp
+	;  | |     | (0) |     | | ; Circle at p0 represents optional white lamp
 	;  | |     |     |     | |
 	;  | |     |     |     | |
 	;  | p13-p14     p23-p24 | 
@@ -335,7 +335,7 @@
 	(moveUp (halfOf y2))
 	(drawCircleAtPos layDef_Zero p1 r1 _noWipeout_)
 	(drawCircleAtPos layDef_Zero p1 r2 _noWipeout_)
-	(drawHatchFromPoint _solidHatch_ p2 0 0)
+	(drawHatchFromPoint _solidHatch_ p2 _angleZero_ _offsetZero_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

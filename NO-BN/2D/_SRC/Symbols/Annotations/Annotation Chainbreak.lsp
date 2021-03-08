@@ -19,10 +19,8 @@
 		description "KJEDEBRUDD"
 	)
 	(command _POLYLINE_ "-11,0" "9,0" "11,4" "-9,4" _closedPolyline_)
-	(setLayer layDef_BoardOrPole_Wipeout)
-	(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_)
+	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 	(setLayer layDef_Zero)
-
 	(command _LINE_ "-10.876,0.248" "9.124,0.248" _ENTER_)
 	(command _LINE_ "-10.752,0.4961" "9.248,0.4961" _ENTER_)
 	(command _LINE_ "-9.248,3.5039" "10.752,3.5039" _ENTER_)

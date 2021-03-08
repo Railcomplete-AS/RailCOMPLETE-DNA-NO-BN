@@ -32,6 +32,7 @@
 		A B R x railProfile ang 
 		str i hatchVariant
 	)
+(setq counter nil)
 	(setq
 		switchParameters (getSwitchParameters Drawing_Number)
 		crossType 	(cadr (assoc "SwitchCrossing" switchParameters))
@@ -55,13 +56,14 @@
 		(if (= hatchVariant "LEDNING-ENKELT-SPOR")
 			(progn
 				(command _POLYLINE_ (list A 0) (list (+ A (/ B 2.0)) 0) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)
-				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _offsetZero_ _hatchPatternLosanges_)
+				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _hatchPatternLosanges_)
 				(command _POLYLINE_ (list (+ A (/ B 2.0)) 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) (list (+ A (/ B 2.0)) (* (/ B 2.0) (tan (D->R ang)))) _closedPolyline_)
 				(drawHatch _mediumHatch_)
 			)
+		; Both legs are electrified:
 			(progn
 				(command _POLYLINE_ (list A 0) (list (+ A (* B 0.75)) 0) (list (+ A (* B 0.75)) (* (* B 0.75) (tan (D->R ang)))) _closedPolyline_)
-				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _angleZero_ _offsetZero_ _hatchPatternLosanges_)
+				(drawHatchFromSelectionUsingStyle _mediumHatch_ _lastSelection_ _hatchPatternLosanges_)
 			)
 		)
 		(command

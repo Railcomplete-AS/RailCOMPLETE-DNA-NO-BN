@@ -826,16 +826,16 @@
 (defun FJELLBOLTER-FOR-KONSOLL-PAA-VEGG ( / blockName description bx bl bd )
 ;
 ;      +-+       +-+    ... bl
-;      + +       + +
-;      + +       + +   
-;      + +       + +
+;      | |       | |
+;      | |       | |   
+;      | |       | |
 ;      +-+   .   +-+    ... zero
 ;      bd         bd
 ;      <--- bx  --->
 ;
 	(setq 
 		blockName	"NO-BN-2D-JBTKL-FUNDAMENT-FJELLBOLTER-FOR-VEGGKONSOLL-600x700xM24" ; 4 x Horizontal threaded iron 'gjengestag'
-		description	"BOLTEGRUPPE FOR KL- VEGGKONSOLL 600x700xM24"
+		description	"BOLTEGRUPPE FOR KL- KONSOLL VEGGFESTE 600x700xM24"
 		bx 0.600 ; x-distance between bolts
 		bl 3.000 ; Bolt length (typical real length is 3 meters)
 		bd 0.036 ; Bolt diameter

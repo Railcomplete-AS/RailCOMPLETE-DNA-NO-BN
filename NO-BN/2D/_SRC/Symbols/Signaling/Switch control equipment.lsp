@@ -63,7 +63,7 @@
 	)
 	(drawCircle layDef_Zero r1 _noWipeout_)
 	(drawCircle layDef_Zero r2 _noWipeout_)
-	(drawHatch _dense_)
+	(drawHatch _denseHatch_)
 	(addDescriptionBelowOrigo description r1)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)

@@ -1,6 +1,15 @@
+;=========================================================================================================================
 ;
 ; UnitConversions.lsp
 ;
+; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
+; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
+;
+; Change log:
+; 2021-02-10 CLFEY Release 2021.a
+;
+;=========================================================================================================================
+
 (defun R->D (r) ; rads to degrees
 	(* 180.0 (/ r pi))
 )
@@ -9,11 +18,4 @@
 
 (defun D->R (d) ;degrees to rads
 	(* pi (/ d 180.0))
-)
-
-
-(defun C:I2M (/ m in string) ;inches to meters
-	(setq in (GETDIST "\nValue in Inches: ")) ; A prompt appears (either as tooltip in modelspace, or in the console line).
-	(setq m (* in 0.0254))
-	(alert (strcat (rtos in 2 1) " inches is " (rtos m 2 3) " meters.")) ; A box pops up with an "OK" button. Control returns when the user clicks 'OK'.
 )

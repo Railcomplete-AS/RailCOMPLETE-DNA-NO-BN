@@ -110,12 +110,8 @@
 		A	(/ (cadr (assoc "A" switchParameters)) 1000.0)
 		r	0.75
 	)
-	(setLayer layDef_Turnout_Wipeout)
-	(command
-		_POLYGON_ 16 (list A 0) _inscribed_ r
-		_WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ _ENTER_ _eraseWipeoutSource_
-		_DRAWORDER_ _lastSelection_ _ENTER_ _aboveObjects_ _selectAll_ _ENTER_
-	)
+	(command _POLYGON_ 16 (list A 0) _inscribed_ r)
+	(addWipeoutToLastClosedPolyline layDef_Turnout_Wipeout _eraseWipeoutSource_)
 )
 
 

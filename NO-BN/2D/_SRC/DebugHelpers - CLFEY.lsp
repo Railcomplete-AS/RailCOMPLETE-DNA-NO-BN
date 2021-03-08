@@ -31,7 +31,7 @@
 (defun hlp ( / )
 	(princ (strcat "\n=============================== DebugHelper - HLP ===============================")) (prin1)
 	(princ (strcat "\n\n*** Root folder = " rootFolder " ***")) (prin1)
-	(princ (strcat "\n\n" "VLIDE shortcuts:\n    TAB/Shift+TAB: Previous/next command\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+R: Reset from break loop\n    Ctrl+Shift+C: AutoCAD (Command) mode\n    F6: Console window")) (prin1)
+	(princ (strcat "\n\n" "VLIDE shortcuts:\n    TAB/Shift+TAB: Previous/next command\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+R: Reset from break loop\n    Ctrl+Shift+C: Toggle AutoCAD (Command) mode\n    F6: Console window")) (prin1)
 	(princ (strcat "\n\n" "(mkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (mkAll)")) (prin1)
 	(princ (strcat "\n\n" "(ql)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (ql folderName)")) (prin1)
 	(princ (strcat "\n\n" "(ldAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (ldAll)")) (prin1)
@@ -60,6 +60,27 @@
 ;    )
 ;)
 
+
+; For debugging purposes:
+(defun C:I2M ( / m in string) ;inches to meters
+	(setq in (GETDIST "\nValue in Inches: ")) ; A prompt appears (either as tooltip in modelspace, or in the console line).
+	(setq m (* in 0.0254))
+	(alert (strcat (rtos in 2 1) " inches is " (rtos m 2 3) " meters.")) ; A box pops up with an "OK" button. Control returns when the user clicks 'OK'.
+)
+
+
+
+; For debugging purposes:
+(defun trc (s / )
+	(if counter 
+		(setq counter (+ 1 counter))
+		(setq counter 1)
+	)
+	(princ (strcat "--> " (rtos counter) " - " (if (= s nil) "" s) "\n"))
+)
+; Usage example:
+;	(setq counter 1)
+;	(trc "BETONG-TELE-OG-FORDELINGSSKAP")
 
 
 (defun mkAll ( / )

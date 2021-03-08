@@ -226,7 +226,7 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60F-FATC"
-		description "Signal 60F FATC"
+		description "SKILT SIGNAL 60F FATC"
 		x	9.0
 		y	6.0
 	)
@@ -253,7 +253,7 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60F-FATC-TILLEGGSTEKST"
-		description "Signal 60F FATC MED TILLEGGSTEKST"
+		description "SKILT SIGNAL 60F FATC MED TILLEGGSTEKST"
 		x	9.0
 		y	6.0
 	)

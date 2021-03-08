@@ -63,16 +63,17 @@
 	; But due to CAD symbol generation times being excessive, restrict to step=500 (gives about 2 minutes computing time for cirka 110 cantilevers)
 	(setq 
 		blockName	(strcat "NO-BN-2D-JBTKL-UTLIGGER-" variation "-" pushPull)
-		description	_ENTER_ ; See below
+		description	"" ; See below
 		; Integer values:
 		minLen 1000	; shortest cantilever symbol [mm]
 		maxLen 6000	; longest [mm]
 		len minLen
-		step 500	; step [mm]
-		cantileverName _ENTER_ ; See below
+		step 100	; step [mm]
+		cantileverName "" ; See below
 	)
 	(setLayer layDef_Zero)
 	(while (<= len maxLen)
+		(princ (strcat "L = " (rtos len) " mm\n"))
 		(setq lenM (/ len 1000.0)) ; length in decimal meters
 		(progn
 			; Push:
@@ -107,7 +108,7 @@
 		(scaleAll _four_)
 		(createSchematicBlockFromCurrentGraphics cantileverName)
 
-		; No annotative symbol
+		; No annotative symbol - use metric in geographic symbol mode
 
 		; Metric symbol
 		(addGraphicsFromScaledSchematicBlock cantileverName _quarter_)

@@ -82,7 +82,7 @@
 	(setLayer layDef_Zero)
 	(command _CIRCLE_ _origo_ r1)
 	(command _CIRCLE_ _origo_ r2)
-	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.5 (+ r1 r2))) 0 0)
+	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.5 (+ r1 r2))) _angleZero_ _offsetZero_)
 )
 
 
@@ -104,7 +104,7 @@
 	)
 	(drawBox layDef_Zero side side layDef_BoardOrPole_Wipeout)
 	(drawBox layDef_Zero inner inner _noWipeout_)
-	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.25 (+ side inner))) 0 0)	; Hatch the lining, the area between the two squares
+	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.25 (+ side inner))) _angleZero_ _offsetZero_)	; Hatch the lining, the area between the two squares
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle45_)
 )
 
@@ -179,8 +179,8 @@
 
 
 
-(defun drawDoubleArrow ( x y / p11 p21 p22 p23 p31 )
-	; Simple left arrow
+(defun drawDoubleArrow ( x y / q11 q21 q22 q31 p11 p21 p22 p23 p31 )
+	; Double arrow
 	;
 	;    q31        p31
 	;   /  |        |  \
@@ -201,7 +201,7 @@
 	(setLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ q22 q11 q21 q31 q22 _openPolyline_) ; Left arrow
 	(drawHatch _solidHatch_)
-	(command _POLYLINE_ _origo_ p22 p11 p23 p31 p22 _openPolyline_) ; Left arrow
+	(command _POLYLINE_ _origo_ p22 p11 p23 p31 p22 _openPolyline_) ; Right arrow
 	(drawHatch _solidHatch_)
 )
 

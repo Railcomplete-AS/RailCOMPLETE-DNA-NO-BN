@@ -138,7 +138,7 @@
 	;       /     \
 	;     /         \
 	;   /             \
-	; p21-p22  .  p23-p24 
+	; p21-p22  .  p23-p24   ; Arrow will be rotated +/-90 or 180 DD, and enclosed in a square box.
 	;       |     | 
 	;       |     | 
 	;       |     | 
@@ -162,10 +162,10 @@
 	(command _POLYLINE_ p11 p12 p23 p24 p31 p21 p22 p11 _openPolyline_)
 	(cond 
 		((= dir _left_)	(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angle90_)) ; Arrow now points to the left
-		((= dir _right_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angleMinus90_)); Arrow noe points to the right
+		((= dir _right_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angleMinus90_)); Arrow now points to the right
 		((= dir _down_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angle180_)) ; Arrow now points down
 	)
-	(drawHatchFromPoint _denseHatch_ p1 0 0)
+	(drawHatchFromPoint _denseHatch_ p1 _angleZero_ _offsetZero_)
 	(moveUp (/ y 2))
 )
 

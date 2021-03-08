@@ -1,10 +1,16 @@
+;=========================================================================================================================
 ;
 ; trigFunctions.lsp
 ;
-; Trig functions in AutoLISP
-; adapted from CADalyst tip 442, by John Howard
+; Adapted from CADalyst tip 442, by John Howard
 ;
-; 2020-08-15 CLFEY added Decimal Degree versions of trig functions.
+; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
+; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
+;
+; Change log:
+; 2021-02-10 CLFEY Release 2021.a
+;
+;=========================================================================================================================
 ;
 ;COS
 (defun DDcos ( x / ) (cos (D->R x)))
@@ -151,5 +157,3 @@
 	)
 )
 (defun DDasin ( x / ) (asin (D->R x)))
-
-;(princ "\nCOT, CSC, SEC, TAN, ACSC, ACOS, ASEC, ASIN \n") (prin1)

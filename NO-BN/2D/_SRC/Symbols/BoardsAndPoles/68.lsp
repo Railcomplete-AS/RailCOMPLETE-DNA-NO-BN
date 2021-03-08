@@ -194,9 +194,9 @@
 	(command _POLYLINE_ p1 p2 p3 p4 p5 p6 p7 _closedPolyline_) ; contour
 	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
 	(command _POLYLINE_ p1 p2 p3 p6 p7 _closedPolyline_)
-	(drawHatchFromPoint _solidHatch_ (addVectors p1 _slightlyBelow_) 0 0) ; top 5-edge
+	(drawHatchFromPoint _solidHatch_ (addVectors p1 _slightlyBelow_) _angleZero_ _offsetZero_) ; top 5-edge
 	(command _POLYLINE_ p3 p4 p5 p6 p8 _closedPolyline_)
-	(drawHatchFromPoint _solidHatch_ (addVectors p8 _slightlyBelow_) 0 0)
+	(drawHatchFromPoint _solidHatch_ (addVectors p8 _slightlyBelow_) _angleZero_ _offsetZero_)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -251,7 +251,7 @@
 	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(drawBox layDef_Zero x2 y2 _noWipeout_)
 	(moveUp (halfOf y))
-	(drawHatchFromPoint _solidHatch_ _slightlyAbove_ 0 0)
+	(drawHatchFromPoint _solidHatch_ _slightlyAbove_ _angleZero_ _offsetZero_)
 	(addTextAttributeAtPos layDef_Zero _th350_ (list 0 (halfOf y)) attDef)
 	(addDescriptionBelowOrigo description 0)
 	(createSchematicBlockFromCurrentGraphics blockName)

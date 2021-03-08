@@ -34,7 +34,7 @@
 		<Constructor>Collection,Int RC__getCollectionOfRelatedObjects(String RelationName [,Reference Source [,Boolean Invisible]])</Constructor>
 		<Formula>
 			function RC__getCollectionOfRelatedObjects(RelationName,Source,Invisible)
-				if Invisible ~= nil then Invisible = true else Invisible = false end
+				if Invisible then Invisible = true else Invisible = false end
 				Source = Source or this
 				--Is source a real object reference with an id?
 				if Source.id == nil then
@@ -239,7 +239,7 @@
 					y0 = SymbolOffsets[0].Value[1] 
 				end
 				--Assume "upDir" is a CAD system block rotation value in DD, or use the object's own 'up' direction as default value
-				if upDir ~= nil then 
+				if upDir then 
 					angle = math.deg(upDir)
 				else
 					angle = this.AlignmentTangent
@@ -260,9 +260,9 @@
 			function RC__identify(obj)
 				obj = obj or this
 				local t = obj:getPropertyValue("name")
-				if t ~= nil and t ~= "" then return t end
+				if t and t ~= "" then return t end
 				t = obj:getPropertyValue("code")
-				if t ~= nil and t ~= "" then return t
+				if t and t ~= "" then return t
 				else return tostring(obj:getPropertyValue("id"))
 				end
 			end
@@ -514,7 +514,7 @@
 				u = {}
 				v = {}
 				n = 0
-				while t[n+1] ~= nil do
+				while t[n+1] do
 					n = n + 1
 					table.insert(u,t[n])
 				end		
@@ -575,20 +575,20 @@
 				elseif p2 == nil then
 					p2 = this
 				end
-				if p1.geoCoord ~= nil then 
+				if p1.geoCoord then 
 					x1 = p1.geoCoord.X
 					y1 = p1.geoCoord.Y
-				elseif p1.X ~= nil then 
+				elseif p1.X then 
 					x1 = p1.X
 					y1 = p1.Y
 				else
 					return 0,_warning,_info("First point has no X coordinate.")
 				end
-				if p2.geoCoord ~= nil then 
+				if p2.geoCoord then 
 					-- Ordinary RailwayPlacedObject
 					x2 = p2.geoCoord.X
 					y2 = p2.geoCoord.Y
-				elseif p2.X ~= nil then 
+				elseif p2.X then 
 					x2 = p2.X
 					y2 = p2.Y
 				else
@@ -613,22 +613,22 @@
 				elseif p2 == nil then
 					p2 = this
 				end
-				if p1.geoCoord ~= nil then 
+				if p1.geoCoord then 
 					x1 = p1.geoCoord.X
 					y1 = p1.geoCoord.Y
 					z1 = p1.geoCoord.Z
-				elseif p1.X ~= nil then 
+				elseif p1.X then 
 					x1 = p1.X
 					y1 = p1.Y
 					z1 = p1.Z == nil and 0 or p1.Z
 				else
 					return 0,_warning,_info("First point has no X coordinate.")
 				end
-				if p2.geoCoord ~= nil then 
+				if p2.geoCoord then 
 					x2 = p2.geoCoord.X
 					y2 = p2.geoCoord.Y
 					z2 = p2.geoCoord.Z
-				elseif p2.X ~= nil then 
+				elseif p2.X then 
 					x2 = p2.X
 					y2 = p2.Y
 					z2 = p2.Z == nil and 0 or p2.Z
@@ -744,7 +744,7 @@
         <Formula>
 			function RC_com_getAreasOfVariant(areaVariantName, guidString)
 				local obj = guidString and getObjectFromId(guidString) or this
-				local areas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:match(areaVariantName) ~= nil end)
+				local areas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:match(areaVariantName) end)
 				return areas.count,areas
 			end
         </Formula>
@@ -758,9 +758,9 @@
 	Instead, use our own ocpStationReference property, which expects a string.
 =========================================================================================================-->
 		<!-- <xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" /> -->
-<xpp:define name="RC_com_SET_OCP_STATION_REFERENCE">
+<xpp:define name="RC_com_SET_OCP_STATION_REFERENCE" >
 	<xpp:bloc>
-		<LuaExpression Name="ocpStationReference"><Formula>RC_com_getOcpStationReference()</Formula></LuaExpression>
+		<LuaExpression Name="ocpStationReference" ><Formula>RC_com_getOcpStationReference()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -769,14 +769,14 @@
         <Constructor>ObjRef RC_com_getOcpStationReference()</Constructor>
 		<Formula>
 			function RC_com_getOcpStationReference()
-				local OcpAreas = RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") ~= nil end)
+				local OcpAreas = RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") end)
 				return getCollectionLength(OcpAreas) == 0 and "" or OcpAreas[0] --a GUID string.
 			end
         </Formula>
     </LuaFunction>
 	
 	<LuaFunction Name="RC_com_getOcpStationRef()" ReturnType="ObjRef" 
-	Description="Included for backwards compatilbility. Calls RC_com_getOcpStationReference(), which returns an ObjRef and not a GUID string as mandataed by railML." HideFromUser="false">
+	Description="Included for backwards compatilbility. Calls RC_com_getOcpStationReference(), which returns an ObjRef and not a GUID string as mandataed by railML." HideFromUser="false" >
 		<Constructor>ObjRef RC_com_getOcpStationRef()</Constructor>
 		<Formula>
 			function RC_com_getOcpStationRef()
@@ -794,7 +794,7 @@
 			function RC_com_getOcpCode(obj)
 				local OcpAreas,n
 				obj = obj or this
-				local OcpAreas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") ~= nil end)
+				local OcpAreas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") end)
 				n = getCollectionLength(OcpAreas)
 				if n == 0 then 
 					return "(UNFINISHED - No 'OCP område' area enclosing object.)"

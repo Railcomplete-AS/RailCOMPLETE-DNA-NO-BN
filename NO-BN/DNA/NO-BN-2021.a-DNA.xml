@@ -63,7 +63,7 @@
   <Constructor>Collection,Int RC__getCollectionOfRelatedObjects(String RelationName [,Reference Source [,Boolean Invisible]])</Constructor>
   <Formula>
 			function RC__getCollectionOfRelatedObjects(RelationName,Source,Invisible)
-				if Invisible ~= nil then Invisible = true else Invisible = false end
+				if Invisible then Invisible = true else Invisible = false end
 				Source = Source or this
 				--Is source a real object reference with an id?
 				if Source.id == nil then
@@ -239,7 +239,7 @@
 					y0 = SymbolOffsets[0].Value[1] 
 				end
 				--Assume "upDir" is a CAD system block rotation value in DD, or use the object's own 'up' direction as default value
-				if upDir ~= nil then 
+				if upDir then 
 					angle = math.deg(upDir)
 				else
 					angle = this.AlignmentTangent
@@ -256,9 +256,9 @@
 			function RC__identify(obj)
 				obj = obj or this
 				local t = obj:getPropertyValue("name")
-				if t ~= nil and t ~= "" then return t end
+				if t and t ~= "" then return t end
 				t = obj:getPropertyValue("code")
-				if t ~= nil and t ~= "" then return t
+				if t and t ~= "" then return t
 				else return tostring(obj:getPropertyValue("id"))
 				end
 			end
@@ -456,7 +456,7 @@
 				u = {}
 				v = {}
 				n = 0
-				while t[n+1] ~= nil do
+				while t[n+1] do
 					n = n + 1
 					table.insert(u,t[n])
 				end		
@@ -509,20 +509,20 @@
 				elseif p2 == nil then
 					p2 = this
 				end
-				if p1.geoCoord ~= nil then 
+				if p1.geoCoord then 
 					x1 = p1.geoCoord.X
 					y1 = p1.geoCoord.Y
-				elseif p1.X ~= nil then 
+				elseif p1.X then 
 					x1 = p1.X
 					y1 = p1.Y
 				else
 					return 0,_warning,_info("First point has no X coordinate.")
 				end
-				if p2.geoCoord ~= nil then 
+				if p2.geoCoord then 
 					-- Ordinary RailwayPlacedObject
 					x2 = p2.geoCoord.X
 					y2 = p2.geoCoord.Y
-				elseif p2.X ~= nil then 
+				elseif p2.X then 
 					x2 = p2.X
 					y2 = p2.Y
 				else
@@ -543,22 +543,22 @@
 				elseif p2 == nil then
 					p2 = this
 				end
-				if p1.geoCoord ~= nil then 
+				if p1.geoCoord then 
 					x1 = p1.geoCoord.X
 					y1 = p1.geoCoord.Y
 					z1 = p1.geoCoord.Z
-				elseif p1.X ~= nil then 
+				elseif p1.X then 
 					x1 = p1.X
 					y1 = p1.Y
 					z1 = p1.Z == nil and 0 or p1.Z
 				else
 					return 0,_warning,_info("First point has no X coordinate.")
 				end
-				if p2.geoCoord ~= nil then 
+				if p2.geoCoord then 
 					x2 = p2.geoCoord.X
 					y2 = p2.geoCoord.Y
 					z2 = p2.geoCoord.Z
-				elseif p2.X ~= nil then 
+				elseif p2.X then 
 					x2 = p2.X
 					y2 = p2.Y
 					z2 = p2.Z == nil and 0 or p2.Z
@@ -642,7 +642,7 @@
   <Formula>
 			function RC_com_getAreasOfVariant(areaVariantName, guidString)
 				local obj = guidString and getObjectFromId(guidString) or this
-				local areas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:match(areaVariantName) ~= nil end)
+				local areas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:match(areaVariantName) end)
 				return areas.count,areas
 			end
         </Formula>
@@ -651,7 +651,7 @@
   <Constructor>ObjRef RC_com_getOcpStationReference()</Constructor>
   <Formula>
 			function RC_com_getOcpStationReference()
-				local OcpAreas = RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") ~= nil end)
+				local OcpAreas = RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") end)
 				return getCollectionLength(OcpAreas) == 0 and "" or OcpAreas[0] --a GUID string.
 			end
         </Formula>
@@ -670,7 +670,7 @@
 			function RC_com_getOcpCode(obj)
 				local OcpAreas,n
 				obj = obj or this
-				local OcpAreas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") ~= nil end)
+				local OcpAreas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") end)
 				n = getCollectionLength(OcpAreas)
 				if n == 0 then 
 					return "(UNFINISHED - No 'OCP område' area enclosing object.)"
@@ -805,9 +805,9 @@ function NOBN_com_assistAssignEarthingObject(obj)
 				local ea = x:getPropertyValue("EarthingAlignment")
 				local eo = x:getPropertyValue("EarthingAlignment")
 				return 
-					((em == 'Rail' or em == 'Wire') and (ea ~= nil and ea ~= obj))
+					((em == 'Rail' or em == 'Wire') and (ea and ea ~= obj))
 					or
-					((em == 'Object') and (eo ~= nil and eo ~= obj))
+					((em == 'Object') and (eo and eo ~= obj))
 			end)
 		if getCollectionLength(npo) &gt; 0 then
 			return npo[0]
@@ -1151,7 +1151,7 @@ function NOBN_sig_getSignalSightingRequirement()
 			return 50,_info("50m fixed sighting requirement during shunting movements.")
 	
 		else
-			return 0,_info(DesignSpeed.." km/h: Bad SA-SIG signal type [RcType="..RcType..", Variant="..(Variant~=nil and "(void)" or Variant.."."))
+			return 0,_info(DesignSpeed.." km/h: Bad SA-SIG signal type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
 		end
 
 	
@@ -1192,7 +1192,7 @@ function NOBN_sig_getSignalSightingRequirement()
 		return 50,_info("50m fixed sighting requirement for Togsporsignal (old type RepHs repeater signal) (To be verified!).")
 
 	else
-		return 0,_info(DesignSpeed.." km/h: Bad signal type [RcType="..RcType..", Variant="..(Variant~=nil) and "(void)" or Variant..".")
+		return 0,_info(DesignSpeed.." km/h: Bad signal type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
 	end
 end
 		</Formula>
@@ -1333,7 +1333,7 @@ function NOBN_bnp_getBoardSightingRequirement()
 		return 50,_info("50m fixed sighting requirement during shunting movements.")
 
 	else
-		return 0,_info(DesignSpeed.." km/h: Bad board type [RcType="..RcType..", Variant="..(Variant~=nil) and "(void)" or Variant..".")
+		return 0,_info(DesignSpeed.." km/h: Bad board type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
 	end
 end
 		</Formula>
@@ -1586,7 +1586,7 @@ end
  <ShowLayer Name="VisPolerAutotrafo" DisplayName="Kontaktledning/Poler autotransformator" DefaultOff="false">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTKL__EH_AUT_POLER_FOR_AUTOTRANSFORMATOR</LayerSelection>
  </ShowLayer>
- <ShowLayer Name="WipeoutKontaktledningsobjekter" DisplayName="Skilt/Wipeout for alle kontaktledningsobjekter" DefaultOff="true">
+ <ShowLayer Name="WipeoutKontaktledningsobjekter" DisplayName="Kontaktledning/Wipeout for kontaktledningsobjekter" DefaultOff="true">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTKL__EH_ISO_ISOLATOR_WIPEOUT</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="VisAlleSignal" DisplayName="Signal/Alle punktobjekter unntatt skilt">
@@ -1889,7 +1889,7 @@ end
 			end
         </Formula>
  </LuaFunction>
- <LuaFunction Name="NOBN_com_chkTriggerPointObjectModelChecks()" ReturnType="String" Description="Finds the point objects inside this area and refreshes them whenever the area itself is modelchecked.">
+ <LuaFunction Name="NOBN_com_chkTriggerPointObjectModelChecks()" ReturnType="String" Description="Finds the point objects inside this area, they may then be refreshed whenever the area itself is modelchecked.">
   <Constructor>NOBN_com_chkTriggerPointObjectModelChecks()</Constructor>
   <Formula>
 			function NOBN_com_chkTriggerPointObjectModelChecks()
@@ -2512,7 +2512,7 @@ end
    </Values>
   </CustomAttribute>
   <SetValue Key="Discipline" Value="Felles"/>
-  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_PointObjectsToBeRefreshed" DisplayName="Point objects to modelcheck" Description="When this area is refreshed or model checked, then all visible point objects in the area will be checked, too."/>
+  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_PointObjectsToBeRefreshed" DisplayName="Point objects to be refreshed" Description="When this area is refreshed, then all visible point objects in the area are refreshed as well."/>
   <LuaExpression Name="mc_PointObjectsToBeRefreshed" IsModelCheck="true">
    <Formula>NOBN_com_chkTriggerPointObjectModelChecks()</Formula>
   </LuaExpression>
@@ -2575,7 +2575,7 @@ end
    <Variant Name="Viewport"/>
    <Variant Name="JordingsMaskenett"/>
   </Variants>
-  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_PointObjectsToBeRefreshed" DisplayName="Point objects to modelcheck" Description="When this object is refreshed, then all visible point objects in the area are refreshed as well."/>
+  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_PointObjectsToBeRefreshed" DisplayName="Point objects to be refreshed" Description="When this area is refreshed, then all visible point objects in the area are refreshed as well."/>
   <LuaExpression Name="mc_PointObjectsToBeRefreshed" IsModelCheck="true">
    <Formula>NOBN_com_chkTriggerPointObjectModelChecks()</Formula>
   </LuaExpression>
@@ -2992,6 +2992,7 @@ end
     <Value>{{markerColor}}</Value>
    </SymbolAttribute>
   </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tCrossSection" Class="RailwayPlacedObject" Name="FE-DIV Cross section" Layer="JBTFE_DIVERSE" Color="ByLayer" Group="Felles/Diverse" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>cross_section</RelationSpace>
@@ -3054,6 +3055,7 @@ end
    <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL-{{SymbolMode}}</BlockNameFormat>
   </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="FE-DIV Sporbruk" Layer="JBTFE_DIVERSE" Color="ByLayer" Group="Felles/Sporbruk" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>sporbruk</RelationSpace>
@@ -3153,6 +3155,7 @@ end
     <Value>{{Variant}}</Value>
    </SymbolAttribute>
   </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="FE-DIV Sporbrukgrense" Layer="JBTFE_DIVERSE" Color="ByLayer" Group="Felles/Sporbruk" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>sporbrukgrense</RelationSpace>
@@ -3258,9 +3261,7 @@ end
     <Value>{{code}}</Value>
    </SymbolAttribute>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="RailCOMPLETECloneObject" Class="CloneRailwayObject" Name="CloneObject" DisplayName="Clone object"/>
  <DisplayGaugeSettings>
@@ -3998,8 +3999,8 @@ end
   <SourceSpace>kl-mast</SourceSpace>
   <Relation Name="Hengemast i åk" AskForRelation="true" AskForReverseRelation="false" Color="254">
    <TargetSpace>åk</TargetSpace>
-   <RelatesTo Prompt="Er hengemast festet til" Min="0" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1"/>
-   <ReverseRelatesTo Prompt="Har åk-mast -" Min="0" Max="inf" WarnAtSaturation="false" NumberOfPromptsDuringInsertion="2"/>
+   <RelatesTo Prompt="Er hengemast festet i" Min="0" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1"/>
+   <ReverseRelatesTo Prompt="Er åk for hengemast -" Min="0" Max="inf" WarnAtSaturation="false" NumberOfPromptsDuringInsertion="2"/>
   </Relation>
  </Relations>
  <Relations>
@@ -4565,7 +4566,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -4781,7 +4782,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -4925,7 +4926,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -5110,7 +5111,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -5435,7 +5436,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -5495,9 +5496,7 @@ end
     <Value>{{TargetDistance}}m</Value>
    </Attribute>
   </Model3DDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
   <DockPointDefinitions>
    <SnapPoints>
     <SnapPoint X="0" Y="0" TargetSpace="skilt"/>
@@ -5590,7 +5589,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -5744,9 +5743,7 @@ end
 				{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
   <DockPointDefinitions>
    <SnapPoints>
     <SnapPoint X="0" Y="0" TargetSpace="skilt"/>
@@ -5836,7 +5833,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -5987,7 +5984,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -6153,7 +6150,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -6339,7 +6336,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -6413,9 +6410,7 @@ end
     <Value>{{GRADIENT}}</Value>
    </Attribute>
   </Model3DDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
   <DockPointDefinitions>
    <SnapPoints>
     <SnapPoint X="0" Y="0" TargetSpace="skilt"/>
@@ -6700,7 +6695,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -6850,7 +6845,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -7047,7 +7042,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -7532,9 +7527,7 @@ end
 				{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
   <DockPointDefinitions>
    <SnapPoints>
     <SnapPoint X="0" Y="0" TargetSpace="skilt"/>
@@ -7630,7 +7623,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -7779,7 +7772,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -7923,7 +7916,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -8178,7 +8171,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -8337,7 +8330,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -8509,7 +8502,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -8684,7 +8677,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -8948,7 +8941,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -9203,7 +9196,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -9307,9 +9300,7 @@ end
     <Value>{{RightDistance}}</Value>
    </Attribute>
   </Model3DDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
   <DockPointDefinitions>
    <SnapPoints>
     <SnapPoint X="0" Y="0" TargetSpace="skiltfeste"/>
@@ -9399,7 +9390,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -9544,7 +9535,7 @@ end
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
    <Formula>
-				if Yokemounted ~= nil then
+				if Yokemounted then
 					--Object has  the Yokemounted custom attribute:
 					return Yokemounted and 8.0 or 0
 				else
@@ -10359,34 +10350,33 @@ end </Data>
       <Data>local s0 = ""
 local s1 = ""
 local s5 = ""
-if variant ~= nil then s0 = variant else s0 = "" end
+if Variant then s0 = Variant else s0 = "" end
 if (attachment == nil) then
 	s1 = ""
 	s5 = ""
 else
 	if getCollectionLength(Relations["Har balisegruppe"]) == 0 then
 	
-		--TODO: Bruk heller Variant:match("64E") etc
 		--TODO: Bruk heller getCollectionLength(Relations[Er stolpe for tellepunkt"] &gt; 0 etc
-		if string.find(Variant, "64E") ~= nil and Relations["Er stolpe for tellepunkt"] ~= nil and Relations["Er stolpe for tellepunkt"][0] ~= nil then
-			s1= "\nTilhører \t\t"..Relations["Er stolpe for tellepunkt"][0].RcType
+		if Variant:match("64E") and Relations["Er stolpe for tellepunkt"] and Relations["Er stolpe for tellepunkt"][0] then
+			s1 = "\nTilhører \t\t"..Relations["Er stolpe for tellepunkt"][0].RcType
 			
-		elseif (string.find(Variant, "68") ~= nil or string.find(Variant, "64E") ~= nil or string.find(Variant, "Signal 60") ~= nil) then
-			obj= getNearbyPointObjects2D(15)
-			s1= " "
-			for i=0,obj.count-1 do
-				if string.find(obj[i].variant, "balisegruppe") ~= nil or string.find(obj[i].RcType, "sporingsindikator") ~= nil  then
-					if obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"] ~=nil then
+		elseif Variant:match("68") or Variant:match("64E") or Variant:match("Signal 60") then
+			obj = getNearbyPointObjects2D(15)
+			s1 = " "
+			for i = 0,obj.count-1 do
+				if obj[i].Variant:match("balisegruppe") or obj[i].RcType:match("sporingsindikator")  then
+					if obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"] then
 						if obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"].Count ~= 0 then 
 							s1 = "\nTilhører \t\t"..obj[i].name.." med målpunkt i balisegruppe "..obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"][0].name
 							break
 						else 
-							s1="\nTilhører \t\t"..obj[i].name
+							s1 = "\nTilhører \t\t"..obj[i].name
 							break
 						end
 					end
-				elseif string.find(obj[i].RcType, "Telle") ~= nil and string.find(Variant, "64E") ~= nil then
-					s1="\nTilhører \t\t"..obj[i].RcType
+				elseif obj[i].RcType:match("Telle") and Variant:match("64E") then
+					s1 = "\nTilhører \t\t"..obj[i].RcType
 					break
 				end	
 			end
@@ -10394,24 +10384,24 @@ else
 			s1 = " "
 		end
 		
-		if (string.find(Variant, "kryss") ~=nil) then
-			obj= getNearbyPointObjects2D(10)
-			s1= " "
-			for i=0,obj.count-1 do
-				if string.find(obj[i].RcType, "veksel")~=nil then
+		if Variant:match("kryss") then
+			obj = getNearbyPointObjects2D(10)
+			s1 = " "
+			for i = 0,obj.count-1 do
+				if obj[i].RcType_match("veksel") then
 					s1="\nTilhører \t\t".."V."..tostring(obj[i].code)
 					break
-				elseif string.find(obj[i].RcType, "Drivmaskin")~=nil then
-					Cd=tostring(obj[i].name)
-					place=string.find(Cd,"%.")
-					s1="\nTilhører \t\t".."V."..string.sub(Cd,1,place-1)	
+				elseif obj[i].RcType:match("Drivmaskin") then
+					Cd = tostring(obj[i].name)
+					place = string.find(Cd,"%.")
+					s1 = "\nTilhører \t\t".."V."..string.sub(Cd,1,place-1)	
 					break
 				end				
 			end
 		end	
 		
 	else 
-		if Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"] ~=nil then
+		if Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"] then
 			if Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"].Count ~= 0 then 
 				s1 = "\nTilhører \t\t"..Relations["Har balisegruppe"][0].name.." med målpunkt i balisegruppe "..Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"][0].name
 			end
@@ -10420,19 +10410,19 @@ else
 		end
 	end
 	
-	if (attachment.variant == nil) then 
+	if (Attachment.Variant == nil) then 
 		s5 = ""
-	elseif string.find(Attachment.RcType, "SPB")~=nil then
+	elseif Attachment.RcType:match("SPB") then
 		s5 = "\nMontert på \t\t"..this.Attachment.Variant
-	elseif string.find(Attachment.RcType, "SA%-SIG")~=nil then
+	elseif Attachment.RcType:match("SA%-SIG") then
 		s5="\nMontert på \t\t"..tostring(Attachment.name)
 	else
 		obj= getNearbyPointObjects2D(10)
 		for i=0,obj.count-1 do
-			if string.find(obj[i].RcType, "SA%-SIG")~=nil and (string.find(this.RcType, "Signal 68")~=nil)==false then
+			if obj[i].RcType:match("SA%-SIG") and not this.RcType:match("Signal 68") then
 				s5="\nMontert på \t\t"..tostring(obj[i].name)
 				break
-			elseif string.find(obj[i].RcType, "SPB")~=nil then
+			elseif obj[i].RcType:match("SPB") then
 				s5="\nMontert på \t\t"..tostring(obj[i].Variant)
 				break
 			else
@@ -11325,7 +11315,7 @@ end	</Data>
       <Width>50</Width>
       <Data>
 						str = "Horisontaltrase, " .. Name
-						if (ocpRef ~= nil) then str = str .. ", " .. getObjectFromId(ocpRef).name end
+						if ocpRef then str = str .. ", " .. getObjectFromId(ocpRef).name end
 						return str
 					</Data>
       <Title>Beskrivelse</Title>
@@ -11590,7 +11580,7 @@ end	</Data>
       <Width>50</Width>
       <Data>
 							str = "Vertikaltrase, " .. Name
-							if (ocpRef ~= nil) then str = str .. ", " .. getObjectFromId(ocpRef).name end
+							if ocpRef then str = str .. ", " .. getObjectFromId(ocpRef).name end
 							return str</Data>
       <Title>Beskrivelse</Title>
       <Sort/>
@@ -11981,13 +11971,13 @@ end	</Data>
 --
 
 local symbol = "*"
-if Variant:lower():match("henge") ~= nil then 
+if Variant:lower():match("henge") then 
 	symbol = "X"
-elseif Variant:lower():match("gmb") ~= nil then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master.
+elseif Variant:lower():match("gmb") then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master.
 	symbol = "G"
-elseif Variant:lower():match("b%-mast") ~= nil or Variant:lower():match("h%-mast") ~= nil then 
+elseif Variant:lower():match("b%-mast") or Variant:lower():match("h%-mast") then 
 	symbol = "O"
-elseif Variant:lower():match("bjelke") ~= nil then 
+elseif Variant:lower():match("bjelke") then 
 	symbol = "8"
 else
 	return "Ukjent Variant ["..Variant.."].",_warning
@@ -12678,12 +12668,12 @@ end</Data>
        </Header>
       </Headers>
       <Width>60</Width>
-      <Data>if (string.find(tostring(dir),"down") ~= nil) then
+      <Data>if dir == "down" then
 	return "Synkende km"
-elseif (string.find(tostring(dir),"up") ~= nil) then
+elseif dir == "up" then
 	return "Stigende km"
 else
-	return "Ukjent retning [",tostring(dir),"]",_warning
+	return "Ukjent retning ["..dir.."]",_warning
 end</Data>
       <Title>Retning</Title>
       <Sort>Ascending</Sort>
@@ -12766,8 +12756,8 @@ end</Data>
        </Header>
       </Headers>
       <Width>60</Width>
-      <Data>local dirIsUp = string.find(tostring(dir),"up") ~= nil
-local dirIsDown = string.find(tostring(dir),"down") ~= nil
+      <Data>local dirIsUp = (dir == "up")
+local dirIsDown = (dir == "down")
 --
 if (dirIsUp and RightSided) then
 	return "Høyre"
@@ -12778,7 +12768,7 @@ elseif (dirIsDown and RightSided) then
 elseif (dirIsDown and LeftSided) then
 	return "Høyre"
 else
-	return "Feil: Ukjent dir [",tostring(dir),"]"
+	return "Feil: Ukjent dir ["..dir.."]"
 end</Data>
       <Title>Side av spor i kjøre- retningen</Title>
       <Sort/>
@@ -12951,7 +12941,7 @@ return s</Data>
        </Header>
       </Headers>
       <Width>60</Width>
-      <Data>if (string.find(name,"Rep") ~= nil) then 
+      <Data>if name:lower():match("rep") then 
 	return "Rep.Hs"
 elseif (MainSignal ~= "-") then 
 	return "Hovedsignal"
@@ -12974,12 +12964,12 @@ end</Data>
        </Header>
       </Headers>
       <Width>60</Width>
-      <Data>if (string.find(tostring(dir),"down") ~= nil) then
+      <Data>if dir == "down" then
 	return "Synkende km"
-elseif (string.find(tostring(dir),"up") ~= nil) then
+elseif dir == "up" then
 	return "Stigende km"
 else
-	return "Feil: Ukjent retning [",tostring(dir),"]",_warning
+	return "Feil: Ukjent retning ["..dir.."]",_warning
 end</Data>
       <Title>Retning</Title>
       <Sort>Ascending</Sort>
@@ -13063,8 +13053,8 @@ end</Data>
       </Headers>
       <Width>60</Width>
       <Data>
-							local dirIsUp = string.find(tostring(dir),"up") ~= nil
-							local dirIsDown = string.find(tostring(dir),"down") ~= nil
+							local dirIsUp = (dir == "up")
+							local dirIsDown = (dir = "down")
 							--
 							if (dirIsUp and RightSided) then
 								return "Høyre"
@@ -13075,7 +13065,7 @@ end</Data>
 							elseif (dirIsDown and LeftSided) then
 								return "Høyre"
 							else
-								return "Feil: Ukjent dir [",tostring(dir),"]"
+								return "Feil: Ukjent dir ["..dir.."]"
 							end
 						</Data>
       <Title>Side av spor i kjøre- retningen</Title>
@@ -13128,7 +13118,7 @@ end</Data>
 								return "Venstrekurve" 
 							elseif (getAlignmentInfo().CurveRotation:upper() == "CW") then 
 								return "Høyrekurve"
-								else return "Feil i kurverotasjon [" .. tostring(getAlignmentInfo().CurveRotation) .. "]",_warning
+								else return "Feil i kurverotasjon ["..tostring(getAlignmentInfo().CurveRotation).."]",_warning
 							end
 						</Data>
       <Title>Høyre / venstre kurve (Oslo i ryggen)</Title>
@@ -14470,10 +14460,10 @@ return s</Data>
 					local StdFreeProfile = 2.52 --Bane NOR TRV value
 					local d
 					a = getClosestAlignments("KU-KFØ Kabelkanal")
-					if diameter ~= nil then
+					if diameter then
 						--Should "touch" MinFreeProfile, insertion point = center manhole at Top-of-rail
 						d = MinFreeProfile + diameter/2000
-					elseif length ~= nil and depth ~= nil then
+					elseif length and depth then
 						--Should "touch" MinFreeProfile, insertion point = midpoint long side towards track at Top-of-rail
 						if dir == "both" then d = MinFreeProfile + 0
 						elseif dir == "none" then d = MinFreeProfile + depth/1000
@@ -15169,13 +15159,13 @@ return s</Data>
 					elseif Variant:match("Ø355") then
 						return "NO-BN-3D-EH-FUN-GITTERMAST-BORET-Ø355-Ø232x27DDxM36-"..sh
 					
-					elseif Variant:lower():match("mast i tunnel") then
+					elseif Variant:match("Fjellbolter for KL%-mast i tunnel") then
 						return "NO-BN-3D-EH-FUN-HENGEMAST-FJELLBOLTER-350x350xM24"
 					
-					elseif Variant:lower():match("veggkonsoll") then
+					elseif Variant:match("Fjellbolter for KL%-mast på veggkonsoll") then
 						return "NO-BN-3D-EH-FUN-KONSOLL-VEGGFESTE-FJELLBOLTER-600x700xM32"
 
-					elseif Variant:lower():match("mast på veggkonsoll") then
+					elseif Variant:match("Veggkonsoll for KL%-mast") then
 						return "NO-BN-3D-EH-FUN-KONSOLL-VEGGFESTE-191x374xM36"
 					
 					elseif Variant:lower():match("spesial") then
@@ -17700,9 +17690,7 @@ end
 				Metric
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <LuaFunction Name="NOBN_trk_TRACKGAUGE()" ReturnType="Double" Description="Returns distance between rail head centers for normal-gauge track (1.5 meter).">
   <Constructor>Double NOBN_trk_TRACKGAUGE()</Constructor>
@@ -18110,7 +18098,7 @@ end
 				nearest = alignmentInfo.NearestHorizontalVertex
 				-- insert "RE,RB" if cant station is closest
 				nearestCant = alignmentInfo.NearestCantVertex
-				vertexMileage = nearest.Item1 ~= nil and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+				vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 				if nearestCant ~= null and math.abs(nearestCant.Mileage - alignmentInfo.Mileage) &lt; math.abs(vertexMileage - alignmentInfo.Mileage)
 										and math.abs(vertexMileage - alignmentInfo.Mileage) &gt; 1 then
 					return nearestCant.Mileage
@@ -18134,7 +18122,7 @@ end
 					nearest = alignmentInfo.NearestHorizontalVertex
 					nearestCant = alignmentInfo.NearestCantVertex
 					-- insert "RE,RB" if cant station is closest
-					vertexMileage = nearest.Item1 ~= nil and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+					vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 					if nearestCant ~= null and math.abs(nearestCant.Mileage - alignmentInfo.Mileage) &lt; math.abs(vertexMileage - alignmentInfo.Mileage)
 										and math.abs(vertexMileage - alignmentInfo.Mileage) &gt; 1 then
 						if math.abs(nearestCant.GradientIn) &gt; 0 and math.abs(nearestCant.GradientOut) &gt; 0 then
@@ -19789,7 +19777,7 @@ end
     <SetValue Key="OcsMastHeight" Value="8500"/>
    </Variant>
    <Variant Name="GMB-mast">
-    <SetValue Key="OcsMastProfile" Value="GMB"/>
+    <SetValue Key="OcsMastProfile" Value="HEB240"/>
     <SetValue Key="OcsMastHeight" Value="8500"/>
    </Variant>
    <Variant Name="H-mast">
@@ -19811,6 +19799,41 @@ end
     <SetValue Key="OcsMastHeight" Value="7500"/>
    </Variant>
   </Variants>
+  <LuaFunction Name="_EH_MAS_otherObjectsToModelcheck()" ReturnType="String" Description="Returns the number of other items to modelcheck, and a table with references to them.">
+   <Constructor>_EH_MAS_otherObjectsToModelcheck()</Constructor>
+   <Formula>
+				function _EH_MAS_otherObjectsToModelcheck()
+					s = "Er åk-mast for åk"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n > 0 then
+						s1 = "Er åk holdt oppe av kl-mast"
+						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+						t = {}
+						txt = nil
+						for i = 0, n1-1 do 
+							table.insert(t,r1[i])
+							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+						end
+						s2 = "Er hengemast festet i åk"
+						r2,n2 = RC__getCollectionOfRelatedObjects(s2)
+						for i = 0, n2-1 do
+							table.insert(t,r2[i])
+							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+						end
+						if n1+n2 == 0 then
+							return 0,_info("No other objects to modelcheck.")
+						else
+							m = 1 + n1 + n2 --One for the yoke
+							return m,t,_info(m..": "..txt.."}")
+						end
+					end
+				end
+			</Formula>
+  </LuaFunction>
+  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="If this mast supports a yoke, then the yoke with more masts are refreshed as well."/>
+  <LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true">
+   <Formula>_EH_MAS_otherObjectsToModelcheck()</Formula>
+  </LuaExpression>
   <CustomAttribute DataType="Enumeration" Name="OcsMastProfile" DisplayName="Masteprofil" Description="The overhead catenary system (OCS) mast profile (omp) [HEB200..280 | H3..H6 | B2..B6 | 240x240 | Ø260].">
    <Values Variant="Bjelkemast">
     <Value>HEB280</Value>
@@ -19968,7 +19991,7 @@ end
     <Value>6000</Value>
    </Values>
   </CustomAttribute>
-  <CustomAttribute DataType="Enumeration" Name="OcsMastDepth" DisplayName="Mastedybde" DefaultValue="0" Description="The overhead catenary system (OCS) mast depth below ground reference level (omd) [mm].">
+  <CustomAttribute DataType="Enumeration" Name="OcsMastDepth" DisplayName="Mastedybde" DefaultValue="0" Description="Only applicable to wooden and concrete masts. The overhead catenary system (OCS) mast depth below ground reference level (omd) [mm].">
    <Values Variant="Bjelkemast">
     <Value>0</Value>
    </Values>
@@ -20531,7 +20554,7 @@ end
    <Formula>
 				function _EH_MAS_tunnel_mast_Model3DName()
 					local h = (math.floor((125 + OcsMastHeight) / 250)) * 250 -- Assume 3D models in steps of 250 mm
-					if Variant:match("Hengemast for bru og tunnel") ~= nil then
+					if Variant:match("Hengemast for bru og tunnel") then
 						if (OcsMastProfile == "Sirkulær, Ø120") then
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-Ø120-"..h
 						elseif (OcsMastProfile == "Rektangulær, 100x150") then 
@@ -20539,7 +20562,7 @@ end
 						elseif (OcsMastProfile == "Rektangulær, 100x200") then
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x200-"..h
 						end
-					elseif Variant:match("Hengemast Cariboni") ~= nil then
+					elseif Variant:match("Hengemast Cariboni") then
 						if (OcsMastProfile == "Rektangulær, 100x150") then 
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x150-"..h
 						end
@@ -20663,45 +20686,167 @@ end
   <LuaExpression Name="EarthingLabelColor">
    <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
   </LuaExpression>
-  <Variants DefaultValue="Hengemast for åk type 12">
-   <Variant Name="Hengemast for åk type 12">
+  <Variants DefaultValue="Hengemast i åk type 12">
+   <Variant Name="Hengemast i åk type 12">
     <SetValue Key="OcsMastProfile" Value="Rektangulær, 100x150"/>
     <SetValue Key="OcsMastHeight" Value="3100"/>
    </Variant>
-   <Variant Name="Hengemast for åk type 14">
+   <Variant Name="Hengemast i åk type 14">
     <SetValue Key="OcsMastProfile" Value="Rektangulær, 100x150"/>
     <SetValue Key="OcsMastHeight" Value="3500"/>
    </Variant>
-   <Variant Name="Hengemast for åk type 40">
+   <Variant Name="Hengemast i åk type 40">
     <SetValue Key="OcsMastProfile" Value="Kvadratisk, 100x100"/>
     <SetValue Key="OcsMastHeight" Value="3500"/>
    </Variant>
   </Variants>
+  <LuaFunction Name="_EH_MAS_otherObjectsToModelcheck()" ReturnType="String" Description="Returns the number of other items to modelcheck, and a table with references to them.">
+   <Constructor>_EH_MAS_otherObjectsToModelcheck()</Constructor>
+   <Formula>
+				function _EH_MAS_otherObjectsToModelcheck()
+					s = "Er hengemast festet i åk"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n > 0 then
+						s1 = "Er åk holdt oppe av kl-mast"
+						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+						t = {}
+						txt = nil
+						for i = 0, n1-1 do 
+							table.insert(t,r1[i])
+							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+						end
+						s2 = "Er hengemast festet i åk"
+						r2,n2 = RC__getCollectionOfRelatedObjects(s2)
+						for i = 0, n2-1 do
+							table.insert(t,r2[i])
+							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+						end
+						if n1+n2 == 0 then
+							return 0,_info("No other objects to modelcheck.")
+						else
+							m = 1 + n1 + n2 --One for the yoke
+							return m,t,_info(m..": "..txt.."}")
+						end
+					end
+				end
+			</Formula>
+  </LuaFunction>
+  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="If this mast supports a yoke, then the yoke with more masts are refreshed as well."/>
+  <LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true">
+   <Formula>_EH_MAS_otherObjectsToModelcheck()</Formula>
+  </LuaExpression>
+  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="When this yoke is refreshed, then all of its support masts and suspension masts are refreshed as well."/>
+  <LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true">
+   <Formula>_EH_AAK_otherObjectsToModelcheck()</Formula>
+  </LuaExpression>
   <CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny" Description="The overhead catenary system (OCS) mast's age [Ny | Eksisterende].">
    <Value>Ny</Value>
    <Value>Eksisterende</Value>
   </CustomAttribute>
   <CustomAttribute DataType="Enumeration" Name="OcsMastProfile" DisplayName="Masteprofil" DefaultValue="Sirkulær, Ø120" Description="The overhead catenary system (OCS) suspension mast profile (smp) [Kvadratisk, 100x100 | Rektangulær, 100x150].">
-   <Values Variant="Hengemast for åk type 12">
+   <Values Variant="Hengemast i åk type 12">
     <Value>Rektangulær, 100x150</Value>
    </Values>
-   <Values Variant="Hengemast for åk type 14">
+   <Values Variant="Hengemast i åk type 14">
     <Value>Rektangulær, 100x150</Value>
    </Values>
-   <Values Variant="Hengemast for åk type 40">
+   <Values Variant="Hengemast i åk type 40">
     <Value>Kvadratisk, 100x100</Value>
    </Values>
   </CustomAttribute>
-  <CustomAttribute DataType="Enumeration" Name="OcsMastHeight" DisplayName="Høyde" Description="The overhead catenary system (OCS) suspension mast height (smh) [mm], given in predefined lengths in 100 millimeter steps.">
-   <Values Variant="Hengemast for åk type 12">
-    <Value>3100</Value>
-   </Values>
-   <Values Variant="Hengemast for åk type 14">
+  <CustomAttribute DataType="Enumeration" Name="OcsMastHeight" DisplayName="Høyde" DefaultValue="3100" Description="The overhead catenary system (OCS) suspension mast height (smh) [mm], given in predefined lengths 0.5m - 5.0m in 50 millimeter steps.">
+   <Values>
+    <Value>5000</Value>
+    <Value>4950</Value>
+    <Value>4900</Value>
+    <Value>4850</Value>
+    <Value>4800</Value>
+    <Value>4750</Value>
+    <Value>4700</Value>
+    <Value>4650</Value>
+    <Value>4600</Value>
+    <Value>4550</Value>
+    <Value>4500</Value>
+    <Value>4450</Value>
+    <Value>4400</Value>
+    <Value>4350</Value>
+    <Value>4300</Value>
+    <Value>4250</Value>
+    <Value>4200</Value>
+    <Value>4150</Value>
+    <Value>4100</Value>
+    <Value>4050</Value>
     <Value>4000</Value>
+    <Value>3950</Value>
+    <Value>3900</Value>
+    <Value>3850</Value>
+    <Value>3800</Value>
+    <Value>3750</Value>
+    <Value>3700</Value>
+    <Value>3650</Value>
+    <Value>3600</Value>
+    <Value>3550</Value>
     <Value>3500</Value>
-   </Values>
-   <Values Variant="Hengemast for åk type 40">
-    <Value>3500</Value>
+    <Value>3450</Value>
+    <Value>3400</Value>
+    <Value>3350</Value>
+    <Value>3300</Value>
+    <Value>3250</Value>
+    <Value>3200</Value>
+    <Value>3150</Value>
+    <Value>3100</Value>
+    <Value>3050</Value>
+    <Value>3000</Value>
+    <Value>2950</Value>
+    <Value>2900</Value>
+    <Value>2850</Value>
+    <Value>2800</Value>
+    <Value>2750</Value>
+    <Value>2700</Value>
+    <Value>2650</Value>
+    <Value>2600</Value>
+    <Value>2550</Value>
+    <Value>2500</Value>
+    <Value>2450</Value>
+    <Value>2400</Value>
+    <Value>2350</Value>
+    <Value>2300</Value>
+    <Value>2250</Value>
+    <Value>2200</Value>
+    <Value>2150</Value>
+    <Value>2100</Value>
+    <Value>2050</Value>
+    <Value>2000</Value>
+    <Value>1950</Value>
+    <Value>1900</Value>
+    <Value>1850</Value>
+    <Value>1800</Value>
+    <Value>1750</Value>
+    <Value>1700</Value>
+    <Value>1650</Value>
+    <Value>1600</Value>
+    <Value>1550</Value>
+    <Value>1500</Value>
+    <Value>1450</Value>
+    <Value>1400</Value>
+    <Value>1350</Value>
+    <Value>1300</Value>
+    <Value>1250</Value>
+    <Value>1200</Value>
+    <Value>1150</Value>
+    <Value>1100</Value>
+    <Value>1050</Value>
+    <Value>1000</Value>
+    <Value>950</Value>
+    <Value>900</Value>
+    <Value>850</Value>
+    <Value>800</Value>
+    <Value>750</Value>
+    <Value>700</Value>
+    <Value>650</Value>
+    <Value>600</Value>
+    <Value>550</Value>
+    <Value>500</Value>
    </Values>
   </CustomAttribute>
   <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
@@ -20735,12 +20880,12 @@ end
    <Constructor>String _EH_MAS_yoke_suspension_mast_Variant()</Constructor>
    <Formula>
 				function _EH_MAS_yoke_suspension_mast_Variant()
-					s = "Er hengemast festet til åk"
+					s = "Er hengemast festet i åk"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("Variant"),_info("UNFINISHED - Relate OCS suspension mast to yoke with '"..s.."'.")
 					else
-						return "Hengemast for åk type "..r[0].Variant:lower():match("type (%d+)")
+						return "Hengemast i åk type "..r[0].Variant:lower():match("type (%d+)")
 					end
 				end
 			</Formula>
@@ -20755,7 +20900,7 @@ end
    <Constructor>String _EH_MAS_yoke_suspension_mast_code()</Constructor>
    <Formula>
 			function _EH_MAS_yoke_suspension_mast_code()
-					local yokeRelation = "Er hengemast festet til åk"
+					local yokeRelation = "Er hengemast festet i åk"
 					local yokes, nYokes = RC__getCollectionOfRelatedObjects(yokeRelation)
 					if nYokes == 0 then
 						return "UNFINISHED - Relate with '"..yokeRelation.."'."
@@ -20764,7 +20909,7 @@ end
 									.." - remove unintended relations '"..yokeRelation.."' or adjust the active stage using layer names."
 					else
 						--One yoke:
-						local supportMastRelation = "Har åk-mast - kl-mast"
+						local supportMastRelation = "Er åk holdt oppe av kl-mast"
 						local supportMasts, nSupportMasts = RC__getCollectionOfRelatedObjects(supportMastRelation,yokes[0]) 
 						if nSupportMasts == 0 then 
 							return "UNFINISHED - Cannot deduce suspended OCS mast name since yoke '"..RC__identify(yokes[0]).."' has no support mast yet."
@@ -20811,7 +20956,7 @@ end
    <Constructor>Double _EH_MAS_yoke_suspension_mast_Mileage()</Constructor>
    <Formula>
 				function _EH_MAS_yoke_suspension_mast_Mileage()
-					local ys = "Er hengemast festet til åk"
+					local ys = "Er hengemast festet i åk"
 					local yr,yn = RC__getCollectionOfRelatedObjects(ys)
 					if yn == 0 then
 						return getPropertyValue("Mileage"),_info("UNFINISHED - Relate to yoke/galley with '"..ys.."' to set mileage automatically.")
@@ -20867,7 +21012,7 @@ end
 				function _EH_MAS_yoke_suspension_mast_RelativeElevation()
 					local s,r,n,e,v
 					local extensionAboveTopOfYoke = 0.10
-					s = "Er hengemast festet til åk"
+					s = "Er hengemast festet i åk"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return 0.0,_info("UNFINISHED - Relate with '"..s.."' to its OCS yoke.") 
@@ -20891,7 +21036,7 @@ end
    <Constructor>Double _EH_MAS_yoke_suspension_mast_AngularOffset()</Constructor>
    <Formula>
 				function _EH_MAS_yoke_suspension_mast_AngularOffset()
-					local ys = "Er hengemast festet til åk"
+					local ys = "Er hengemast festet i åk"
 					yr,yn = RC__getCollectionOfRelatedObjects(ys)
 					if yn == 0 then
 						return getPropertyValue("AngularOffset"),_info("UNFINISHED - relate to yoke with '"..ys.."'.")
@@ -20945,15 +21090,15 @@ end
    <Formula>
 				function _EH_MAS_yoke_suspension_mast_Model3DName()
 					if Variant:match("12") then
-						return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-ÅK-TYPE-12-3100"
+						return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-TYPE-12-3100"
 					elseif Variant:match("14") then
 						if (OcsMastHeight == "3500") then
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-ÅK-TYPE-14-3500"
+							return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-TYPE-14-3500"
 						else 
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-ÅK-TYPE-14-4000"
+							return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-TYPE-14-4000"
 						end
 					elseif Variant:match("40") then
-						return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-ÅK-TYPE-40-3500"
+						return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-TYPE-40-3500"
 					else 
 						return "Bad OCS suspension mast Variant ["..Variant.."].",_warning
 					end
@@ -20963,46 +21108,15 @@ end
   <LuaExpression Name="SymbolFrame">
    <Formula>NOBN__setSymbolFrame()</Formula>
   </LuaExpression>
-  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_YokeMastsToBeRefreshed" DisplayName="Yoke masts to be refreshed" Description="If mast belongs to a yoke (suspended or supporting), then the whole structure will be refreshed."/>
-  <LuaExpression Name="mc_YokeMastsToBeRefreshed" IsModelCheck="true">
-   <Formula>_EH_MAS_chkTriggerRelatedObjects()</Formula>
-  </LuaExpression>
-  <LuaFunction Name="_EH_MAS_chkTriggerRelatedObjects()" ReturnType="String" Description="Triggers modelchecking in the yoke's masts.">
-   <Constructor>_EH_MAS_chkTriggerRelatedObjects()</Constructor>
-   <Formula>
-				function _EH_MAS_chkTriggerRelatedObjects()
-					local yokeRelation = "Er hengemast festet til åk"
-					local yokes, nYokes = RC__getCollectionOfRelatedObjects(yokeRelation)
-					if nYokes == 0 then 
-						return 0,_info("UNFINISHED - Relate with '"..yokeRelation.."'.")
-					elseif nYokes &gt;= 1 then
-						local t = {}
-						local i
-						local s1 = "Er åk holdt oppe av kl-mast"
-						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,yokes[0])
-						for i = 0, n1-1 do
-							table.insert(t,r1[i])
-						end
-						s2 = "Er åk for hengemast - kl-mast"
-						local r2,n2 = RC__getCollectionOfRelatedObjects(s2,yokes[0])
-						for i = 0, n2-1 do
-							table.insert(t,r2[i])
-						end
-						--if true then return nYokes,yokes,n1,r1,n2,r2 end
-						return n1+n2,t,_info(n1+n2.." masts have been refreshed.")
-					end
-				end
-			</Formula>
-  </LuaFunction>
-  <InsertPointObject VariantName="Hengemast for åk type 12" DisplayBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for åk">
+  <InsertPointObject VariantName="Hengemast i åk type 12" DisplayBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for åk">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Hengemast for åk type 14" DisplayBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for åk">
+  <InsertPointObject VariantName="Hengemast i åk type 14" DisplayBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for åk">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Hengemast for åk type 40" DisplayBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for åk">
+  <InsertPointObject VariantName="Hengemast i åk type 40" DisplayBlockName="NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for åk">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
@@ -21017,9 +21131,9 @@ end
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTKL-HENGEMAST
-				{% if Variant == 'Hengemast for åk type 12' %}FOR-AAK
-				{% elsif Variant == 'Hengemast for åk type 14' %}FOR-AAK
-				{% elsif Variant == 'Hengemast for åk type 40' %}FOR-AAK
+				{% if Variant == 'Hengemast i åk type 12' %}FOR-AAK
+				{% elsif Variant == 'Hengemast i åk type 14' %}FOR-AAK
+				{% elsif Variant == 'Hengemast i åk type 40' %}FOR-AAK
 				{% else %}BAD_VARIANT
 				{% endif %}
 				{{SymbolMode}}
@@ -21179,6 +21293,37 @@ end
     <Value>6m</Value>
    </Values>
   </CustomAttribute>
+  <LuaFunction Name="_EH_AAK_otherObjectsToModelcheck()" ReturnType="String" Description="Returns the number of other items to modelcheck, and a table with references to them.">
+   <Constructor>_EH_AAK_otherObjectsToModelcheck()</Constructor>
+   <Formula>
+				function _EH_AAK_otherObjectsToModelcheck()
+					s1 = "Er åk holdt oppe av kl-mast"
+					r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+					t = {}
+					txt = nil
+					for i = 0, n1-1 do 
+						table.insert(t,r1[i])
+						txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+					end
+					s2 = "Er hengemast festet i åk"
+					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
+					for i = 0, n2-1 do
+						table.insert(t,r2[i])
+						txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+					end
+					if n1+n2 == 0 then
+						return 0,_info("No other objects to modelcheck.")
+					else
+						m = n1+n2
+						return m,t,_info(m..": "..txt.."}")
+					end
+				end
+			</Formula>
+  </LuaFunction>
+  <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="When this yoke is refreshed, then all of its support masts and suspension masts are refreshed as well."/>
+  <LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true">
+   <Formula>_EH_AAK_otherObjectsToModelcheck()</Formula>
+  </LuaExpression>
   <LuaExpression Name="name">
    <Formula>"KL-åk "..code.." ("..Variant..", "..Length..")"</Formula>
   </LuaExpression>
@@ -21201,15 +21346,15 @@ end
 							local mv = mast.Variant
 							local mp = mast.OcsMastProfile
 							local d
-							if mv:match("Bjelkemast") ~= nil then
+							if mv:match("Bjelkemast") then
 								d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
-							elseif mv:match("GMB%-mast") ~= nil then
+							elseif mv:match("GMB%-mast") then
 								d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
-							elseif mv:match("B%-mast") ~= nil then
+							elseif mv:match("B%-mast") then
 								d = (mast.OcsMastHeight - RelativeElevation) * math.tan(23/1000000)
-							elseif mv:match("H%-mast") ~= nil then
+							elseif mv:match("H%-mast") then
 								d = (mast.OcsMastHeight - RelativeElevation) * math.tan(1/50000)
-							elseif mv:lower():match("hengemast") ~= nil then
+							elseif mv:lower():match("hengemast") then
 								if (mp == 'Sirkulær, Ø120') then 
 									d = 0.06
 								elseif (mp == 'Kvadratisk, 100x100') then 
@@ -21236,6 +21381,7 @@ end
 				
 					local s = "Er åk holdt oppe av kl-mast"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
+
 					if n == 0 then
 						if Variant == "Utliggeråk" then
 							return getPropertyValue("DistanceToAlignment"),_warning,_info("UNFINISHED: Relate galley to an OCS mast with relation '"..s.."'.")
@@ -21249,7 +21395,7 @@ end
 							return _EH_AAK_get_mastDistanceToAlignment(r[0]),_info("Galley yoke (Utliggeråk) extending from mast '"..RC__identify(r[0]).."'.")
 						else
 							return getPropertyValue("DistanceToAlignment"),_warning,_info(
-								"UNFINISHED: Relate yoke to one more OCS mast with relation 'Har åk-mast / kl-mast', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate yoke to one more OCS mast with relation 'Er åk holdt oppe av kl-mast', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n &gt;= 2 then 
@@ -21265,7 +21411,7 @@ end
 						local y2 = m2.geoCoord.Y
 						local x = x1 - (d2/d1)*(x2-x1)
 						local y = y1 - (d2/d1)*(y2-y1)
-						local info = "Distance to alignment deduced through support mast '"..RC__identify(m1).."' related by '"..RelationName.."'."
+						local info = "Distance to alignment deduced through support mast '"..RC__identify(m1).."' related by '"..s.."'."
 						return getAlignmentInfo(Alignment.id,x,y).DistanceToAlignment,_info(info)
 					end
 				end
@@ -21792,15 +21938,15 @@ end
 						local mv = mast.Variant
 						local mp = mast.OcsMastProfile
 						local d
-						if mv:lower():match("bjelkemast") ~= nil then
+						if mv:lower():match("bjelkemast") then
 							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
-						elseif mv:lower():match("gmb%-mast") ~= nil then
+						elseif mv:lower():match("gmb%-mast") then
 							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
-						elseif mv:lower():match("b%-mast") ~= nil then
+						elseif mv:lower():match("b%-mast") then
 							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(23/1000000) --mast is not straight!
-						elseif mv:lower():match("h%-mast") ~= nil then
+						elseif mv:lower():match("h%-mast") then
 							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(1/50000)
-						elseif mv:lower():match("hengemast") ~= nil then
+						elseif mv:lower():match("hengemast") then
 							if (mp == 'Sirkulær, Ø120') then 
 								d = 0.06
 							elseif (mp == 'Kvadratisk, 100x100') then 
@@ -21878,11 +22024,19 @@ end
 				s = "Tilhører kl-mast"
 				r,n = RC__getCollectionOfRelatedObjects(s)
 				if n == 0 then
-					--Cantilevers mounted on yoke support masts are not found and treated here - too complicated for now.
-					return 0
-				else
-					--Make cantilever "rod" visible even if located under a yoke:
-					return 17 --Decimal Degrees
+					return 0,_info("UNFINISHED - Relate cantilever to an OCS mast, yoke suspension mast or tunnel / bridge suspension mast.")
+				else 
+					--Cantilever mounted under yoke?
+					--Make cantilever "rod" visible if located under a yoke, by visually adding 17 degrees:
+					m = r[0]
+					s1 = "Er åk-mast for åk"
+					r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+					if n1 == 0 then 
+						return 0,_info("No visual angular offset added since cantilever is not hidden under a yoke.")
+					else
+						-- TODO: Detect if cantilever is located on the other side of one of the yoke's support masts - and not under the next yoke, if another yoke continues...
+						return 17,_info("Visual angular offset added since cantilever might otherwise be visually hidden under a nearby yoke.")
+					end
 				end
 			end
 		</Formula>
@@ -22193,7 +22347,7 @@ end
    <SetValue Key="PushDirection" Value="N/A"/>
    <SetValue Key="CantileverLength" Value="1.2"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-UTLIGGER-20B-Schematic">
+  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-UTLIGGER-20B-{{SymbolMode}}">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset|plus:AddVisual2dAngularOffset}}
@@ -22212,7 +22366,7 @@ end
 				{% elsif Variant == 'Cariboni' %}CARIBONI
 				{% else %}BAD_VARIANT
 				{% endif %}
-				Schematic
+				{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
@@ -22885,7 +23039,7 @@ end
 								..RelationName.."', or adjust stage settings using layer names."
 						end
 					elseif Variant:lower():match("fritekst") then 
-						if code ~= nil and code ~= "" then 
+						if code and code ~= "" then 
 							return code
 						else
 							if n == 0 then 
@@ -23330,19 +23484,12 @@ end
 				end
 			</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Seksjonsisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Seksjonsisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
-   <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR">
-   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}"/>
+  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR-{{SymbolMode}}">
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTKL-ISOLATOR
 				{% if Variant == 'Seksjonsisolator' %}SEKSJONSISOLATOR
@@ -23464,25 +23611,18 @@ end
 				end
 			</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
    <OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace>
-   <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Stavisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-STAVISOLATOR" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Stavisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-STAVISOLATOR-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
    <OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace>
-   <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR">
-   <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}"/>
+  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR-{{SymbolMode}}">
+   <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTKL-ISOLATOR
 				{% if Variant == 'Lineisolator' %}LINEISOLATOR
@@ -23911,11 +24051,11 @@ end
   <LuaExpression Name="dir">
    <Formula>"both"</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Skinnejord" DisplayBlockName="NO-BN-2D-JBTKL-JORDING-SKINNEJORD" DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.75">
+  <InsertPointObject VariantName="Skinnejord" DisplayBlockName="NO-BN-2D-JBTKL-JORDING-SKINNEJORD-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-JORDING-SKINNEJORD">
+  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-JORDING-SKINNEJORD-{{SymbolMode}}">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -24282,9 +24422,7 @@ end
 				{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-BRY KL-bryter" Layer="JBTKL_EH_BRY" Color="ByLayer" Group="Kontaktledning/Brytere" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>kl-bryter</RelationSpace>
@@ -24653,9 +24791,7 @@ end
 				{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-AUT Autotransformator" Layer="JBTKL_EH_AUT" Color="ByLayer" Group="Kontaktledning/Autotransformatorer" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>autotransformator</RelationSpace>
@@ -24764,9 +24900,7 @@ end
 				{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <LuaFunction Name="NOBN_sig_getCabinetName()" ReturnType="String" Description="Returns a string for each cabinet variant. Keylock cabinets receive a code based on the object's OCP area and the 'seq' property.">
   <Constructor>String NOBN_sig_getCabinetName()</Constructor>
@@ -26485,12 +26619,12 @@ end
 					local n = 0
 					local t = {}
 					prevAc = getDownObject("SA-TEL Tellepunkt") --Axle counter
-					if prevAc ~= nil then 
+					if prevAc then 
 						n = n + 1
 						table.insert(t,prevAc)
 					end
 					nextAc = getUpObject("SA-TEL Tellepunkt") --Axle counter
-					if nextAc ~= nil then 
+					if nextAc then 
 						n = n + 1
 						table.insert(t,nextAc)
 					end
@@ -27102,9 +27236,7 @@ end
    <JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="false"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTOB-RAILJOINT-0-0-0-0-{{SymbolMode}}" AllowSymbolMove="true">
-   <JigSymbolAppearance AddAngle="0"/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0" DefaultBlockName="NO-BN-2D-JBTOB-RAILJOINT-0-0-0-0-{{SymbolMode}}" AllowSymbolMove="true"/>
   <SymbolDefinition X="0" Y="0" DefaultBlockName="" AllowSymbolMove="true" Layer="JBTOB_KO_SKJ">
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTOB-RAILJOINT
@@ -27114,7 +27246,6 @@ end
 				{% if UpSectionLeftRailDetection %}1{% elsif UpSectionLeftRailDetection or DownSectionLeftRailDetection or DownSectionRightRailDetection or UpSectionRightRailDetection %}0{% else %}{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
-   <JigSymbolAppearance AddAngle="0" DoNotRotateWithAlignment="false" Add180DegreesIfDirIsDown="false"/>
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
@@ -27215,6 +27346,7 @@ end
     <Value>{{code}}</Value>
    </SymbolAttribute>
   </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="SA-DRV Sporvekseldrivmaskin" Layer="JBTSI_SA_DRV" Color="ByLayer" Group="Signal/Sikringsanlegg" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>sporvekseldrivmaskin</RelationSpace>
@@ -27796,9 +27928,7 @@ end
     <Value>{{code}}</Value>
    </Attribute>
   </Model3DDefinition>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic">
-   <JigSymbolAppearance/>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
   <DockPointDefinitions>
    <SnapPoints>
     <SnapPoint X="0" Y="0" TargetSpace="stolpe_med_fot"/>
@@ -27995,6 +28125,7 @@ end
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTSI-ATC-BALISEGRUPPE-{{SymbolMode}}" AllowSymbolMove="true">
    <Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}"/>
   </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tBalise" Class="RailwayPlacedObject" Name="SA-ATB Balise" Layer="JBTSI_SA_ATB" Color="ByLayer" Group="Signal/ATC" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>balise</RelationSpace>
@@ -30146,9 +30277,9 @@ end
   </LuaFunction>
   <LuaExpression Name="Offset3D.Z">
    <Formula>
-				local a = Attachment
 				local d = (Variant:find("sidestilt") or Variant:find("2%-begrep")) and 0.15 or 0 --juster litt ned hvis signalet har arm(er)
-				if a ~= nil then
+				local a = Attachment
+				if a then
 					if a.Variant:find(" 1.6m") then return 0.690 - d
 					elseif a.Variant:find(" 2m") then return 1.090 - d 
 					elseif a.Variant:find(" 3m") then return 2.090 - d

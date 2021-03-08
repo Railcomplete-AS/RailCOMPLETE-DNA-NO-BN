@@ -26,12 +26,12 @@
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Brukerdefinert">
+		<Variants DefaultValue="Brukerdefinert" >
 			<Variant Name="Brukerdefinert" />
 		</Variants>
 
 		<!-- Brukerdefinert -->
-		<InsertTable VariantName="Brukerdefinert" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Brukerdefinert" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Brukerdefinert</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -99,7 +99,7 @@
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Skiltplan tabell (tverrfaglig trafikkskiltplan)">
+		<Variants DefaultValue="Skiltplan tabell (tverrfaglig trafikkskiltplan)" >
 			<Variant Name="Skiltplan tabell (tverrfaglig trafikkskiltplan)" />
 			<Variant Name="Arbeidsområder" />
 			<Variant Name="Stasjonsskilt (publikumsskilting)" />
@@ -108,7 +108,7 @@
 		</Variants>
 		
 		<!-- Skiltplan tabell (tverrfaglig trafikkskiltplan) -->
-		<InsertTable VariantName="Skiltplan tabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Skiltplan tabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Skiltplan tabell</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -447,34 +447,33 @@ end </Data>
 						<Data>local s0 = ""
 local s1 = ""
 local s5 = ""
-if variant ~= nil then s0 = variant else s0 = "" end
+if Variant then s0 = Variant else s0 = "" end
 if (attachment == nil) then
 	s1 = ""
 	s5 = ""
 else
 	if getCollectionLength(Relations["Har balisegruppe"]) == 0 then
 	
-		--TODO: Bruk heller Variant:match("64E") etc
 		--TODO: Bruk heller getCollectionLength(Relations[Er stolpe for tellepunkt"] &gt; 0 etc
-		if string.find(Variant, "64E") ~= nil and Relations["Er stolpe for tellepunkt"] ~= nil and Relations["Er stolpe for tellepunkt"][0] ~= nil then
-			s1= "\nTilhører \t\t"..Relations["Er stolpe for tellepunkt"][0].RcType
+		if Variant:match("64E") and Relations["Er stolpe for tellepunkt"] and Relations["Er stolpe for tellepunkt"][0] then
+			s1 = "\nTilhører \t\t"..Relations["Er stolpe for tellepunkt"][0].RcType
 			
-		elseif (string.find(Variant, "68") ~= nil or string.find(Variant, "64E") ~= nil or string.find(Variant, "Signal 60") ~= nil) then
-			obj= getNearbyPointObjects2D(15)
-			s1= " "
-			for i=0,obj.count-1 do
-				if string.find(obj[i].variant, "balisegruppe") ~= nil or string.find(obj[i].RcType, "sporingsindikator") ~= nil  then
-					if obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"] ~=nil then
+		elseif Variant:match("68") or Variant:match("64E") or Variant:match("Signal 60") then
+			obj = getNearbyPointObjects2D(15)
+			s1 = " "
+			for i = 0,obj.count-1 do
+				if obj[i].Variant:match("balisegruppe") or obj[i].RcType:match("sporingsindikator")  then
+					if obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"] then
 						if obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"].Count ~= 0 then 
 							s1 = "\nTilhører \t\t"..obj[i].name.." med målpunkt i balisegruppe "..obj[i].Relations["Har bremsekurve målpunkt i balisegruppe"][0].name
 							break
 						else 
-							s1="\nTilhører \t\t"..obj[i].name
+							s1 = "\nTilhører \t\t"..obj[i].name
 							break
 						end
 					end
-				elseif string.find(obj[i].RcType, "Telle") ~= nil and string.find(Variant, "64E") ~= nil then
-					s1="\nTilhører \t\t"..obj[i].RcType
+				elseif obj[i].RcType:match("Telle") and Variant:match("64E") then
+					s1 = "\nTilhører \t\t"..obj[i].RcType
 					break
 				end	
 			end
@@ -482,24 +481,24 @@ else
 			s1 = " "
 		end
 		
-		if (string.find(Variant, "kryss") ~=nil) then
-			obj= getNearbyPointObjects2D(10)
-			s1= " "
-			for i=0,obj.count-1 do
-				if string.find(obj[i].RcType, "veksel")~=nil then
+		if Variant:match("kryss") then
+			obj = getNearbyPointObjects2D(10)
+			s1 = " "
+			for i = 0,obj.count-1 do
+				if obj[i].RcType_match("veksel") then
 					s1="\nTilhører \t\t".."V."..tostring(obj[i].code)
 					break
-				elseif string.find(obj[i].RcType, "Drivmaskin")~=nil then
-					Cd=tostring(obj[i].name)
-					place=string.find(Cd,"%.")
-					s1="\nTilhører \t\t".."V."..string.sub(Cd,1,place-1)	
+				elseif obj[i].RcType:match("Drivmaskin") then
+					Cd = tostring(obj[i].name)
+					place = string.find(Cd,"%.")
+					s1 = "\nTilhører \t\t".."V."..string.sub(Cd,1,place-1)	
 					break
 				end				
 			end
 		end	
 		
 	else 
-		if Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"] ~=nil then
+		if Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"] then
 			if Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"].Count ~= 0 then 
 				s1 = "\nTilhører \t\t"..Relations["Har balisegruppe"][0].name.." med målpunkt i balisegruppe "..Relations["Har balisegruppe"][0].Relations["Har bremsekurve målpunkt i balisegruppe"][0].name
 			end
@@ -508,19 +507,19 @@ else
 		end
 	end
 	
-	if (attachment.variant == nil) then 
+	if (Attachment.Variant == nil) then 
 		s5 = ""
-	elseif string.find(Attachment.RcType, "SPB")~=nil then
+	elseif Attachment.RcType:match("SPB") then
 		s5 = "\nMontert på \t\t"..this.Attachment.Variant
-	elseif string.find(Attachment.RcType, "SA%-SIG")~=nil then
+	elseif Attachment.RcType:match("SA%-SIG") then
 		s5="\nMontert på \t\t"..tostring(Attachment.name)
 	else
 		obj= getNearbyPointObjects2D(10)
 		for i=0,obj.count-1 do
-			if string.find(obj[i].RcType, "SA%-SIG")~=nil and (string.find(this.RcType, "Signal 68")~=nil)==false then
+			if obj[i].RcType:match("SA%-SIG") and not this.RcType:match("Signal 68") then
 				s5="\nMontert på \t\t"..tostring(obj[i].name)
 				break
-			elseif string.find(obj[i].RcType, "SPB")~=nil then
+			elseif obj[i].RcType:match("SPB") then
 				s5="\nMontert på \t\t"..tostring(obj[i].Variant)
 				break
 			else
@@ -671,13 +670,13 @@ end</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Track data overview">
+		<Variants DefaultValue="Track data overview" >
 			<Variant Name="Track data overview" />
 			<Variant Name="Track connectivity" />
 		</Variants>
 
 		<!-- Track data overview -->
-		<InsertTable VariantName="Track data overview" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Track data overview" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Track data overview</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -862,7 +861,7 @@ return string.format("%.03f",g)</Data>
 		</InsertTable>
 
 		<!-- Track connectivity -->
-		<InsertTable VariantName="Track connectivity" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Track connectivity" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Track connectivity</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -1054,13 +1053,13 @@ return string.format("%.03f",g)</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Sporvekseltabell (enkel)">
+		<Variants DefaultValue="Sporvekseltabell (enkel)" >
 			<Variant Name="Sporvekseltabell (enkel)" />
 			<Variant Name="Sporvekseltabell (detaljert)" />
 		</Variants>
 
 		<!-- Sporvekseltabell (enkel) -->
-		<InsertTable VariantName="Sporvekseltabell (enkel)" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Sporvekseltabell (enkel)" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Sporvekseltabell</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -1118,7 +1117,7 @@ return string.format("%.03f",g)</Data>
 		</InsertTable>
 
 		<!-- Sporvekseltabell (detaljert) -->
-		<InsertTable VariantName="Sporvekseltabell (detaljert)" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Sporvekseltabell (detaljert)" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Sporvekseltabell (detaljert)</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -1380,11 +1379,11 @@ end	</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="KO-HOT Horisontaltrasetabell">
+		<Variants DefaultValue="KO-HOT Horisontaltrasetabell" >
 			<Variant Name="KO-HOT Horisontaltrasetabell" />
 		</Variants>
 
-		<InsertTable VariantName="KO-HOT Horisontaltrasetabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="KO-HOT Horisontaltrasetabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Banedata HOT</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -1421,7 +1420,7 @@ end	</Data>
 					<Width>50</Width>
 					<Data>
 						str = "Horisontaltrase, " .. Name
-						if (ocpRef ~= nil) then str = str .. ", " .. getObjectFromId(ocpRef).name end
+						if ocpRef then str = str .. ", " .. getObjectFromId(ocpRef).name end
 						return str
 					</Data>
 					<Title>Beskrivelse</Title>
@@ -1645,11 +1644,11 @@ end	</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="KO-VET Vertikaltrasetabell">
+		<Variants DefaultValue="KO-VET Vertikaltrasetabell" >
 			<Variant Name="KO-VET Vertikaltrasetabell" />
 		</Variants>
 
-		<InsertTable VariantName="KO-VET Vertikaltrasetabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="KO-VET Vertikaltrasetabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Banedata VET</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -1686,7 +1685,7 @@ end	</Data>
 						<Width>50</Width>
 						<Data>
 							str = "Vertikaltrase, " .. Name
-							if (ocpRef ~= nil) then str = str .. ", " .. getObjectFromId(ocpRef).name end
+							if ocpRef then str = str .. ", " .. getObjectFromId(ocpRef).name end
 							return str</Data>
 						<Title>Beskrivelse</Title>
 						<Sort />
@@ -1955,7 +1954,7 @@ end	</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Master">
+		<Variants DefaultValue="Master" >
 			<Variant Name="Master" />
 			<Variant Name="Utliggere" />
 			<Variant Name="Ledninger" />
@@ -1963,7 +1962,7 @@ end	</Data>
 			<Variant Name="Isolatorer" />
 		</Variants>
 		
-		<InsertTable VariantName="Master" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Master" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Mastetabell for kontaktledningsanlegg</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -2077,13 +2076,13 @@ end	</Data>
 --
 
 local symbol = "*"
-if Variant:lower():match("henge") ~= nil then 
+if Variant:lower():match("henge") then 
 	symbol = "X"
-elseif Variant:lower():match("gmb") ~= nil then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master.
+elseif Variant:lower():match("gmb") then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master.
 	symbol = "G"
-elseif Variant:lower():match("b%-mast") ~= nil or Variant:lower():match("h%-mast") ~= nil then 
+elseif Variant:lower():match("b%-mast") or Variant:lower():match("h%-mast") then 
 	symbol = "O"
-elseif Variant:lower():match("bjelke") ~= nil then 
+elseif Variant:lower():match("bjelke") then 
 	symbol = "8"
 else
 	return "Ukjent Variant ["..Variant.."].",_warning
@@ -2293,11 +2292,11 @@ end</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Jordingstabell">
+		<Variants DefaultValue="Jordingstabell" >
 			<Variant Name="Jordingstabell" />
 		</Variants>
 
-		<InsertTable VariantName="Jordingstabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Jordingstabell" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
   <Title>Jordingstabell [angi tegningsnummer her]</Title>
   <IncludeTitle>true</IncludeTitle>
@@ -2625,7 +2624,7 @@ end</Data>
 
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 
-		<Variants DefaultValue="Fundamenter">
+		<Variants DefaultValue="Fundamenter" >
 			<Variant Name="Fundamenter" />
 			<Variant Name="Skiltfester" />
 		</Variants>
@@ -2650,7 +2649,7 @@ end</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Trekkerør">
+		<Variants DefaultValue="Trekkerør" >
 			<Variant Name="Trekkekummmer" />
 			<Variant Name="Rørkryss" />
 			<Variant Name="Trekkerør" />
@@ -2677,7 +2676,7 @@ end</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Forriglingstabell 0 Tabelloversikt">
+		<Variants DefaultValue="Forriglingstabell 0 Tabelloversikt" >
 			<Variant Name="Forriglingstabell 0 Tabelloversikt" />
 			<Variant Name="Forriglingstabell 1-A Togveier retning A" />
 			<Variant Name="Forriglingstabell 1-B Togveier retning B" />
@@ -2728,7 +2727,7 @@ end</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="Signaltabell Hovedsignaler">
+		<Variants DefaultValue="Signaltabell Hovedsignaler" >
 			<Variant Name="Signaltabell Enkel" />
 			<Variant Name="Signaltabell Byggetoleranser" />
 			<Variant Name="Signaltabell Hovedsignaler" />
@@ -2738,7 +2737,7 @@ end</Data>
 		</Variants>
 		
 		<!-- Signaltabell Enkel -->
-		<InsertTable VariantName="Signaltabell Enkel" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Signaltabell Enkel" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Signaltabell (begrenset)</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -2786,12 +2785,12 @@ end</Data>
 							</Header>
 						</Headers>
 						<Width>60</Width>
-						<Data>if (string.find(tostring(dir),"down") ~= nil) then
+						<Data>if dir == "down" then
 	return "Synkende km"
-elseif (string.find(tostring(dir),"up") ~= nil) then
+elseif dir == "up" then
 	return "Stigende km"
 else
-	return "Ukjent retning [",tostring(dir),"]",_warning
+	return "Ukjent retning ["..dir.."]",_warning
 end</Data>
 						<Title>Retning</Title>
 						<Sort>Ascending</Sort>
@@ -2874,8 +2873,8 @@ end</Data>
 							</Header>
 						</Headers>
 						<Width>60</Width>
-						<Data>local dirIsUp = string.find(tostring(dir),"up") ~= nil
-local dirIsDown = string.find(tostring(dir),"down") ~= nil
+						<Data>local dirIsUp = (dir == "up")
+local dirIsDown = (dir == "down")
 --
 if (dirIsUp and RightSided) then
 	return "Høyre"
@@ -2886,7 +2885,7 @@ elseif (dirIsDown and RightSided) then
 elseif (dirIsDown and LeftSided) then
 	return "Høyre"
 else
-	return "Feil: Ukjent dir [",tostring(dir),"]"
+	return "Feil: Ukjent dir ["..dir.."]"
 end</Data>
 						<Title>Side av spor i kjøre- retningen</Title>
 						<Sort />
@@ -3031,7 +3030,7 @@ return s</Data>
 		</InsertTable>
 
 		<!-- Signaltabell Byggetoleranser -->
-		<InsertTable VariantName="Signaltabell Byggetoleranser" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Signaltabell Byggetoleranser" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Signaltabell (detaljert)</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -3061,7 +3060,7 @@ return s</Data>
 							</Header>
 						</Headers>
 						<Width>60</Width>
-						<Data>if (string.find(name,"Rep") ~= nil) then 
+						<Data>if name:lower():match("rep") then 
 	return "Rep.Hs"
 elseif (MainSignal ~= "-") then 
 	return "Hovedsignal"
@@ -3084,12 +3083,12 @@ end</Data>
 							</Header>
 						</Headers>
 						<Width>60</Width>
-						<Data>if (string.find(tostring(dir),"down") ~= nil) then
+						<Data>if dir == "down" then
 	return "Synkende km"
-elseif (string.find(tostring(dir),"up") ~= nil) then
+elseif dir == "up" then
 	return "Stigende km"
 else
-	return "Feil: Ukjent retning [",tostring(dir),"]",_warning
+	return "Feil: Ukjent retning ["..dir.."]",_warning
 end</Data>
 						<Title>Retning</Title>
 						<Sort>Ascending</Sort>
@@ -3173,8 +3172,8 @@ end</Data>
 						</Headers>
 						<Width>60</Width>
 						<Data>
-							local dirIsUp = string.find(tostring(dir),"up") ~= nil
-							local dirIsDown = string.find(tostring(dir),"down") ~= nil
+							local dirIsUp = (dir == "up")
+							local dirIsDown = (dir = "down")
 							--
 							if (dirIsUp and RightSided) then
 								return "Høyre"
@@ -3185,7 +3184,7 @@ end</Data>
 							elseif (dirIsDown and LeftSided) then
 								return "Høyre"
 							else
-								return "Feil: Ukjent dir [",tostring(dir),"]"
+								return "Feil: Ukjent dir ["..dir.."]"
 							end
 						</Data>
 						<Title>Side av spor i kjøre- retningen</Title>
@@ -3238,7 +3237,7 @@ end</Data>
 								return "Venstrekurve" 
 							elseif (getAlignmentInfo().CurveRotation:upper() == "CW") then 
 								return "Høyrekurve"
-								else return "Feil i kurverotasjon [" .. tostring(getAlignmentInfo().CurveRotation) .. "]",_warning
+								else return "Feil i kurverotasjon ["..tostring(getAlignmentInfo().CurveRotation).."]",_warning
 							end
 						</Data>
 						<Title>Høyre / venstre kurve (Oslo i ryggen)</Title>
@@ -3531,7 +3530,7 @@ return s</Data>
 		</InsertTable>
 		
 		<!-- Signaltabell Hovedsignaler -->
-		<InsertTable VariantName="Signaltabell Hovedsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic">
+		<InsertTable VariantName="Signaltabell Hovedsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" >
 			<TableSpecification>
 				<Title>Signaltabell Hovedsignaler</Title>
 				<IncludeTitle>true</IncludeTitle>
@@ -3587,9 +3586,9 @@ return s</Data>
 		</InsertTable>
 		
 		<!--TODO Definere de resterende signaltabellene-->
-		<!-- <InsertTable VariantName="Signaltabell Frittstående forsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic"> -->
-		<!-- <InsertTable VariantName="Signaltabell Frittstående dvergsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic"> -->
-		<!-- <InsertTable VariantName="Signaltabell Frittstående formsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic"> -->
+		<!-- <InsertTable VariantName="Signaltabell Frittstående forsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" > -->
+		<!-- <InsertTable VariantName="Signaltabell Frittstående dvergsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" > -->
+		<!-- <InsertTable VariantName="Signaltabell Frittstående formsignaler" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL-Schematic" > -->
 
 	</ObjectType>
 
@@ -3611,7 +3610,7 @@ return s</Data>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO_VAR" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" />
 
-		<Variants DefaultValue="ATC kodetabell serie/parallellbaliser (Ktab20s)">
+		<Variants DefaultValue="ATC kodetabell serie/parallellbaliser (Ktab20s)" >
 			<Variant Name="ATC kodetabell serie/parallellbaliser (Ktab20s)" />
 			<Variant Name="ATC kodetabell GMB-parallellbaliser (KtabGMBf) " />
 			<Variant Name="ETCS balise kodetabell for Østre linje" />

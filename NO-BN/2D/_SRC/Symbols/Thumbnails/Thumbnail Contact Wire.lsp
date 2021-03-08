@@ -45,7 +45,7 @@
 			_ENTER_
 	)
 	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
-  	(drawHatchFromPoint 0.4 _origo_ 0 0)
+	(drawHatch _denseHatch_)
 	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _fifth_)
 	(createSchematicBlockFromCurrentGraphics blockName)
 	blockName

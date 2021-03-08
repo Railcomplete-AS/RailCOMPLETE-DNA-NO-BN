@@ -12,7 +12,8 @@
 
 ; Thumbnail symbols top-level LISP routine
 
-; Icons (small images) which are shown in the list of available object types which are NOT point objects, during the creation process RC-CreateXxxxxx
+; Icons (small images) which are shown in the list of available object types which are NOT point objects, during the 
+; object creation process (RC-CreateTable, RC-CreateAlignment, RC-CreateArea, RC-CreatePointObject).
 
 
 (setq f (strcat rootFolder "\\Symbols\\Thumbnails"))

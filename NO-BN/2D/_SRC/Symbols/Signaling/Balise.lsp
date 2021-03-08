@@ -157,11 +157,11 @@
 			(drawHatch _denseHatch_)
 		)
 		((= variation 3)
-			(drawHatchFromPoint 0.02 "0.1,0.1" 0 0.1)
+			(drawHatch _solidHatch_)
 			(setq blockName "NO-BN-2D-JBTSI-ATC-BALISE-FYLT-FAST")
 		)
 		((= variation 4)
-			(drawHatchFromPoint 0.02 "0.1,0.1" 0 0.1)
+			(drawHatch _solidHatch_)
 			(setq blockName "NO-BN-2D-JBTSI-ATC-BALISE-FYLT-STYRT")
 			(command 
 				_RECTANGLE_

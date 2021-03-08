@@ -99,7 +99,7 @@
 ;		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 ;	)
 ;	(if (= variation "E35-STOPPSKILT")
-;		(drawHatchFromPoint 0.02 (list (* 0.45 x) (* 0.45 y)) 0 0)
+;		(drawHatchFromPoint _solidHatch_ (list (* 0.45 x) (* 0.45 y)) _angleZero_ _offsetZero_)
 ;	)
 ;
 ;	(cond 
