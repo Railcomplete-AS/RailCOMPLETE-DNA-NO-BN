@@ -15,8 +15,8 @@ write("================== Insert all objects from DNA =====================\n")
 write("Note: Start a fresh drawing with the DNA i question before running this script.\n")
 runCommand('_.ERASE _All \n_No ')
 runCommand('_.-PURGE _All \n_No ')
---fileSpec = "*.xml"
-fileSpec = "C:\\Users\\Claus Feyling\\Documents\\GitHub\\RailCOMPLETE-NO-BN\\NO-BN\\DNA\\NO-BN-2021.a-DNA.xml"
+fileSpec = "*.xml"
+--fileSpec = "C:\\Users\\Claus Feyling\\Documents\\GitHub\\RailCOMPLETE-NO-BN\\NO-BN\\DNA\\NO-BN-2021.a-DNA.xml"
 dna = getContentsFromFile(FileType.Xml, "Select DNA file",fileSpec)
 
 placedObjects = table.where(
