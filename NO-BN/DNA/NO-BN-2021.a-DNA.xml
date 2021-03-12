@@ -219,7 +219,7 @@
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="RC__acs2wcs()" ReturnType="String" Description="Converts Alignment Coordinate System (ACS) coordinates into World Coordinate System (WCS). Usage: wx,wy = RC__acs2wcs(ax,ay) where an optional angle is in Decimal Degrees (DD).">
+ <LuaFunction Name="RC__acs2wcs()" ReturnType="String" Description="Converts Alignment Coordinate System (ACS) coordinates into World Coordinate System (WCS). Usage: wx,wy = RC__acs2wcs(ax,ay [,upDirAngle [,useInsertionPointInsteadOfDisplayPointAsReference]]) where an optional angle is in Decimal Degrees (DD).">
   <Constructor>Double,Double RC__acs2wcs(acsX, acsY, upDir = AlignmentTangent, useInsertionPointInsteadOfDisplayPointAsReference = false)</Constructor>
   <Formula>
 			function RC__acs2wcs(acsX,acsY,upDir,useInsertionPointInsteadOfDisplayPointAsReference)
@@ -19584,15 +19584,16 @@ end
 			end
 				</Formula>
  </LuaFunction>
- <LuaFunction Name="_EH_MAS_SpanLengthTextOffset()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a (dX,dY) offset for the span length custom text attribute, from the object's insertion point and halfway to the subsequent mast. Optionally, specify and (addX,addY) offset.">
-  <Constructor>Vector2D _EH_MAS_SpanLengthTextOffset([Double addX,[Double addY]])</Constructor>
+ <LuaFunction Name="_EH_MAS_SpanLengthTextOffset()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a (World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point and halfway to the subsequent mast. Optionally, specify offsets as [offsetLateral [,offsetAlong]]).">
+  <Constructor>Vector2D _EH_MAS_SpanLengthTextOffset([Double offsetLateral [,Double offsetAlong]])</Constructor>
   <Formula>
-			function _EH_MAS_SpanLengthTextOffset(addX,addY)
-				if addX == nil then addX = 0 end
-				if addY == nil then addY = 0 end
+			function _EH_MAS_SpanLengthTextOffset(offsetLateral,offsetAlong)
+				offsetLateral = offsetLateral or 0
+				offsetAlong = offsetAlong or 0
+				worldOffsetX,worldOffsetY = RC__acs2wcs(offsetLateral,offsetAlong)
 				local r,n = RC__getCollectionOfRelatedObjects("Neste kl-mast")
 				if n == 0 then
-					return {addX,addY}
+					return {worldOffsetX,worldOffsetY}
 				else
 					local d,closest,i,closestMastCoords
 					d = math.huge
@@ -19605,20 +19606,20 @@ end
 						end
 					end
 					closestMastCoords = closest.geoCoord
-					return {addX + (closestMastCoords.X - geoCoord.X)/2, addY + (closestMastCoords.Y - geoCoord.Y)/2}
+					return {worldOffsetX + (closestMastCoords.X - geoCoord.X)/2, worldOffsetY + (closestMastCoords.Y - geoCoord.Y)/2}
 				end
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="_EH_MAS_SpanLengthTextOffset2()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a (dX,dY) offset for the second shortest span length custom text attribute, from the object's insertion point and halfway to the subsequent mast. Optionally, specify and (addX,addY) offset.">
-  <Constructor>Vector2D _EH_MAS_SpanLengthTextOffset2(([Double addX[,Double addY]]))</Constructor>
+ <LuaFunction Name="_EH_MAS_SpanLengthTextOffset2()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a (dX,dY) offset for the second shortest span length custom text attribute, from the object's insertion point and halfway to the subsequent mast. Optionally, specify offsets as [offsetLateral [,offsetAlong]]).">
+  <Constructor>Vector2D _EH_MAS_SpanLengthTextOffset2([Double offsetLateral [,Double offsetAlong]])</Constructor>
   <Formula>
-			function _EH_MAS_SpanLengthTextOffset2()		
-				local r,n = RC__getCollectionOfRelatedObjects("Neste kl-mast")
-				if addX == nil then addX = 0 end
-				if addY == nil then addY = 0 end
+			function _EH_MAS_SpanLengthTextOffset2(offsetLateral,offsetAlong)
+				offsetLateral = offsetLateral or 0
+				offsetAlong = offsetAlong or 0
+				worldOffsetX,worldOffsetY = RC__acs2wcs(offsetLateral,offsetAlong)
 				if n == 0 or n == 1 then
-					return {addX,addY}
+					return {worldOffsetX,worldOffsetY}
 				else
 					local d,d2,closest,closest2,i,secondClosestMastCoords
 					d = math.huge
@@ -19637,7 +19638,7 @@ end
 						end
 					end
 					secondClosestMastCoords = closest2.geoCoord
-					return {addX + (secondClosestMastCoords.X - geoCoord.X)/2, addY + (secondClosestMastCoords.Y - geoCoord.Y)/2}
+					return {worldOffsetX + (secondClosestMastCoords.X - geoCoord.X)/2, worldOffsetY + (secondClosestMastCoords.Y - geoCoord.Y)/2}
 				end
 			end
 		</Formula>
@@ -20027,20 +20028,22 @@ end
    <Value>Ny</Value>
    <Value>Eksisterende</Value>
   </CustomAttribute>
+  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0" Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)."/>
+  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0" Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)."/>
   <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" Description="The span length value [m] being displayed close to the OCS mast."/>
-  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE">
-   <Formula>_EH_MAS_SpanLengthTextOffset()</Formula>
+   <Formula>_EH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetAlong,SpanLengthTextOffsetLateral)</Formula>
   </TextPositionLuaExpression>
   <TextRotationLuaExpression Name="SPENNLENGDE">
    <Formula>_EH_MAS_SpanLengthTextRotation()</Formula>
   </TextRotationLuaExpression>
   <CustomAttribute DataType="Double" Name="SpanLength2" DisplayName="Spennlengde 2" DefaultValue="30.0" Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value."/>
-  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE2">
-   <Formula>_EH_MAS_SpanLengthTextOffset2()</Formula>
+   <Formula>_EH_MAS_SpanLengthTextOffset2(SpanLengthTextOffsetAlong,SpanLengthTextOffsetLateral)</Formula>
   </TextPositionLuaExpression>
   <TextRotationLuaExpression Name="SPENNLENGDE2">
    <Formula>_EH_MAS_SpanLengthTextRotation2()</Formula>
@@ -20505,13 +20508,13 @@ end
   </CustomAttribute>
   <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" Description="The span length value [m] being displayed close to the OCS mast."/>
-  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE">
    <Formula>_EH_MAS_SpanLengthTextOffset()</Formula>
   </TextPositionLuaExpression>
   <CustomAttribute DataType="Double" Name="SpanLength2" DisplayName="Spennlengde 2" DefaultValue="30" Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value."/>
-  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE2">
    <Formula>_EH_MAS_SpanLengthTextOffset2()</Formula>
   </TextPositionLuaExpression>
@@ -20861,13 +20864,13 @@ end
   </CustomAttribute>
   <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" Description="The span length value [m] being displayed close to the OCS mast."/>
-  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE">
    <Formula>_EH_MAS_SpanLengthTextOffset()</Formula>
   </TextPositionLuaExpression>
   <CustomAttribute DataType="Double" Name="SpanLength2" DisplayName="Spennlengde 2" DefaultValue="30" Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value."/>
-  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE2">
    <Formula>_EH_MAS_SpanLengthTextOffset2()</Formula>
   </TextPositionLuaExpression>
@@ -22234,7 +22237,7 @@ end
   <CustomAttribute DataType="Double" Name="StitchWireLength" DisplayName="Y-line lengde" DefaultValue="0.00" Description="The stitch wire length (swl) [m] denotes the length, measured as a difference in mileage, from start to end (where it attaches to the catenary wire). Zero length means 'no stitch wire'."/>
   <CustomAttribute DataType="Double" Name="Stagger" DisplayName="Sikk-sakk" DefaultValue="0.000" Description="Stagger [m] denotes the distance from contact wire clamp to centre track, measured co-linearly with the top-of-rails plane. Positive stagger means pushing away from mast, negative means pulling towards mast."/>
   <CustomAttribute DataType="String" Name="StaggerDisplay" DisplayName="Sikk-sakk visning" DefaultValue="" Description="The stagger value, as shown next to the cantilever [cm]."/>
-  <TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-1" Layer="JBTKL__SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-1" Layer="JBTKL__EH_UTL_SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <LuaExpression Name="dir">
    <Formula>"both"</Formula>
   </LuaExpression>
@@ -22256,7 +22259,7 @@ end
 			</Formula>
   </LuaFunction>
   <CustomAttribute DataType="String" Name="OcsWireDisplay" DisplayName="Ledning visning" DefaultValue="" Description="The cantilever's associated OCS wire."/>
-  <TextAttribute Annotative="true" BindingProperty="OcsWireDisplay" CadAttributeTag="LEDNING" X="0" Y="1.5" Layer="JBTKL__LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="OcsWireDisplay" CadAttributeTag="LEDNING" X="0" Y="1.5" Layer="JBTKL__EH_UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <LuaExpression Name="OcsWireDisplay">
    <Formula>_EH_UTL_OcsWireDisplay()</Formula>
   </LuaExpression>
@@ -23310,7 +23313,7 @@ end
   </CustomAttribute>
   <CustomAttribute DataType="String" Name="TensileForce" DisplayName="Strekkraft" DefaultValue="(not in use)" Description="The tensile force/forces (tf) exerted on the tensioning device [kN]."/>
   <CustomAttribute DataType="String" Name="TensileForceDisplay" DisplayName="Strekkraft visning" DefaultValue="" Description="The tensile force value, as shown close to the tensioning device [kN]."/>
-  <TextAttribute Annotative="true" BindingProperty="TensileForceDisplay" CadAttributeTag="STREKKRAFT" X="0" Y="20" Layer="JBTKL__STREKKRAFT" Justify="MiddleCenter" Height="0.9" Width="0" Color="ByBlock" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="TensileForceDisplay" CadAttributeTag="STREKKRAFT" X="0" Y="20" Layer="JBTKL__EH_AEH_STREKKRAFT" Justify="MiddleCenter" Height="0.9" Width="0" Color="ByBlock" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <LuaExpression Name="TensileForceDisplay">
    <Formula>_EH_AEH_TensileForces(OcsSystem)</Formula>
   </LuaExpression>
