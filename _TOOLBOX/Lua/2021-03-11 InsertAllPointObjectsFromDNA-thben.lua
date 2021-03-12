@@ -44,7 +44,7 @@ drawTails = table.where(
 					dna.RailwayObjectTypeDefinitions.ObjectType, 
 					function(x) return x.Class == "RailwayPlacedObject" and x.DrawTail ~= nil and string.match(x.DrawTail, "true") end, function (x) return x.Name end)
 
-maxLen = 10000
+maxLen = 100000
 geoEdge = createLineSegment(getPoint3D(0,0), getPoint3D(maxLen,0))
 topoEdge = createHorizontalProfile({geoEdge})
 track1 = createAlignmentObject("KO-SPO Spor", "Sviller og skinner", topoEdge)
@@ -78,6 +78,8 @@ while true do
 		return
 	elseif selectedType == _all_ then
 		for k, rcType in pairs(keys) do
+			if rcType == _all_ or rcType == _quit_ then goto continue end
+			
 			write("RC type : ".. rcType.."\n")
 			
 			for ik, variant in pairs(placedObjects[rcType]) do
@@ -89,6 +91,7 @@ while true do
 				end
 				pos = pos + 30 
 			end
+			::continue::
 		end
 	else
 		write("RC type ------ ".. selectedType.."\n")
