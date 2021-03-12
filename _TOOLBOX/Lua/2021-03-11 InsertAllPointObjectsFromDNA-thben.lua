@@ -85,7 +85,9 @@ while true do
 			for ik, variant in pairs(placedObjects[rcType]) do
 				write("\tVariant : ".. variant.."\n")
 				if useJig == "Yes" then
-					runCommand('RC-CREATEPOINTOBJECT "'..rcType..'" "'..variant..'" '..pos..',10'..(rcType.DrawTail and "")..' \x03\x03')
+					drawTail = drawTails[selectedType] ~= nil
+					tailPoints = ""..(pos+3)..",13"
+					runCommand('RC-CREATEPOINTOBJECT "'..rcType..'" "'..variant..'" '..pos..',10 '..(drawTail and tailPoints or "")..' \x03\x03')
 				else
 					o = createPointObject(track1, rcType, variant, pos, 5.0, true)
 				end
