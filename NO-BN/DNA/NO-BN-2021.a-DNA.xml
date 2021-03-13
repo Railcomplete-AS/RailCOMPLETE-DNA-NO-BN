@@ -219,34 +219,21 @@
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="RC__acs2wcs()" ReturnType="String" Description="Converts Alignment Coordinate System (ACS) coordinates into World Coordinate System (WCS). Usage: wx,wy = RC__acs2wcs(ax,ay [,upDirAngle [,useInsertionPointInsteadOfDisplayPointAsReference]]) where an optional angle is in Decimal Degrees (DD).">
-  <Constructor>Double,Double RC__acs2wcs(acsX, acsY, upDir = AlignmentTangent, useInsertionPointInsteadOfDisplayPointAsReference = false)</Constructor>
+ <LuaFunction Name="RC__acsVector2wcsVector()" ReturnType="String" Description="Converts an Alignment Coordinate System (ACS) 2D vector into a World Coordinate System (WCS) 2D vector. Usage: wx,wy = RC__acsVector2wcsVector(lateralOffset,alongOffset) or wx,wy = RC__acsVector2wcsVector(lateralOffset,alongOffset,alongAxisWcsAngle).">
+  <Constructor>Double,Double RC__acsVector2wcsVector(lateralOffset,alongOffset [,alongAxisWcsAngle = this.AlignmentTangent])</Constructor>
   <Formula>
-			function RC__acs2wcs(acsX,acsY,upDir,useInsertionPointInsteadOfDisplayPointAsReference)
-				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept.
-				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinates.
-				--acsX = Meters to the right, along the object's ACS X-axis 
-				--acsY = Meters in the direction of increasing mileage, along the object's ACS Y-axis 
-				--upDir = the direction to be regarded as ACS 'up' (WCS AutoCAD 'rotation' value in decimal degrees)
-				if useInsertionPointInsteadOfDisplayPointAsReference == nil or
-					useInsertionPointInsteadOfDisplayPointAsReference == false then 
-					--2D symbol's InsertionPoint
-					x0 = 0.0
-					y0 = 0.0
-				else
-					--2D symbol's DisplayPoint
-					x0 = SymbolOffsets[0].Value[0]
-					y0 = SymbolOffsets[0].Value[1] 
+			function RC__acsVector2wcsVector(acsX,acsY)
+				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept: 
+				--acsX = Lateral offset to the right, perpendicular to the object's alignment axis
+				--acsY = ALong offset in the direction of increasing distAlong, along the object's alignment axis
+				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
+				local angle
+				if alongAxisWcsAngle then 
+					angle = math.rad(alongAxisWcsAngle - 90) --Subtract 90 DD since RailCOMPLETE ACS is 90 degrees off from Ifc / ISO 10303 usual axis definitions.
+				else 
+					angle = math.rad(this.AlignmentTangent - 90)
 				end
-				--Assume "upDir" is a CAD system block rotation value in DD, or use the object's own 'up' direction as default value
-				if upDir then 
-					angle = math.deg(upDir)
-				else
-					angle = this.AlignmentTangent
-				end
-				--if true then return angle end
-				return x0 + acsX*math.sin(angle) + acsY*math.cos(angle), 
-					y0 - acsX*math.cos(angle) + acsY*math.sin(angle)
+				return acsX*math.cos(angle) + acsY*math.sin(angle), - acsX*math.sin(angle) + acsY*math.cos(angle)
 			end
 		</Formula>
  </LuaFunction>
@@ -19484,8 +19471,15 @@ end
 					d = math.huge
 					closest = "(none)" --Closest mast's code
 					for i = 0, n-1 do
-						--Assume no chain break here...
-						dist = math.abs(r[i].ReferenceMileage - ReferenceMileage)
+						if isObjectReachableByPath(r[i]) then
+							--Masts belong to same path, assume that catenary follows the default path between them.
+							--Another way to measure would have been straight-line from wire clamp to wire clamp.
+							dist = distance(r[i]) -- traveled distance along the path's alignment axes
+						else
+							--Case where masts belong to different tracks with no path between the two masts.
+							--NB! We must assume that there is no chain break here, and that own tracks are fairly aligned with the ref.track
+							dist = math.abs(r[i].ReferenceMileage - ReferenceMileage)
+						end
 						if dist &lt; d then
 							d = dist
 							closest = r[i].code
@@ -19542,8 +19536,15 @@ end
 					closest = "(none)" --Closest mast's code
 					closest2 = "(none)" --Second closest mast's code
 					for i = 0, n-1 do
-						--Assume no chain break here...
-						dist = math.abs(r[i].ReferenceMileage - ReferenceMileage)
+						if isObjectReachableByPath(r[i]) then
+							--Masts belong to same path, assume that catenary follows the default path between them.
+							--Another way to measure would have been straight-line from wire clamp to wire clamp.
+							dist = distance(r[i]) -- traveled distance along the path's alignment axes
+						else
+							--Case where masts belong to different tracks with no path between the two masts.
+							--NB! We must assume that there is no chain break here, and that own tracks are fairly aligned with the ref.track
+							dist = math.abs(r[i].ReferenceMileage - ReferenceMileage)
+						end
 						if dist &lt; d then
 							d2 = d
 							closest2 = closest
@@ -19584,18 +19585,18 @@ end
 			end
 				</Formula>
  </LuaFunction>
- <LuaFunction Name="_EH_MAS_SpanLengthTextOffset()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a (World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point and halfway to the subsequent mast. Optionally, specify offsets as [offsetLateral [,offsetAlong]]).">
-  <Constructor>Vector2D _EH_MAS_SpanLengthTextOffset([Double offsetLateral [,Double offsetAlong]])</Constructor>
+ <LuaFunction Name="_EH_MAS_SpanLengthTextOffset()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point to halfway between the concerned masts' display points. Optionally, specify offsets as [offsetLateral [,offsetAlong]]).">
+  <Constructor>{Double,Double} _EH_MAS_SpanLengthTextOffset([Double offsetLateral [,Double offsetAlong]])</Constructor>
   <Formula>
 			function _EH_MAS_SpanLengthTextOffset(offsetLateral,offsetAlong)
 				offsetLateral = offsetLateral or 0
 				offsetAlong = offsetAlong or 0
-				worldOffsetX,worldOffsetY = RC__acs2wcs(offsetLateral,offsetAlong)
+				worldOffsetX,worldOffsetY = RC__acsVector2wcsVector(offsetLateral,offsetAlong)
 				local r,n = RC__getCollectionOfRelatedObjects("Neste kl-mast")
 				if n == 0 then
 					return {worldOffsetX,worldOffsetY}
 				else
-					local d,closest,i,closestMastCoords
+					local d,closest,i
 					d = math.huge
 					closest = r[0]
 					for i = 0, n-1 do
@@ -19605,23 +19606,29 @@ end
 							closest = r[i]
 						end
 					end
-					closestMastCoords = closest.geoCoord
-					return {worldOffsetX + (closestMastCoords.X - geoCoord.X)/2, worldOffsetY + (closestMastCoords.Y - geoCoord.Y)/2}
+					--Offset from object's insertion point to the midpoint between the displaypoints for the masts that are involved:
+					local startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
+					local startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
+					local endX = closest.geoCoord.X + closest.SymbolOffsets[0].Value[0]
+					local endY = closest.geoCoord.Y + closest.SymbolOffsets[0].Value[1]
+					return { this.SymbolOffsets[0].Value[0] + (endX - startX)/2 + worldOffsetX,
+					         this.SymbolOffsets[0].Value[1] + (endY - startY)/2 + worldOffsetY }
 				end
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="_EH_MAS_SpanLengthTextOffset2()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a (dX,dY) offset for the second shortest span length custom text attribute, from the object's insertion point and halfway to the subsequent mast. Optionally, specify offsets as [offsetLateral [,offsetAlong]]).">
-  <Constructor>Vector2D _EH_MAS_SpanLengthTextOffset2([Double offsetLateral [,Double offsetAlong]])</Constructor>
+ <LuaFunction Name="_EH_MAS_SpanLengthTextOffset2()" ReturnType="Vector2D" HideFromUser="false" Description="Returns a World Coordinate System offset vector for the second span length custom text attribute, by default from the object's insertion point to halfway between the concerned masts' display points. Optionally, specify offsets as [offsetLateral2 [,offsetAlong2]]).">
+  <Constructor>{Double,Double} _EH_MAS_SpanLengthTextOffset2([Double offsetLateral2 [,Double offsetAlong2]])</Constructor>
   <Formula>
-			function _EH_MAS_SpanLengthTextOffset2(offsetLateral,offsetAlong)
-				offsetLateral = offsetLateral or 0
-				offsetAlong = offsetAlong or 0
-				worldOffsetX,worldOffsetY = RC__acs2wcs(offsetLateral,offsetAlong)
+			function _EH_MAS_SpanLengthTextOffset2(offsetLateral2,offsetAlong2)
+				offsetLateral2 = offsetLateral2 or 0
+				offsetAlong2 = offsetAlong2 or 0
+				worldOffsetX,worldOffsetY = RC__acsVector2wcsVector(offsetLateral2,offsetAlong2)
+				local r,n = RC__getCollectionOfRelatedObjects("Neste kl-mast")
 				if n == 0 or n == 1 then
 					return {worldOffsetX,worldOffsetY}
 				else
-					local d,d2,closest,closest2,i,secondClosestMastCoords
+					local d,d2,closest,closest2,i
 					d = math.huge
 					d2 = math.huge
 					closest = r[0]
@@ -19637,21 +19644,25 @@ end
 							closest2 = r[i]
 						end
 					end
-					secondClosestMastCoords = closest2.geoCoord
-					return {worldOffsetX + (secondClosestMastCoords.X - geoCoord.X)/2, worldOffsetY + (secondClosestMastCoords.Y - geoCoord.Y)/2}
+					--Offset from object's insertion point to the midpoint between the displaypoints for the masts that are involved:
+					local startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
+					local startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
+					local endX = closest2.geoCoord.X + closest2.SymbolOffsets[0].Value[0]
+					local endY = closest2.geoCoord.Y + closest2.SymbolOffsets[0].Value[1]
+					return { this.SymbolOffsets[0].Value[0] + (endX - startX)/2 + worldOffsetX,
+					         this.SymbolOffsets[0].Value[1] + (endY - startY)/2 + worldOffsetY }
 				end
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="_EH_MAS_SpanLengthTextRotation()" ReturnType="Double" HideFromUser="false" Description="Returns the text attribute's rotation for the shortest span length custom text attribute, to place the text nicely between its two masts.">
+ <LuaFunction Name="_EH_MAS_SpanLengthTextRotation()" ReturnType="Double" HideFromUser="false" Description="Returns the text attribute's rotation for the shortest span length custom text attribute, to place the text nicely between its two masts' display points.">
   <Constructor>Double _EH_MAS_SpanLengthTextRotation()</Constructor>
   <Formula>
 			function _EH_MAS_SpanLengthTextRotation()
 				local r,n = RC__getCollectionOfRelatedObjects("Neste kl-mast")
-				local d,closest,i,closestMastCoords
+				local d,closest,i
 				if n == 0 then 
-					local tg = getAlignmentInfo().tangent
-					return math.atan(tg.Y,tg.X) * (180/math.pi)
+					return AlignmentTangent
 				else 
 					d = math.huge
 					closest = r[0]
@@ -19662,8 +19673,12 @@ end
 							closest = r[i]
 						end
 					end
-					closestMastCoords = closest.geoCoord
-					return math.atan(closestMastCoords.Y - geoCoord.Y, closestMastCoords.X - geoCoord.X) * (180/math.pi)
+					--WCS angle between the displaypoints for the masts that are involved:
+					startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
+					startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
+					endX = closest.geoCoord.X + closest.SymbolOffsets[0].Value[0]
+					endY = closest.geoCoord.Y + closest.SymbolOffsets[0].Value[1]
+					return math.deg(math.atan(endY - startY, endX - startX)) + (MileageIncreasesTowardsLeft and 180 or 0)
 				end
 			end
 		</Formula>
@@ -19673,7 +19688,7 @@ end
   <Formula>
 			function _EH_MAS_SpanLengthTextRotation2()
 				local r,n = RC__getCollectionOfRelatedObjects("Neste kl-mast")
-				local d,d2,closest,closest2,i,secondClosestMastCoords
+				local d,d2,closest,closest2,i
 				if n == 0 then
 					local tg = getAlignmentInfo().tangent
 					return math.atan(tg.Y,tg.X) * (180/math.pi)
@@ -19693,9 +19708,12 @@ end
 							closest2 = r[i]
 						end
 					end
-					secondClosestMastCoords = closest2.geoCoord
-					closestMastCoords = closest.geoCoord
-					return math.atan(secondClosestMastCoords.Y - geoCoord.Y, secondClosestMastCoords.X - geoCoord.X)
+					--WCS angle between the displaypoints for the masts that are involved:
+					startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
+					startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
+					endX = closest2.geoCoord.X + closest2.SymbolOffsets[0].Value[0]
+					endY = closest2.geoCoord.Y + closest2.SymbolOffsets[0].Value[1]
+					return math.deg(math.atan(endY - startY, endX - startX)) + (MileageIncreasesTowardsLeft and 180 or 0)
 				end
 			end
 		</Formula>
@@ -19834,8 +19852,7 @@ end
 							return 0,_info("No other objects to modelcheck.")
 						else
 							m = 1 + n1 + n2 --One for the yoke
-							ping(t)
-							return 
+							return t
 						end
 					end
 				end
@@ -20028,22 +20045,36 @@ end
    <Value>Ny</Value>
    <Value>Eksisterende</Value>
   </CustomAttribute>
-  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0" Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)."/>
-  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0" Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)."/>
   <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
+  <LuaExpression Name="SpanLength">
+   <Formula>_EH_MAS_SpanLength()</Formula>
+  </LuaExpression>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" Description="The span length value [m] being displayed close to the OCS mast."/>
+  <LuaExpression Name="SpanLengthDisplay">
+   <Formula>_EH_MAS_SpanLengthDisplay()</Formula>
+  </LuaExpression>
   <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0" Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)."/>
+  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0" Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)."/>
   <TextPositionLuaExpression Name="SPENNLENGDE">
-   <Formula>_EH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetAlong,SpanLengthTextOffsetLateral)</Formula>
+   <Formula>_EH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula>
   </TextPositionLuaExpression>
   <TextRotationLuaExpression Name="SPENNLENGDE">
    <Formula>_EH_MAS_SpanLengthTextRotation()</Formula>
   </TextRotationLuaExpression>
   <CustomAttribute DataType="Double" Name="SpanLength2" DisplayName="Spennlengde 2" DefaultValue="30.0" Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
+  <LuaExpression Name="SpanLength2">
+   <Formula>_EH_MAS_SpanLength2()</Formula>
+  </LuaExpression>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value."/>
+  <LuaExpression Name="SpanLengthDisplay2">
+   <Formula>_EH_MAS_SpanLengthDisplay2()</Formula>
+  </LuaExpression>
   <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral2" DisplayName="Sideveis spennlengdetekst offset 2" DefaultValue="0" Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)."/>
+  <CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong2" DisplayName="Langsmed spennlengdetekst offset 2" DefaultValue="0" Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)."/>
   <TextPositionLuaExpression Name="SPENNLENGDE2">
-   <Formula>_EH_MAS_SpanLengthTextOffset2(SpanLengthTextOffsetAlong,SpanLengthTextOffsetLateral)</Formula>
+   <Formula>_EH_MAS_SpanLengthTextOffset2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula>
   </TextPositionLuaExpression>
   <TextRotationLuaExpression Name="SPENNLENGDE2">
    <Formula>_EH_MAS_SpanLengthTextRotation2()</Formula>
@@ -20056,18 +20087,6 @@ end
   </LuaExpression>
   <LuaExpression Name="name">
    <Formula>code</Formula>
-  </LuaExpression>
-  <LuaExpression Name="SpanLength">
-   <Formula>_EH_MAS_SpanLength()</Formula>
-  </LuaExpression>
-  <LuaExpression Name="SpanLengthDisplay">
-   <Formula>_EH_MAS_SpanLengthDisplay()</Formula>
-  </LuaExpression>
-  <LuaExpression Name="SpanLength2">
-   <Formula>_EH_MAS_SpanLength2()</Formula>
-  </LuaExpression>
-  <LuaExpression Name="SpanLengthDisplay2">
-   <Formula>_EH_MAS_SpanLengthDisplay2()</Formula>
   </LuaExpression>
   <LuaExpression Name="AngularOffset">
    <Formula>_EH_MAS_mast_AngularOffset()</Formula>
@@ -20506,7 +20525,10 @@ end
    <Value>Ny</Value>
    <Value>Eksisterende</Value>
   </CustomAttribute>
-  <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
+  <CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="0" Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'."/>
+  <LuaExpression Name="SpanLength">
+   <Formula>_EH_MAS_SpanLength()</Formula>
+  </LuaExpression>
   <CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" Description="The span length value [m] being displayed close to the OCS mast."/>
   <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" Layer="JBTKL__EH_MAS_SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <TextPositionLuaExpression Name="SPENNLENGDE">
@@ -20518,9 +20540,6 @@ end
   <TextPositionLuaExpression Name="SPENNLENGDE2">
    <Formula>_EH_MAS_SpanLengthTextOffset2()</Formula>
   </TextPositionLuaExpression>
-  <LuaExpression Name="SpanLength">
-   <Formula>_EH_MAS_SpanLength()</Formula>
-  </LuaExpression>
   <LuaExpression Name="SpanLengthDisplay">
    <Formula>_EH_MAS_SpanLengthDisplay()</Formula>
   </LuaExpression>

@@ -218,35 +218,22 @@
 
 
 
-	<LuaFunction Name="RC__acs2wcs()" ReturnType="String"
-		Description="Converts Alignment Coordinate System (ACS) coordinates into World Coordinate System (WCS). Usage: wx,wy = RC__acs2wcs(ax,ay [,upDirAngle [,useInsertionPointInsteadOfDisplayPointAsReference]]) where an optional angle is in Decimal Degrees (DD)." >
-		<Constructor>Double,Double RC__acs2wcs(acsX, acsY, upDir = AlignmentTangent, useInsertionPointInsteadOfDisplayPointAsReference = false)</Constructor>
+	<LuaFunction Name="RC__acsVector2wcsVector()" ReturnType="String"
+		Description="Converts an Alignment Coordinate System (ACS) 2D vector into a World Coordinate System (WCS) 2D vector. Usage: wx,wy = RC__acsVector2wcsVector(lateralOffset,alongOffset) or wx,wy = RC__acsVector2wcsVector(lateralOffset,alongOffset,alongAxisWcsAngle)." >
+		<Constructor>Double,Double RC__acsVector2wcsVector(lateralOffset,alongOffset [,alongAxisWcsAngle = this.AlignmentTangent])</Constructor>
 		<Formula>
-			function RC__acs2wcs(acsX,acsY,upDir,useInsertionPointInsteadOfDisplayPointAsReference)
-				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept.
-				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinates.
-				--acsX = Meters to the right, along the object's ACS X-axis 
-				--acsY = Meters in the direction of increasing mileage, along the object's ACS Y-axis 
-				--upDir = the direction to be regarded as ACS 'up' (WCS AutoCAD 'rotation' value in decimal degrees)
-				if useInsertionPointInsteadOfDisplayPointAsReference == nil or
-					useInsertionPointInsteadOfDisplayPointAsReference == false then 
-					--2D symbol's InsertionPoint
-					x0 = 0.0
-					y0 = 0.0
-				else
-					--2D symbol's DisplayPoint
-					x0 = SymbolOffsets[0].Value[0]
-					y0 = SymbolOffsets[0].Value[1] 
+			function RC__acsVector2wcsVector(acsX,acsY)
+				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept: 
+				--acsX = Lateral offset to the right, perpendicular to the object's alignment axis
+				--acsY = ALong offset in the direction of increasing distAlong, along the object's alignment axis
+				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
+				local angle
+				if alongAxisWcsAngle then 
+					angle = math.rad(alongAxisWcsAngle - 90) --Subtract 90 DD since RailCOMPLETE ACS is 90 degrees off from Ifc / ISO 10303 usual axis definitions.
+				else 
+					angle = math.rad(this.AlignmentTangent - 90)
 				end
-				--Assume "upDir" is a CAD system block rotation value in DD, or use the object's own 'up' direction as default value
-				if upDir then 
-					angle = math.deg(upDir)
-				else
-					angle = this.AlignmentTangent
-				end
-				--if true then return angle end
-				return x0 + acsX*math.sin(angle) + acsY*math.cos(angle), 
-					y0 - acsX*math.cos(angle) + acsY*math.sin(angle)
+				return acsX*math.cos(angle) + acsY*math.sin(angle), - acsX*math.sin(angle) + acsY*math.cos(angle)
 			end
 		</Formula>
 	</LuaFunction>
