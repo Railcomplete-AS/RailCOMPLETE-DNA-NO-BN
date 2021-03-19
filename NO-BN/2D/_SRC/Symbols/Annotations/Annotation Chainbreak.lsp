@@ -38,6 +38,7 @@
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 
 	; DO NOT generate this one in multiple drawing scales,
-	; instead, use RC-CopyAnnotationToDrawing command in RC:
+	; instead, use RC-CopyAnnotationToDrawing command in RC - the <SymbolDefinition> DNA declaration 
+	; may be found inside the StyleDefinitions XML file, annotating chainbreaks.
 	(createSchematicBlockFromCurrentGraphics blockName)
 )
