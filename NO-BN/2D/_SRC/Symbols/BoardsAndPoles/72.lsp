@@ -29,12 +29,12 @@
 		x 9.0
 		y 6.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "FJS")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "FJS")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -61,17 +61,17 @@
 		p5 (list (*  0.5 x) (*  0.5 y))
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "FJS")
-	(setLayer layDef_Zero)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "FJS")
+	(SetLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_
 		_LINE_ p2 p5 _ENTER_
 		_LINE_ p3 p6 _ENTER_
 	)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

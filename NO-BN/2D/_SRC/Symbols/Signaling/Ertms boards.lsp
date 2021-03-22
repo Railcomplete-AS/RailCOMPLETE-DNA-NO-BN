@@ -23,11 +23,11 @@
 	; Symbols: See example files from Bane NOR (drawings).
 	; TODO: 2020-08-04 CLFEY - missing boards, see ORV. Move these routines over to "Boards and poles" Lisp routine, one file per board (group).
 	;
-	(setCadSystemDefaults)
+	(SetCadSystemDefaults)
 		
 	; ERTMS signals
 	; E36 Veisikringsanlegg - Level Crossing
-	(subStep "ERTMS-LEVEL-CROSSING")
+	(TraceLevel2 "ERTMS-LEVEL-CROSSING")
 	(ERTMS-LEVEL-CROSSING "FORSIGNAL" nil)
 	(ERTMS-LEVEL-CROSSING "FORSIGNAL" "AAK")
 	(ERTMS-LEVEL-CROSSING nil nil)
@@ -35,7 +35,7 @@
 
 	; ERTMS boards
 	; E??
-	(subStep "ERTMS-SHUNTING-AREA")
+	(TraceLevel2 "ERTMS-SHUNTING-AREA")
 	(ERTMS-SHUNTING-AREA "BEGIN" nil)
 	(ERTMS-SHUNTING-AREA "BEGIN" "AAK")
 	(ERTMS-SHUNTING-AREA "END" nil)
@@ -43,12 +43,12 @@
 
 	; E??
 	; ( there is no "BEGIN" here)
-	(subStep "ERTMS-SUPERVISED-AREA")
+	(TraceLevel2 "ERTMS-SUPERVISED-AREA")
 	(ERTMS-SUPERVISED-AREA "END" nil)
 	(ERTMS-SUPERVISED-AREA "END" "AAK")
 
 	; E37 Systemovergang
-	(subStep "ERTMS-LEVEL-TRANSITION")
+	(TraceLevel2 "ERTMS-LEVEL-TRANSITION")
 	(ERTMS-LEVEL-TRANSITION)
 )
 
@@ -99,7 +99,7 @@
 ;		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 ;	)
 ;	(if (= variation "E35-STOPPSKILT")
-;		(drawHatchFromPoint _solidHatch_ (list (* 0.45 x) (* 0.45 y)) _angleZero_ _offsetZero_)
+;		(DrawHatchFromPoint _solidHatch_ (list (* 0.45 x) (* 0.45 y)) _angleZero_ _offsetZero_)
 ;	)
 ;
 ;	(cond 
@@ -124,14 +124,14 @@
 ;		)
 ;		(progn
 ;			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
-;			(drawLyingPole 0 pole)
-;			(drawLyingHsBase)
+;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because DrawLyingPole() and DrawLyingHsBase() functions expect that orientation...
+;			(DrawLyingPole 0 pole)
+;			(DrawLyingHsBase)
 ;			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 ;		)
 ;	)
-;	(createSchematicBlockFromCurrentGraphics blockName)
-;	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+;	(CreateSchematicBlockFromCurrentGraphics blockName)
+;	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 ;)
 
 
@@ -152,7 +152,7 @@
 	)
 	
 	; Surrounding box:
-	(drawBox layDef_Zero x y _noWipeout_)
+	(DrawBox layDef_Zero x y _noWipeout_)
 	
 	; Level Crossing symbol:
 	(command
@@ -166,13 +166,13 @@
 	; Add captions below yoke mount / above mast mount;
 	(if (= mounting "AAK")
 		(if (= distantSignal "FORSIGNAL")
-			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO-Fs" _topCenter_) ; below surrounding box
-			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO" _topCenter_) ; below surrounding box
+			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO-Fs" _topCenter_) ; below surrounding box
+			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO" _topCenter_) ; below surrounding box
 		)
 	;else
 		(if (= distantSignal "FORSIGNAL")
-			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO-Fs" _BottomCenter_) ; above surrounding box
-			(addTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO" _BottomCenter_) ; above surrounding box
+			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO-Fs" _BottomCenter_) ; above surrounding box
+			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO" _BottomCenter_) ; above surrounding box
 		)
 	)
 
@@ -186,14 +186,14 @@
 		)
 		(progn
 			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
-			(drawLyingPole 0 pole)
-			(drawLyingHsBase)
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because DrawLyingPole() and DrawLyingHsBase() functions expect that orientation...
+			(DrawLyingPole 0 pole)
+			(DrawLyingHsBase)
 			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 		)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -212,10 +212,10 @@
 	)
 	
 	; Surrounding box:
-	(drawBox layDef_Zero x y _noWipeout_)
+	(DrawBox layDef_Zero x y _noWipeout_)
 	
 	; Text 'SH' for 'shunting':
-	(addTextAtPos layDef_Zero txtHeight _origo_ "SH")
+	(AddTextAtPos layDef_Zero txtHeight _origo_ "SH")
 
 	(if (= beginOrEnd "END")
 		; Add three inclined 'slash' lines (symbol is drawn upright here)
@@ -236,14 +236,14 @@
 		)
 		(progn
 			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
-			(drawLyingPole 0 pole)
-			(drawLyingHsBase)
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because DrawLyingPole() and DrawLyingHsBase() functions expect that orientation...
+			(DrawLyingPole 0 pole)
+			(DrawLyingHsBase)
 			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 		)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -299,14 +299,14 @@
 		)
 		(progn
 			(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (+ (/ y 2) pole))) ; move up by half of surrounding box plus main pole
-			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because drawLyingPole() and drawLyingHsBase() functions expect that orientation...
-			(drawLyingPole 0 pole)
-			(drawLyingHsBase)
+			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_) ; rotate CW 90 deg because DrawLyingPole() and DrawLyingHsBase() functions expect that orientation...
+			(DrawLyingPole 0 pole)
+			(DrawLyingHsBase)
 			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_) ; rotate back to upright orientation
 		)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -327,12 +327,12 @@
 	)
 
 	; Surrounding box:
-	(drawBox layDef_Zero x y _noWipeout_)
-	(addTextAtPos layDef_Zero  _th180_ (list 0 (* 0.25 y)) "LT")
-	(addTextAtPos layDef_Zero  _th180_ (list 0 (* -0.25 y)) "ETCS")
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(AddTextAtPos layDef_Zero  _th180_ (list 0 (* 0.25 y)) "LT")
+	(AddTextAtPos layDef_Zero  _th180_ (list 0 (* -0.25 y)) "ETCS")
 	
 	; Epilogue:
-	(moveUp (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

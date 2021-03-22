@@ -16,7 +16,8 @@
 	(ALIGNMENT-SPOR)
 )
 
-(defun ALIGNMENT-SPOR (/ blockName trackLength railFoot railHead sleeperWidth sleeperLength sleeperGap) 
+(defun ALIGNMENT-SPOR ( / blockName trackLength railFoot railHead sleeperWidth sleeperLength sleeperSeparation sleeperGap trackLengthBeforeFirstSleeper centerTrack ) 
+	; A piece of track viewed from above, featuring the two rails and five sleepers.
 	(setq
 		blockName (strcat "NO-BN-2D-JBTOB-THUMBNAIL-SPOR")
 		trackLength 1800
@@ -27,7 +28,7 @@
 		sleeperSeparation 600
 		sleeperGap (- sleeperSeparation SleeperWidth)
 		trackLengthBeforeFirstSleeper (/ (- trackLength (* sleeperWidth 3) (* sleeperGap 2)) 2)
-		centerTrack (- (/ 1435 2) (- (/ railFoot 2) (/ railHead 2 )))
+		centerTrack (- (/ _normalGauge_ 2) (- (/ railFoot 2) (/ railHead 2 )))
 	)
 	(command
 		_RECTANGLE_ (list 0 centerTrack) (list trackLength (+ centerTrack railFoot))
@@ -55,6 +56,5 @@
 		_SCALE_ _selectAll_ _ENTER_ _origo_ 0.001 ; convert millimeter to meter
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _two_ ; suitable scale for alignment thumbnails - ca 4-5 meter (...and they auto-scale in RailCOMPLETE)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

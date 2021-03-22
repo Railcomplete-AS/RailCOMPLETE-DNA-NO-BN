@@ -43,56 +43,56 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64A-GRENSE-INNKOBLINGSSTOLPE"
 		description "SKILT SIGNAL 64A GRENSE- / INNKOBLINGSSTOLPE"
-		TL	'(-0.5 10.5)	TR  (addVectors TL  '(0.7 0))
-		p51	'(-0.5  9.5)	p52 (addVectors p51 '(0.7 0))
-		p43	'(-0.5  8.5)	p44 (addVectors p43 '(0.7 0))
-		p41	'(-0.5  7.5)	p42 (addVectors p41 '(0.7 0))
-		p33	'(-0.5  6.5)	p34 (addVectors p33 '(0.7 0))
-		p31	'(-0.5  5.5)	p32 (addVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (addVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (addVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (addVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (addVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (addVectors BL  '(0.7 0))
+		TL	'(-0.5 10.5)	TR  (AddVectors TL  '(0.7 0))
+		p51	'(-0.5  9.5)	p52 (AddVectors p51 '(0.7 0))
+		p43	'(-0.5  8.5)	p44 (AddVectors p43 '(0.7 0))
+		p41	'(-0.5  7.5)	p42 (AddVectors p41 '(0.7 0))
+		p33	'(-0.5  6.5)	p34 (AddVectors p33 '(0.7 0))
+		p31	'(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 
 	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 
 	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p31 p32 p34 p33 _closedPolyline_) ; 3
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 
 	(command _POLYLINE_ p33 p34 p42 p41 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p41 p42 p44 p43 _closedPolyline_) ; 4
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 
 	(command _POLYLINE_ p43 p44 p52 p51 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -124,35 +124,35 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64B-SEKSJONERINGSSTOLPE"
 		description "SKILT SIGNAL 64B SEKSJONERINGSSTOLPE"
-		TL	'(-0.5 11.2)	TR  (addVectors TL  '(0.7 0))
-		p21	'(-0.5  8.4)	p22 (addVectors p21 '(0.7 0))
-		p13	'(-0.5  5.6)	p14 (addVectors p13 '(0.7 0))
-		p11	'(-0.5  2.8)	p12 (addVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (addVectors BL  '(0.7 0))
+		TL	'(-0.5 11.2)	TR  (AddVectors TL  '(0.7 0))
+		p21	'(-0.5  8.4)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.5  5.6)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.5  2.8)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  5.0)    t2  '(2.0  5.0)
 	)
 	; Wipeout under pole
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
-	(drawHatch _redHatch_)
+	(DrawHatch _redHatch_)
 
 	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
-	(drawHatch _redHatch_)
+	(DrawHatch _redHatch_)
 	
-	(addAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -185,56 +185,56 @@
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64C-RASVARSLINGSSTOLPE"
 		description "SKILT SIGNAL 64C RASVARSLINGSSTOLPE"
-		TL	'(-0.5 10.5)	TR  (addVectors TL  '(0.7 0))
-		p51	'(-0.5  9.5)	p52 (addVectors p51 '(0.7 0))
-		p43	'(-0.5  8.5)	p44 (addVectors p43 '(0.7 0))
-		p41	'(-0.5  7.5)	p42 (addVectors p41 '(0.7 0))
-		p33	'(-0.5  6.5)	p34 (addVectors p33 '(0.7 0))
-		p31	'(-0.5  5.5)	p32 (addVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (addVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (addVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (addVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (addVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (addVectors BL  '(0.7 0))
+		TL	'(-0.5 10.5)	TR  (AddVectors TL  '(0.7 0))
+		p51	'(-0.5  9.5)	p52 (AddVectors p51 '(0.7 0))
+		p43	'(-0.5  8.5)	p44 (AddVectors p43 '(0.7 0))
+		p41	'(-0.5  7.5)	p42 (AddVectors p41 '(0.7 0))
+		p33	'(-0.5  6.5)	p34 (AddVectors p33 '(0.7 0))
+		p31	'(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
-	(drawHatch _yellowHatch_) 
+	(DrawHatch _yellowHatch_) 
 
 	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
-	(drawHatch _yellowHatch_) 
+	(DrawHatch _yellowHatch_) 
 
 	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p31 p32 p34 p33 _closedPolyline_) ; 3
-	(drawHatch _yellowHatch_) 
+	(DrawHatch _yellowHatch_) 
 
 	(command _POLYLINE_ p33 p34 p42 p41 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p41 p42 p44 p43 _closedPolyline_) ; 4
-	(drawHatch _yellowHatch_) 
+	(DrawHatch _yellowHatch_) 
 
 	(command _POLYLINE_ p43 p44 p52 p51 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
-	(drawHatch _yellowHatch_) 
+	(DrawHatch _yellowHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Gul/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddAtt "LeftUp" "LeftUp" "Gul/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" "Gul/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -266,35 +266,35 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64D-BREMSESTOLPE"
 		description "SKILT SIGNAL 64D BREMSESTOLPE"
-		TL	'(-0.5 11.2)	TR  (addVectors TL  '(0.7 0))
-		p21	'(-0.5  8.4)	p22 (addVectors p21 '(0.7 0))
-		p13	'(-0.5  5.6)	p14 (addVectors p13 '(0.7 0))
-		p11	'(-0.5  2.8)	p12 (addVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (addVectors BL  '(0.7 0))
+		TL	'(-0.5 11.2)	TR  (AddVectors TL  '(0.7 0))
+		p21	'(-0.5  8.4)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.5  5.6)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.5  2.8)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  5.0)    t2  '(2.0  5.0)
 	)
 	; Wipeout under pole
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
-	(drawHatch _blackHatch_)
+	(DrawHatch _blackHatch_)
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
-	(drawHatch _yellowHatch_)
+	(DrawHatch _yellowHatch_)
 
 	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
-	(drawHatch _blackHatch_)
+	(DrawHatch _blackHatch_)
 	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
-	(drawHatch _yellowHatch_)
+	(DrawHatch _yellowHatch_)
 	
-	(addAtt "LeftUp" "LeftUp" "Gul/svart" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddAtt "LeftUp" "LeftUp" "Gul/svart" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" "Gul/svart" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -327,56 +327,56 @@
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64E-TEKNISK-STOLPE"
 		description "SKILT SIGNAL 64E TEKNISK STOLPE"
-		TL	'(-0.5 10.5)	TR  (addVectors TL  '(0.7 0))
-		p51	'(-0.5  9.5)	p52 (addVectors p51 '(0.7 0))
-		p43	'(-0.5  8.5)	p44 (addVectors p43 '(0.7 0))
-		p41	'(-0.5  7.5)	p42 (addVectors p41 '(0.7 0))
-		p33	'(-0.5  6.5)	p34 (addVectors p33 '(0.7 0))
-		p31	'(-0.5  5.5)	p32 (addVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (addVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (addVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (addVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (addVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (addVectors BL  '(0.7 0))
+		TL	'(-0.5 10.5)	TR  (AddVectors TL  '(0.7 0))
+		p51	'(-0.5  9.5)	p52 (AddVectors p51 '(0.7 0))
+		p43	'(-0.5  8.5)	p44 (AddVectors p43 '(0.7 0))
+		p41	'(-0.5  7.5)	p42 (AddVectors p41 '(0.7 0))
+		p33	'(-0.5  6.5)	p34 (AddVectors p33 '(0.7 0))
+		p31	'(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
-	(drawHatch _blueHatch_) 
+	(DrawHatch _blueHatch_) 
 
 	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
-	(drawHatch _blueHatch_) 
+	(DrawHatch _blueHatch_) 
 
 	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p31 p32 p34 p33 _closedPolyline_) ; 3
-	(drawHatch _blueHatch_) 
+	(DrawHatch _blueHatch_) 
 
 	(command _POLYLINE_ p33 p34 p42 p41 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p41 p42 p44 p43 _closedPolyline_) ; 4
-	(drawHatch _blueHatch_) 
+	(DrawHatch _blueHatch_) 
 
 	(command _POLYLINE_ p43 p44 p52 p51 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
-	(drawHatch _blueHatch_) 
+	(DrawHatch _blueHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -404,41 +404,41 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-64F-DVERGSIGNALSTOLPE"
 		description "SKILT SIGNAL 64F DVERGSIGNALSTOLPE"
-		TL	'(-0.5  6.5)	TR  (addVectors TL  '(0.7 0))
-		p31 '(-0.5  5.5)	p32 (addVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (addVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (addVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (addVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (addVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (addVectors BL  '(0.7 0))
+		TL	'(-0.5  6.5)	TR  (AddVectors TL  '(0.7 0))
+		p31 '(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  4.0)    t2  '(2.0  4.0)
 	)
 	; Wipeout under pole
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR TR TL _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _eraseWipeoutSource_)
 
 	; Alternating bands
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ BL BR p12 p11 _closedPolyline_) ; Bottom shaft
 	; No hatch
 	(command _POLYLINE_ p11 p12 p14 p13 _closedPolyline_) ; 1
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 
 	(command _POLYLINE_ p13 p14 p22 p21 _closedPolyline_)
 	; No hatch
 	(command _POLYLINE_ p21 p22 p24 p23 _closedPolyline_) ; 2
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 
 	(command _POLYLINE_ p23 p24 p32 p31 _closedPolyline_) ; 2
 	; No hatch
 	(command _POLYLINE_ p31 p32 TR TL _closedPolyline_) ; 3
-	(drawHatch _blackHatch_) 
+	(DrawHatch _blackHatch_) 
 	
-	(addAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddAtt "LeftUp" "LeftUp" "Svart/Hvit" t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" "Svart/Hvit" t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

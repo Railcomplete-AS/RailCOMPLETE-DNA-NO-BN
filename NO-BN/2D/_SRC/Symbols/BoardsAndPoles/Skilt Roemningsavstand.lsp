@@ -14,9 +14,9 @@
 ; Distance to nearest escape route
 
 ; For debugging:
-; (ROEMNINGSAVSTAND_V) (ROEMNINGSAVSTAND_H) (ROEMNINGSAVSTAND_VH)
+; (SKILT-ROEMNINGSAVSTAND-V) (SKILT-ROEMNINGSAVSTAND-H) (SKILT-ROEMNINGSAVSTAND-VH)
 
-(defun Skilt_Roemningsavstand_V ( / blockName description x y p0 p1 p3 attMetersLeft )
+(defun SKILT-ROEMNINGSAVSTAND-V ( / blockName description x y p0 p1 p3 attMetersLeft )
 	; Distance to nearest escape towards the left
 	;
 	; TL-----------TR
@@ -35,22 +35,22 @@
 		p3 (list (*  0.00 x) (* -0.3 y))
 		attMetersLeft	'("VDIST" (strcat "Avstand til r" _oe_ "mning mot venstre") "275")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
-	(addTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
 
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Roemningsavstand_H ( / blockName description x y p0 p2 p4 attMetersRight )
+(defun SKILT-ROEMNINGSAVSTAND-H ( / blockName description x y p0 p2 p4 attMetersRight )
 	; Distance to nearest escape towards the right
 	;
 	; TL-----------TR
@@ -69,22 +69,22 @@
 		p4 (list (*  0.00 x) (* -0.3 y))
 		attMetersRight	'("HDIST" (strcat "Avstand til r" _oe_ "mning mot h" _oe_ "yre") "625")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
-	(addTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
 
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Roemningsavstand_VH ( / blockName description x y p0 p1 p2 p3 p4 attMetersLeft attMetersRight )
+(defun SKILT-ROEMNINGSAVSTAND-VH ( / blockName description x y p0 p1 p2 p3 p4 attMetersLeft attMetersRight )
 	; Distance to nearest escape towards the right
 	;
 	; TL-----------TR
@@ -106,19 +106,19 @@
 		attMetersLeft	'("VDIST" (strcat "Avstand til r" _oe_ "mning mot venstre") "275")
 		attMetersRight	'("HDIST" (strcat "Avstand til r" _oe_ "mning mot h" _oe_ "yre") "625")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
-	(addTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
 
-	(addTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
-	(addTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
 
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

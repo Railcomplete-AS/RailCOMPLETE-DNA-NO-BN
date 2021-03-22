@@ -17,12 +17,12 @@
 		radius 0.05
 		blockName "NO-BN-2D-INSERTION-POINT" ;2D symbol block insertion point
 	)
-	(setLayer layDef_InsertionPoint)
+	(SetLayer layDef_InsertionPoint)
 	(command
 		_CIRCLE_ _origo_ radius
 		_LINE_ (list (- radius) 0) (list radius 0) _ENTER_
 		_LINE_ (list 0 (- radius)) (list 0 radius) _ENTER_
-;		_POINT_ _origo_ _ENTER_ ; 2021-03-05 CLFEY Hmmmm didn't like it - they are too big and overlap when I zoom in/out
+;		_POINT_ _origo_ _ENTER_ ; 2021-03-05 CLFEY Hmmmm didn't like it - they are too big and they overlap when I zoom in/out (unless PTYPE is just set to a tiny point)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

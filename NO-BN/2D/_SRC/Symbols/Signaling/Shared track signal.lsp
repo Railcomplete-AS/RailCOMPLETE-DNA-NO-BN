@@ -15,19 +15,19 @@
 ; Både frittstående, vegghengt og plassert på annen mast eller vegg (men som eget objekt, uten base ('fot'))
 
 (defun C:SHARED-TRACK-SIGNAL ( / )
-	(subSubStep "TOGSPORSIGNAL-1")
+	(TraceLevel3 "TOGSPORSIGNAL-1")
 		(TOGSPORSIGNAL-1 nil)		; 1-begreps Togsporsignal på egen mast
 		(TOGSPORSIGNAL-1 "AAK")		; 1-begreps Togsporsignal i åk
 
-	(subSubStep "TOGSPORSIGNAL-2")
+	(TraceLevel3 "TOGSPORSIGNAL-2")
 		(TOGSPORSIGNAL-2 nil)		; 2-begreps Togsporsignal på egen mast
 		(TOGSPORSIGNAL-2 "AAK")		; 2-begreps Togsporsignal i åk
 
-	(subSubStep "TOGSPORSIGNAL-3")
+	(TraceLevel3 "TOGSPORSIGNAL-3")
 		(TOGSPORSIGNAL-3 "VSIDE")	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
 		(TOGSPORSIGNAL-3 "HSIDE") 	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
 
-	(subSubStep "TOGSPORSIGNAL-4")
+	(TraceLevel3 "TOGSPORSIGNAL-4")
 		(TOGSPORSIGNAL-4 "VSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
 		(TOGSPORSIGNAL-4 "HSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
 )
@@ -41,12 +41,12 @@
 	)
 
 	; Schematic symbol
-	(drawSingleUprightTrackSignal yokeMounted)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawSingleUprightTrackSignal yokeMounted)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawSingleUprightTrackSignal yokeMounted)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawSingleUprightTrackSignal yokeMounted)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -60,12 +60,12 @@
 	)
 
 	; Schematic symbol
-	(drawForkedUprightTrackSignal yokeMounted schematicSidewaysSeparation)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawForkedUprightTrackSignal yokeMounted schematicSidewaysSeparation)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(drawForkedUprightTrackSignal yokeMounted geoSidewaysSeparation)		; A narrower version than the schematic symbol
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawForkedUprightTrackSignal yokeMounted geoSidewaysSeparation)		; A narrower version than the schematic symbol
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -78,12 +78,12 @@
 	)
 
 	; Schematic symbol
-	(drawSingleWallmountedTrackSignal side)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawSingleWallmountedTrackSignal side)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(createAnnotativeBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -96,23 +96,23 @@
 		geoSidewaysSeparation 2.5			; Spacing sideways between forked signal arms in geo symbols (to mitigate that close signals overlap)
 	)
 	; Schematic symbol
-	(drawForkedWallmountedTrackSignal schematicSidewaysSeparation side)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawForkedWallmountedTrackSignal schematicSidewaysSeparation side)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawForkedWallmountedTrackSignal geoSidewaysSeparation side)			; A narrower version than the schematic symbol
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawForkedWallmountedTrackSignal geoSidewaysSeparation side)			; A narrower version than the schematic symbol
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
 
 ;==========================
-; draw...X...() functions
+; Draw...X...() functions
 ;==========================
-(defun drawSingleUprightTrackSignal ( yokeMounted / r lowerPole upperPole )
+(defun DrawSingleUprightTrackSignal ( yokeMounted / r lowerPole upperPole )
 	; Drawn lying, then rotated CCW.
 	(setq 
-		r (getSmallLanternRadius) ; Togsporsignal lantern radius
+		r (GetSmallLanternRadius) ; Togsporsignal lantern radius
 		lowerPole 2.5
 		upperPole 2.0
 	)
@@ -122,12 +122,12 @@
 		(progn
 			(setq blockName (strcat blockName "-AAK"))
 			(command _MOVE_ _selectAll_ _ENTER_ _setMoveDisplacement_ (list (- (+ (* 4 r) upperPole)) 0))
-			(drawLyingPole 0 (- upperPole))
+			(DrawLyingPole 0 (- upperPole))
 		)
 		(progn
 			(command _MOVE_ _selectAll_ _ENTER_ _setMoveDisplacement_ (list (+ lowerPole upperPole) 0))
-			(drawLyingPole 0 (+ lowerPole upperPole))
-			(drawLyingTsBase)
+			(DrawLyingPole 0 (+ lowerPole upperPole))
+			(DrawLyingTsBase)
 		)
 	)
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
@@ -135,10 +135,10 @@
 
 
 
-(defun drawForkedUprightTrackSignal ( yokeMounted sidewaysSeparation / r lowerPole upperPole lat )
+(defun DrawForkedUprightTrackSignal ( yokeMounted sidewaysSeparation / r lowerPole upperPole lat )
 	; Drawn lying, then rotated CCW (upright) or CW (yoke mounting).
 	(setq 
-		r (getSmallLanternRadius)					; Size relative to main signal lanterns
+		r (GetSmallLanternRadius)					; Size relative to main signal lanterns
 		lowerPole 2.5
 		upperPole 2.0
 		lat (/ sidewaysSeparation 2.0)		; Lateral displacement of forked arms (from center pole)
@@ -166,7 +166,7 @@
 			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_)
 		)
 		(progn ; add base, rotate CCW
-			(drawLyingHsBase)
+			(DrawLyingHsBase)
 			(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
 		)
 	)
@@ -174,11 +174,11 @@
 
 
 
-(defun drawSingleWallmountedTrackSignal ( side / r lowerPole upperPole knee )
+(defun DrawSingleWallmountedTrackSignal ( side / r lowerPole upperPole knee )
 	; Drawn upright
 	(setq 
-		r (getSmallLanternRadius)  ; Size relative to main signal lanterns
-		knee (* 1.75 (getSmallLanternRadius))  ; Lateral displacement, horizontal part of 'knee'
+		r (GetSmallLanternRadius)  ; Size relative to main signal lanterns
+		knee (* 1.75 (GetSmallLanternRadius))  ; Lateral displacement, horizontal part of 'knee'
 		lowerPole 2.5
 		upperPole 2.0
 	)
@@ -198,13 +198,13 @@
 
 
 
-(defun drawForkedWallmountedTrackSignal ( sidewaysSeparation side / r lowerPole upperPole knee lat )
+(defun DrawForkedWallmountedTrackSignal ( sidewaysSeparation side / r lowerPole upperPole knee lat )
 	; Drawn upright
 	(setq 
-		r (getSmallLanternRadius)					; Size relative to main signal lanterns
+		r (GetSmallLanternRadius)					; Size relative to main signal lanterns
 		lowerPole 2.5
 		upperPole 2.0
-		knee (* 1.75 (getSmallLanternRadius))  		; Lateral displacement, horizontal part of 'knee'
+		knee (* 1.75 (GetSmallLanternRadius))  		; Lateral displacement, horizontal part of 'knee'
 		lat (/ sidewaysSeparation 2.0)		; Lateral displacement of forked arms (from center pole)
 	)
 	(command

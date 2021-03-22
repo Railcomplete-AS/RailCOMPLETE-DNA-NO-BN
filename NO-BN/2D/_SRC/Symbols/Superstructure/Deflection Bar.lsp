@@ -18,9 +18,10 @@
 
 
 
-(defun OPPKJOERSBJELKE ( / blockName fotX fotY bjelkeX bjelkeY )
+(defun OPPKJOERSBJELKE ( / blockName description fotX fotY bjelkeX bjelkeY )
 	(setq
 		blockName "NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE"
+		description (strcat "OPPKJ" _uOE_ "RSBJELKE")
 		fotX (/ 0.16 2)
 		fotY (/ 0.8 2)
 		bjelkeX (/ 1.0 2)
@@ -36,5 +37,7 @@
 		_ARRAY_ _lastSelection_ _ENTER_ _rectangularArray_ 2 2 (- (+ bjelkeY fotY)) (* 2 distFot)
 	)
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description 1.0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

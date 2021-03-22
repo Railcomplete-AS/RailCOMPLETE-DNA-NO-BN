@@ -30,8 +30,5 @@
 		_MOVE_ _selectAll_ _ENTER_ (list 11 0) _origo_
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _fifth_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
-
-

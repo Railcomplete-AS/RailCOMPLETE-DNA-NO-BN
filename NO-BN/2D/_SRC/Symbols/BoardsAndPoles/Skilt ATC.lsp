@@ -15,9 +15,9 @@
 ; ATC operational state
 
 ; For debugging:
-; (SKILT_ATC_INNKOBLET) (SKILT_ATC_UTKOBLET) (SKILT_ATC_SLUTTER)
+; (SKILT-ATC-INNKOBLET) (SKILT-ATC-UTKOBLET) (SKILT-ATC-SLUTTER)
 
-(defun Skilt_ATC_Innkoblet ( / blockName description x y p1 p2 )
+(defun SKILT-ATC-INNKOBLET ( / blockName description x y p1 p2 )
 	; End of ATC construction area (only SU balises plus a few others will be read by the train)
 	;
 	; +---------+
@@ -33,19 +33,19 @@
 		p1 (list 0 (*  0.167 y))
 		p2 (list 0 (* -0.25 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ p1    "ATC"   )
-	(addTextAtPos layDef_Zero _th125_ p2 "INNKOBLET")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ p1    "ATC"   )
+	(AddTextAtPos layDef_Zero _th125_ p2 "INNKOBLET")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_ATC_utkoblet ( / blockName description x y p1 p2 )
+(defun SKILT-ATC-UTKOBLET ( / blockName description x y p1 p2 )
 	; Start of ATC construction area (BU balises)
 	;
 	; +---------+
@@ -61,18 +61,18 @@
 		p1 (list 0 (*  0.167 y))
 		p2 (list 0 (* -0.25 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ p1    "ATC"  )
-	(addTextAtPos layDef_Zero _th125_ p2 "UTKOBLET")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ p1    "ATC"  )
+	(AddTextAtPos layDef_Zero _th125_ p2 "UTKOBLET")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
-(defun Skilt_ATC_Slutter ( / blockName description x y p1 p2 )
+(defun SKILT-ATC-SLUTTER ( / blockName description x y p1 p2 )
 	; End of ATC - transition into unequipped area
 	;
 	; +---------+
@@ -88,12 +88,12 @@
 		p1 (list 0 (*  0.167 y))
 		p2 (list 0 (* -0.25 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ p1   "ATC"  )
-	(addTextAtPos layDef_Zero _th125_ p2 "SLUTTER")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ p1   "ATC"  )
+	(AddTextAtPos layDef_Zero _th125_ p2 "SLUTTER")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

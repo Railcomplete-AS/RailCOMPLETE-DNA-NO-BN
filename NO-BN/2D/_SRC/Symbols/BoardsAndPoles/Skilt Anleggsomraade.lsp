@@ -14,9 +14,9 @@
 ; Possession (civil works area / railway operational rules temporarily suspended)
 
 ; For debugging:
-; (SKILT_ANLEGGSOMRAADE_BEGYNNER (SKILT_ANLEGGSOMRAADE_SLUTTER)
+; (SKILT-ANLEGGSOMRAADE-BEGYNNER (SKILT-ANLEGGSOMRAADE-SLUTTER)
 
-(defun Skilt_Anleggsomraade_begynner ( / blockName description x y )
+(defun SKILT-ANLEGGSOMRAADE-BEGYNNER ( / blockName description x y p9 p10 p11 )
 	; Start of possession
 	;
 	; TL-------TR
@@ -34,20 +34,20 @@
 		p10	_origo_
 		p11 (list 0 (* -0.267 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th100_ p9 "Anleggs-")
-	(addTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _aa_ "de"))
-	(addTextAtPos layDef_Zero _th100_ p11 "jernbane")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th100_ p9 "Anleggs-")
+	(AddTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _aa_ "de"))
+	(AddTextAtPos layDef_Zero _th100_ p11 "jernbane")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Anleggsomraade_slutter ( / blockName description x y p1 p2 p3 p4 p5 p6 )
+(defun SKILT-ANLEGGSOMRAADE-SLUTTER ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 )
 	; End of possession
 	;
 	; +------2-4+
@@ -75,17 +75,17 @@
 		p10	_origo_
 		p11 (list 0 (* -0.267 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th100_ p9 "Anleggs-")
-	(addTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _aa_ "de"))
-	(addTextAtPos layDef_Zero _th100_ p11 "jernbane")
-	(drawLine layDef_Zero p1 p2)
-	(drawLine layDef_Zero p3 p4)
-	(drawLine layDef_Zero p5 p6)
-	(drawLine layDef_Zero p7 p8)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th100_ p9 "Anleggs-")
+	(AddTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _aa_ "de"))
+	(AddTextAtPos layDef_Zero _th100_ p11 "jernbane")
+	(DrawLine layDef_Zero p1 p2)
+	(DrawLine layDef_Zero p3 p4)
+	(DrawLine layDef_Zero p5 p6)
+	(DrawLine layDef_Zero p7 p8)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

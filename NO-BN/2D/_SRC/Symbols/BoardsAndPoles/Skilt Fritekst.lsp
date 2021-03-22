@@ -14,9 +14,9 @@
 ; 'Free text' board / End of 'Free text'
 
 ; For debugging:
-; (SKILT_FRITEKST) (SKILT_FRITEKST_SLUTTER)
+; (SKILT-FRITEKST) (SKILT-FRITEKST-SLUTTER)
 
-(defun Skilt_Fritekst ( / blockName description x y )
+(defun SKILT-FRITEKST ( / blockName description x y attFreeText )
 	; Start of 'free text' area
 	;
 	; TL---TR
@@ -30,18 +30,18 @@
 		y 6.0
 		attFreeText '("FREE_TEXT" "Enter free text: " "XYZZY")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attFreeText)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th250_ _origo_ attFreeText)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Fritekst_Slutter ( / blockName description x y p1 p2 p3 p4 p5 p6 )
+(defun SKILT-FRITEKST-SLUTTER ( / blockName description x y attFreeText p1 p2 p3 p4 p5 p6 )
 	; End of 'free text' area
 	;
 	; TL-----------p4--p5
@@ -63,17 +63,17 @@
 		p5 (list (*  0.5 x) (*  0.5 y))
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attFreeText)
-	(setLayer layDef_Zero)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th250_ _origo_ attFreeText)
+	(SetLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_
 		_LINE_ p2 p5 _ENTER_
 		_LINE_ p3 p6 _ENTER_
 	)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

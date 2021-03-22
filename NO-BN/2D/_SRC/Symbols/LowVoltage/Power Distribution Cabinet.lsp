@@ -13,7 +13,6 @@
 ; Power distribution xabinet
 
 (defun C:POWER-DISTRIBUTION-CABINET ( / )
-	
 	(FORDELINGSSKAP)	; Fordelingsskap
 	(GRUPPESKAP)		; Gruppeskap (=sporvekselvarmeskap)
 	(TOGVARMEPOST)		; Skap for togvarme
@@ -42,18 +41,18 @@
 		x 4.5 	
 		y 2.25  
 		y2 (/ y 9) 
-		p1 (addVectors (posBL x y) (list 0 y2))
-		p2 (addVectors (posBR x y) (list 0 y2))
+		p1 (AddVectors (PosBL x y) (list 0 y2))
+		p2 (AddVectors (PosBR x y) (list 0 y2))
 		p3 (list (/ x 40) (+ (/ y 6) (/ y 18)))
 		p4 (list (/ x -40) (+ (/ y -6) (/ y 18)))
-		p5 (posTR x y)
+		p5 (PosTR x y)
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawLine layDef_Zero p1 p2)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawLine layDef_Zero p1 p2)
 	(command _POLYLINE_ p1 p3 p4 p5 _openPolyline_)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -67,18 +66,18 @@
 		x 4.5 	
 		y 2.25  
 		y2 (/ y 9) 
-		p1 (addVectors (posBL x y) (list 0 y2))
-		p2 (addVectors (posBR x y) (list 0 y2))
+		p1 (AddVectors (PosBL x y) (list 0 y2))
+		p2 (AddVectors (PosBR x y) (list 0 y2))
 		p3 (list (/ x 40) (+ (/ y 6) (/ y 18)))
 		p4 (list (/ x -40) (+ (/ y -6) (/ y 18)))
-		p5 (posTR x y)
+		p5 (PosTR x y)
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawLine layDef_Zero p1 p2)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawLine layDef_Zero p1 p2)
 	(command _POLYLINE_ p1 p3 p4 p5 _openPolyline_)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -101,9 +100,9 @@
 		x 4.5 	
 		y 2.25  
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

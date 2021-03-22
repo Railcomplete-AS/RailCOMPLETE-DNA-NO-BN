@@ -19,12 +19,12 @@
 
 
 (defun THUMBNAIL-UNSPECIFIED (/ blockName x y) 
+	; A rectangle, a circle and a triangle - to be used as proxy symbols for anything that lacks a suitable symbol.
 	(setq blockName (strcat "NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED"))
 	(command 
 		_RECTANGLE_ "0,-3" "4,1"
 		_CIRCLE_ "-1,-1" "3"
-		"._POLYGON" "3" "EDGE" "-3,0" "3,0"
+		_POLYGON_ "3" _specifyEdgeOfPolygon_ "-3,0" "3,0"
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

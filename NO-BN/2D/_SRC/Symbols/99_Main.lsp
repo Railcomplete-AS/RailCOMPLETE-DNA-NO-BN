@@ -54,18 +54,18 @@
 (setq minorStep 0)
 (setq microStep 0)
 
-(defun step ( msg / )
+(defun TraceLevel1 ( msg / )
 	(setq majorStep (1+ majorStep))
 	(setq minorStep 0)
 	(setq microStep 0)
 	(princ (strcat "--- Step " (itoa majorStep) " - " msg "\n")) (princ)
 )
-(defun subStep ( msg / )
+(defun TraceLevel2 ( msg / )
 	(setq minorStep (1+ minorStep))
 	(setq microStep 0)
 	(princ (strcat "--- Step " (itoa majorStep) "." (itoa minorStep) " - " msg "\n")) (princ)
 )
-(defun subSubStep ( msg / )
+(defun TraceLevel3 ( msg / )
 	(setq microStep (1+ microStep))
 	(princ (strcat "--- Step " (itoa majorStep) "." (itoa minorStep) "." (itoa microStep) " - " msg "\n")) (princ)
 )
@@ -75,12 +75,12 @@
 	;
 	; GLOBAL identifiers:
 	;
-	; nSchematicBlocks		Increments for each call to routine 'createSchematicBlockFromCurrentGraphics'
+	; nSchematicBlocks		Increments for each call to routine 'CreateSchematicBlockFromCurrentGraphics'
 	; nAnnotativeBlocks		Increments for each call to routine 
 	; nMetricBlocks			Increments for each call to routine 
 	;
-	; TODO: 2020-08-06 CLFEY removeUnwantedStyles() doesn't work in batch mode - I gave up removing Norconsult stuff... 
-	; (removeUnwantedStyles) ; Resolves and purges stuff which might be there due to your company's LISP automations for new DWG files
+	; TODO: 2020-08-06 CLFEY RemoveUnwantedStyles() doesn't work in batch mode - I gave up removing Norconsult stuff... 
+	; (RemoveUnwantedStyles) ; Resolves and purges stuff which might be there due to your company's LISP automations for new DWG files
 
 	; If debugging, use (setvar 'CMDECHO 1) to get maximum feedback. For silent and quicker operation, use (setvar 'CMDECHO 0). 
 	; Quickest operation is when running inside VLIDE with 'CMDECHO == 0.
@@ -88,22 +88,22 @@
 	(cond 
 		(calledFromVlide
 			; non-nil if called from AutoCAD's Visual Lisp Integrated Development Environment
-			(step "Running under AutoCAD VLIDE...")
+			(TraceLevel1 "Running under AutoCAD VLIDE...")
 			(command _BCLOSE_ _ENTER_) ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
 			(C:LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
 		) 
 		(calledFromBlade ; non-nil if called from BricsCAD Lisp Advanced Development Environment
-			(step "Running under BricsCAD BLADE...")
+			(TraceLevel1 "Running under BricsCAD BLADE...")
 			(command _BCLOSE_ _ENTER_) ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
 			(C:LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
 		) ; Do nothing if called from batch file...
 		(T 
-			(step "Called from Windows batch file, using a 'clean' AutoCAD or BricsCAD setup, no hidden automation started.")
+			(TraceLevel1 "Called from Windows batch file, using a 'clean' AutoCAD or BricsCAD setup, no hidden automation started.")
 		)
 	)
 	
 	; NB: The sequence matters in the following statements:
-	(step "Setting AutoCAD parameters and layer '0' properties...")
+	(TraceLevel1 "Setting AutoCAD parameters and layer '0' properties...")
 	(setvar 'CMDECHO 0) ; maximum speed, minimum verbosity
 	(setvar 'OSMODE 0) ; Otherwise LINE and other commands will produce bogus results, according to search on 'acad silent console mode'.
 	(command 
@@ -113,45 +113,45 @@
 			_colorizeLayer_		_colorYellow_ "Defpoints"
 			_plottability_		_isNotPlottable_ "Defpoints" _ENTER_
 	)
-	(step "Purge")										(purgeAll)
-	(step "Define global CAD constants")				(defineGlobalCadSystemConstants)
-	(step "Set CAD defaults")							(setCadSystemDefaults)
-	(step "Create ISO text style")						(createIsoTextStyle)
-	(step "Create standard RailCOMPLETE layers")		(createStandardLayers)
-	(step "Set default object properties to ByBlock")	(setDefaultObjectPropertiesToByBlock)
+	(TraceLevel1 "Purge")										(PurgeAll)
+	(TraceLevel1 "Define global CAD constants")					 (DefineGlobalCadSystemConstants)
+	(TraceLevel1 "Set CAD defaults")							(SetCadSystemDefaults)
+	(TraceLevel1 "Create ISO text style")						(CreateIsoTextStyle)
+	(TraceLevel1 "Create standard RailCOMPLETE layers")			(CreateStandardLayers)
+	(TraceLevel1 "Set default object properties to ByBlock")	(SetDefaultObjectPropertiesToByBlock)
 
 	(setq nSchematicBlocks 0)
 	(setq nAnnotativeBlocks 0)
 	(setq nMetricBlocks 0)
 	
-	(step "GENERATE-THUMBNAILS")				(C:GENERATE-THUMBNAILS)
-	(step "GENERATE-ANNOTATIONS")				(C:GENERATE-ANNOTATIONS)
-	(step "GENERATE-COMMON-OBJECTS")			(C:GENERATE-COMMON-OBJECTS)
-	(step "GENERATE-BOARDSANDPOLES-OBJECTS")	(C:GENERATE-BOARDSANDPOLES-OBJECTS)
-	(step "GENERATE-SUBSTRUCTURE-OBJECTS")		(C:GENERATE-SUBSTRUCTURE-OBJECTS)
-	(step "GENERATE-SUPERSTRUCTURE-OBJECTS")	(C:GENERATE-SUPERSTRUCTURE-OBJECTS)
-	(step "GENERATE-HIGH-VOLTAGE-OBJECTS")		(C:GENERATE-HIGH-VOLTAGE-OBJECTS)
-	(step "GENERATE-SIGNALING-OBJECTS")			(C:GENERATE-SIGNALING-OBJECTS)
-	(step "GENERATE-TELECOM-OBJECTS")			(C:GENERATE-TELECOM-OBJECTS)
-	(step "GENERATE-LOWVOLTAGE-OBJECTS")		(C:GENERATE-LOWVOLTAGE-OBJECTS)
+	(TraceLevel1 "GENERATE-THUMBNAILS")							(C:GENERATE-THUMBNAILS)
+	(TraceLevel1 "GENERATE-ANNOTATIONS")						(C:GENERATE-ANNOTATIONS)
+	(TraceLevel1 "GENERATE-COMMON-OBJECTS")						(C:GENERATE-COMMON-OBJECTS)
+	(TraceLevel1 "GENERATE-BOARDSANDPOLES-OBJECTS")				(C:GENERATE-BOARDSANDPOLES-OBJECTS)
+	(TraceLevel1 "GENERATE-SUBSTRUCTURE-OBJECTS")				(C:GENERATE-SUBSTRUCTURE-OBJECTS)
+	(TraceLevel1 "GENERATE-SUPERSTRUCTURE-OBJECTS")				(C:GENERATE-SUPERSTRUCTURE-OBJECTS)
+	(TraceLevel1 "GENERATE-HIGH-VOLTAGE-OBJECTS")				(C:GENERATE-HIGH-VOLTAGE-OBJECTS)
+	(TraceLevel1 "GENERATE-SIGNALING-OBJECTS")					(C:GENERATE-SIGNALING-OBJECTS)
+	(TraceLevel1 "GENERATE-TELECOM-OBJECTS")					(C:GENERATE-TELECOM-OBJECTS)
+	(TraceLevel1 "GENERATE-LOWVOLTAGE-OBJECTS")					(C:GENERATE-LOWVOLTAGE-OBJECTS)
 
 	;;;; (C:GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
 	
 	; Store (as the name of two dummy blocks) the number of blocks generated (AutoCAD doesn't count them for you):
-	(step "Storing the number of generated 2D schematic and scaled symbols as the names of two dummy blocks.")
+	(TraceLevel1 "Storing the number of generated 2D schematic and scaled symbols as the names of two dummy blocks.")
 	
-	(drawBox layDef_Zero 2 2 _noWipeout_) ; just add something to look at...
-	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Schematic_Blocks__" (rtos nSchematicBlocks _decimal_ 0)))
-	(drawBox layDef_Zero 3 3 _noWipeout_) ; just add something to look at...
-	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_annotative_Blocks___" (rtos nAnnotativeBlocks _decimal_ 0)))
-	(drawBox layDef_Zero 4 4 _noWipeout_) ; just add something to look at...
-	(createSchematicBlockFromCurrentGraphics (strcat "___Number_of_Metric_Blocks___" (rtos nMetricBlocks _decimal_ 0)))
+	(DrawBox layDef_Zero 2 2 _noWipeout_) ; just add something to look at...
+	(CreateSchematicBlockFromCurrentGraphics (strcat "___Number_of_Schematic_Blocks__" (rtos nSchematicBlocks _decimal_ 0)))
+	(DrawBox layDef_Zero 3 3 _noWipeout_) ; just add something to look at...
+	(CreateSchematicBlockFromCurrentGraphics (strcat "___Number_of_annotative_Blocks___" (rtos nAnnotativeBlocks _decimal_ 0)))
+	(DrawBox layDef_Zero 4 4 _noWipeout_) ; just add something to look at...
+	(CreateSchematicBlockFromCurrentGraphics (strcat "___Number_of_Metric_Blocks___" (rtos nMetricBlocks _decimal_ 0)))
 
 	; *** The file name "2D.dwg" is expected by other batch files taking care of the results:
 	(setq symbolLibraryFileName (strcat "2D_" (rtos (getvar "CDATE") 2 6) ".dwg"))
-	(step (strcat "Saving resulting blocks to file '" symbolLibraryFileName "'..."))
+	(TraceLevel1 (strcat "Saving resulting blocks to file '" symbolLibraryFileName "'..."))
 	(SAVE-RESULT symbolLibraryFileName)
-	(step "*** End of C:MAIN() - 2D library has been generated ***")
+	(TraceLevel1 "*** End of C:MAIN() - 2D library has been generated ***")
 )
 
 
@@ -169,10 +169,10 @@
 		(command _SAVEAS_ "2018" fname) ; File does not exist - just save it
 	)
 	(if calledFromVlide
-		(step "Cannot close current file from this VLIDE script since the VLIDE depends on it. Close manually and exit AutoCAD.")
+		(TraceLevel1 "Cannot close current file from this VLIDE script since the VLIDE depends on it. Close manually and exit AutoCAD.")
 	;else
 		(progn
-			(step "Closing file...\n")
+			(TraceLevel1 "Closing file...\n")
 			(command _CLOSE_)
 		)
 	)

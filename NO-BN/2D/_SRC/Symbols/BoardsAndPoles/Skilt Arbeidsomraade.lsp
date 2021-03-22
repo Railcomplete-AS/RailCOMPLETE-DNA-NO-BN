@@ -17,9 +17,9 @@
 ; Work area (keylock cabinet protected area)
 
 ; For debugging:
-; (SKILT_ARBEIDSOMRAADE_1-2) (SKILT_ARBEIDSOMRAADE_1-3) (SKILT_ARBEIDSOMRAADE_2-2) (SKILT_ARBEIDSOMRAADE_2-3) (SKILT_ARBEIDSOMRAADE_3)
+; (SKILT-ARBEIDSOMRAADE-1-2) (SKILT-ARBEIDSOMRAADE-1-3) (SKILT-ARBEIDSOMRAADE-2-2) (SKILT-ARBEIDSOMRAADE-2-3) (SKILT-ARBEIDSOMRAADE-3)
 
-(defun Skilt_Arbeidsomraade_1-2 ( / blockName description x y att1 att2 p1 p2 p3 p4 p5 p6 p7 p8 )
+(defun SKILT-ARBEIDSOMRAADE-1-2 ( / blockName description x y att1 att2 p1 p2 p3 p4 p5 p6 p7 p8 )
 	; Inside work area (not at border of area), 1 column with 2 lines of text
 	;
 	; TL--------------TR
@@ -44,21 +44,21 @@
 		p7 (list (*  0.00 x) (*  0.21 y))
 		p8 (list (*  0.00 x) (* -0.21 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(command _POLYLINE_ p1 p2 p3 _openPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _openPolyline_)
-	(addTextAttributeAtPos layDef_Zero _th125_ p7 att1)
-	(addTextAttributeAtPos layDef_Zero _th125_ p8 att2)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p7 att1)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p8 att2)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Arbeidsomraade_1-3 ( / blockName description x y att1 att2 p1 p2 p3 p4 p5 p6 p7 p8 p9 )
+(defun SKILT-ARBEIDSOMRAADE-1-3 ( / blockName description x y att1 att2 att3 p1 p2 p3 p4 p5 p6 p7 p8 p9 )
 	; Inside work area (not at border of area), 1 column with 3 lines of text
 	;
 	; TL--------------TR
@@ -85,22 +85,22 @@
 		p8 (list (*  0.00 x) (*  0.00 y))
 		p9 (list (*  0.00 x) (* -0.25 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(command _POLYLINE_ p1 p2 p3 _openPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _openPolyline_)
-	(addTextAttributeAtPos layDef_Zero _th125_ p7 att1)
-	(addTextAttributeAtPos layDef_Zero _th125_ p8 att2)
-	(addTextAttributeAtPos layDef_Zero _th125_ p9 att3)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p7 att1)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p8 att2)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p9 att3)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Arbeidsomraade_2-2 ( / blockName description x y att1 att2 p1 p2 p3 p4 p5 p6 p7 p8 p10 p11 p13 p14 )
+(defun SKILT-ARBEIDSOMRAADE-2-2 ( / blockName description x y att1 att2 att4 att5 p1 p2 p3 p4 p5 p6 p7 p8 p10 p11 p13 p14 )
 	; Inside work area (not at border of area), 2 columns with 2 lines of text
 	;
 	;    TL----------p13---------TR
@@ -131,24 +131,24 @@
 		p13 (list (*  0.00 x) (*  0.50 y)) ; vertical line
 		p14 (list (*  0.00 x) (* -0.50 y)) ; vertical line
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(command _POLYLINE_ p1 p2 p3 _openPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _openPolyline_)
-	(addTextAttributeAtPos layDef_Zero _th125_ p7 att1)
-	(addTextAttributeAtPos layDef_Zero _th125_ p8 att2)
-	(addTextAttributeAtPos layDef_Zero _th125_ p10 att4)
-	(addTextAttributeAtPos layDef_Zero _th125_ p11 att5)
-	(drawLine layDef_Zero p13 p14)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p7 att1)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p8 att2)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p10 att4)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p11 att5)
+	(DrawLine layDef_Zero p13 p14)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Arbeidsomraade_2-3 ( / blockName description x y att1 att2 p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 )
+(defun SKILT-ARBEIDSOMRAADE-2-3 ( / blockName description x y att1 att2 att3 att4 att5 att6 p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 )
 	; Inside work area (not at border of area), 2 columns with 3 lines of text
 	;
 	;    TL----------p13----------TR
@@ -183,26 +183,26 @@
 		p13 (list (*  0.00 x) (*  0.50 y)) ; vertical line
 		p14 (list (*  0.00 x) (* -0.50 y)) ; vertical line
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(command _POLYLINE_ p1 p2 p3 _openPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _openPolyline_)
-	(addTextAttributeAtPos layDef_Zero _th125_ p7 att1)
-	(addTextAttributeAtPos layDef_Zero _th125_ p8 att2)
-	(addTextAttributeAtPos layDef_Zero _th125_ p9 att3)
-	(addTextAttributeAtPos layDef_Zero _th125_ p10 att4)
-	(addTextAttributeAtPos layDef_Zero _th125_ p11 att5)
-	(addTextAttributeAtPos layDef_Zero _th125_ p12 att6)
-	(drawLine layDef_Zero p13 p14)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p7 att1)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p8 att2)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p9 att3)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p10 att4)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p11 att5)
+	(AddTextAttributeAtPos layDef_Zero _th125_ p12 att6)
+	(DrawLine layDef_Zero p13 p14)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Arbeidsomraade_3 ( / blockName description x y att1 att2 att3 att4 att5 att6 )
+(defun SKILT-ARBEIDSOMRAADE-3 ( / blockName description x y att1 att2 att3 att4 att5 att6 )
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-3"
 		description (strcat "SKILT ARBEIDSOMR" _uAA_ "DE 3")
@@ -215,16 +215,16 @@
 		att5 '("TEKST5" "Tekst 5" "OSL 19")
 		att6 '("TEKST6" "Tekst 6" "OSL 27")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos61 y) att1)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos62 y) att2)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos63 y) att3)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos64 y) att4)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos65 y) att5)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos66 y) att6)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos61 y) att1)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos62 y) att2)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos63 y) att3)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos64 y) att4)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos65 y) att5)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos66 y) att6)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

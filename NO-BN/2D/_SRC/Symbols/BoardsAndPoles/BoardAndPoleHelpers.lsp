@@ -10,27 +10,27 @@
 ;
 ;=========================================================================================================================
 
-; DRAWARC
-; GETLOSANGESIDE
-; DRAWLOSANGE
-; DRAWLOSANGEWITHCIRCLE
-; DRAWFATCIRCLE
-; DRAWLOSANGEWITHLINING
-; DRAWTRIANGLE
-; DRAWRIGHTARROW
-; DRAWLEFTARROW
-; DRAWDOUBLEARROW
+; DrawArc
+; GetLosangeSide
+; DrawLosange
+; DrawLosangeWithCircle
+; DrawFatCircle
+; DrawLosangeWithLining
+; DrawTriangle
+; DrawRightArrow
+; DrawLeftArrow
+; DrawDoubleArrow
 ; DRAWFATRIGHTARROW
-; DRAWFATLEFTARROW
+; DrawFatLeftArrow
 ; DRAWHOLLOWARROWATPOINT
 
-(defun getLosangeSide ( / ) 
+(defun GetLosangeSide ( / ) 
 	(setq side 5.5)
 )
 
 
 
-(defun drawLosange ( / side )
+(defun DrawLosange ( / side )
 	; Losange with wipeout
 	;
 	;       +
@@ -42,15 +42,15 @@
 	;       +
 	;
 	(setq	
-		side   (getLosangeSide)
+		side   (GetLosangeSide)
 	)
-	(drawBox layDef_Zero side side layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero side side layDef_BoardOrPole_Wipeout)
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle45_)
 )
 
 
 
-(defun drawLosangeWithCircle ( / side r )
+(defun DrawLosangeWithCircle ( / side r )
 	; Losange with circle
 	;
 	;       +
@@ -62,16 +62,16 @@
 	;       +
 	;
 	(setq	
-		r	   (* 0.318 (getLosangeSide))
+		r	   (* 0.318 (GetLosangeSide))
 	)
-	(drawLosange)
-	(setLayer layDef_Zero)
-	(drawCircle layDef_Zero r _noWipeout_)
+	(DrawLosange)
+	(SetLayer layDef_Zero)
+	(DrawCircle layDef_Zero r _noWipeout_)
 )
 
 
 
-(defun drawFatCircle ( r1 r2 )
+(defun DrawFatCircle ( r1 r2 )
 	; Fat circle on white background 
 	;
 	;      === 
@@ -79,15 +79,15 @@
 	;   ((  .  ))
 	;    \\   // 
 	;	   === 
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _CIRCLE_ _origo_ r1)
 	(command _CIRCLE_ _origo_ r2)
-	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.5 (+ r1 r2))) _angleZero_ _offsetZero_)
+	(DrawHatchFromPoint _solidHatch_ (list 0 (* 0.5 (+ r1 r2))) _angleZero_ _offsetZero_)
 )
 
 
 
-(defun drawLosangeWithLining ( / side )
+(defun DrawLosangeWithLining ( / side )
 	; Losange with wipeout and fat edge
 	;
 	;       +
@@ -99,18 +99,18 @@
 	;       +
 	;
 	(setq	
-		side	(getLosangeSide)
+		side	(GetLosangeSide)
 		inner	(* 0.90 side)
 	)
-	(drawBox layDef_Zero side side layDef_BoardOrPole_Wipeout)
-	(drawBox layDef_Zero inner inner _noWipeout_)
-	(drawHatchFromPoint _solidHatch_ (list 0 (* 0.25 (+ side inner))) _angleZero_ _offsetZero_)	; Hatch the lining, the area between the two squares
+	(DrawBox layDef_Zero side side layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero inner inner _noWipeout_)
+	(DrawHatchFromPoint _solidHatch_ (list 0 (* 0.25 (+ side inner))) _angleZero_ _offsetZero_)	; Hatch the lining, the area between the two squares
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle45_)
 )
 
 
 
-(defun drawTriangle ( side / ang )
+(defun DrawTriangle ( side / ang )
 	; Small triangle pointing down to origo
 	;
 	; +-------+
@@ -120,7 +120,7 @@
 	;     .
 	;
 	(setq ang (D->R 60))
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command 
 		_POLYLINE_ 
 			_origo_
@@ -128,12 +128,12 @@
 			(list (- (* side (cos ang))) (* side (sin ang)))
 			_closedPolyline_
 	)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
 )
 
 
 
-(defun drawRightArrow ( x y / p11 p21 p22 p23 p31 )
+(defun DrawRightArrow ( x y / p11 p21 p22 p23 p31 )
 	; Simple right arrow
 	;
 	;           p31
@@ -149,14 +149,14 @@
 		p23 (list (*  0.333 x) (*  0.000 y))
 		p31 (list (*  0.167 x) (*  0.167 y))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p21 p22 p11 p23 p31 p22 _openPolyline_) ; Right arrow
-	(drawHatch _solidHatch_)
+	(DrawHatch _solidHatch_)
 )
 
 
 
-(defun drawLeftArrow ( x y / p11 p21 p22 p23 p31 )
+(defun DrawLeftArrow ( x y / p11 p21 p22 p23 p31 )
 	; Simple left arrow
 	;
 	;    p31
@@ -172,14 +172,14 @@
 		p23 (list (*  0.333 x) (*  0.000 y))
 		p31 (list (* -0.167 x) (*  0.167 y))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p23 p22 p11 p21 p31 p22 _openPolyline_) ; Right arrow
-	(drawHatch _solidHatch_)
+	(DrawHatch _solidHatch_)
 )
 
 
 
-(defun drawDoubleArrow ( x y / q11 q21 q22 q31 p11 p21 p22 p23 p31 )
+(defun DrawDoubleArrow ( x y / q11 q21 q22 q31 p11 p21 p22 p23 p31 )
 	; Double arrow
 	;
 	;    q31        p31
@@ -198,11 +198,11 @@
 		p23 (list (*  0.333 x) (*  0.000 y))
 		p31 (list (*  0.167 x) (*  0.167 y))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ q22 q11 q21 q31 q22 _openPolyline_) ; Left arrow
-	(drawHatch _solidHatch_)
+	(DrawHatch _solidHatch_)
 	(command _POLYLINE_ _origo_ p22 p11 p23 p31 p22 _openPolyline_) ; Right arrow
-	(drawHatch _solidHatch_)
+	(DrawHatch _solidHatch_)
 )
 
 
@@ -225,14 +225,14 @@
 		p42 (list (*  0.2 x) (*  0.04 y))
 		p52 (list (*  0.2 x) (*  0.16 y))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p21 p22 p12 p33 p52 p42 p41 _closedPolyline_) ; Right arrow
-	(drawHatch _solidHatch_)
+	(DrawHatch _solidHatch_)
 )
 
 
 
-(defun drawFatLeftArrow ( x y / p12 p21 p22 p33 p41 p42 p52 )
+(defun DrawFatLeftArrow ( x y / p12 p21 p22 p33 p41 p42 p52 )
 	; Fat Left arrow
 	;
 	;    /p52
@@ -250,9 +250,9 @@
 		p42 (list (* -0.2 x) (*  0.04 y))
 		p52 (list (* -0.2 x) (*  0.16 y))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p21 p22 p12 p33 p52 p42 p41 _closedPolyline_) ; Left arrow
-	(drawHatch _solidHatch_)
+	(DrawHatch _solidHatch_)
 )
 
 
@@ -286,17 +286,17 @@
 		uy (* 0.03 y) ; vertical drawing unit, relative to y
 		;p0 (list (* (nth 0 tip) x) (* (nth 1 tip) y))
 		p0 tip
-		p1 (addVectors p0 (list (* -2 ux) (*  3 uy)))
-		p2 (addVectors p1 (list (* -2 ux) (*  0 uy)))
-		p3 (addVectors p2 (list (*  1 ux) (* -2 uy)))
-		p4 (addVectors p3 (list (* -6 ux) (*  0 uy)))
-		q1 (addVectors p0 (list (* -2 ux) (* -3 uy)))
-		q2 (addVectors q1 (list (* -2 ux) (*  0 uy)))
-		q3 (addVectors q2 (list (*  1 ux) (*  2 uy)))
-		q4 (addVectors q3 (list (* -6 ux) (*  0 uy)))
+		p1 (AddVectors p0 (list (* -2 ux) (*  3 uy)))
+		p2 (AddVectors p1 (list (* -2 ux) (*  0 uy)))
+		p3 (AddVectors p2 (list (*  1 ux) (* -2 uy)))
+		p4 (AddVectors p3 (list (* -6 ux) (*  0 uy)))
+		q1 (AddVectors p0 (list (* -2 ux) (* -3 uy)))
+		q2 (AddVectors q1 (list (* -2 ux) (*  0 uy)))
+		q3 (AddVectors q2 (list (*  1 ux) (*  2 uy)))
+		q4 (AddVectors q3 (list (* -6 ux) (*  0 uy)))
 	)
-	(setLayer layDef_Zero)
-	(drawBox layDef_Zero x y _noWipeout_)
+	(SetLayer layDef_Zero)
+	(DrawBox layDef_Zero x y _noWipeout_)
 	(command _POLYLINE_ p0 p1 p2 p3 p4 q4 q3 q2 q1 _closedPolyline_)
 	(command _ROTATE_ _lastSelection_ _ENTER_ p0 angle)
 )

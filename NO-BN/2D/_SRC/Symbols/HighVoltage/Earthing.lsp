@@ -19,7 +19,7 @@
 
 
 
-(defun JORDPOTENSIAL ( / blockName )
+(defun JORDPOTENSIAL ( / blockName description p0 p1 p2 p3 p4 p5 p6 p7 )
 	; Generelt jordsymbol - kan benyttes som jordpotensial-markør, eller som kråkefotsymbol osv.
 	; Ref. TRV KL skjemasymboler.
 	;
@@ -43,21 +43,21 @@
 		p6 (list  0.5 -4.4)
 		p7 (list  0.0 -5.0)
 	)
-	(drawLine layDef_Zero _origo_ p0)
-	(drawLine layDef_Zero p1 p2)
-	(drawLine layDef_Zero p3 p4)
-	(drawLine layDef_Zero p5 p6)
-	(addTextAtPos layDef_Description _descriptionTextHeight_ p7 description)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLine layDef_Zero _origo_ p0)
+	(DrawLine layDef_Zero p1 p2)
+	(DrawLine layDef_Zero p3 p4)
+	(DrawLine layDef_Zero p5 p6)
+	(AddTextAtPos layDef_Description _descriptionTextHeight_ p7 description)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
-(defun JORDINGSSKINNE ( / blockName x y circDist r )
+(defun JORDINGSSKINNE ( / blockName description x y d r p1 p2 p3 p4 )
 	; For montasje under datagulv i bygninger, på vegg, i trekkekum med mer. 
 	; Benyttes hos Bane NOR i 50x10x290 (9xØ13 pluss et Ø5 hull for merking) eller 50x10x530 (17xØ13 pluss 1xØ5). Galvanisert (GMB utførelse) eller ren kobber (mest vanlig).
 	; Monteres 40mm fra underlaget.
-	; Se også "magebelte" rundt HEB-master, ref ECT tegning.
+	; Se også "magebelte" rundt HEB-master, ref ECT tegning / JEMTLAND (Gjøvik) tegning for HEB260 mast (i RC_3D-katalog for EH-JSK).
 	;
 	;  TL------------------------------TR
 	;  |  (1)   (2)   (.)   (3)   (4)   |  
@@ -66,7 +66,7 @@
 	(setq
 		blockName "NO-BN-2D-JBTKL-JORDING-JORDINGSSKINNE"
 		description "JORDINGSSKINNE"
-		x 6.0
+		x 6.0	; Schematic / annotative symbol measures
 		y 2.0
 		d 1.0
 		r 0.35
@@ -76,13 +76,14 @@
 		p4 (list (*  2 d) 0)
 	)
 	
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawCircleAtPos layDef_Zero p1 r _noWipeout_)
-	(drawCircleAtPos layDef_Zero p2 r _noWipeout_)
-	(drawCircleAtPos layDef_Zero _origo_ r _noWipeout_)
-	(drawCircleAtPos layDef_Zero p3 r _noWipeout_)
-	(drawCircleAtPos layDef_Zero p4 r _noWipeout_)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	; Schematic & geo symbols:
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawCircleAtPos layDef_Zero p1 r _noWipeout_)
+	(DrawCircleAtPos layDef_Zero p2 r _noWipeout_)
+	(DrawCircleAtPos layDef_Zero _origo_ r _noWipeout_)
+	(DrawCircleAtPos layDef_Zero p3 r _noWipeout_)
+	(DrawCircleAtPos layDef_Zero p4 r _noWipeout_)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

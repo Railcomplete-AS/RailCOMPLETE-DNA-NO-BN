@@ -30,13 +30,13 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-67A-ORIENTERINGSIGNAL"
 		description "SKILT SIGNAL 67A ORIENTERINGSIGNAL"
-		side	(getLosangeSide)	; Losange side (see 60.lsp)
+		side	(GetLosangeSide)	; Losange side (see 60.lsp)
 	)
-	(drawLosangeWithLining)
-	(moveUp (* (DDcos _angle45_) side))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLosangeWithLining)
+	(MoveUp (* (DDcos _angle45_) side))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -54,7 +54,7 @@
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-67B-ORIENTERINGSIGNAL-PLANOVERGANG"
 		description "SKILT SIGNAL 67B ORIENTERINGSIGNAL FOR PLANOVERGANG"
-		side	(getLosangeSide)	; Losange side
+		side	(GetLosangeSide)	; Losange side
 		x		(* (sqrt 2) side)
 		y		(* (sqrt 2) side)
 		p1		(list (*  0.000 x) (*  0.450 y))
@@ -64,14 +64,14 @@
 		p5		(list (* -0.433 x) (* -0.017 y))
 		p6		(list (*  0.000 x) (* -0.450 y))
 	)
-	(drawLosange)
+	(DrawLosange)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) side))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) side))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -89,7 +89,7 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-67C-ORIENTERINGSIGNAL-HOLDEPLASS"
 		description "SKILT SIGNAL 67C ORIENTERINGSIGNAL FOR HOLDEPLASS"
-		side	(getLosangeSide)	; Losange side
+		side	(GetLosangeSide)	; Losange side
 		x		(* (sqrt 2) side)
 		y		(* (sqrt 2) side)
 		p1		(list (* -0.450 x) (*  0.000 y))
@@ -99,20 +99,20 @@
 		p5		(list (*  0.017 x) (* -0.433 y))
 		p6		(list (*  0.450 x) (*  0.000 y))
 	)
-	(drawLosange)
+	(DrawLosange)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) side))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) side))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun 67D ( / blockName description side d a h x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 )
+(defun 67D ( / blockName description side d a h p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 )
 	; 67D Orientation for level crossing and passenger exchange - "Orienteringssignal for planovergang og holdeplass"
 	; Sound horn - "Tog kommer"
 	;       +
@@ -125,7 +125,7 @@
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-67D-ORIENTERINGSIGNAL-PLANOVERGANG-HOLDEPLASS"
 		description "SKILT SIGNAL 67D ORIENTERINGSIGNAL FOR PLANOVERGANG OG HOLDEPLASS"
-		side	(getLosangeSide)	; Losange side
+		side	(GetLosangeSide)	; Losange side
 		d		(* 0.05 side)
 		a		(- (* (sqrt 0.5) side) (* (+ (sqrt 2) 0.5) d))
 		h		(* 0.5 d)
@@ -145,16 +145,16 @@
 		p11		(list (+ a) (- h))
 		p12		(list (+ h) (- a))
 	)
-	(drawLosange)
+	(DrawLosange)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
 	(command _POLYLINE_ p7 p8 p9 _closedPolyline_)
 	(command _POLYLINE_ p10 p11 p12 _closedPolyline_)
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) side))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) side))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -174,12 +174,12 @@
 		x 4.5
 		y 3.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(command _POLYLINE_ (posBL x y) (posBR x y ) (posTR x y) _closedPolyline_)
-	(drawHatchFromPoint _solidHatch_ _slightlyBelow_ _angleZero_ _offsetZero_)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(command _POLYLINE_ (PosBL x y) (PosBR x y ) (PosTR x y) _closedPolyline_)
+	(DrawHatchFromPoint _solidHatch_ _slightlyBelow_ _angleZero_ _offsetZero_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

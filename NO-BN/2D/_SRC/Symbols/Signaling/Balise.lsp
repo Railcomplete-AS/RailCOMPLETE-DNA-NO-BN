@@ -13,12 +13,12 @@
 ; ATC balise
 
 (defun C:BALISE ( / ) 
-	(subSubStep "BALISE-GROUP")			(BALISE-GROUP)
+	(TraceLevel3 "BALISE-GROUP")		(BALISE-GROUP)
 		
-	(subSubStep "BALISE tom/fast")		(BALISE 1) ; variation 1 = tom/fast = empty / fixed telegram
-	(subSubStep "BALISE tom/styrt")		(BALISE 2) ; variation 2 = tom/styrt = empty / controlled telegram
-	(subSubStep "BALISE fylt/fast")		(BALISE 3) ; variation 3 = fylt/fast = hatched / fixed telegram
-	(subSubStep "BALISE fylt/styrt")	(BALISE 4) ; variation 4 = fylt/styrt = hatched / controlled telegram
+	(TraceLevel3 "BALISE tom/fast")		(BALISE 1) ; variation 1 = tom/fast = empty / fixed telegram
+	(TraceLevel3 "BALISE tom/styrt")	(BALISE 2) ; variation 2 = tom/styrt = empty / controlled telegram
+	(TraceLevel3 "BALISE fylt/fast")	(BALISE 3) ; variation 3 = fylt/fast = hatched / fixed telegram
+	(TraceLevel3 "BALISE fylt/styrt")	(BALISE 4) ; variation 4 = fylt/styrt = hatched / controlled telegram
 )
 
 
@@ -53,47 +53,47 @@
 			((= variation 4) "FYLT/STYRT"))
 		)
 	)
-	(addDescriptionBelowOrigo description _one_) ; below TEKST_UNDER item
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description _one_) ; below TEKST_UNDER item
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 
 	; Metric symbol
-	(setLayer layDef_Balise_3m_Separation)
+	(SetLayer layDef_Balise_3m_Separation)
 	(command 
 		_POLYLINE_ (list 3 0) _setPolylineArcMode_ _setPolylineArcCenter_ _origo_ _setPolylineArcAngle_ 15 _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addTextAtPosWithJustification layDef_Balise_3m_Separation _th020_ (list (- 2.9) (- 0.5)) "3" _topLeft_)
+	(AddTextAtPosWithJustification layDef_Balise_3m_Separation _th020_ (list (- 2.9) (- 0.5)) "3" _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 		
-	(setLayer layDef_Balise_8m_Separation)
+	(SetLayer layDef_Balise_8m_Separation)
 	(command 
 		_POLYLINE_ (list 8 0) _setPolylineArcMode_ _setPolylineArcCenter_ _origo_ _setPolylineArcAngle_ 9 _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addTextAtPosWithJustification layDef_Balise_8m_Separation _th020_ (list (- 7.9) (- 0.95)) "8" _topLeft_)
+	(AddTextAtPosWithJustification layDef_Balise_8m_Separation _th020_ (list (- 7.9) (- 0.95)) "8" _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 
-	(setLayer layDef_Balise_12m_Separation)
+	(SetLayer layDef_Balise_12m_Separation)
 	(command 
 		_POLYLINE_ (list 12 0) _setPolylineArcMode_ _setPolylineArcCenter_ _origo_ _setPolylineArcAngle_ 10 _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(addTextAtPosWithJustification layDef_Balise_12m_Separation _th020_  (list (- 11.8) (- 1.8)) "12" _topLeft_)
+	(AddTextAtPosWithJustification layDef_Balise_12m_Separation _th020_  (list (- 11.8) (- 1.8)) "12" _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
 		
 	; Metal-free area:
-	(setLayerAndObjectColor layDef_Balise_MetalFreeArea "_ByLayer")
+	(SetLayerAndObjectColor layDef_Balise_MetalFreeArea "_ByLayer")
 	(command _RECTANGLE_ (list (- mx) (- my))   (list (+ mx) (+ my)))
-	(createMetricBlockFromCurrentGraphics blockName)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -103,7 +103,7 @@
 		blockName "NO-BN-2D-JBTSI-ATC-BALISEGRUPPE"
 	)
 	; Equilateral triangle, side = 6, draw a dashed line (without using the CAD system's dash-line mechanism):
-	(setLayerAndObjectColor layDef_Zero "_ByBlock")
+	(SetLayerAndObjectColor layDef_Zero "_ByBlock")
 	(command
 		_LINE_ "0,1.5981" "-0.3,1.0785" _ENTER_
 		_LINE_ "-0.6,0.5588" "-0.9,0.0392" _ENTER_
@@ -116,14 +116,14 @@
 	; Twice as big as balise symbol (Bane NOR wants it that way):
 	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _two_)
 
-	(createSchematicBlockFromCurrentGraphics blockName) 
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName) 
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )	
 
 
 
 ;==========================
-; draw...X...() functions
+; Draw...X...() functions
 ;==========================
 (defun drawBalise ( variation / blockName side h dh )
 	; Draw balise triangle in schematic size
@@ -134,7 +134,7 @@
 		dh 0.10  ; The height of the "controlled balise" bar above the triangle
 	)
 	
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command 
 		_COLOR_ _ByBlock_
 		_POLYLINE_
@@ -154,24 +154,24 @@
 					(list (/ side -2.0) h)
 					(list (/ side 2.0) (+ h dh))
 			)
-			(drawHatch _denseHatch_)
+			(DrawHatch _denseHatch_)
 		)
 		((= variation 3)
-			(drawHatch _solidHatch_)
+			(DrawHatch _solidHatch_)
 			(setq blockName "NO-BN-2D-JBTSI-ATC-BALISE-FYLT-FAST")
 		)
 		((= variation 4)
-			(drawHatch _solidHatch_)
+			(DrawHatch _solidHatch_)
 			(setq blockName "NO-BN-2D-JBTSI-ATC-BALISE-FYLT-STYRT")
 			(command 
 				_RECTANGLE_
 					(list (/ side -2.0) h)
 					(list (/ side 2.0) (+ h dh))
 			)
-			(drawHatch _denseHatch_)
+			(DrawHatch _denseHatch_)
 		)
 	)
-	(addAtt "TEKSTOVER" "Tekst over" _ENTER_ (list 0 (* 1.333 side)) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
-	(addAtt "TEKSTUNDER" "Tekst under" _ENTER_ (list 0 (- (* 0.8 side))) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "TEKSTOVER" "Tekst over" _ENTER_ (list 0 (* 1.333 side)) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "TEKSTUNDER" "Tekst under" _ENTER_ (list 0 (- (* 0.8 side))) _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 	blockName ; Must return block name to caller
 )

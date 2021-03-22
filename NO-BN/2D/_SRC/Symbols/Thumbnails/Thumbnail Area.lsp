@@ -16,7 +16,7 @@
 	(AREA-GENERELL)
 )
 
-(defun AREA-GENERELL (/ blockName x y)
+(defun AREA-GENERELL ( / blockName x y )
 	(setq 
 		blockName "NO-BN-2D-JBTFE-THUMBNAIL-OMRAADE-GENERELL"
 		x 12
@@ -41,6 +41,5 @@
 		_LINE_ (list (* x -0.5) (* y 0.4)) (list (* x -0.5) (* y 0.6)) _ENTER_
 		_LINE_ (list (* x 0.5) (* y 0.4)) (list (* x 0.5) (* y 0.6)) _ENTER_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

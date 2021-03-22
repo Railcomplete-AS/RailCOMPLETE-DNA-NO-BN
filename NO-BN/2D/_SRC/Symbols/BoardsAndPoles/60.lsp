@@ -29,15 +29,15 @@
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60A-ATC-FORSIGNAL"
 		description "SKILT SIGNAL 60A ATC FORSIGNAL"
-		side	(getLosangeSide)	; Losange side
+		side	(GetLosangeSide)	; Losange side
 		r		(* 0.215 side)
   	)
-	(drawLosangeWithCircle)
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) side))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLosangeWithCircle)
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) side))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -57,20 +57,20 @@
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60B-ATC-REPETER-MAALPUNKT"
 		description (strcat "SKILT SIGNAL 60B ATC REP.M" _uAA_ "LPUNKT")
-		side	(getLosangeSide)	; Losange side
+		side	(GetLosangeSide)	; Losange side
 		x	(* (sqrt 2) side)
 		y	(* (sqrt 2) side)
 		p1 (list (* -0.10 x) (*  0.07 y))
 		p2 (list (*  0.10 x) (*  0.07 y))
 		p3 (list (*  0.00 x) (* -0.10 y))
 	)
-	(drawLosangeWithCircle)
+	(DrawLosangeWithCircle)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_) ; triangle
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) side))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) side))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -93,13 +93,13 @@
 		x 1.5 ; horizontal bar
 		y 0.6 ; horizontal bar
 	)
-	(drawLosangeWithCircle)
-	(drawBox layDef_Zero x y _noWipeout_) ; Add bar
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLosangeWithCircle)
+	(DrawBox layDef_Zero x y _noWipeout_) ; Add bar
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -120,11 +120,11 @@
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60D-ATC-REPETER-HASTIGHET"
 		description "SKILT SIGNAL 60D ATC REPETER HASTIGHET"
 	)	
-	(drawLosangeWithCircle)
-	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLosangeWithCircle)
+	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -145,12 +145,12 @@
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60D-ATC-REPETER-HASTIGHET-10"
 		description "SKILT SIGNAL 60D ATC REPETER HASTIGHET 10 KM/H"
 	)	
-	(drawLosangeWithCircle)
-	(addTextAtPos layDef_Zero (* 0.45 (getLosangeSide)) _origo_ "1") ; Letter size is 45% of side
-	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLosangeWithCircle)
+	(AddTextAtPos layDef_Zero (* 0.45 (GetLosangeSide)) _origo_ "1") ; Letter size is 45% of side
+	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -171,12 +171,12 @@
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60D-ATC-REPETER-HASTIGHET-40"
 		description "SKILT SIGNAL 60D ATC REPETER HASTIGHET 40 KM/H"
 	)	
-	(drawLosangeWithCircle)
-	(addTextAtPos layDef_Zero (* 0.45 (getLosangeSide)) _origo_ "4") ; Letter size is 45% of side
-	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawLosangeWithCircle)
+	(AddTextAtPos layDef_Zero (* 0.45 (GetLosangeSide)) _origo_ "4") ; Letter size is 45% of side
+	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -196,20 +196,20 @@
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60E-ATC-VARSEL"
 		description "SKILT SIGNAL 60E ATC VARSEL"
-		side (getLosangeSide)
+		side (GetLosangeSide)
 		x (* 2 (DDcos _angle45_) side) ; Virtual box
 		y x
 		p1 (list (* -0.25 x) (*  0.10 y))
 		p2 (list (*  0.25 x) (*  0.10 y))
 		p3 (list (*  0.00 x) (* -0.34 y))
 	)
-	(drawLosange)
+	(DrawLosange)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_) ; inner triangle
-	(drawHatch _solidHatch_)
-	(moveUp (* (DDcos _angle45_) (getLosangeSide)))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _solidHatch_)
+	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -230,12 +230,12 @@
 		x	9.0
 		y	6.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "FATC")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "FATC")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -257,13 +257,13 @@
 		x	9.0
 		y	6.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ (pos31 y) "FATC")
-	(addTextAtPos layDef_Zero _th150_ (pos33 y) "BEGYNNER")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ (Pos31 y) "FATC")
+	(AddTextAtPos layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -285,12 +285,12 @@
 		x	9.0
 		y	6.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "DATC")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "DATC")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -312,13 +312,13 @@
 		x	9.0
 		y	6.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ (pos31 y) "DATC")
-	(addTextAtPos layDef_Zero _th150_ (pos33 y) "BEGYNNER")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ (Pos31 y) "DATC")
+	(AddTextAtPos layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -345,17 +345,17 @@
 		p5 (list (*  0.5 x) (*  0.5 y))
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "ATC")
-	(setLayer layDef_Zero)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "ATC")
+	(SetLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_
 		_LINE_ p2 p5 _ENTER_
 		_LINE_ p3 p6 _ENTER_
 	)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

@@ -54,15 +54,38 @@
 		p2 (list (*  0.00 x) (*  0.05 y))
 		p3 (list (*  0.00 x) (* -0.25 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th180_ p1 att1)
-	(addTextAttributeAtPos layDef_Zero _th180_ p2 att2)
-	(addTextAttributeAtPos layDef_Zero _th180_ p3 att3)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-
+	(setq
+		blockName 	"NO-BN-2D-SKILT-KJOERENDE-SIGNAL-101-1-ID-3-LINJER"
+		description	"SKILT SIGNAL 101-1 IDENTIFIKASJONSSKILT, 3 LINJER"
+		x	6.0
+		y	9.0
+		att1 '(
+			"ID_BOKSTAV"
+			(strcat "ID-skilt " _oe_ "vre linje (bokstav)")
+			"M"
+		)
+		att2 '(
+			"ID_NUMMER"
+			"ID-skilt midtre linje (signalnummer)"
+			"15894"
+		)
+		att3 '(
+			"ID_STED"
+			"ID-skilt nedre linje (stedsforkortelse)"
+			"XYZ"
+		)
+		p1 (list (*  0.00 x) (*  0.35 y))
+		p2 (list (*  0.00 x) (*  0.05 y))
+		p3 (list (*  0.00 x) (* -0.25 y))
+	)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p1 att1)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p2 att2)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p3 att3)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -101,13 +124,13 @@
 		p1 (list (*  0.00 x) (*  0.21 y))
 		p2 (list (*  0.00 x) (* -0.21 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th180_ p1 att1)
-	(addTextAttributeAtPos layDef_Zero _th180_ p2 att2)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p1 att1)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p2 att2)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -145,14 +168,14 @@
 		p2 (list 0 (*  0.05 y))
 		p3 (list 0 (* -0.20 y))
 	)
-	(drawCircle layDef_Zero r layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th180_ p1 att1)
-	(addTextAttributeAtPos layDef_Zero _th180_ p2 att2)
-	(addTextAttributeAtPos layDef_Zero _th180_ p3 att3)
-	(moveUp r)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p1 att1)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p2 att2)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p3 att3)
+	(MoveUp r)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -175,12 +198,12 @@
 			"R12"
 		)
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos11 y) att1)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos11 y) att1)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -198,12 +221,12 @@
 			"R1234"
 		)
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos11 y) att1)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos11 y) att1)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -221,12 +244,12 @@
 			"W"
 		)
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos11 y) att1)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos11 y) att1)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -244,11 +267,11 @@
 			"Z"
 		)
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th125_ (pos11 y) att1)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th125_ (Pos11 y) att1)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

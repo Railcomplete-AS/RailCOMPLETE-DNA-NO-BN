@@ -18,6 +18,7 @@
 
 
 (defun ALIGNMENT-JORDLEDER ( / blockName ) 
+	; Dashed line with the letter 'jl' (jordline = earthing wire)
 	(setq blockName "NO-BN-2D-JBTKL-THUMBNAIL-JORDLEDER")
 	(command 
 		_LINE_ (list 0 10) (list 5 10) _ENTER_		
@@ -51,9 +52,5 @@
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 		_MOVE_ _selectAll_ _ENTER_ (list 2.5 0.5) _origo_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
-
-
-  

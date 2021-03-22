@@ -41,10 +41,10 @@
 		x	1.5
 		y	2.0
 	)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description y)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description y)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )		
 
 
@@ -69,15 +69,15 @@
 	)
 	; Schematic symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; arrow
-	(drawLine layDef_Zero _origo_ p10)	; shaft
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ p10)	; shaft
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; arrow
-	(drawLine layDef_Zero _origo_ p3) 	; SHORT shaft
-	(addDescriptionBelowOrigo description 0)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ p3) 	; SHORT shaft
+	(AddDescriptionBelowOrigo description 0)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )		
 
 
@@ -109,21 +109,21 @@
 	; Schematic symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; lower arrow
 	(command _POLYLINE_ p4 p3 p5 _openPolyline_)			; upper arrow
-	(drawLine layDef_Zero _origo_ p10) 	; shaft
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ p10) 	; shaft
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
 	(command _POLYLINE_ p1 _origo_ p2 _openPolyline_)	; lower arrow
 	(command _POLYLINE_ p4 p3 p5 _openPolyline_)			; upper arrow
-	(drawLine layDef_Zero _origo_ p6) 	; SHORT shaft
-	(addDescriptionBelowOrigo description 0)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ p6) 	; SHORT shaft
+	(AddDescriptionBelowOrigo description 0)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 	
 
-(defun STREVERFESTE ( / blockName shaftLength arrowHeight arrowHalfWidth baseHalfWidth )
+(defun STREVERFESTE ( / blockName description shaftLength arrowHeight arrowHalfWidth baseHalfWidth )
 	;Default insertion direction is "up" in spanner rod alignment, i.e. pointing towards top of OCS mast.
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-STREVER"
@@ -140,14 +140,14 @@
 		_LINE_ (list (- baseHalfWidth) shaftLength) (list (+ baseHalfWidth) shaftLength) _ENTER_
 		_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_
 	)
-	(addDescriptionBelowOrigo description arrowHeight)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description arrowHeight)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun STREVERFESTE-TUNNEL-120 ( / blockName shaftLength arrowHeight arrowHalfWidth baseHalfWidth )
+(defun STREVERFESTE-TUNNEL-120 ( / blockName description shaftLength arrowHeight arrowHalfWidth baseHalfWidth )
 	;2020-07-26 Added. See EH.705007 (tunnel mast Ø120) and EH-70355 (suspension mast Ø120 with spanner)
 	;Default insertion direction is "both", i.e. spanner is located at the track side of its bridge / tunnel suspension mast.
 	(setq
@@ -168,8 +168,8 @@
 		_CIRCLE_ _origo_ 0.060 ; Inside of Ø16 U iron clamp around Ø120 suspension mast
 		_CIRCLE_ _origo_ 0.076 ; Outside of clamp
 	)
-	(scaleAll _four_)
-	(addDescriptionBelowOrigo description 4)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(ScaleAll _four_)
+	(AddDescriptionBelowOrigo description 4)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

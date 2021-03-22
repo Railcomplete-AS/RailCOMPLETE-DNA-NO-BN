@@ -350,7 +350,7 @@ layerdirector:printcommand nil
         )
         (progn
             (if (and (setq lst (cdar (vl-member-if '(lambda ( x ) (wcmatch arg (strcase (car x)))) layerdirector:data)))
-                     (setq tmp (LM:layerdirector:createlayer lst))
+                     (setq tmp (LM:layerdirector:CreateLayer lst))
                      (zerop (logand 1 (cdr (assoc 70 tmp))))
                 )
                 (progn
@@ -417,7 +417,7 @@ layerdirector:printcommand nil
                   lay   (strcat (car lst) xrf (cadr lst))
             )
             (= 4 (logand 4 (cdr (assoc 70 (tblsearch "block" xrf)))))
-            (LM:layerdirector:createlayer (cons lay (cddr lst)))
+            (LM:layerdirector:CreateLayer (cons lay (cddr lst)))
             (setq obj (vlax-ename->vla-object ent))
             (vlax-write-enabled-p obj)
         )
@@ -435,7 +435,7 @@ layerdirector:printcommand nil
 
 ;;----------------------------------------------------------------------;;
 
-(defun LM:layerdirector:createlayer ( lst / def )
+(defun LM:layerdirector:CreateLayer ( lst / def )
     (if (or layerdirector:forcelayprops (not (setq def (tblsearch "layer" (car lst)))))
         (apply
            '(lambda ( lay des col ltp lwt plt pst / dic )

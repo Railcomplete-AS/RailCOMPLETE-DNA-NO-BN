@@ -52,7 +52,7 @@
 		p4	(strcat (rtos r) "<" (rtos (+ startAngle 34.377))) ; Amounts to 360*(arrowLength/(2*pi*r))
 		p5	(strcat (rtos r) "<" (rtos (- endAngle 34.377)))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	; Opening towards the right:
 	(command _ARC_ p1 p2 p3 _ENTER_)
 	(command
@@ -72,15 +72,15 @@
 			_ENTER_
 	)
 	(command _MOVE_ _selectAll_ _ENTER_ p1 _origo_)
-	(if (= dir "V") (mirrorAboutYaxis _eraseMirrorSource_))
-	(addDescriptionBelowOrigo description (halfOf r))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(if (= dir "V") (MirrorAboutYaxis _eraseMirrorSource_))
+	(AddDescriptionBelowOrigo description (HalfOf r))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun SVEVENDE-KRYSS ( / blockName radius )
+(defun SVEVENDE-KRYSS ( / blockName description x y  )
 	; EH.707403 'Svevende kontakttrådkryss for 12 mm2 kontakttråd'. 2500mm tråd med hengetrådklemme i hver ende.
 	; Strømper på bærelinene om nødvendig.
 	; Symbol: A 90 degrees "X" at the apparent intersection between two contact wire alignments.
@@ -100,10 +100,8 @@
 		x	(* (sqrt 0.5) 3.0)
 		y	(* (sqrt 0.5) 3.0)
 	)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
-
-

@@ -18,7 +18,8 @@
 
 
 
-(defun ALIGNMENT-TREKKEROER (/ blockName r1 r2) 
+(defun ALIGNMENT-TREKKEROER ( / blockName r1 r2)
+	; Flexible tubing. Three rounds of coiled-up flexible tube.
 	(setq 
 		blockName "NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER"
 		r1 0.5
@@ -37,6 +38,5 @@
 			_setPolylineArcAngle_ 22  -168
 			_ENTER_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

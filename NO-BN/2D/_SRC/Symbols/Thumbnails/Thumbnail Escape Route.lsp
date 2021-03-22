@@ -19,6 +19,7 @@
 
 
 (defun ALIGNMENT-ROEMNINGSVEI ( / blockName ) 
+	; Pictogram featuring a running adult and an escape route doorway passage.
 	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROEMNINGSVEI")
 	(command 
 		; PERSON:
@@ -75,6 +76,5 @@
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 		_MOVE_ _selectAll_ _ENTER_ (list 5.0 2.5) _origo_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

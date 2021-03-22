@@ -14,9 +14,9 @@
 ; Moveable point frog (heart)
 
 ; For debugging:
-; (SKILT_BEVEGELIG_KRYSS)
+; (SKILT-BEVEGELIG-KRYSS)
 
-(defun Skilt_Bevegelig_kryss ( / blockName description x y )
+(defun SKILT-BEVEGELIG-KRYSS ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 pA pB )
 	; Movable point frog
 	;
 	; TL-4----5-TR
@@ -38,16 +38,16 @@
 		pA '(0 3.6)
 		pB '(0 1.6)
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
 	(command _POLYLINE_ p7 p8 p9 _closedPolyline_)
 	(command _POLYLINE_ p10 p11 p12 _closedPolyline_)
-	(moveUp (halfOf y))
-	(addTextAtPos layDef_Zero _th180_ pA "Bevegelig")
-	(addTextAtPos layDef_Zero _th180_ pB   "kryss"  )
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddTextAtPos layDef_Zero _th180_ pA "Bevegelig")
+	(AddTextAtPos layDef_Zero _th180_ pB   "kryss"  )
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

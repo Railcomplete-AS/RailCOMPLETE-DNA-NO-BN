@@ -36,14 +36,14 @@
 		blockName	(strcat "NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM" "-" variation)
 		description	(strcat "KL BESKYTTELSESSKJERM TYPE " variation)
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(cond 
 			((= variation "1") 
 				; As shown in EH.705339 "Utf.I"
 				; Offset 190/2 mm sideways (0.95m) and 376/2 towards track (0.188m), with two 900x1400 screens,
 				; Two "arms" with extrusion for a Ø200 mast clamped around an Ø200 mast.
 				(progn
-					(drawRightSideScreen) ; First screen
+					(DrawRightSideScreen) ; First screen
 					(command 
 						_POLYLINE_ ; Right brace around Ø200 mast
 							"-0.030,0.406"
@@ -76,7 +76,7 @@
 				; As shown in EH.705339 "Utf.II"
 				; Offset (240+2x35)/2 mm (0.155m) sideways and 376/2 towards track, with two 900x1400 screens 
 				(progn
-					(drawRightSideScreen)
+					(DrawRightSideScreen)
 					(command 
 						_RECTANGLE_ "-0.035,-0.025" "0.025,0.406"  ; Right arm
 						_RECTANGLE_ "-0.035,-0.025" "-0.029,0.406"  ; L-bar
@@ -100,7 +100,7 @@
 				; B2:UNP-120, B3:UNP-140, B4:UNP-160, B5:UNP-180, B6:UNP-200
 				; The 2D symbol here is suitable for UNP-140 beams (B3 masts, the most common one).
 				(progn 
-					(drawRightSideScreen)
+					(DrawRightSideScreen)
 					(command 
 						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.085,-0.105"
 						_RECTANGLE_ "0.221,-0.100" "0.241,0.100"  ; 200mm x Ø20 threaded bar (right)
@@ -120,7 +120,7 @@
 				; Offset 170/2 mm (0.85m) sideways and (300/2+35)mm (0.185m), touching the narrow side of a B- / touching a H-mast
 				; Note: The mast is assumed to be 300mm wide/deep where the screen is mounted (the mast narrows towards the top) 
 				(progn 
-					(drawRightSideScreen)
+					(DrawRightSideScreen)
 					(command 
 						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.085,-0.185"
 						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Left side copy
@@ -134,7 +134,7 @@
 				; Offset 170/2 mm (0.85m) sideways and (150/2+35)mm (0.110m), touching the side of a suspended 100x150 mast (from yoke), i.e.narrow mast side towards track
 				; We chose to mount it with the 'ears' facing away from the track, i.e. a reversed version of Utf.VI as shown in EH.705339.
 				(progn 
-					(drawRightSideScreen)
+					(DrawRightSideScreen)
 					(command 
 						_MOVE_ _selectAll_ _ENTER_ _origo_ "0.175,0.110"  ; 100x150 yoke mast/2 + half mounting L-bar = 0.075+0.035=0.110
 						_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_ ; Add left side screen
@@ -171,29 +171,29 @@
 			)
 		)
 	)
-	(subSubStep blockName)
+	(TraceLevel3 blockName)
 	
 	; Schematic symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(addDescriptionBelowOrigo description 0.5)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(AddDescriptionBelowOrigo description 0.5)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
 ;==========================
-; draw...X...() functions
+; Draw...X...() functions
 ;==========================
-(defun drawRightSideScreen ( / x y tube earX earY earHoleRadius earDisplacement ear1 ear2 ear3 )
+(defun DrawRightSideScreen ( / x y tube earX earY earHoleRadius earDisplacement ear1 ear2 ear3 )
 	; Ref EH-705338
 	; Draw "right side of tunnel mast screen", ears on the back (positive y)
 	(setq

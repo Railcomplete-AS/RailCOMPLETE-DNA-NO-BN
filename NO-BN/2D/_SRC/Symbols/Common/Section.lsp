@@ -22,6 +22,9 @@
 ; network as e.g. 'Shunting area', 'Parking area', 'Platform area' etc. The "RC-ShowSection" function assigns colors from a color palette
 ; to the selected sections when you select one or more section elements (declared as <ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" etc).
 
+; Note: Section symbols do not feature a 'description' (symbol name), since they will be used in many context for different purposes.
+
+
 (defun C:SECTION ( )
 	(SECTION-SYMBOL)
 	(SECTION-JIGSYMBOL)
@@ -29,26 +32,28 @@
 
 
 
-(defun SECTION-SYMBOL ( / blockName textHeight )
+(defun SECTION-SYMBOL ( / blockName description att )
 	(setq
 		blockName "NO-BN-2D-JBTFE-SECTION-SYMBOL"
-		textHeight 1.8
+		description "SECTION"
+		att '("X" "Section Object" "X")
 	)
-	(addAtt "X" "Section Object" "X" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddTextAttributeAtPos layDef_Zero _th180_ _origo_ att)
+	(AddDescriptionBelowOrigo description _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun SECTION-JIGSYMBOL ( / blockName textHeight radius )
+(defun SECTION-JIGSYMBOL ( / blockName att r )
 	(setq
 		blockName "NO-BN-2D-JBTFE-SECTION-JIGSYMBOL"
-		textHeight 1.8
-		radius 2.75
+		att '("X" "Section Object" "X")
+		r 2.75
 	)
-	(command _CIRCLE_ _origo_ radius)
-	(addAtt "X" "Section Object" "X" _origo_ textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(command _CIRCLE_ _origo_ r)
+	(AddTextAttributeAtPos layDef_Zero _th180_ _origo_ att)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	; No need for annotative version, DNA doesn't use it anyway
 )

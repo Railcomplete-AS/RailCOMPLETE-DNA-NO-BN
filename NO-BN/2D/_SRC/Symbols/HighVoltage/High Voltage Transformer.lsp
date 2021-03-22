@@ -26,29 +26,29 @@
 
 
 
-(defun SUGETRANSFORMATOR ( len r / blockName )
+(defun SUGETRANSFORMATOR ( len r / blockName description )
 	(setq
 		blockName	"NO-BN-2D-JBTKL-TRANSFORMATOR-SUGETRAFO"
 		description	(strcat "KL TRANSFORMATOR, SUGETRAFO")
 	)
-	(drawCoil len r)
+	(DrawCoil len r)
 	(command 
 		_ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_
 		_MOVE_ _selectAll_ _ENTER_ _origo_ (list (* 4 r) 0)
 	)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun SUGETRANSFORMATOR-I-KIOSK ( len r / blockName )
+(defun SUGETRANSFORMATOR-I-KIOSK ( len r / blockName description )
 	(setq
 		blockName "NO-BN-2D-JBTKL-TRANSFORMATOR-SUGETRAFO-I-KIOSK"
 		description	(strcat "KL TRANSFORMATOR, SUGETRAFO I KIOSK")
 	)
-	(drawCoil len r)
+	(DrawCoil len r)
 	(command 
 		_ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_
 		_MOVE_ _selectAll_ _ENTER_ _origo_ (list (* 4 r) 0)
@@ -58,9 +58,9 @@
 			(list (* (- 5) r) (- r))
 			(list (* (+ 5) r) (+ len r r))
 	)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -84,23 +84,23 @@
 		p4	(list (- (+ len r r)) 0)
 		p5	(list (- (+ len r r)) (* 8 r))
 	)
-	(drawCoil len r)
-	(moveLeft len)
-	(drawLine layDef_Zero _origo_ p1)
-	(drawLine layDef_Zero p2 p3)
-	(addTextAtPos layDef_AutoTransformerTerminals _th180_ p4 "PL")
-	(addTextAtPos layDef_AutoTransformerTerminals _th180_ p5 "NL")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCoil len r)
+	(MoveLeft len)
+	(DrawLine layDef_Zero _origo_ p1)
+	(DrawLine layDef_Zero p2 p3)
+	(AddTextAtPos layDef_AutoTransformerTerminals _th180_ p4 "PL")
+	(AddTextAtPos layDef_AutoTransformerTerminals _th180_ p5 "NL")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
 ;==========================
-; draw...X...() functions
+; Draw...X...() functions
 ;==========================
-(defun drawCoil ( len r / )
+(defun DrawCoil ( len r / )
 	;   ---
 	;      )
 	;      )

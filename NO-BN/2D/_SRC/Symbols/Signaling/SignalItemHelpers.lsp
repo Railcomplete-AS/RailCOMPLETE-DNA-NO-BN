@@ -6,48 +6,48 @@
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
+; 2020-09-02 CLFEY Added DrawMB function
 ; 2021-02-10 CLFEY Release 2021.a
-; 2020-09-02 CLFEY Added drawMb function
 ;
 ;=========================================================================================================================
 
 ; Useful functions providing an API which hides CAD system specifics. Usage: Draw signal parts.
 
-; GETLARGELANTERNRADIUS
-; GETMEDIUMLANTERNRADIUS
-; GETSMALLLANTERNRADIUS
-; DRAWLANTERN
-; DRAWVERTICALPOLE
-; DRAWHORIZONTALHSBASE
-; DRAWLYINGPOLE
-; DRAWLYINGHSBASE
-; DRAWLYINGTSBASE
-; DRAWMB
-; DRAWTVS
-; DRAWFKS
-; DRAWFORMSIGNALWITHTEXT
-; DRAWLS
-; DRAWLHS
-; DRAWZS
-; DRAWMKS
-; DRAWDS
-; DRAWDSMKS
+; GetLargeLanternRadius
+; GetMediumLanternRadius
+; GetSmallLanternRadius
+; DrawLantern
+; DrawVerticalPole
+; DrawHorizontalHsBase
+; DrawLyingPole
+; DrawLyingHsBase
+; DrawLyingTsBase
+; DrawMB
+; DrawTVs
+; DrawFKs
+; DrawFormSignalWithText
+; DrawLs
+; DrawLHs
+; DrawZs
+; DrawMKs
+; DrawDs
+; DrawDsMKs
 
 ;==========================
 ; Lantern sizes
 ;==========================
-(defun getLargeLanternRadius ( / r )
+(defun GetLargeLanternRadius ( / r )
 	; Hs, RepHs, Fs, Vs
 	; Bane NOR hovedsignal, repeterhovedsignal, forsignal og veisignal (PLO mot vei) lanterne skjematisk symbol
 	(setq r 1.5) ; Ø3
 )
 
-(defun getMediumLanternRadius( / r )
+(defun GetMediumLanternRadius( / r )
   	; Bane NOR middelkontroll signal lanterne skjematisk symbol
 	(setq r 1.25) ; Ø2.5
 )
 
-(defun getSmallLanternRadius( / r )
+(defun GetSmallLanternRadius( / r )
 	; Bane NOR togsporsignal lanterne skjematisk symbol
 	(setq r 1.00) ; Ø2
 )
@@ -55,13 +55,13 @@
 
 
 ;==========================
-; draw...X...() functions
+; Draw...X...() functions
 ;==========================
 
 ;==========================
 ; Signal lanterns
 ;==========================
-(defun drawLantern ( pos r / )
+(defun DrawLantern ( pos r / )
 	(command _CIRCLE_ pos r)
 )
 
@@ -70,13 +70,13 @@
 ;==========================
 ; Draw signal item
 ;==========================
-(defun drawVerticalPole ( poleLength / )
+(defun DrawVerticalPole ( poleLength / )
 	(command _LINE_ _origo_ (list 0 poleLength) _ENTER_)
 )	
 
 
 
-(defun drawHorizontalHsBase ( / x y )
+(defun DrawHorizontalHsBase ( / x y )
 	(setq 
 		x 3.0
 		y 0.5
@@ -86,12 +86,12 @@
 			(list (/ x -2) (/ y -2)) 
 			(list (/ x 2) (/ y 2))
 	)
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 ) 
 
 
 
-(defun drawLyingPole ( poleEnd1 poleEnd2 / )
+(defun DrawLyingPole ( poleEnd1 poleEnd2 / )
 	; We here assume that the signal is drawn with its pole starting at (0,0) and extends to the right, lying along the X-axis.
 	; In use by older drawX...X...() routines.
 	(command _LINE_ (list poleEnd1 0) (list poleEnd2 0) _ENTER_)
@@ -99,7 +99,7 @@
 
 
 
-(defun drawLyingHsBase ( / x y )
+(defun DrawLyingHsBase ( / x y )
 	; We here assume that the signal is drawn with its pole starting at (0,0) and extends to the right, lying along the X-axis.
 	; In use by older drawX...X...() routines.
 	(setq 
@@ -109,12 +109,12 @@
 	(command 
 		_RECTANGLE_ (list (- (/ x 2)) (- (/ y 2))) (list (/ x 2) (/ y 2))
 	)
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 ) 
 
 
 
-(defun drawLyingTsBase ( / x y )
+(defun DrawLyingTsBase ( / x y )
 	; We here assume that the signal is drawn with its pole starting at (0,0) and extends to the right, lying along the X-axis.
 	; In use by older drawX...X...() routines.
 	; Ts = Togsporsignal has a smaller base.
@@ -122,15 +122,13 @@
 		x 0.5
 		y 2.0
 	)
-	(command 
-		_RECTANGLE_ (list (- (/ x 2)) (- (/ y 2))) (list (/ x 2) (/ y 2))
-	)
-	(drawHatch _denseHatch_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawHatch _denseHatch_)
 ) 
 
 
 
-(defun drawMb ( dir / x y )
+(defun DrawMB ( dir / x y p11 p12 p21 p22 p23 p24 p31 )
 	; Signal E35 Stop sign
 	;
 	;         p31
@@ -156,22 +154,22 @@
 		p31	(list (*  0.00 x) (*  0.45 y))
 	)
 	; Surrounding box:
-	(drawBoxAtPos layDef_Zero _origo_ x y layDef_BoardOrPole_Wipeout )
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout )
 
 	; Arrow pointing straight up:
-	(command _POLYLINE_ p11 p12 p23 p24 p31 p21 p22 p11 _openPolyline_)
+	(command _POLYLINE_ p11 p12 p23 p24 p31 p21 p22 p11 _closedPolyline_)
+	(DrawHatchFromPoint _denseHatch_ (AddVectors p31 _slightlyAbove_) _angleZero_ _offsetZero_)
 	(cond 
-		((= dir _left_)	(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angle90_)) ; Arrow now points to the left
-		((= dir _right_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angleMinus90_)); Arrow now points to the right
-		((= dir _down_)(command _ROTATE_ _lastSelection_ _ENTER_ _origo_ _angle180_)) ; Arrow now points down
+		((= dir _left_)	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)) ; Arrow now points to the left
+		((= dir _right_)(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_)); Arrow now points to the right
+		((= dir _down_)(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle180_)) ; Arrow now points down
 	)
-	(drawHatchFromPoint _denseHatch_ p1 _angleZero_ _offsetZero_)
-	(moveUp (/ y 2))
+	(MoveUp (/ y 2))
 )
 
 
 
-(defun drawTVs ( posX posY /  p1 r1 p2 p3 p4 p5 p6 p7 p8 diff )
+(defun DrawTVs ( posX posY /  p1 r1 p2 p3 p4 p5 p6 p7 p8 diff )
 	; Signal 66 'Togvei Slutt'
 	; Draw an upright 'S' shape with its lowest point located at (posX,posY)
 	(setq 
@@ -197,7 +195,7 @@
 
 
 
-(defun drawFKs ( posX posY / side s2 r )
+(defun DrawFKs ( posX posY / side s2 r )
 	; Signal 32 'Forsiktig kjøring'
 	(setq 
 		side 3.0
@@ -218,7 +216,7 @@
 
 
 
-(defun drawFormSignalWithText ( text posX posY / side s2 centerPos )
+(defun DrawFormSignalWithText ( text posX posY / side s2 centerPos )
 	; Signal 
 	(setq 
 		side 3.0
@@ -226,12 +224,12 @@
 		centerPos (list posX (+ posY s2))
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addTextAtPos layDef_Zero _th180_ centerPos text)
+	(AddTextAtPos layDef_Zero _th180_ centerPos text)
 )
 
 
 
-(defun drawLs ( posX posY / side s2 centerPos defaultText )
+(defun DrawLs ( posX posY / side s2 centerPos defaultText )
 	; Signal 35B 'Linjesignal'
 	(setq 
 		side 3.0
@@ -240,12 +238,12 @@
 		defaultText "A/D"
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LS" "Linjesignal" defaultText centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "LS" "Linjesignal" defaultText centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 )
 
 
 
-(defun drawLHs ( posX posY / side s2 centerPos defaultSpeed )
+(defun DrawLHs ( posX posY / side s2 centerPos defaultSpeed )
 	; Signal 68E 'Lysende hastighetssignal'
 	(setq 
 		side 3.0
@@ -254,12 +252,12 @@
 		defaultSpeed "6/7"
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(addAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "LHS" "Lysende hastighetssignal" defaultSpeed centerPos _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
 )
 
 
 
-(defun drawZs ( posX posY / side y1 y2 )
+(defun DrawZs ( posX posY / side y1 y2 )
 	; Signal 41/42 'Høyt skiftesignal'
 	(setq
         x  3.0
@@ -271,20 +269,20 @@
 		_RECTANGLE_ (list (+ posX (/ x -2)) posY) (list (+ posX (/ x 2)) (+ posY y)) ; Signal head rectangle, bottom line center in origo
 		_RECTANGLE_ (list (+ posX (/ x -2)) (+ posY y1)) (list (+ posX (/ x 2)) (+ posY y2))  ; Area to hatch across signal head
 	)
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 )
 
 
 
-(defun drawMKs ( posX posY / side p1 p2 p3 x y p4 )
+(defun DrawMKs ( posX posY / side p1 p2 p3 x y p4 )
 	; Signal 4C 'Middelkontrolllampe'
-	(setq r (getMediumLanternRadius))
+	(setq r (GetMediumLanternRadius))
 	(command _CIRCLE_ (list posX posY) r)
 )
 
 
 
-(defun drawDs ( / side p1 p2 p3 x y p4 )
+(defun DrawDs ( / side p1 p2 p3 x y p4 )
 	; Signal 43/44/45/46 'Dvergsignal'
 	;
 	;  1----
@@ -313,13 +311,13 @@
 
 
 
-(defun drawDsMKs ( / side p1 p2 p3 x y p4 r )
+(defun DrawDsMKs ( / side p1 p2 p3 x y p4 r )
 	(setq
 		side 4.0
-		r (getMediumLanternRadius)
+		r (GetMediumLanternRadius)
 		x (+ (/ side -2) (/ side (sqrt 2)) (/ r (sqrt 2.0))) 	; x = -s/2 + s/sqrt2 + r/sqrt2
 		y (+ (/ side (sqrt 2.0)) (/ r (sqrt 2.0))) 				; y =        s/sqrt2 + r/sqrt2
 	)
-	(drawDs)
-	(drawMKs x y) ; Lantern is now touching the dwarf's arc along the 45 deg diagonal
+	(DrawDs)
+	(DrawMKs x y) ; Lantern is now touching the dwarf's arc along the 45 deg diagonal
 )

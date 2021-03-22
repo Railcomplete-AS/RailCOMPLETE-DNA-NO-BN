@@ -14,9 +14,9 @@
 ; Track number
 
 ; For debugging:
-; (SKILT_SPORNUMMER)
+; (SKILT-SPORNUMMER)
 
-(defun Skilt_Spornummer ( / blockName description x y )
+(defun SKILT-SPORNUMMER ( / blockName description x y p1 p2 attTrackNumber )
 	; Siding (e.g., industry access track on the line between two railway stations)
 	;
 	; TL-------TR
@@ -36,12 +36,12 @@
 		p2 (list 0 1.8)
 		attTrackNumber	'("SPORNUMMER" "Spornummer" "38")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(moveUp (halfOf y))
-	(addTextAtPos          layDef_Zero _th180_ p1 "Spor")
-	(addTextAttributeAtPos layDef_Zero _th250_ p2 attTrackNumber)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(MoveUp (HalfOf y))
+	(AddTextAtPos          layDef_Zero _th180_ p1 "Spor")
+	(AddTextAttributeAtPos layDef_Zero _th250_ p2 attTrackNumber)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

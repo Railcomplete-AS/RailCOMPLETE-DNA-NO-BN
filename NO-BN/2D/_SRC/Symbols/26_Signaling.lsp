@@ -15,23 +15,23 @@
 (setq f (strcat rootFolder "\\Symbols\\Signaling"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
-(loadfolder f)
+(LoadFolder f)
 
 (defun C:GENERATE-SIGNALING-OBJECTS ( / )
 	; Alphabetically:
-	(subStep "AXLE-COUNTER-SYSTEM")						(C:AXLE-COUNTER-SYSTEM)
-	(subStep "DERAILMENT-INDICATOR") 					(C:DERAILMENT-INDICATOR)
-	(subStep "BALISE") 									(C:BALISE)
-	(subStep "VIRTUAL-SIGNAL") 							(C:VIRTUAL-SIGNAL)
-	(subStep "REFLECTIVE-MARKER") 						(C:REFLECTIVE-MARKER)
-	(subStep "RELAY-ROOM")								(C:RELAY-ROOM)
-	(subStep "ERTMS-BOARDS")				 			(C:ERTMS-BOARDS)
-	(subStep "SIGNAL-COMBINATIONS")			 			(C:SIGNAL-COMBINATIONS) ; Loop which iterates over many signal combinations
-	(subStep "DERAILER-SIGNAL") 						(C:DERAILER-SIGNAL)
-	(subStep "SWITCH-SIGNAL") 							(C:SWITCH-SIGNAL)
-	(subStep "SHARED-TRACK-SIGNAL")			 			(C:SHARED-TRACK-SIGNAL)
-	(subStep "LEVEL-CROSSING-ROAD-SIGNAL") 				(C:LEVEL-CROSSING-ROAD-SIGNAL)
-	(subStep "CABINETS-AND-CABLE-DISTRIBUTION-BOXES") 	(C:CABINETS-AND-CABLE-DISTRIBUTION-BOXES)
-	(subStep "SWITCH-CONTROL-EQUIPMENT")				(C:SWITCH-CONTROL-EQUIPMENT) ; Local control panel, point machine, derailer point machines. And may be level crossing boom machines.
-	(subStep "DERAILER") 								(C:DERAILER) ; Yes, this one is categorized as a signaling object and not a track object (because it controls flank protection and front / rear collisions). 
+	(TraceLevel2 "AXLE-COUNTER-SYSTEM")						(C:AXLE-COUNTER-SYSTEM)
+	(TraceLevel2 "DERAILMENT-INDICATOR") 					(C:DERAILMENT-INDICATOR)
+	(TraceLevel2 "BALISE") 									(C:BALISE)
+	(TraceLevel2 "VIRTUAL-SIGNAL") 							(C:VIRTUAL-SIGNAL)
+	(TraceLevel2 "REFLECTIVE-MARKER") 						(C:REFLECTIVE-MARKER)
+	(TraceLevel2 "RELAY-ROOM")								(C:RELAY-ROOM)
+	(TraceLevel2 "ERTMS-BOARDS")				 			(C:ERTMS-BOARDS)
+	(TraceLevel2 "SIGNAL-COMBINATIONS")			 			(C:SIGNAL-COMBINATIONS) ; Loop which iterates over many signal combinations
+	(TraceLevel2 "DERAILER-SIGNAL") 						(C:DERAILER-SIGNAL)
+	(TraceLevel2 "SWITCH-SIGNAL") 							(C:SWITCH-SIGNAL)
+	(TraceLevel2 "SHARED-TRACK-SIGNAL")			 			(C:SHARED-TRACK-SIGNAL)
+	(TraceLevel2 "LEVEL-CROSSING-ROAD-SIGNAL") 				(C:LEVEL-CROSSING-ROAD-SIGNAL)
+	(TraceLevel2 "CABINETS-AND-CABLE-DISTRIBUTION-BOXES") 	(C:CABINETS-AND-CABLE-DISTRIBUTION-BOXES)
+	(TraceLevel2 "SWITCH-CONTROL-EQUIPMENT")				(C:SWITCH-CONTROL-EQUIPMENT) ; Local control panel, point machine, derailer point machines. And may be level crossing boom machines.
+	(TraceLevel2 "DERAILER") 								(C:DERAILER) ; Yes, this one is categorized as a signaling object and not a track object (because it controls flank protection and front / rear collisions). 
 )

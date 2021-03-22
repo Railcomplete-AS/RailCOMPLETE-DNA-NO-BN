@@ -20,23 +20,23 @@
 
 
 
-(defun HENGEMAST-FOR-BRU-OG-TUNNEL ( / blockName x y )
+(defun HENGEMAST-FOR-BRU-OG-TUNNEL ( / blockName description x y )
   (setq 
 		blockName "NO-BN-2D-JBTKL-HENGEMAST-FOR-TUNNEL-OG-BRU"
 		description	"HENGEMAST FOR TUNNEL OG BRU"
 		x 1.5
 		y 2.0
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun HENGEMAST-CARIBONI ( / blockName x y offset )
+(defun HENGEMAST-CARIBONI ( / blockName description x y offset )
 	(setq
 		blockName "NO-BN-2D-JBTKL-HENGEMAST-CARIBONI"
 		description	"HENGEMAST I TUNNELHVELV FOR CARIBONI UTLIGGER"
@@ -44,26 +44,26 @@
 		y 2.0
 		offset 0.075 ; offset pga kort utligger og masten må plasseres nær sporet
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(moveUp (- y offset))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(MoveUp (- y offset))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun HENGEMAST-FOR-AAK ( / blockName r )
+(defun HENGEMAST-FOR-AAK ( / blockName description r )
 	(setq 
 		blockName "NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK"
 		description (strcat "HENGEMAST I " _uAA_ "K")
 		r 0.525
 	)
-	(drawCircle layDef_Zero r _noWipeout_)
-	(drawHatch _denseHatch_)
-	(addDescriptionBelowOrigo description r)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(DrawHatch _denseHatch_)
+	(AddDescriptionBelowOrigo description r)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 

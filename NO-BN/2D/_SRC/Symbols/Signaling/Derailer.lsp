@@ -13,7 +13,7 @@
 ; Derailer
 
 (defun C:DERAILER ( / variation state quadrant)
-	(setCadSystemDefaults)  
+	(SetCadSystemDefaults)  
 	(foreach variation (list _single_ _double_)
 		(foreach state (list _inactive_ _active_)
 			(foreach quadrant '(1 2 3 4)
@@ -39,14 +39,14 @@
 		pt nil  	; see below
 	)
 	; Centered basic box with wipeout
-	(drawBox layDef_Zero x y layDef_Derailer_Wipeout)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(setLayer layDef_Zero)
+	(DrawBox layDef_Zero x y layDef_Derailer_Wipeout)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(SetLayer layDef_Zero)
 	(cond 
 		((= variation _single_)
 			(cond
 				((= state _inactive_) ; Inactive (OFF) - box with wipeout moved away from track, no arrow
-					(moveUp y)
+					(MoveUp y)
 				)
 				((= state _active_) ; Active(ON) -  box is centered on track, with wipeout and arrow
 					(setq
@@ -54,21 +54,21 @@
 						pt (list (+ (/ x 2) (* a1 (cos ang))) (+ (/ y 2) (* a1 (sin ang)))) ; Tip of the arrow head
 					)
 					(command ; Add one arrow
-						_LINE_ (list (- (/ x 2)) (- (/ y 2))) pt _ENTER_		; Arrow line (diagonal plus extension), pointing at quadrant I
+						_LINE_ (list (- (/ x 2)) (- (/ y 2))) pt _ENTER_	; Arrow line (diagonal plus extension), pointing at quadrant I
 						_POLYLINE_											; Arrow head
 							(polar pt (+ (/ pi 2) ang) (/ a2 2))			
 							(polar pt (+ (/ pi 2) ang) (/ a2 -2))
 							(polar pt ang a2)
 							_closedPolyline_
 					)
-					(drawHatch _denseHatch_)										; Filled arrow head
+					(DrawHatch _denseHatch_)										; Filled arrow head
 				)
 			)
 		)
 		((= variation _double_)
 			(cond
 				((= state _inactive_) ; Inactive (OFF) - box with wipeout moved away from track, no arrow
-					(moveUp y)
+					(MoveUp y)
 				)
 				((= state _active_) ; Active(ON) -  box is centered on track, with wipeout and arrow
 					(setq 
@@ -83,7 +83,7 @@
 							(polar pt ang a2)
 							_closedPolyline_
 					)
-					(drawHatch _denseHatch_)
+					(DrawHatch _denseHatch_)
 					(setq pt (list (+ (/ x 2) (* a1 (cos ang))) (+ (/ y 2) (* a1 (sin ang))))) ; Tip of second arrow
 					(command ; Second arrow
 						_LINE_ (list 0 (- (/ y 2))) pt _ENTER_
@@ -93,14 +93,13 @@
 							(polar pt ang a2)
 							_closedPolyline_
 					)
-					(drawHatch _denseHatch_)
+					(DrawHatch _denseHatch_)
 				)
 			)
 		)
 	)
 	; Position the derailer in the specified quadrant, add text, then create blocks
-	(moveToQuadrant quadrant _selectAll_); Move to specified quadrant
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveToQuadrant quadrant _selectAll_); Move to specified quadrant
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
-

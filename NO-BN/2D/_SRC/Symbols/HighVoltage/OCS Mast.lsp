@@ -14,17 +14,17 @@
 
 (defun C:OCS-MAST ( / )
 
-	(subSubStep "BJELKEMAST")	(BJELKEMAST)
-	(subSubStep "GMBMAST")		(GMBMAST)
-	(subSubStep "GITTERMAST-B")	(GITTERMAST-B)
-	(subSubStep "GITTERMAST-H")	(GITTERMAST-H)
-	(subSubStep "BETONGMAST")	(BETONGMAST)
-	(subSubStep "TREMAST")		(TREMAST)
+	(TraceLevel3 "BJELKEMAST")		(BJELKEMAST)
+	(TraceLevel3 "GMBMAST")			(GMBMAST)
+	(TraceLevel3 "GITTERMAST-B")	(GITTERMAST-B)
+	(TraceLevel3 "GITTERMAST-H")	(GITTERMAST-H)
+	(TraceLevel3 "BETONGMAST")		(BETONGMAST)
+	(TraceLevel3 "TREMAST")			(TREMAST)
 )
 
 
 
-(defun BJELKEMAST ( / blockName description x y w1 w2 r )
+(defun BJELKEMAST ( / blockName description x y w1 w2 r p1 p2 p3 p4 p5 p6 p7 )
 	;
 	; 7-----------------6 = (x,y)
 	; :           w2    |
@@ -53,20 +53,20 @@
 		p7	(list 0 y)
 	)
 	; Draw the first quadrant of an "I" shaped beam, then mirror+mirror:
-	(drawLine layDef_Zero p1 p2)
-	(drawArc layDef_Zero p2 p3 p4)
+	(DrawLine layDef_Zero p1 p2)
+	(DrawArc layDef_Zero p2 p3 p4)
 	(command _POLYLINE_ p4 p5 p6 p7 _openPolyline_)
-	(mirrorAboutYaxis _keepMirrorSource_)
-	(mirrorAboutXaxis _keepMirrorSource_)
-	(drawHatchFromPoint _denseHatch_ _origo_ _angleZero_ _offsetZero_)
-	(addDescriptionBelowOrigo description y)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MirrorAboutYaxis _keepMirrorSource_)
+	(MirrorAboutXaxis _keepMirrorSource_)
+	(DrawHatchFromPoint _denseHatch_ _origo_ _angleZero_ _offsetZero_)
+	(AddDescriptionBelowOrigo description y)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun GMBMAST ( / blockName description x y r center_x center_y )
+(defun GMBMAST ( / blockName description x y p1 p2 p3 p4 p5 )
 	;
 	;    -4
 	;  5  |
@@ -88,14 +88,14 @@
 		p4	(list x y)
 		p5	(list 0.222 2.365)
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 p3 p4 _openPolyline_)
-	(drawArc layDef_Zero p4 p5 p1)
-	(moveLeft (halfOf x))
-	(moveDown (halfOf y))
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawArc layDef_Zero p4 p5 p1)
+	(MoveLeft (HalfOf x))
+	(MoveDown (HalfOf y))
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -107,10 +107,10 @@
 		x 1.05
 		y 3.0
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -122,10 +122,10 @@
 		x 3.0
 		y 3.0
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -137,11 +137,11 @@
 		x 3.0
 		y 3.0
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawHatch _mediumHatch_)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawHatch _mediumHatch_)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -152,8 +152,8 @@
 		description "KL TREMAST"
 		r	1.5
 	)
-	(drawCircle layDef_Zero r _noWipeout_)
-	(addDescriptionBelowOrigo description r)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(AddDescriptionBelowOrigo description r)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

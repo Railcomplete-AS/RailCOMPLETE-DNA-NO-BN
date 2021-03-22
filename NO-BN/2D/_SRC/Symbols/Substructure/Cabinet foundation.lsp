@@ -12,6 +12,10 @@
 
 ; Signaling cabinet foundation
 
+; For debugging:
+; 
+
+
 (defun C:CABINET-FOUNDATION ( / )
 	;
 	; Schematic symbols feature only a circle with the discipline's letter combination - a 'proxy symbol'.
@@ -26,7 +30,7 @@
 (defun BETONG-APPARATSKAP-FUNDAMENT ( variation / blockName description s1 s2 h1 h2 len1 len2 )
 	(setq
 		blockName (strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-APPARATSKAP-" variation)
-		description _ENTER_ ; see below
+		description "" ; see below
 		s1 (/ 1.4 2)	; 1.4 wide x 0.82 deep 
 		s2 (/ 0.82 2)
 		h1 (/ 0.76 2)	; Inner hole 0.76 x 0.38
@@ -39,7 +43,7 @@
 			(setq 
 				description "FUNDAMENT BETONG, APPARATSKAP LANGSIDE 1400x820x540"
 			)
-			(defun localGraphics (/)
+			(defun LocalGraphics (/)
 				(command
 					; Outer and inner 'box'
 					_RECTANGLE_ (list (- s1) (- s2)) (list s1 s2)
@@ -59,7 +63,7 @@
 			(setq 
 				description	"FUNDAMENT BETONG, APPARATSKAP KORTSIDE 1400x820x540"
 			)
-			(defun localGraphics (/)
+			(defun LocalGraphics (/)
 				(command
 					; Outer and inner 'box'
 					_RECTANGLE_ (list (- s2) (- s1)) (list s2 s1)
@@ -78,20 +82,20 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )

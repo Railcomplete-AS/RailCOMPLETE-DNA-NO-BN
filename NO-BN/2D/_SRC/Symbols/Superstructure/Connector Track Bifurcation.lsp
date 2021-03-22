@@ -36,14 +36,14 @@
 ;-------------------------------------------------------------------------------------------------------------------------
 
 (defun C:CONNECTOR-SWITCH ( / )
-	(setCadSystemDefaults)  
+	(SetCadSystemDefaults)  
 	(CONNECTOR-SWITCH-ANONYMOUS) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
 	(CONNECTOR-SWITCH-WITH-GEOMETRY) 	; Turnout - switch - point with recognized geometry (fixed 1:1 scale)
 )
 
 
 
-(defun getSwitchParameters (Switch_Drawing_Number)
+(defun getSwitchParameters ( switchDrawingNumber / )
 	; Inserted from Excel file Sporveksler.xlsx. 
 	; Basic information was extracted from Bane NOR TRV (Technical Regulations), 'Overbygning/Prosjektering/Sporveksler/4. Hovedmål/4. Enkel sporveksel'.
 	;
@@ -116,7 +116,7 @@
 	; 1) Klotoideveksel
 	
 	(cadr
-		(assoc Switch_Drawing_Number ; list was copied from Bane NOR TRV:
+		(assoc switchDrawingNumber ; list was copied from Bane NOR TRV:
 			(list	                  
 				;     Drawing number            Rail Head Profile              Sleeper Type
 				(list "KO-800157"   (list '("RailProfile" "54E3") '("SleeperType" Concrete) '("x" 7    ) '("R" 190 ) '("A" 13503 ) '("B" 13503) '("C" 13503	) '("D" 0   ) '("L" 27006 ) '("E" 3654 ) '("F" 2375) '("SwitchCrossing" "FX")))
@@ -146,97 +146,80 @@
 
 
 
-(defun CONNECTOR-SWITCH-ANONYMOUS ( / blockNameBase blockName u bn q )
+(defun CONNECTOR-SWITCH-ANONYMOUS ( / blockName u currentBlockName q )
 	(setq
 		blockName "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-ANONYMOUS"
 		u 1.0 ; unit
 	)
-	(subStep (strcat "SWITCH: ANONYMOUS"))
-	(setLayer layDef_Zero)
+	(TraceLevel2 (strcat "SWITCH: ANONYMOUS"))
+	(SetLayer layDef_Zero)
 	(command 
 		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _ENTER_ ; Stock rail joint
 		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origo_ _ENTER_
 	)
-	(drawHatchFromPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) _angleMinus45_ _offsetZero_)
-	(createSchematicBlockFromCurrentGraphics "tmp")
+	(DrawHatchFromPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) _angleMinus45_ _offsetZero_)
+	(CreateSchematicBlockFromCurrentGraphics "tmp")
 
 	(foreach q '(1 2 3 4)
-		(setq bn (strcat blockname "-" (rtos q _decimal_ _zero_)))
-		(addGraphicsFromScaledSchematicBlock "tmp" _one_)
-		(moveLeft (* 2 u))
-		(moveToQuadrant q _selectAll_)
-		(createSchematicBlockFromCurrentGraphics bn)
-		(addGraphicsFromScaledSchematicBlock "tmp" _one_)
-		(moveToQuadrant q _selectAll_)
-		(createMetricBlockFromCurrentGraphics bn)
-		(eraseSchematicBlock "tmp")
+		(setq currentBlockName (strcat blockname "-" (rtos q _decimal_ _zero_)))
+		(AddGraphicsFromScaledSchematicBlock "tmp" _one_)
+		(MoveLeft (* 2 u))
+		(MoveToQuadrant q _selectAll_)
+		(CreateSchematicBlockFromCurrentGraphics currentBlockName)
+		(AddGraphicsFromScaledSchematicBlock "tmp" _one_)
+		(MoveToQuadrant q _selectAll_)
+		(CreateMetricBlockFromCurrentGraphics currentBlockName)
+		(EraseSchematicBlock "tmp")
 	)
 )
 
 
 
-(defun CONNECTOR-SWITCH-WITH-GEOMETRY ( / Switch_Drawing_List element_no Drawing_Number quadrant )
+(defun CONNECTOR-SWITCH-WITH-GEOMETRY ( / switchDrawingList itemNumber drawingNumber quadrant )
 	; Ref: Bane NOR standard tegninger for sporveksler (tegningsnummer KO.nnnnnn)
 	; TODO: Include details on guard rails, tongue hinge / swivel point etc.
 	(setq 
-		Switch_Drawing_List (list
+		switchDrawingList (list
 			; Enkel 54E3
-			"KO-800157" ;1:7 R190 mangler tegning
-			"KO-701334" ;1:9 R190   OK
+			"KO-800157" 	;1:7 R190 mangler tegning
+			"KO-701334" 	;1:9 R190
 			
-			; Fast kryss 54E3
-			"KO-701287" ;1:9 R300
-			"KO-701306" ;1:12 R500
-			"KO-701319" ;1:14 R760
+			; Fast kryss 54E3 (fixed diamond)
+			"KO-701287" 	;1:9 R300
+			"KO-701306" 	;1:12 R500
+			"KO-701319" 	;1:14 R760
 	
-			; Fast kryss 60E1
-			"KO-701409" ;1:9 R300
-			"KO-800068-2" ;1:11.66 R500
-			"KO-800068" ;1:12 R500
-			"KO-701372" ;1:14 R760
-			"KO-701382" ;1:15 R760
+			; Fast kryss 60E1 (fixed diamond)
+			"KO-701409" 	;1:9 R300
+			"KO-800068" 	;1:12 R500
+			"KO-800068-2" 	;1:11.66 R500
+			"KO-701372" 	;1:14 R760
+			"KO-701382" 	;1:15 R760
 			
-			; Bevegelig kryss 60E1
-			"KO-800099" ; 1:9 R300
-			"KO-065306" ; 1:8.21 R300
-			"KO-800090" ;1:12 R500
-			"KO-800108" ;1:14 R760
-			"KO-800164" ;1:15 R760
-			"KO-800081" ;1:18,4 R12001 klotoideveksel
-			"KO-701399" ;1:26,1 R25001 klotoideveksel
+			; Bevegelig kryss 60E1 (switchable diamond)
+			"KO-800099" 	;1:9 R300
+			"KO-065306" 	;1:8.21 R300
+			"KO-800090" 	;1:12 R500
+			"KO-800108" 	;1:14 R760
+			"KO-800164" 	;1:15 R760
+			"KO-800081" 	;1:18,4 R12001 klotoideveksel
+			"KO-701399" 	;1:26,1 R25001 klotoideveksel
 		)
 	)
-	(subStep "Switches:")
+	(TraceLevel2 "Switches:")
 	(SWITCH-SYMBOL-SIGNALING-KEYLOCKED)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
-	(setq element_no 0)
-	(repeat (length Switch_Drawing_List)
-		(setq Drawing_Number (nth element_no Switch_Drawing_List))
+	(setq itemNumber 0)
+	(repeat (length switchDrawingList)
+		(setq drawingNumber (nth itemNumber switchDrawingList))
 		(setq quadrant 1)
-		(SWITCH-SYMBOL-SIGNALING-THROWING-METHOD Drawing_Number) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
-		(subSubStep (strcat "SWITCH: " Drawing_Number))
+		(SWITCH-SYMBOL-SIGNALING-THROWING-METHOD drawingNumber) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
+		(TraceLevel3 (strcat "SWITCH: " drawingNumber))
 		(repeat 4
-			(SWITCH-SYMBOL-SIGNALING quadrant Drawing_Number) ; Signaling discipline symbols in switch object
-			(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant Drawing_Number) ; Track discipline symbols in switch object
-			(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant Drawing_Number) ; Catenary discipline symbols in switch object
+			(SWITCH-SYMBOL-SIGNALING quadrant drawingNumber) ; Signaling discipline symbols in switch object
+			(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant drawingNumber) ; Track discipline symbols in switch object
+			(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant drawingNumber) ; Catenary discipline symbols in switch object
 			(setq quadrant (+ 1 quadrant))
 		)
-		(setq element_no (+ 1 element_no))
+		(setq itemNumber (+ 1 itemNumber))
 	)
-)
-
-
-
-(defun SWITCH-SYMBOL-SIGNALING-THROWING-METHOD (Drawing_Number / blockName switchParameters A radius )
-	; Generate symbol for filled circle at theoretical crossing in switch - used to signify "motorized hand-thrown with push-button operation"
-	; German: "Elektrisch Ortsgestellte Weichen", EOW.
-	(setq
-		switchParameters (getSwitchParameters Drawing_Number)
-		A	  		(/ (cadr (assoc "A" switchParameters)) 1000.0)
-		radius 	  	0.75
-	)
-	(setq blockName (strcat "NO-BN-2D-JBTSI-SWITCH-THROWING-METHOD" "-" (rtos A 2 3)))
-	(setLayerAndObjectColor layDef_Zero "_ByBlock")
-	(command _CIRCLE_ (list A 0) radius)
-	(drawHatch _solidHatch_)
-	(createMetricBlockFromCurrentGraphics blockName)
 )

@@ -15,7 +15,7 @@
 ; 1) Start AutoCAD
 ; 2) Write VLIDE
 ; 3) In the Visual LISP IDE, press Ctrl+Shift+L and select this file.
-; 4) In VLIDE, write (mkAll)
+; 4) In VLIDE, write (MkAll)
 ;
 ; 5) Tip: Use Ctrl+Shift+C in VLIDE to switch between interactive debugging and command mode.
 ;
@@ -28,20 +28,20 @@
 (setq rootFolder "c:\\users\\Claus Feyling\\documents\\github\\railcomplete-no-bn\\NO-BN\\2D\\_src")
 
 
-(defun hlp ( / )
-	(princ (strcat "\n=============================== DebugHelper - HLP ===============================")) (prin1)
+(defun Hlp ( / )
+	(princ (strcat "\n=============================== DebugHelper - Hlp ===============================")) (prin1)
 	(princ (strcat "\n\n*** Root folder = " rootFolder " ***")) (prin1)
 	(princ (strcat "\n\n" "VLIDE shortcuts:\n    TAB/Shift+TAB: Previous/next command\n    Ctrl+Shift+L: Load Lisp file\n    Ctrl+R: Reset from break loop\n    Ctrl+Shift+C: Toggle AutoCAD (Command) mode\n    F6: Console window")) (prin1)
-	(princ (strcat "\n\n" "(mkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (mkAll)")) (prin1)
-	(princ (strcat "\n\n" "(ql)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (ql folderName)")) (prin1)
-	(princ (strcat "\n\n" "(ldAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (ldAll)")) (prin1)
-	(princ (strcat "\n\n" "(ldFolder)\n    Loads all .lsp files in specified folder.\n    Usage: (ldFolder folderName)")) (prin1)
-	(princ (strcat "\n\n" "(dir)\n    Lists all files and folders below 'rootFolder'.\n    Usage: (dir '<folderName>') or (dir '<folderName>'\\'<subFolderName>')")) (prin1)
-	(princ (strcat "\n\n" "(init)\n    Initializes CAD system, sets constants and scale variables, creates standard layers.\n    Usage: (init)")) (prin1)
-	(princ (strcat "\n\n" "(hlp)\n    Prints the help menu\n    Usage: (hlp)")) (prin1)
+	(princ (strcat "\n\n" "(MkAll)\n    Loads all 2D library project files, then runs MAIN routine.\n    Usage: (MkAll)")) (prin1)
+	(princ (strcat "\n\n" "(QL)\n    Quickload - Loads all .lsp files in specified folder addressed from " rootFolder "\\symbols\\'.\n    Usage: (QL folderName)")) (prin1)
+	(princ (strcat "\n\n" "(LdAll)\n    Defines the 'rootFolder' path, then loads all files contained in 2D library project.\n    Usage: (LdAll)")) (prin1)
+	(princ (strcat "\n\n" "(LdFolder)\n    Loads all .lsp files in specified folder.\n    Usage: (LdFolder folderName)")) (prin1)
+	(princ (strcat "\n\n" "(LS)\n    Lists all files and folders below 'rootFolder'.\n    Usage: (LS '<folderName>') or (LS '<folderName>'\\'<subFolderName>')")) (prin1)
+	(princ (strcat "\n\n" "(Init)\n    Initializes CAD system, sets constants and scale variables, creates standard layers.\n    Usage: (Init)")) (prin1)
+	(princ (strcat "\n\n" "(Hlp)\n    Prints the help menu\n    Usage: (Hlp)")) (prin1)
 	(princ (strcat "\n\n===================================================================================")) (prin1)
 )
-(princ (strcat "\n\n" "hlp\n    Prints the help menu\n    Usage: (hlp)")) (prin1)
+(princ (strcat "\n\n" "Hlp\n    Prints the help menu\n    Usage: (Hlp)")) (prin1)
 
 
 
@@ -83,9 +83,9 @@
 ;	(trc "BETONG-TELE-OG-FORDELINGSSKAP")
 
 
-(defun mkAll ( / )
+(defun MkAll ( / )
 	; (Re-)load everything, then run MAIN
-	(ldAll)
+	(LdAll)
 	(princ (strcat "\n\n\n==> Running MAIN() routine...\n")) (prin1)
 	(setq calledFromVlide T)	; T (true) if used under AutoCAD VLIDE debugger, otherwise set to nil
 	(setq calledFromBlade nil)	; T (true) if used under BricsCAD BLADE debugger, otherwise set to nil
@@ -94,18 +94,18 @@
 )
 
 
-(defun ldAll ( / )
+(defun LdAll ( / )
 	(setvar 'SECURELOAD 0) ; Suppress AutoCAD's asking for every Lisp file loading whether it is a trusted file.
-	(princ (strcat "\n\n================= DEBUGHELPER - ldAll ================= \n")) (prin1)
-	(ldFolder (strcat rootFolder "\\" "Fonts"))
-	(ldFolder (strcat rootFolder "\\" "Utilities"))
-	(ldFolder (strcat rootFolder "\\" "Symbols"))
+	(princ (strcat "\n\n================= DEBUGHELPER - LdAll ================= \n")) (prin1)
+	(LdFolder (strcat rootFolder "\\" "Fonts"))
+	(LdFolder (strcat rootFolder "\\" "Utilities"))
+	(LdFolder (strcat rootFolder "\\" "Symbols"))
 	(princ (strcat "============================================================= \n")) (prin1)
 )
 
 
 
-(defun ldFolder ( folderName / x ) ; 'Manual' lambda function...
+(defun LdFolder ( folderName / x ) ; 'Manual' lambda function...
 	(princ (strcat "Loading all files in folder " folderName "...\n"))
 	(if (findfile folderName)
 		(progn
@@ -131,10 +131,10 @@
 	)
 )
 
-(defun ql ( folderName / ) (ldFolder (strcat rootFolder "\\symbols\\" folderName)))
+(defun QL ( folderName / ) (LdFolder (strcat rootFolder "\\symbols\\" folderName)))
 
-
-(defun dir ( folderName / )
+; LiSt files
+(defun LS ( folderName / )
 	(setq folderName (strcat rootFolder "\\" folderName))
 	(foreach x (vl-directory-files (findfile folderName))
 		(princ (strcat x "\n"))
@@ -144,8 +144,8 @@
 
 
 
-(defun init ( / )
-	(ldAll)
+(defun Init ( / )
+	(LdAll)
 	(setvar 'CMDECHO 0)
 	(setvar 'OSMODE 0) ; Otherwise LINE and other commands will produce bogus results, according to search on 'acad silent console mode'.
 	(command 
@@ -155,12 +155,12 @@
 			_colorizeLayer_ _colorWhite_ "Defpoints"
 			_plottability_ _isNotPlottable_ "Defpoints" _ENTER_
 	)
-	(purgeAll)
-	(setCadSystemDefaults)
-	(createIsoTextStyle)
-	(defineGlobalCadSystemConstants)
-	(createStandardLayers)
-	(setDefaultObjectPropertiesToByBlock)
+	(PurgeAll)
+	(SetCadSystemDefaults)
+	(CreateIsoTextStyle)
+	(DefineGlobalCadSystemConstants)
+	(CreateStandardLayers)
+	(SetDefaultObjectPropertiesToByBlock)
 
 	(setq nSchematicBlocks 0)
 	(setq nAnnotativeBlocks 0)

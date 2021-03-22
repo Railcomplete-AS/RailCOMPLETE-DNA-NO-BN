@@ -15,34 +15,41 @@
 
 ; Ref. http://euroskilt.no/oppsetningsutstyr
 
+; For debugging:
+; (SKILTFESTE-BETONGFOT-60-225 "500") (SKILTFESTE-BETONGFOT-60-225 "700") (SKILTFESTE-BETONGFOT-60-200-1200) (SKILTFESTE-JORDFUNDAMENT-60-70) (SKILTFESTE-JORDSPYD-60)
+; (SKILTFESTE-TILBAKEFYLT-GROP) (SKILTFESTE-STRIPS-ELLER-PATENTBAAND) (SKILTFESTE-BRAKETT-MOT-VEGG-60-110) (SKILTFESTE-BRAKETT-MOT-GULV-60-308) (SKILTFESTE-BRAKETT-MOT-MAST)
+; (UNP80-STOLPE-MED-LJERN-FOT 1) (UNP80-STOLPE-MED-LJERN-FOT 2) (UNP80-STOLPE-MED-LJERN-FOT 3) (UNP80-STOLPE-MED-LJERN-FOT 4) (ROERMAST-MED-LJERN-FOT 1) (ROERMAST-MED-LJERN-FOT 2) (ROERMAST-MED-LJERN-FOT 3) (ROERMAST-MED-LJERN-FOT 4)
+
+
+
 (defun C:LIGHTWEIGHT-FOUNDATION ( / )
 
 	; KU-SKF Skiltfeste
-	(subSubstep "Skiltfeste_Betongfot / 500")			(Skiltfeste_Betongfot_60_225 "500")
-	(subSubstep "Skiltfeste_Betongfot_60_225 / 700")	(Skiltfeste_Betongfot_60_225 "700")
-	(subSubstep "Skiltfeste_Betongfot_60_200_1200)")	(Skiltfeste_Betongfot_60_200_1200)
-	(subSubstep "Skiltfeste_Jordfundament_60_700")		(Skiltfeste_Jordfundament_60_700)
-	(subSubstep "Skiltfeste_Jordspyd_60")				(Skiltfeste_Jordspyd_60)
-	(subSubstep "Skiltfeste_Tilbakefylt_Grop")			(Skiltfeste_Tilbakefylt_Grop)
-	(subSubstep "Skiltfeste_Strips_Eller_Patentbaand")	(Skiltfeste_Strips_Eller_Patentbaand)
-	(subSubstep "Skiltfeste_Brakett_Mot_Vegg_60_110")	(Skiltfeste_Brakett_Mot_Vegg_60_110)
-	(subSubstep "Skiltfeste_Brakett_Mot_Gulv_60_308")	(Skiltfeste_Brakett_Mot_Gulv_60_308)
-	(subSubstep "Skiltfeste_Brakett_Mot_Mast")			(Skiltfeste_Brakett_Mot_Mast)
+	(TraceLevel3 "SKILTFESTE-BETONGFOT-60-225 / 500")	(SKILTFESTE-BETONGFOT-60-225 "500")
+	(TraceLevel3 "SKILTFESTE-BETONGFOT-60-225 / 700")	(SKILTFESTE-BETONGFOT-60-225 "700")
+	(TraceLevel3 "SKILTFESTE-BETONGFOT-60-200-1200")	(SKILTFESTE-BETONGFOT-60-200-1200)
+	(TraceLevel3 "SKILTFESTE-JORDFUNDAMENT-60-70")		(SKILTFESTE-JORDFUNDAMENT-60-70)
+	(TraceLevel3 "SKILTFESTE-JORDSPYD-60")				(SKILTFESTE-JORDSPYD-60)
+	(TraceLevel3 "SKILTFESTE-TILBAKEFYLT-GROP")			(SKILTFESTE-TILBAKEFYLT-GROP)
+	(TraceLevel3 "SKILTFESTE-STRIPS-ELLER-PATENTBAAND")	(SKILTFESTE-STRIPS-ELLER-PATENTBAAND)
+	(TraceLevel3 "SKILTFESTE-BRAKETT-MOT-VEGG-60-110")	(SKILTFESTE-BRAKETT-MOT-VEGG-60-110)
+	(TraceLevel3 "SKILTFESTE-BRAKETT-MOT-GULV-60-308")	(SKILTFESTE-BRAKETT-MOT-GULV-60-308)
+	(TraceLevel3 "SKILTFESTE-BRAKETT-MOT-MAST")			(SKILTFESTE-BRAKETT-MOT-MAST)
 
 	; SA-FUN Stolpe med fot / rørmast med fot
-	(subSubstep "UNP80-STOLPE-MED-LJERN-FOT / 1")	(UNP80-STOLPE-MED-LJERN-FOT 1) ; Enkel S-lås
-	(subSubstep "UNP80-STOLPE-MED-LJERN-FOT / 2")	(UNP80-STOLPE-MED-LJERN-FOT 2) ; Dobbel S-lås
-	(subSubstep "UNP80-STOLPE-MED-LJERN-FOT / 3")	(UNP80-STOLPE-MED-LJERN-FOT 3) ; Lokalstiller
-	(subSubstep "UNP80-STOLPE-MED-LJERN-FOT / 4")	(UNP80-STOLPE-MED-LJERN-FOT 4) ; Overdragstrafo
-	(subSubstep "ROERMAST-MED-LJERN-FOT / 1")		(ROERMAST-MED-LJERN-FOT 1) ; Ø76 høyde 2000 mm for togsporsignal og dvergsignal
-	(subSubstep "ROERMAST-MED-LJERN-FOT / 2")		(ROERMAST-MED-LJERN-FOT 2) ; Ø76 høyde 3000 mm for høye dvergsignaler og togsporsignaler
-	(subSubstep "ROERMAST-MED-LJERN-FOT / 3")		(ROERMAST-MED-LJERN-FOT 3) ; Ø76 høyde 1600 mm for kryssvekselsignal
-	(subSubstep "ROERMAST-MED-LJERN-FOT / 4")		(ROERMAST-MED-LJERN-FOT 4) ; Ø127 høyde 3200 mm for lave signaler
+	(TraceLevel3 "UNP80-STOLPE-MED-LJERN-FOT / 1")		(UNP80-STOLPE-MED-LJERN-FOT 1) ; Enkel S-lås
+	(TraceLevel3 "UNP80-STOLPE-MED-LJERN-FOT / 2")		(UNP80-STOLPE-MED-LJERN-FOT 2) ; Dobbel S-lås
+	(TraceLevel3 "UNP80-STOLPE-MED-LJERN-FOT / 3")		(UNP80-STOLPE-MED-LJERN-FOT 3) ; Lokalstiller
+	(TraceLevel3 "UNP80-STOLPE-MED-LJERN-FOT / 4")		(UNP80-STOLPE-MED-LJERN-FOT 4) ; Overdragstrafo
+	(TraceLevel3 "ROERMAST-MED-LJERN-FOT / 1")			(ROERMAST-MED-LJERN-FOT 1) ; Ø76 høyde 2000 mm for togsporsignal og dvergsignal
+	(TraceLevel3 "ROERMAST-MED-LJERN-FOT / 2")			(ROERMAST-MED-LJERN-FOT 2) ; Ø76 høyde 3000 mm for høye dvergsignaler og togsporsignaler
+	(TraceLevel3 "ROERMAST-MED-LJERN-FOT / 3")			(ROERMAST-MED-LJERN-FOT 3) ; Ø76 høyde 1600 mm for kryssvekselsignal
+	(TraceLevel3 "ROERMAST-MED-LJERN-FOT / 4")			(ROERMAST-MED-LJERN-FOT 4) ; Ø127 høyde 3200 mm for lave signaler
 )
 
 
 
-(defun Skiltfeste_Betongfot_60_225 ( variation / blockName description s1 s2 x d r )
+(defun SKILTFESTE-BETONGFOT-60-225 ( variation / blockName description s1 s2 x d r )
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTUB-SKILTFESTE-BETONGFOT-60-225-" variation)
 		description	_ENTER_ ; See below
@@ -52,7 +59,7 @@
 		d 0.12
 		r 0.03
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command 
 			_LINE_ (list s2 0) (list s2 s1) (list s1 s2) (list 0 s2) _ENTER_
 			_LINE_ (polar  (list x x) (D->R -45) d) (polar  (list x x) (D->R (+ _angle90_ 45)) d) _ENTER_
@@ -68,108 +75,108 @@
 		((= variation "700") (setq description (strcat "SKILTFESTE, BETONGFOT " _uOE_ "60/H700")))
 		(T (setq description "Something is fishy with SKILTFESTE BETONGFOT "))
 	)
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Betongfot_60_200_1200 ( / blockName description ang1 d_ang R1 R2 rad1 rad2 )
+(defun SKILTFESTE-BETONGFOT-60-200-1200 ( / blockName description angBias andArc r1 r2 pr fr )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BETONGFOT-60-200-1200"
 		description	(strcat "SKILTFESTE, BETONGFOT " _uOE_ "60/H1200")
-		ang1 5.0	; Add a bias angle to the symbol
-		d_ang 45.0	; Angular length of "surrounding lines"
-		R1 0.18	; Ø360 surrounding lines in symbol (4 times 45-deg pieces)
-		R2 0.22	; Ø440 surrounding lines in symbol (4 times 45-deg pieces)
+		angBias 5.0	; Add a bias angle to the symbol
+		angArc 45.0	; Angular 'arc length' of "surrounding lines"
+		r1 0.18	; Ø360 surrounding lines in symbol (4 times 45-deg pieces)
+		r2 0.22	; Ø440 surrounding lines in symbol (4 times 45-deg pieces)
 		pr 0.03	; Ø60 pole radius
 		fr 0.10 ; Ø200 foundation radius
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angleZero_)) R1) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angleZero_)) R2) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle90_)) R1) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle90_)) R2) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle180_)) R1) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angle180_)) R2) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angleMinus90_)) R1) _setArcAngle_ (rtos d_ang)
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ ang1 _angleMinus90_)) R2) _setArcAngle_ (rtos d_ang)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angleZero_)) R1) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angleZero_)) R2) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angle90_)) R1) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angle90_)) R2) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angle180_)) R1) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angle180_)) R2) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angleMinus90_)) R1) _setArcAngle_ (rtos angArc)
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (+ angBias _angleMinus90_)) R2) _setArcAngle_ (rtos angArc)
 			_CIRCLE_  _origo_ pr
 			_CIRCLE_  _origo_ fr
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Jordfundament_60_700 ( / blockName description rad1 rad2 ang )
+(defun SKILTFESTE-JORDFUNDAMENT-60-70 ( / blockName description pr r2 ang )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-JORDFUNDAMENT-60-700"
 		description	(strcat "SKILTFESTE, JORDFUNDAMENT " _uOE_ "60/H700")
 		pr		0.030 ; Ø060 pole
-		rad2	0.181 ; 0.151 side wings from the inner pole/tube
+		r2	0.181 ; 0.151 side wings from the inner pole/tube
 		ang		_angle45_
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command 
 			_CIRCLE_ _origo_ pr
-			_LINE_ (list (* pr (DDcos ang)) (* pr (DDsin ang))) (list (* rad2 (DDcos ang)) (* rad2 (DDsin ang))) _ENTER_
+			_LINE_ (list (* pr (DDcos ang)) (* pr (DDsin ang))) (list (* r2 (DDcos ang)) (* r2 (DDsin ang))) _ENTER_
 			_ARRAY_ _lastSelection_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Jordspyd_60 ( / blockName description x y r )
+(defun SKILTFESTE-JORDSPYD-60 ( / blockName description x y r )
 	(setq 
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-JORDSPYD-60"
 		description	(strcat "SKILTFESTE, JORDSPYD " _uOE_ "60/H600")
@@ -178,32 +185,32 @@
 		r	0.030	; For Ø60 poles, an L-iron with a Ø60 hose on top
 	)
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawCircle layDef_Zero r _noWipeout_)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawBox layDef_MetricDetails x y _noWipeout_)
-	(drawCircle layDef_MetricDetails r _noWipeout_)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawBox layDef_MetricDetails x y _noWipeout_)
+	(DrawCircle layDef_MetricDetails r _noWipeout_)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Tilbakefylt_Grop ( / blockName description r )
+(defun SKILTFESTE-TILBAKEFYLT-GROP ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-TILBAKEFYLT-GROP"
 		description	"SKILTFTESTE, TILBAKEFYLT GROP"
 		r	0.030	; For Ø60 pole
 	)
-	(defun localgraphics (/)
+	(defun LocalGraphics (/)
 		(command 
 			_POLYLINE_ 
 				"0.3094,0.5743" 
@@ -232,32 +239,32 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(drawCircle layDef_MetricDetails r _noWipeout_)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(DrawCircle layDef_MetricDetails r _noWipeout_)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Strips_Eller_Patentbaand ( / blockName description r )
+(defun SKILTFESTE-STRIPS-ELLER-PATENTBAAND ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-STRIPS-ELLER-PATENTBAAND"
 		description	(strcat "SKILTFESTE, STRIPS ELLER PATENTB" _uAA_ "ND")
 		r	0.030	; For Ø60 pole
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command 
 			_POLYLINE_
 				"-0.5987,0.25"
@@ -279,26 +286,26 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Brakett_Mot_Gulv_60_308 ( / blockName description ang1 rad1 rad2 pos side )
+(defun SKILTFESTE-BRAKETT-MOT-GULV-60-308 ( / blockName description s b pr br p1 p2 p3 p4 )
 	;
 	; TL-----TR
 	; | 1   2 |
@@ -313,48 +320,48 @@
 		b	0.164	; baseplate holes spacing
 		pr 	0.030	; Ø60 pole radius
 		br 	0.007	; Ø14 bolt radius
-		p1  (posTL b b)
-		p2  (posTR b b)
-		p3  (posBL b b)
-		p4  (posBR b b)
+		p1  (PosTL b b)
+		p2  (PosTR b b)
+		p3  (PosBL b b)
+		p4  (PosBR b b)
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command
-			_RECTANGLE_ (posBL s s) (posTR s s)
+			_RECTANGLE_ (PosBL s s) (PosTR s s)
+			_CIRCLE_ p1 br
+			_CIRCLE_ p2 br
 			_CIRCLE_ p3 br
 			_CIRCLE_ p4 br
-			_CIRCLE_ p5 br
-			_CIRCLE_ p6 br
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Brakett_Mot_Mast ( / blockName description r )
+(defun SKILTFESTE-BRAKETT-MOT-MAST ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BRAKETT-PAA-ANNEN-MAST"
 		description	(strcat "SKILTFESTE, BRAKETT P" _uAA_ " ANNEN MAST")
 		r	0.030	; For Ø60 pole
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command 
 			_ARC_ _setArcCenter_ _origo_ '(0.1 0.2) '(-0.1 0.2)
 			_MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
@@ -363,26 +370,26 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun Skiltfeste_Brakett_Mot_Vegg_60_110 ( / blockName description wingStart wingLength wingIncrY )
+(defun SKILTFESTE-BRAKETT-MOT-VEGG-60-110 ( / blockName description backPlate wingStart wingLength wingIncrY )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BRAKETT-MOT-VEGG-60-110"
 		description	(strcat "SKILTFESTE, VEGGFESTE " _uOE_ "60/110")
@@ -391,7 +398,7 @@
 		wingLength	0.150
 		wingIncrY	0.050
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command  ; Three "eagle wings" to each side of insertion point:
 			_LINE_ (list wingStart 0) (list (+ wingStart wingLength) 0) _ENTER_
 			_LINE_ (list wingStart wingIncrY) (list (+ wingStart wingLength) wingIncrY) _ENTER_
@@ -407,26 +414,26 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun UNP80-STOLPE-MED-LJERN-FOT ( variation / blockName description t1 t2 x1 x2 x3 y1 y2 y3 p1 p2 p3 xBar yBar )
+(defun UNP80-STOLPE-MED-LJERN-FOT ( variation / blockName description t1 t2 x1 x2 x3 y1 y2 y3 p1 p2 p3 p4 p5 xBar yBar )
 	; Ref S.018812 Stolpe for festeplater for lokalstiller type Satema S-låser type DSI Overdragstrafo TM 14
 	; Stolpen er en UNP80, 2200 høy / 800 under bakken, 1400 over bakken. Kommer med 4 stk festeplate-varianter,
 	; enkel S-lås (bxh = 170x350), dobbel S-lås (410x350), lokalstiller 148x96), overdragstrafo 195x240). 6mm tykke plater.
@@ -468,37 +475,37 @@
 		p5 '(-0.070 0.029)
 	)
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(drawBoxAtPos layDef_Zero p1 x1 y1 _noWipeout_)
-	(drawBoxAtPos layDef_Zero p2 x2 y2 _noWipeout_)
-	(drawBoxAtPos layDef_Zero p3 x3 y3 _noWipeout_)
-	(drawBoxAtPos layDef_Zero p4 xBar yBar _noWipeout_)
-	(drawLine layDef_Zero '(-0.250 0.058) '(0.250 0.058)) ; L-bar ==
-	(drawBoxAtPos layDef_Zero p5 yBar xBar _noWipeout_)
-	(drawLine layDef_Zero '(-0.046 0.250) '(-0.046 -0.250)) ; L-bar ||
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(DrawBoxAtPos layDef_Zero p1 x1 y1 _noWipeout_)
+	(DrawBoxAtPos layDef_Zero p2 x2 y2 _noWipeout_)
+	(DrawBoxAtPos layDef_Zero p3 x3 y3 _noWipeout_)
+	(DrawBoxAtPos layDef_Zero p4 xBar yBar _noWipeout_)
+	(DrawLine layDef_Zero '(-0.250 0.058) '(0.250 0.058)) ; L-bar ==
+	(DrawBoxAtPos layDef_Zero p5 yBar xBar _noWipeout_)
+	(DrawLine layDef_Zero '(-0.046 0.250) '(-0.046 -0.250)) ; L-bar ||
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawBoxAtPos layDef_MetricDetails p1 x1 y1 _noWipeout_)
-	(drawBoxAtPos layDef_MetricDetails p2 x2 y2 _noWipeout_)
-	(drawBoxAtPos layDef_MetricDetails p3 x3 y3 _noWipeout_)
-	(drawBoxAtPos layDef_MetricDetails p4 xBar yBar _noWipeout_)
-	(drawLine layDef_MetricDetails '(-0.250 0.058) '(0.250 0.058)) ; L-bar ==
-	(drawBoxAtPos layDef_MetricDetails p5 yBar xBar _noWipeout_)
-	(drawLine layDef_MetricDetails '(-0.046 0.250) '(-0.046 -0.250)) ; L-bar ||
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawBoxAtPos layDef_MetricDetails p1 x1 y1 _noWipeout_)
+	(DrawBoxAtPos layDef_MetricDetails p2 x2 y2 _noWipeout_)
+	(DrawBoxAtPos layDef_MetricDetails p3 x3 y3 _noWipeout_)
+	(DrawBoxAtPos layDef_MetricDetails p4 xBar yBar _noWipeout_)
+	(DrawLine layDef_MetricDetails '(-0.250 0.058) '(0.250 0.058)) ; L-bar ==
+	(DrawBoxAtPos layDef_MetricDetails p5 yBar xBar _noWipeout_)
+	(DrawLine layDef_MetricDetails '(-0.046 0.250) '(-0.046 -0.250)) ; L-bar ||
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun ROERMAST-MED-LJERN-FOT ( variation / blockName description len1 len2 r d t1 t2 r2 xBar yBar p4 p5 )
+(defun ROERMAST-MED-LJERN-FOT ( variation / r d t1 t2 blockName description ri xBar yBar p4 p5 )
 	; Ref. S-002347, for togsporsignal+dvergsignal (2000), dvergsignal+togsporsignal (3000)og kryssvekselsignal (1600)
 	; Ø76 rørmast lengder 2000, 3000, 1600 
 	; Hull Ø33 for kabelboks plasseres 350 over bakkenivå (1260 over UK rørmast)
@@ -519,36 +526,36 @@
 		blockName	(strcat "NO-BN-2D-JBTSI-ROERMAST-" d "-MED-LJERN-FOR-" t1)
 		description	(strcat _uOE_ d " R" _uOE_ "RMAST MED L-JERN FOT FOR " t2)
 		; Actual measures from construction drawing:
-		r2 (* 0.9 r) ; Inner diameter of mast is approx 9/10 of outer diameter
+		ri (* 0.9 r) ; Inner diameter of mast is approx 9/10 of outer diameter
 		xBar 0.500 ; L-bar foot length
 		yBar 0.060 ; L-bar foot width
 		p4 (cond ((= variation 4) '(0.000 0.040)) (T '(0.000 0.014))) ; r + 0.006 - 0.060/2 ==
 		p5 (cond ((= variation 4) '(0.094 0.000)) (T '(0.068 0.000))) ; r + 0.060/2         ||
 	)
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "F")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "F")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(drawCircle layDef_Zero r _noWipeout_)
-	(drawCircle layDef_Zero r2 _noWipeout_)
-	(drawBoxAtPos layDef_Zero p4 xBar yBar _noWipeout_)
-	(drawLine layDef_Zero (list -0.250 r) (list 0.250 r)) ; L-bar ==
-	(drawBoxAtPos layDef_Zero p5 yBar xBar _noWipeout_)
-	(drawLine layDef_Zero (list (+ r 0.006) 0.250) (list (+ r 0.006) -0.250)) ; L-bar ||
-	(moveUp r)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(DrawCircle layDef_Zero ri _noWipeout_)
+	(DrawBoxAtPos layDef_Zero p4 xBar yBar _noWipeout_)
+	(DrawLine layDef_Zero (list -0.250 r) (list 0.250 r)) ; L-bar ==
+	(DrawBoxAtPos layDef_Zero p5 yBar xBar _noWipeout_)
+	(DrawLine layDef_Zero (list (+ r 0.006) 0.250) (list (+ r 0.006) -0.250)) ; L-bar ||
+	(MoveUp r)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawCircle layDef_MetricDetails r _noWipeout_)
-	(drawCircle layDef_MetricDetails r2 _noWipeout_)
-	(drawBoxAtPos layDef_MetricDetails p4 xBar yBar _noWipeout_)
-	(drawLine layDef_MetricDetails (list -0.250 r) (list 0.250 r)) ; L-bar ==
-	(drawBoxAtPos layDef_MetricDetails p5 yBar xBar _noWipeout_)
-	(drawLine layDef_MetricDetails (list (+ r 0.006) 0.250) (list (+ r 0.006) -0.250)) ; L-bar ||
-	(moveUp r)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawCircle layDef_MetricDetails r _noWipeout_)
+	(DrawCircle layDef_MetricDetails ri _noWipeout_)
+	(DrawBoxAtPos layDef_MetricDetails p4 xBar yBar _noWipeout_)
+	(DrawLine layDef_MetricDetails (list -0.250 r) (list 0.250 r)) ; L-bar ==
+	(DrawBoxAtPos layDef_MetricDetails p5 yBar xBar _noWipeout_)
+	(DrawLine layDef_MetricDetails (list (+ r 0.006) 0.250) (list (+ r 0.006) -0.250)) ; L-bar ||
+	(MoveUp r)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )

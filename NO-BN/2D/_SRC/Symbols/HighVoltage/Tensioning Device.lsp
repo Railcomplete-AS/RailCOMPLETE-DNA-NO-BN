@@ -16,13 +16,13 @@
 
  (defun C:TENSIONING-DEVICE ( / )
  
-	(subSubStep "AVSPENNING-FIXPUNKT")		(AVSPENNING-FIXPUNKT)
-	(subSubStep "AVSPENNING-FAST-ENKEL")	(AVSPENNING-FAST-ENKEL)
-	(subSubStep "AVSPENNING-FAST-DOBBEL")	(AVSPENNING-FAST-DOBBEL)
-	(subSubStep "AVSPENNING-LODD-ENKEL")	(AVSPENNING-LODD-ENKEL)
-	(subSubStep "AVSPENNING-LODD-DOBBEL")	(AVSPENNING-LODD-DOBBEL)
-	(subSubStep "AVSPENNING-FJAER-ENKEL")	(AVSPENNING-FJAER-ENKEL)
-	(subSubStep "AVSPENNING-FJAER-DOBBEL")	(AVSPENNING-FJAER-DOBBEL)
+	(TraceLevel3 "AVSPENNING-FIXPUNKT")		(AVSPENNING-FIXPUNKT)
+	(TraceLevel3 "AVSPENNING-FAST-ENKEL")	(AVSPENNING-FAST-ENKEL)
+	(TraceLevel3 "AVSPENNING-FAST-DOBBEL")	(AVSPENNING-FAST-DOBBEL)
+	(TraceLevel3 "AVSPENNING-LODD-ENKEL")	(AVSPENNING-LODD-ENKEL)
+	(TraceLevel3 "AVSPENNING-LODD-DOBBEL")	(AVSPENNING-LODD-DOBBEL)
+	(TraceLevel3 "AVSPENNING-FJAER-ENKEL")	(AVSPENNING-FJAER-ENKEL)
+	(TraceLevel3 "AVSPENNING-FJAER-DOBBEL")	(AVSPENNING-FJAER-DOBBEL)
 )
 
 
@@ -41,12 +41,12 @@
 		y	x
 		r	1.0 ; The hatched circle's radius
 	)
-	(drawCircle layDef_Zero r _noWipeout_)
-	(drawHatch _denseHatch_)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description (* 1.5 r))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(DrawHatch _denseHatch_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description (* 1.5 r))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -73,12 +73,12 @@
 		p10	'(  0.0  6.5)
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
-	(drawLine layDef_Zero p3 p10) ; shaft
-	(drawLine layDef_Zero p6 p7) ; bar
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _denseHatch_)
+	(DrawLine layDef_Zero p3 p10) ; shaft
+	(DrawLine layDef_Zero p6 p7) ; bar
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -108,13 +108,13 @@
 		p10	'(  0.0  6.5)
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
-	(drawLine layDef_Zero p3 p10) ; shaft
-	(drawLine layDef_Zero p4 p5) ; lower bar
-	(drawLine layDef_Zero p8 p9) ; upper bar
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _denseHatch_)
+	(DrawLine layDef_Zero p3 p10) ; shaft
+	(DrawLine layDef_Zero p4 p5) ; lower bar
+	(DrawLine layDef_Zero p8 p9) ; upper bar
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -146,14 +146,14 @@
 		p13	'(  0.0  9.0)
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
-	(drawLine layDef_Zero p3 p10) ; shaft
-	(drawLine layDef_Zero p6 p7) ; bar
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _denseHatch_)
+	(DrawLine layDef_Zero p3 p10) ; shaft
+	(DrawLine layDef_Zero p6 p7) ; bar
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -187,15 +187,15 @@
 		p13	'(  0.0  9.0)
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
-	(drawLine layDef_Zero p3 p10) ; shaft
-	(drawLine layDef_Zero p4 p5) ; bar
-	(drawLine layDef_Zero p8 p9) ; bar
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _denseHatch_)
+	(DrawLine layDef_Zero p3 p10) ; shaft
+	(DrawLine layDef_Zero p4 p5) ; bar
+	(DrawLine layDef_Zero p8 p9) ; bar
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -227,14 +227,14 @@
 		p13	'(  0.0  9.0)
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
-	(drawLine layDef_Zero p3 p10) ; shaft
-	(drawLine layDef_Zero p6 p7) ; bar
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _denseHatch_)
+	(DrawLine layDef_Zero p3 p10) ; shaft
+	(DrawLine layDef_Zero p6 p7) ; bar
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -269,13 +269,13 @@
 		p13	'(  0.0  9.0)
 	)
 	(command _POLYLINE_ p1 _origo_ p2 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 	(command _POLYLINE_ p11 p12 p13 _closedPolyline_)	; arrowhead
-	(drawHatch _denseHatch_)
-	(drawLine layDef_Zero p3 p10) ; shaft
-	(drawLine layDef_Zero p4 p5) ; bar
-	(drawLine layDef_Zero p8 p9) ; bar
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatch _denseHatch_)
+	(DrawLine layDef_Zero p3 p10) ; shaft
+	(DrawLine layDef_Zero p4 p5) ; bar
+	(DrawLine layDef_Zero p8 p9) ; bar
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

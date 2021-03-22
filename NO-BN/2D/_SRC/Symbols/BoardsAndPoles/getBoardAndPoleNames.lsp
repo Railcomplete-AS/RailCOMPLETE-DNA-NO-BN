@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; getBoardAndPoleNames.lsp
+; GetBoardAndPoleNames.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -17,7 +17,7 @@
 ; Use autocad 'DATAEXTRACTION' in acad existing symbol file to export symbol info, then add quotation marks and paste from Excel.
 ; NB: No spaces before/after block names.
 
-(defun getBoardAndPoleNames ( / functionNames f )		
+(defun GetBoardAndPoleNames ( / functionNames f )		
 	(setq 
 		functionNames (list 
 			; Skilt med signalnummer i TRV / SJT forskrifter:
@@ -46,32 +46,27 @@
 			"Skilt ATC Innkoblet" "Skilt ATC Slutter" "Skilt ATC Utkoblet"  ; Not in use for new lines, see 60.lsp
 			"Skilt Balise"
 			"Skilt Bevegelig kryss"
-			"Skilt Driftsbanegaard" "Skilt Driftsbanegaard Slutter"
-			"Skilt Fritekst" "Skilt Fritekst Slutter"
+			"Skilt Driftsbanegaard" "Skilt Driftsbanegaard slutter"
+			"Skilt Fritekst" "Skilt Fritekst slutter"
 			"Skilt Noedtelefon"    
 			"Skilt Roemningsavstand H" "Skilt Roemningsavstand V" "Skilt Roemningsavstand VH"
 			"Skilt Sidespor"
 			"Skilt Spornummer"
-			"Skilt StoppSeOgLytt"
+			"Skilt Stopp se og lytt"
 			"Skilt Strekning uten linjeblokk"
 			"Skilt Togvarmeanlegg 1000V"
-			"Skilt Tredjeperson 138 mot vei" "Skilt Tredjeperson 138 mot vei Flere spor"
-			"Skilt Underskilt meterangivelse"
+			"Skilt Tredjeperson 138 mot vei" "Skilt Tredjeperson 138 mot vei flere spor"
+			"Skilt Underskilt Meterangivelse"
 		)
 	)
-		;fix strings, substitutes spaces by underscores, remove tabs
-	(setq f (mapcar 'removeSpacesnTabs functionNames))
+	; Transform files names into function names:
+	(setq f (mapcar 'TransformFileNameIntoFunctionName functionNames))
 )
 
 
 
-(defun removeSpacesnTabs (f)
-	(setq 
-		f (vl-string-subst "_" " " f)
-		f (vl-string-subst "_" " " f)
-		f (vl-string-subst "_" " " f)
-		f (vl-string-subst "_" " " f)
-		f (vl-string-right-trim "\t" f)
-		f (vl-string-left-trim "\t" f)
-	)
+(defun TransformFileNameIntoFunctionName ( f )
+	(repeat 10 (setq f (vl-string-subst  "-"  " "  f))) ; Assume no function name has more than 10 spaces
+	(setq f (vl-string-right-trim "\t" f))
+	(setq f (vl-string-left-trim "\t" f))
 )

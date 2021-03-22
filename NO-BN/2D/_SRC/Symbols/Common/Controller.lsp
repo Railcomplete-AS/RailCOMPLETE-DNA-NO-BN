@@ -23,8 +23,8 @@
 		blockName "NO-BN-2D-JBTFE-CONTROLLER"
 	)
 	(drawController)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 

@@ -14,9 +14,9 @@
 ; Start of line without automatic blocking system
 
 ; For debugging:
-; (SKILT_STREKNING_UTEN_LINJEBLOKK)
+; (SKILT-STREKNING-UTEN-LINJEBLOKK)
 
-(defun Skilt_Strekning_uten_linjeblokk ( / blockName description x y )
+(defun SKILT-STREKNING-UTEN-LINJEBLOKK ( / blockName description x y p1 p2 p3 p4 )
 	; Segment of line without line blocking system
 	;
 	; TL---------TR
@@ -36,14 +36,14 @@
 		p3 (list 0 3.07)
 		p4 (list 0 1.20)
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(moveUp (halfOf y))
-	(addTextAtPos layDef_Zero _th150_ p1 "STREKNING")
-	(addTextAtPos layDef_Zero _th150_ p2    "UTEN")
-	(addTextAtPos layDef_Zero _th150_ p3 "LINJEBLOKK")
-	(addTextAtPos layDef_Zero _th150_ p4  "BEGYNNER")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(MoveUp (HalfOf y))
+	(AddTextAtPos layDef_Zero _th150_ p1 "STREKNING")
+	(AddTextAtPos layDef_Zero _th150_ p2    "UTEN")
+	(AddTextAtPos layDef_Zero _th150_ p3 "LINJEBLOKK")
+	(AddTextAtPos layDef_Zero _th150_ p4  "BEGYNNER")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

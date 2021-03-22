@@ -15,13 +15,13 @@
 (setq f (strcat rootFolder "\\Symbols\\Substructure"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
-(loadfolder f)
+(LoadFolder f)
 
 (defun C:GENERATE-SUBSTRUCTURE-OBJECTS ( / )
-	(setCadSystemDefaults)
-	(subStep "CABINET-FOUNDATION")	(C:CABINET-FOUNDATION) ; Brukes både for store signalskap, gruppeskap, andre
-	(subStep "MAST-FOUNDATION")		(C:MAST-FOUNDATION) ; Signalmaster og KL-master, bardunfester i bakken - store, som krever pakking av spor etterpå
-	(subStep "LIGHTWEIGHT-FOUNDATION")	(C:LIGHTWEIGHT-FOUNDATION) ; Mindre fundamenter, under 100 kg, som kan graves ned for hånd uten å destabilisere sporet
-	(subStep "TELECOM-FOUNDATION")		(C:TELECOM-FOUNDATION) ; Diverse fundamenter for tele-objekter (monitorstativ, billettautomat med mer)
-	(subStep "MANHOLE")				(C:MANHOLE) ; Rund, firkantet osv - viser ytre mål samt plassering av lokk. Innsettingspunkt er senter overkant øver ring / kasse (lokket "stikker opp").
+	(SetCadSystemDefaults)
+	(TraceLevel2 "CABINET-FOUNDATION")		(C:CABINET-FOUNDATION) ; Brukes både for store signalskap, gruppeskap, andre
+	(TraceLevel2 "MAST-FOUNDATION")			(C:MAST-FOUNDATION) ; Signalmaster og KL-master, bardunfester i bakken - store, som krever pakking av spor etterpå
+	(TraceLevel2 "LIGHTWEIGHT-FOUNDATION")	(C:LIGHTWEIGHT-FOUNDATION) ; Mindre fundamenter, under 100 kg, som kan graves ned for hånd uten å destabilisere sporet
+	(TraceLevel2 "TELECOM-FOUNDATION")		(C:TELECOM-FOUNDATION) ; Diverse fundamenter for tele-objekter (monitorstativ, billettautomat med mer)
+	(TraceLevel2 "MANHOLE")					(C:MANHOLE) ; Rund, firkantet osv - viser ytre mål samt plassering av lokk. Innsettingspunkt er senter overkant øver ring / kasse (lokket "stikker opp").
 )

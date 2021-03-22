@@ -32,27 +32,27 @@
 	;             | | +----- q2 = Quadrant II  = Signal current entering into left rail's joint in the direction of increasing mileage
 	;             | | | +--- q1 = Quadrant I   = Signal current exiting from left rail's joint in the direction of increasing mileage
 	;             | | | | 
-	(subSubStep "RAILJOINT 0")	(RAILJOINT 0 0 0 0) ; No preceding signal current, no following signal current: Planned but yet UNFINISHED isolation.
-	(subSubStep "RAILJOINT 1")	(RAILJOINT 0 0 0 1)
-	(subSubStep "RAILJOINT 2")	(RAILJOINT 0 0 1 0)
-	(subSubStep "RAILJOINT 3")	(RAILJOINT 0 0 1 1)
-	(subSubStep "RAILJOINT 4")	(RAILJOINT 0 1 0 0)
-	(subSubStep "RAILJOINT 5")	(RAILJOINT 0 1 0 1)
-	(subSubStep "RAILJOINT 6")	(RAILJOINT 0 1 1 0)
-	(subSubStep "RAILJOINT 7")	(RAILJOINT 0 1 1 1)
-	(subSubStep "RAILJOINT 8")	(RAILJOINT 1 0 0 0)
-	(subSubStep "RAILJOINT 9")	(RAILJOINT 1 0 0 1)
-	(subSubStep "RAILJOINT A")	(RAILJOINT 1 0 1 0)
-	(subSubStep "RAILJOINT B")	(RAILJOINT 1 0 1 1)
-	(subSubStep "RAILJOINT C")	(RAILJOINT 1 1 0 0)
-	(subSubStep "RAILJOINT D")	(RAILJOINT 1 1 0 1)
-	(subSubStep "RAILJOINT E")	(RAILJOINT 1 1 1 0)
-	(subSubStep "RAILJOINT F")	(RAILJOINT 1 1 1 1)
+	(TraceLevel3 "RAILJOINT 0")	(RAILJOINT 0 0 0 0) ; No preceding signal current, no following signal current: Planned but yet UNFINISHED isolation.
+	(TraceLevel3 "RAILJOINT 1")	(RAILJOINT 0 0 0 1)
+	(TraceLevel3 "RAILJOINT 2")	(RAILJOINT 0 0 1 0)
+	(TraceLevel3 "RAILJOINT 3")	(RAILJOINT 0 0 1 1)
+	(TraceLevel3 "RAILJOINT 4")	(RAILJOINT 0 1 0 0)
+	(TraceLevel3 "RAILJOINT 5")	(RAILJOINT 0 1 0 1)
+	(TraceLevel3 "RAILJOINT 6")	(RAILJOINT 0 1 1 0)
+	(TraceLevel3 "RAILJOINT 7")	(RAILJOINT 0 1 1 1)
+	(TraceLevel3 "RAILJOINT 8")	(RAILJOINT 1 0 0 0)
+	(TraceLevel3 "RAILJOINT 9")	(RAILJOINT 1 0 0 1)
+	(TraceLevel3 "RAILJOINT A")	(RAILJOINT 1 0 1 0)
+	(TraceLevel3 "RAILJOINT B")	(RAILJOINT 1 0 1 1)
+	(TraceLevel3 "RAILJOINT C")	(RAILJOINT 1 1 0 0)
+	(TraceLevel3 "RAILJOINT D")	(RAILJOINT 1 1 0 1)
+	(TraceLevel3 "RAILJOINT E")	(RAILJOINT 1 1 1 0)
+	(TraceLevel3 "RAILJOINT F")	(RAILJOINT 1 1 1 1)
 )
 
 
 
-(defun RAILJOINT ( q4 q3 q2 q1 / blockName schematicGauge geoGauge )
+(defun RAILJOINT ( q4 q3 q2 q1 / blockName description )
 	;
 	; Isolated joint ('Skinneskjøt').
 	;
@@ -82,44 +82,44 @@
 	
 	; Schematic symbol
 	; Schematic 1-line signaling / schematic plan ('skjematisk plan') view
-	(setLayer layDef_View_SchematicPlan)
-	(drawIsolatedJointThickBarSymbol _one_)
+	(SetLayer layDef_View_SchematicPlan)
+	(DrawIsolatedJointThickBarSymbol _one_)
 
 	; Schematic 1-line signaling / cable plan ('plan og kabelplan') view
-	(setLayer layDef_View_CablePlan)
-	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; No scaling, no offset from centre track
+	(SetLayer layDef_View_CablePlan)
+	(DrawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; No scaling, no offset from centre track
 
 	; Schematic 2-line signaling / track insulation plan OR high voltage / return current plan view
-	(setLayer layDef_View_TrackIsolationPlan)
-	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _schematicGauge_)) ; No scaling, then offset with half of schematic gauge from centre track
+	(SetLayer layDef_View_TrackIsolationPlan)
+	(DrawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _schematicGauge_)) ; No scaling, then offset with half of schematic gauge from centre track
 
 	; Schematic symbol
-	(addDescriptionBelowOrigo description (* _threeQuarters_ _schematicGauge_))
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description (* _threeQuarters_ _schematicGauge_))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	; Geo 1-line signaling view showing just a thick bar
-	; (setLayer layDef_View_SchematicPlan)  -   not meaningful for geo symbols
-	; (drawIsolatedJointThickBarSymbol _one_)
+	; (SetLayer layDef_View_SchematicPlan)  -   not meaningful for geo symbols
+	; (DrawIsolatedJointThickBarSymbol _one_)
 
 	; Geo 1-line signaling view showing a bar with ears, centered on the track axis
-	; (setLayer layDef_View_CablePlan)
-	; (drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; Scale, no offset
+	; (SetLayer layDef_View_CablePlan)
+	; (DrawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; Scale, no offset
 
 	; Geo 2-line signaling / return current view showing a bar with ear(s), centered on the left or right rail
-	(setLayer layDef_View_TrackIsolationPlan)
-	(drawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _cantReferenceGauge_)) ; Scale, then offset with half of normal gauge reference width
+	(SetLayer layDef_View_TrackIsolationPlan)
+	(DrawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _cantReferenceGauge_)) ; Scale, then offset with half of normal gauge reference width
 	
-	(addDescriptionBelowOrigo description (* _threeQuarters_ _cantReferenceGauge_))
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description (* _threeQuarters_ _cantReferenceGauge_))
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
 
 ;==========================
-; draw...X...() functions
+; Draw...X...() functions
 ;==========================
-(defun drawIsolatedJointThickBarSymbol ( scale / barLength barWidth )
+(defun DrawIsolatedJointThickBarSymbol ( scale / barLength barWidth )
 	(setq
 		barLength	2.5			; Length of thick bar across track
 		barWidth	0.15		; Width of bar across track
@@ -135,7 +135,7 @@
 
 
 
-(defun drawIsolatedJointSymbolWithEars ( q4 q3 q2 q1 scale offset / bar ear y x p11 p12 p13 p22 p32 p41 p42 p43 )
+(defun DrawIsolatedJointSymbolWithEars ( q4 q3 q2 q1 scale offset / bar ear y x p11 p12 p13 p22 p32 p41 p42 p43 )
 	; Points:
 	;
 	;  -x     0    +x

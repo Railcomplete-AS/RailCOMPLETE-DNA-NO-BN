@@ -14,9 +14,9 @@
 ; Train depot
 
 ; For debugging:
-; (SKILT_DRIFTSBANEGAARD) (SKILT_DRIFTSBANEGAARD_SLUTTER)
+; (SKILT-DRIFTSBANEGAARD) (SKILT-DRIFTSBANEGAARD-SLUTTER)
 
-(defun Skilt_Driftsbanegaard ( / blockName description x y )
+(defun SKILT-DRIFTSBANEGAARD ( / blockName description x y )
 	; Start of depot area
 	;
 	; TL---TR
@@ -29,22 +29,22 @@
 		x 9.0
 		y 6.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "DBG")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(addDescriptionBelowOrigo description 2)
-	(addDescriptionBelowOrigo description 4)
-	(addDescriptionBelowOrigo description 6)
-	(addDescriptionBelowOrigo description 8)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "DBG")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(AddDescriptionBelowOrigo description 2)
+	(AddDescriptionBelowOrigo description 4)
+	(AddDescriptionBelowOrigo description 6)
+	(AddDescriptionBelowOrigo description 8)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun Skilt_Driftsbanegaard_Slutter ( / blockName description x y p1 p2 p3 p4 p5 p6 )
+(defun SKILT-DRIFTSBANEGAARD-SLUTTER ( / blockName description x y p1 p2 p3 p4 p5 p6 )
 	; End of depot area
 	;
 	; TL-----------p4--p5
@@ -65,17 +65,17 @@
 		p5 (list (*  0.5 x) (*  0.5 y))
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th250_ _origo_ "DBG")
-	(setLayer layDef_Zero)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th250_ _origo_ "DBG")
+	(SetLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_
 		_LINE_ p2 p5 _ENTER_
 		_LINE_ p3 p6 _ENTER_
 	)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

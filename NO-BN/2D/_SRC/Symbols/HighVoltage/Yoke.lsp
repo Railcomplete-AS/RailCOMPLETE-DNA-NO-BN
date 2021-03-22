@@ -12,19 +12,19 @@
 
 ; Yoke
 
-(defun C:YOKE ( / )
+(defun C:YOKE ( / counter )
 	(setq counter 10)
 	(repeat 34
-		(subSubStep (strcat "YOKE: " (rtos counter _decimal_ 0) " m"))
+		(TraceLevel3 (strcat "YOKE: " (rtos counter _decimal_ 0) " m"))
 		(AAK counter) ; 10 to 43 inclusive
 		(setq counter (+ counter 1))
 	)
-  	(UTLIGGERAAK)
+  	(UTLIGGERAAK 6.000)
 )
 
 
 
-(defun AAK ( len / blockName )
+(defun AAK ( len / blockName description )
 	(setq 
 		blockName (strcat "NO-BN-2D-JBTKL-AAK-" (rtos (* 1000 len) _decimal_ 0))
 		description (strcat "KL-" _uAA_ "K " (rtos len _decimal_ 0) " METER")
@@ -32,41 +32,40 @@
 
 	; Schematic symbol
 	; Adapt to schematic plan with 21 units between center tracks (instead of standard ~4.7 in shunting yards
-	(drawLine layDef_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
-	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
+	(AddDescriptionBelowOrigo description -1.0) ; A little *above* yoke
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	; Just annotative text, no graphics
-	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description -1.0) ; A little *above* yoke
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawLine layDef_Zero _origo_ (list 0 (- len)))
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ (list 0 (- len)))
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun UTLIGGERAAK ( / blockName len )
+(defun UTLIGGERAAK ( len / blockName description )
 	(setq 
-		len 6.000 ; Fixed length [m]
 		blockName (strcat "NO-BN-2D-JBTKL-AAK-UTLIGGERAAK-" (rtos (* 1000 len) _decimal_ 0))
 		description (strcat "KL UTLIGGER-" _uAA_ "K " (rtos len _decimal_ 0) " METER")
 	)
 
 	; Schematic symbol
 	; Adapt to schematic plan with _schematicTrackSpacing_ units between center tracks (instead of standard ~4.7 in shunting yards
-	(drawLine layDef_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
-	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
+	(AddDescriptionBelowOrigo description -1.0) ; A little *above* yoke
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	; Just annotative text, no graphics
-	(addDescriptionBelowOrigo description -1.0) ; A little *above* yoke
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description -1.0) ; A little *above* yoke
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawLine layDef_Zero _origo_ (list 0 (- len)))
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ (list 0 (- len)))
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )

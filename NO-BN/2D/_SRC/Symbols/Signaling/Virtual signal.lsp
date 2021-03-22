@@ -31,8 +31,8 @@
 	)
 	; Schematic symbol
 	(command _POLYLINE_ (list (- x) y) _origo_ (list (- x) (- y)) _openPolyline_) ; the '>' angle bracket
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
 	(command ; 'Fat' angle bracket
@@ -44,8 +44,8 @@
 			_ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_
 	)
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
@@ -64,14 +64,14 @@
 		"._POLYGON" 3 _origo_ "_INSCRIBED" s
 		_ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	(command ; 'fat' triangle
-		"._POLYGON" 3 _origo_ "_INSCRIBED" gs
-		"._POLYGON" 3 _origo_ "_INSCRIBED" (- gs gs2)
+		_POLYGON_ 3 _origo_ _inscribedPolygon_ gs
+		_POLYGON_ 3 _origo_ _inscribedPolygon_ (- gs gs2)
 		_ROTATE_ _selectAll_ _ENTER_ _origo_ _angleMinus90_
 		_MOVE_ _selectAll_ _ENTER_ _origo_ (list (- gs) 0)
 	)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )

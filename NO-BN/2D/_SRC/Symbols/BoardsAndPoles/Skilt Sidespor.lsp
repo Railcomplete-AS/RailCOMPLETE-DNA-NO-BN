@@ -14,9 +14,9 @@
 ; Siding
 
 ; For debugging:
-; (SKILT_SIDESPOR)
+; (SKILT-SIDESPOR)
 
-(defun Skilt_Sidespor ( / blockname description x y attSidingName attKm attBetweenStations )
+(defun SKILT-SIDESPOR ( / blockname description x y attSidingName attKm attBetweenStations )
 	; Siding (e.g., industry access track on the line between two railway stations)
 	;
 	; TL-----------------TR
@@ -36,15 +36,15 @@
 		attKm				'("SSP_KM" "Km xxx,xxx:" "Km 132,720")
 		attBetweenStations	'("SSP_STASJONER" "Mellom stasjon <xxx> og <yyy>" "Lilleby og Storeby")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th070_ (pos51 y) attSidingName)
-	(addTextAtPos          layDef_Zero _th050_ (pos52 y) "sidespor")
-	(addTextAttributeAtPos layDef_Zero _th070_ (pos53 y) attKm)
-	(addTextAtPos          layDef_Zero _th050_ (pos54 y) "mellom stasjonene")
-	(addTextAttributeAtPos layDef_Zero _th070_ (pos55 y) attBetweenStations)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th070_ (Pos51 y) attSidingName)
+	(AddTextAtPos          layDef_Zero _th050_ (Pos52 y) "sidespor")
+	(AddTextAttributeAtPos layDef_Zero _th070_ (Pos53 y) attKm)
+	(AddTextAtPos          layDef_Zero _th050_ (Pos54 y) "mellom stasjonene")
+	(AddTextAttributeAtPos layDef_Zero _th070_ (Pos55 y) attBetweenStations)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

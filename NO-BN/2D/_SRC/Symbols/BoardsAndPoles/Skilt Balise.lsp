@@ -14,9 +14,9 @@
 ; (with no space for the usual pole or board)
 
 ; For debugging:
-; (SKILT_BALISE)
+; (SKILT-BALISE)
 
-(defun Skilt_Balise ( / blockName x y s_top s_bot s_x)
+(defun SKILT-BALISE ( / blockName x y x0 x1 x2 x3 x4 x5 x6 x7 x8  y1  p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 )
 	; Board with text 'BALISE' located e.g. on the platform edge toward track - where no technial pole 64E can be placed.
 	;
 	; TL----1--2--3--4--5--6
@@ -50,17 +50,17 @@
 		p5 (list x7 y)		p11 (list x6 y2)		p17 (list x5 y1)		p23 (list x4 0)		
 		p6 (list x8 y)		p12 (list x7 y2)		p18 (list x6 y1)		p24 (list x5 0)		
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-  	(addTextAtPos layDef_Zero _th125_ (pos11 y) "BALISE")
-	(moveUp (halfOf y))
-	(command _POLYLINE_ p1 p2 p8 p7 _closedPolyline_)		(drawHatch _solidHatch_)
-	(command _POLYLINE_ p3 p4 p10 p9 _closedPolyline_)		(drawHatch _solidHatch_)
-	(command _POLYLINE_ p5 p6 p12 p11 _closedPolyline_)		(drawHatch _solidHatch_)
-	(command _POLYLINE_ p13 p14 p20 p19 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p15 p16 p22 p21 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p17 p18 p24 p23 _closedPolyline_)	(drawHatch _solidHatch_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+  	(AddTextAtPos layDef_Zero _th125_ (Pos11 y) "BALISE")
+	(MoveUp (HalfOf y))
+	(command _POLYLINE_ p1 p2 p8 p7 _closedPolyline_)		(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p3 p4 p10 p9 _closedPolyline_)		(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p5 p6 p12 p11 _closedPolyline_)		(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p13 p14 p20 p19 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p15 p16 p22 p21 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p17 p18 p24 p23 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

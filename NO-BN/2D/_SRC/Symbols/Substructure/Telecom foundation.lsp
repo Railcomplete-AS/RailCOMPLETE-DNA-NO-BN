@@ -21,7 +21,7 @@
 
 
 
-(defun BETONG-TELE-OG-FORDELINGSSKAP ( / blockName s1 s2 h1 h2 h3 len )
+(defun BETONG-TELE-OG-FORDELINGSSKAP ( / blockName description s1 s2 h1 h2 h3 len )
 ;            s1 wide
 ;  +-------------------+
 ;  |                   |
@@ -47,7 +47,7 @@
 		h3 (* _half_ _threeQuarters_ h1) 
 		len (* 0.200 (- s2 h2)) ; Dash lengths
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command
 			_RECTANGLE_ (list (- s1) (- s2)) (list s1 s2)
 			_RECTANGLE_ (list (- h1) (- h2)) (list h1 h2)
@@ -61,26 +61,26 @@
 	)	
 
 	; Schematic symbol
-	(addDescriptionBelowOrigo description s1)
-	(drawProxySymbol layDef_FoundationLocator "T")
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description s1)
+	(DrawProxySymbol layDef_FoundationLocator "T")
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-ANVISERSOEYLE ( / blockName s1 radius1 radius_skrue radius_roer dist1 skrue_xy roer_y )
+(defun BETONG-ANVISERSOEYLE ( / blockName description s1 radius1 radius_skrue radius_roer dist1 skrue_xy roer_y )
 	(setq
 		blockName "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-ANVISERSOEYLE"
 		description (strcat "BETONG ANVISERS" _uOE_ "YLE- FUNDAMENT 1500x1500x1000-" _uOE_ "600")
@@ -92,7 +92,7 @@
 		skrue_xy (/ s1 5)
 		roer_y (- (- radius1) (/ radius1 3))
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command
 			_RECTANGLE_ (list (- s1) (- s1)) (list s1 s1)
 			_CIRCLE_ _origo_ radius1
@@ -128,26 +128,26 @@
 	)
 	
 	; Schematic symbol
-	(addDescriptionBelowOrigo description (- (+ s1 radius1)))
-	(drawProxySymbol layDef_FoundationLocator "T")
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description (- (+ s1 radius1)))
+	(DrawProxySymbol layDef_FoundationLocator "T")
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-MONITOR ( / blockName s1 radius1 radius_skrue radius_roer dist1 skrue_xy roer_y )
+(defun BETONG-MONITOR ( / blockName description s1 radius1 radius_skrue radius_roer dist1 skrue_xy roer_y )
 	(setq
 		blockName "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-MONITOR"
 		description (strcat "BETONG TELEMONITOR- FUNDAMENT 1000x1000x1000-" _uOE_ "600")
@@ -159,7 +159,7 @@
 		skrue_xy (/ s1 5)
 		roer_y (- (- radius1) (/ radius1 3))
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command 
 			_RECTANGLE_ (list (- s1) (- s1)) (list s1 s1)
 			_CIRCLE_ _origo_ radius1
@@ -192,26 +192,26 @@
 	)
 	
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "T")
-	(addDescriptionBelowOrigo description (- (+ s1 radius1)))
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "T")
+	(AddDescriptionBelowOrigo description (- (+ s1 radius1)))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 		
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-VALIDATOR ( / blockName s1 radius_skrue radius_roer lengde_roer dist1 skrue_x skrue_y )
+(defun BETONG-VALIDATOR ( / blockName description s1 radius_skrue radius_roer lengde_roer dist1 skrue_x skrue_y )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-VALIDATOR"
 		description	"BETONG VALIDATOR- FUNDAMENT 300x360x500"
@@ -223,7 +223,7 @@
 		skrue_x (+ (* 3.0 radius_roer) dist1 (/ (* s1 2.0) 30.0)) 
 		skrue_y (* s1 (/ 0.0854 s1))
 	)
-	(defun localGraphics (/)
+	(defun LocalGraphics (/)
 		(command
 			_RECTANGLE_ (list (- s1) (- s1)) (list s1 s1)
 			_CIRCLE_ (list skrue_x skrue_y) radius_skrue
@@ -240,19 +240,19 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "T")
-	(addDescriptionBelowOrigo description s1)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "T")
+	(AddDescriptionBelowOrigo description s1)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(setLayer layDef_Zero)
-	(localGraphics)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_Zero)
+	(LocalGraphics)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(setLayer layDef_MetricDetails)
-	(localGraphics)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(SetLayer layDef_MetricDetails)
+	(LocalGraphics)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )

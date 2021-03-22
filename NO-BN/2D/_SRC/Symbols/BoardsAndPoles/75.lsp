@@ -36,13 +36,13 @@
 		attWholeKm	'("HEL_KM" "Hel km" "462")
 		attHalfKm	'("HALV_KM" "Halv km (0 eller 5)" "5")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(moveUp (halfOf y))
-	(addTextAttributeAtPos layDef_Zero _th180_ p1 attWholeKm)
-	(addTextAttributeAtPos layDef_Zero _th180_ p2 attHalfKm)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(MoveUp (HalfOf y))
+	(AddTextAttributeAtPos layDef_Zero _th180_ p1 attWholeKm)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p2 attHalfKm)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -62,18 +62,18 @@
 		y 3.0
 		attWholeKm	'("HEL_KM_UTEN_HALV" "Hel km" "462")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th180_ (pos11 y) attWholeKm)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th180_ (Pos11 y) attWholeKm)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun 75A-3 ( / blockName description x y attWholeKm attHalfKm p1 p2 p3 p4 p5 p6 pLeft pRight )
+(defun 75A-3 ( / blockName description x y attWholeKm attHalfKm p1 p2 p3 p4 p5 p6 pLeft pRight attWholeKm attHalfKm attWholeKm2 attHalfKm2 )
 	; Mileage, modern type, double-sided
 	;
 	; |----x----|--3--|----x----|
@@ -105,25 +105,25 @@
 	)
 
 	; left box
-	(drawBoxAtPos layDef_Zero pLeft x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HEL_KM"  "Hel km"              "462" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "HALV_KM" "Halv km (0 eller 5)" "5"   p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(DrawBoxAtPos layDef_Zero pLeft x y layDef_BoardOrPole_Wipeout)
+	(AddAtt "HEL_KM"  "Hel km"              "462" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "HALV_KM" "Halv km (0 eller 5)" "5"   p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
 	; right box
-	(drawBoxAtPos layDef_Zero pRight x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HALV_KM2" "Halv km (0 eller 5)" "5"   p3 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "HEL_KM2"  "Hel km"              "462" p4 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(DrawBoxAtPos layDef_Zero pRight x y layDef_BoardOrPole_Wipeout)
+	(AddAtt "HALV_KM2" "Halv km (0 eller 5)" "5"   p3 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "HEL_KM2"  "Hel km"              "462" p4 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	; connect the boxes
-	(drawLine layDef_Zero p5 p6)
+	(DrawLine layDef_Zero p5 p6)
 
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun 75B ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 pLeft pRight )
+(defun 75B ( / blockName description x y p1 p2 p3 p4a p4b p5 p6 p7a p7b p8 p9 p10 p11 p12 pLeft pRight )
 	; Mileage, tunnel type, double-sided and narrow
 	;
 	;
@@ -154,27 +154,27 @@
 		pLeft  (list (+ -1.5 (* -0.5 x)) 0)
 		pRight (list (+  1.5 (*  0.5 x)) 0)
 	)
-	; NB: Can't use addTextAttributeAtPos() here because it doesn't rotate attributes by 90 degrees.
+	; NB: Can't use AddTextAttributeAtPos() here because it doesn't rotate attributes by 90 degrees.
 	; left box
-	(drawBoxAtPos layDef_Zero pLeft x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HUNDRE_KM" "100 km" "4" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "TI_KM"     "10 km" "6" p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "EN_KM"     "1 km" "2" p3 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(drawLine layDef_Zero p4a p4b)
-	(addAtt "HALV_KM"   "Halv km (0 eller 5)" "5" p5 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(DrawBoxAtPos layDef_Zero pLeft x y layDef_BoardOrPole_Wipeout)
+	(AddAtt "HUNDRE_KM" "100 km" "4" p1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "TI_KM"     "10 km" "6" p2 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "EN_KM"     "1 km" "2" p3 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(DrawLine layDef_Zero p4a p4b)
+	(AddAtt "HALV_KM"   "Halv km (0 eller 5)" "5" p5 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
 	; right box
-	(drawBoxAtPos layDef_Zero pRight x y layDef_BoardOrPole_Wipeout)
-	(addAtt "HALV_KM2"   "Halv km (0 eller 5)" "5" p6 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(drawLine layDef_Zero p7a p7b)
-	(addAtt "EN_KM2"     "1 km" "2" p8 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "TI_KM2"     "10 km" "6" p9 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
-	(addAtt "HUNDRE_KM2" "100 km" "4" p10 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(DrawBoxAtPos layDef_Zero pRight x y layDef_BoardOrPole_Wipeout)
+	(AddAtt "HALV_KM2"   "Halv km (0 eller 5)" "5" p6 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(DrawLine layDef_Zero p7a p7b)
+	(AddAtt "EN_KM2"     "1 km" "2" p8 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "TI_KM2"     "10 km" "6" p9 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "HUNDRE_KM2" "100 km" "4" p10 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	; connect the boxes
-	(drawLine layDef_Zero p11 p12)
+	(DrawLine layDef_Zero p11 p12)
 
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -199,13 +199,13 @@
 		p5 (list  0.0 2.0)
 		p6 (list -6.0 1.0)
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ p1 p2 p3 p4 p5 _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(addTextAtPos layDef_Zero _th150_ p6 "Hev")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(AddTextAtPos layDef_Zero _th150_ p6 "Hev")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -230,13 +230,13 @@
 		p5 (list  0.0 2.0)
 		p6 (list  6.0 1.0)
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command "PLINE" _origo_ p1 p2 p3 p4 p5 _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(addTextAtPos layDef_Zero _th180_ p6 "Hev")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(AddTextAtPos layDef_Zero _th180_ p6 "Hev")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -261,13 +261,13 @@
 		p5 (list -4.0  0.0)
 		p6 (list -6.0  1.0)
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command "PLINE" _origo_ p1 p2 p3 p4 p5 _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(addTextAtPos layDef_Zero _th150_ p6 "Senk")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(AddTextAtPos layDef_Zero _th150_ p6 "Senk")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -294,19 +294,19 @@
 		p5 (list  4.0  0.0)
 		p6 (list  6.0  1.0)
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command "PLINE" _origo_ p1 p2 p3 p4 p5 _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(addTextAtPos layDef_Zero _th150_ p6 "Senk")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(AddTextAtPos layDef_Zero _th150_ p6 "Senk")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun 75E ( / blockName description x y p1 p2 p3 p4 p5 p6 attFromKm attFromM attToKm attToM attJump p7 p8 p9 p10 p11 p12 )
+(defun 75E ( / blockName description x y p1 p2 p3 p4 p5 p6 attFrom1 attFrom2 attTo1 attTo2 attJump p7 p8 p9 p10 p11 p12 )
 	; Mileage chain break
 	;
 	; TL-----------TR
@@ -341,19 +341,19 @@
 		p11 (list (*  0.25 x) (* -0.125 y))
 		p12 (list (*  0.00 x) (* -0.375 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(drawLine layDef_Zero p1 p2)
-	(drawLine layDef_Zero p3 p4)
-	(drawLine layDef_Zero p5 p6)
-	(addTextAtPos layDef_Zero _th150_ p7 "KJEDEBRUDD")
-	(addTextAttributeAtPos layDef_Zero _th180_ p8 attFrom1)
-	(addTextAttributeAtPos layDef_Zero _th180_ p9 attFrom2)
-	(addTextAttributeAtPos layDef_Zero _th180_ p10 attTo1)
-	(addTextAttributeAtPos layDef_Zero _th180_ p11 attTo2)
-	(addTextAttributeAtPos layDef_Zero _th180_ p12 attJump)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawLine layDef_Zero p1 p2)
+	(DrawLine layDef_Zero p3 p4)
+	(DrawLine layDef_Zero p5 p6)
+	(AddTextAtPos layDef_Zero _th150_ p7 "KJEDEBRUDD")
+	(AddTextAttributeAtPos layDef_Zero _th180_ p8 attFrom1)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p9 attFrom2)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p10 attTo1)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p11 attTo2)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p12 attJump)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

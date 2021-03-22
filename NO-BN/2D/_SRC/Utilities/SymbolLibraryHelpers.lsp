@@ -21,7 +21,7 @@
 ; CAD system global constants
 ;----------------------------------------------------------
 
-(defun defineGlobalCadSystemConstants ( / )
+(defun DefineGlobalCadSystemConstants ( / )
 	(princ) ; At least one (dummy) command is needed to make VLIDE print the function's name to the console at load time
 	(setq
 
@@ -94,7 +94,7 @@
 		;     exists but is turned off, it is turned on.
 		_LAYER_							"._LAYER"
 		_anyLayerName_					"*"
-		_setLayer_						"_Set"
+		_SetLayer_						"_Set"
 		_unlockLayer_					"_Unlock"
 		_lockLayer_						"_Lock"
 		_createNewLayer_				"_New"
@@ -218,7 +218,7 @@
 		; TEXT command
 		_TEXT_							"._TEXT"
 		_justifyText_					"_J"
-		_setTextStyle_					"_S"
+		_SetTextStyle_					"_S"
 
 		; MTEXT command
 		_MTEXT_							"._MTEXT"
@@ -332,7 +332,8 @@
 		
 		; POLYGON command
 		_POLYGON_						"._POLYGON"
-		_inscribed_						"_I"
+		_inscribedPolygon_				"_I"
+		_specifyEdgeOfPolygon_			"_E"
 		
 		; ARRAY command
 		_ARRAY_							"._ARRAY"
@@ -360,7 +361,7 @@
 		_createWipeoutFromPolyline_		"_P"
 		_keepWipeoutSource_ 			"_N" 		; Keep original item after mirroring
 		_eraseWipeoutSource_			"_Y"		; Erase original item after mirroring
-		_noWipeout_						nil			; Providing 'nil' instead of a layer definition to one of the drawCircle / drawBox functions suppresses adding of wipeout.
+		_noWipeout_						nil			; Providing 'nil' instead of a layer definition to one of the DrawCircle / DrawBox functions suppresses adding of wipeout.
 
 
 		; ERASE command
@@ -370,7 +371,7 @@
 	
 		; PURGE command
 		_PURGE_							"._PURGE"
-		_purgeAll_						"_A"		; Purge everything that is currently purgable
+		_PurgeAll_						"_A"		; Purge everything that is currently purgable
 		_purgeBlocks_					"_B"		; Purge specific blocks (a list of block names follows)
 		_purgeWithoutVerification_		"_N"		; Decline the question "Verify each name to be purged?"
 
@@ -494,7 +495,7 @@
 ; File access from within the CAD system
 ;----------------------------------------------------------
 
-(defun addSupportPath ( dir / tmp Cpath )
+(defun AddSupportPath ( dir / tmp Cpath )
 	(vl-load-com)
 	(setq
 		Cpath (getenv "ACAD") tmp 
@@ -506,7 +507,7 @@
 
 
 
-(defun loadFolder ( folderName / )
+(defun LoadFolder ( folderName / )
 	(if (findfile folderName)
 		(mapcar 
 			'(lambda (x)
@@ -526,30 +527,30 @@
 
 ; Define global constants before further loading of LISP files
 ;--------------------------------------------------------------
-(defineGlobalCadSystemConstants)
+(DefineGlobalCadSystemConstants)
 
 
 
 ; CAD system default values
 ;----------------------------------------------------------
 
-(defun purgeAll ( / )
+(defun PurgeAll ( / )
 	(command 
 		_LAYER_ _unlockLayer_ _anyLayerName_ _ENTER_
 		_ERASE_ _selectAll_ _ENTER_
 	)
-	(command _LAYER_ _setLayer_ "0" _ENTER_)
+	(command _LAYER_ _SetLayer_ "0" _ENTER_)
 	(command 
-		_PURGE_ _purgeAll_ _anyLayerName_ _purgeWithoutVerification_
-		_PURGE_ _purgeAll_ _anyLayerName_ _purgeWithoutVerification_
-		_PURGE_ _purgeAll_ _anyLayerName_ _purgeWithoutVerification_
+		_PURGE_ _PurgeAll_ _anyLayerName_ _purgeWithoutVerification_
+		_PURGE_ _PurgeAll_ _anyLayerName_ _purgeWithoutVerification_
+		_PURGE_ _PurgeAll_ _anyLayerName_ _purgeWithoutVerification_
 	)
-	'purgeAll
+	'PurgeAll
 )
 
 
 
-(defun setCadSystemDefaults ( / )
+(defun SetCadSystemDefaults ( / )
 	(command
 		_ERASE_ _selectAll_ _ENTER_ _ENTER_
 		"._SNAP" 1.0
@@ -586,60 +587,62 @@
 	(command
 		_POLYLINE_ _origo_ _setPolylineWidth_ _zero_ _zero_ _ENTER_ ; Default to thin polylines (from start to end)
 	)
-	'setCadSystemDefaults
+	'SetCadSystemDefaults
 )
 
 
-(defun setDefaultObjectPropertiesToByBlock ( / )
-	(setLayer layDef_Zero)
+(defun SetDefaultObjectPropertiesToByBlock ( / )
+	(SetLayer layDef_Zero)
 	(command
 		_COLOR_ _byBlock_
 		_LINETYPE_ _setLinetype_ _byBlock_ _ENTER_
 		_LWEIGHT_ _byBlock_
 		_CETRANSPARENCY_ _byBlock_
 	)
-	'setDefaultObjectPropertiesToByBlock
+	'SetDefaultObjectPropertiesToByBlock
 )
   
   
   
-(defun setCurrentDefaultPropertiesToByLayer ( / )
-	(command
-		_COLOR_ _byLayer_
-		_LINETYPE_ _setLinetype_ _byLayer_ _ENTER_
-		_LWEIGHT_ _byLayer_
-		"._CETRANSPARENCY" _byLayer_
-	)
-	'setCurrentDefaultPropertiesToByLayer
-)
+;Not in use;
+;(defun SetCurrentDefaultPropertiesToByLayer ( / )
+;	(command
+;		_COLOR_ _byLayer_
+;		_LINETYPE_ _setLinetype_ _byLayer_ _ENTER_
+;		_LWEIGHT_ _byLayer_
+;		"._CETRANSPARENCY" _byLayer_
+;	)
+;	'SetCurrentDefaultPropertiesToByLayer
+;)
   
   
   
-(defun setPropertiesToByBlockForAllBlocks ( / doc )
-	(vlax-for block 
-		(vla-get-blocks 
-			(setq doc (vla-get-activedocument (vlax-get-acad-object)))
-		)
-		(vlax-for x block
-			(progn
-				(if (= (vla-get-layer x) "0")
-					(vla-put-color x 0)
-				)
-				(vla-put-linetype x "_ByBlock")
-				(vla-put-lineweight x -2)
-				(vla-put-entitytransparency x "_ByBlock")
-			)
-		)
-	)
-	(vla-regen doc acActiveViewport)
-	'setPropertiesToByBlockForAllBlocks
-)
+;Not in use:
+;(defun SetPropertiesToByBlockForAllBlocks ( / block x doc )
+;	(vlax-for block 
+;		(vla-get-blocks 
+;			(setq doc (vla-get-activedocument (vlax-get-acad-object)))
+;		)
+;		(vlax-for x block
+;			(progn
+;				(if (= (vla-get-layer x) "0")
+;					(vla-put-color x 0)
+;				)
+;				(vla-put-linetype x "_ByBlock")
+;				(vla-put-lineweight x -2)
+;				(vla-put-entitytransparency x "_ByBlock")
+;			)
+;		)
+;	)
+;	(vla-regen doc acActiveViewport)
+;	'SetPropertiesToByBlockForAllBlocks
+;)
 
 
 ; CAD system style settings
 ;----------------------------------------------------------
 
-(defun createIsoTextStyle ( / )
+(defun CreateIsoTextStyle ( / )
 	;
 	; 'Iso3098' will result in an error if not present in the appropriate AutoCAD folder.
 	; Place the preferred font file in the GitHub RailCOMPLETE folder "...\Customization\NO-BN\2D\_SRC\Fonts".
@@ -665,69 +668,74 @@
 		_textStyleNotBackwards_
 		_textStyleNotUpsideDown_ 
 	)
-	'createIsoTextStyle
+	'CreateIsoTextStyle
 )
 
 
 
-(defun removeUnwantedStyles ( / )
+(defun RemoveUnwantedStyles ( / )
 	; Remove non-standard dimension styles
-	(setDimStyle "STANDARD")
+	(SetDimStyle "STANDARD")
 	(command "._PURGE" "_D" "*" "_N") ; Purge all dimension styles (except "standard" which can't be purged), no verify
 
 	; Remove non-standard multileader styles
-	(setMultileaderStyle "STANDARD")
+	(SetMultileaderStyle "STANDARD")
 	(command "._PURGE" "_MU" "*" "_N") ; Purge all multileader styles (except "standard" which can't be purged), no verify
 
 	; Remove non-standard section view styles
-	(setViewSectionStyle "Metric50")
+	(SetViewSectionStyle "Metric50")
 	(command "._PURGE" "_SE" "*" "_N") ; Purge all section view styles (except "Metric50" which can't be purged), no verify
 
 	; Remove non-standard deatil view styles
-	(setDetailViewStyle "Metric50")
+	(SetDetailViewStyle "Metric50")
 	(command "._PURGE" "_DE" "*" "_N") ; Purge all detail view styles (except "Metric50" which can't be purged), no verify
 
-	(setTableStyle "STANDARD")
+	(SetTableStyle "STANDARD")
 	(command "._PURGE" "_T" "*" "_N") ; Purge all table styles (except "standard" which can't be purged), no verify
 
 	; Remove non-standrard text styles
-	(setTextStyle "STANDARD")
+	(SetTextStyle "STANDARD")
 	(command "._PURGE" "_ST" "*" "_N") ; Purge all text styles (except "standard" which can't be purged), no verify
 
 	; Purge blocks which might have been in use by the now removed styles (all blocks, if there would be any more)
 	(command "._PURGE" "_B" "*" "_N") ; Purge all section view styles (except "Metric50" which can't be purged), no verify
 	
-	'removeUnwantedStyles
+	'RemoveUnwantedStyles
 )
 
-(defun setDimStyle ( dimStyle / acdoc )
-	(vl-load-com)
-	(setq acdoc (vla-get-ActiveDocument (vlax-get-acad-object)))
-	(if (tblsearch "DIMSTYLE" dimStyle)
-		(vla-put-activeDimstyle 
-			acdoc 
-			(vla-item (vla-get-Dimstyles acdoc) dimStyle)
-		)
-	)
-)
+;Not in use:
+;(defun SetDimStyle ( dimStyle / acdoc )
+;	(vl-load-com)
+;	(setq acdoc (vla-get-ActiveDocument (vlax-get-acad-object)))
+;	(if (tblsearch "DIMSTYLE" dimStyle)
+;		(vla-put-activeDimstyle 
+;			acdoc 
+;			(vla-item (vla-get-Dimstyles acdoc) dimStyle)
+;		)
+;	)
+;)
 
-(defun setMultileaderStyle ( multileaderStyle / )
-	(command "._CMLEADERSTYLE" multileaderStyle)
-)
+;Not in use:
+;(defun SetMultileaderStyle ( multileaderStyle / )
+;	(command "._CMLEADERSTYLE" multileaderStyle)
+;)
 
-(defun setViewSectionStyle ( viewSectionStyle / )
-	(command "._CVIEWSECTIONSTYLE" viewSectionStyle)
-)
+;Not in use:
+;(defun SetViewSectionStyle ( viewSectionStyle / )
+;	(command "._CVIEWSECTIONSTYLE" viewSectionStyle)
+;)
 
-(defun setDetailViewStyle ( viewDetailStyle / )
-	(command "._CVIEWDETAILSTYLE" viewDetailStyle)
-)
+;Not in use:
+;(defun SetDetailViewStyle ( viewDetailStyle / )
+;	(command "._CVIEWDETAILSTYLE" viewDetailStyle)
+;)
 
-(defun setTableStyle ( tableStyle / )
-	(command "._CTABLESTYLE" tableStyle)
-)
+;Not in use:
+;(defun SetTableStyle ( tableStyle / )
+;	(command "._CTABLESTYLE" tableStyle)
+;)
 
-(defun setTextStyle ( textStyle / )
+(defun SetTextStyle ( textStyle / )
 	(command "._STYLE" textStyle)
 )
 
@@ -736,25 +744,26 @@
 ; CAD system LAYER settings
 ;----------------------------------------------------------
 
-(defun findPrefixedLayers ( layprefix / laydata laylist prefixlen layname )
-	(setq laydata (tblnext "LAYER" T) ; Rewind and get first entry in acad LAYER list
-		  laylist (list)
-		  prefixlen (strlen layprefix)
-		  layprefix (strcase layprefix)
-	)
-	(while laydata
-		(setq layname (strcase (cdr (assoc 2 laydata)))) ; pick next layer name from list
-		(if (= layprefix (substr layname 1 prefixlen))
-			(setq laylist (append laylist (list layname)))
-		)
-		(setq laydata (tblnext "LAYER" nil)) ; get next item from acad LAYER list
-	)
-	laylist
-)
+;Not in use:
+;(defun FindPrefixedLayers ( layprefix / laydata laylist prefixlen layname )
+;	(setq laydata (tblnext "LAYER" T) ; Rewind and get first entry in acad LAYER list
+;		  laylist (list)
+;		  prefixlen (strlen layprefix)
+;		  layprefix (strcase layprefix)
+;	)
+;	(while laydata
+;		(setq layname (strcase (cdr (assoc 2 laydata)))) ; pick next layer name from list
+;		(if (= layprefix (substr layname 1 prefixlen))
+;			(setq laylist (append laylist (list layname)))
+;		)
+;		(setq laydata (tblnext "LAYER" nil)) ; get next item from acad LAYER list
+;	)
+;	laylist
+;)
 
 
 
-(defun isExistingLayer ( layerName / laydata layname lay )
+(defun IsExistingLayer ( layerName / laydata layname lay )
 	(setq laydata (tblnext "LAYER" T) ; Rewind and get first entry in acad LAYER list
 		  lay nil
 	)
@@ -770,27 +779,30 @@
 
 
 
-(defun createLayer ( layDef / currentLayer )
+(defun CreateLayer ( layDef / currentLayer )
 	; Create new layer, or modify if layer already exists.
 	;
 	; Option "New" (createNewLayer) instead of "Make" (makeNewLayer) will create layer if it does not exist, but it has some flaws: 'New' fails for some reason.
 	; Option 'Make' instead of 'New' would just ignore & inform but not fail if layer already exists. ACAD internal state variable CLAYER (current layer) would be set to the specified layer.
 	; Note: If you try use "Make" to an existing layer, then the option "Description" asks for accept to change existing description, if any. This makes the "Make" command difficult to use.
 	;
-	; Typical use: (createLayer layDef_View_SchematicPlan) etc
+	; Typical use: (CreateLayer layDef_View_SchematicPlan) etc
+	;
+	; 'Struct layDef' definition: See function SetLayer()
 	;
 	(setq
 		layerName			(eval (nth 0 layDef))
 		layerColor			(eval (nth 1 layDef))
 		layerDescription	(eval (nth 2 layDef))
+		; We do not red NTH 3 here
 	)
-	(if (isExistingLayer layerName)
+	(if (IsExistingLayer layerName)
 		(progn
 			; Change
 			(setq currentLayer (getvar 'CLAYER)) ; stash current layer in local variable
 			(command
 				_LAYER_
-					_setLayer_      layerName
+					_SetLayer_      layerName
 					_colorizeLayer_ layerColor layerName
 					_describeLayer_ layerDescription layerName _ENTER_ ; Description + extra ENTER to accept overwrite of existing description
 			)
@@ -806,58 +818,68 @@
 				_ENTER_
 		)
 	)
-	; Always reset - otherwise (createLayer ...) fails at least in the VLIDE debugger.
+	; Always reset - otherwise (CreateLayer ...) fails at least in the VLIDE debugger.
 	; I never found out why and exactly where, but the ._LAYER "Set" ... command did not terminate properly, so the next command would fail.
-	(setLayer layDef_Zero)
-	'createLayer
+	(SetLayer layDef_Zero)
+	'CreateLayer
 )
 
 
 
-(defun setLayer ( layDef / layerName objectColor )
+(defun SetLayer ( layDef / layerName objectColor )
+	; 'Struct layDef' definition:
+	;
+	; item 0 = Layer's name (NB cannot contain nonstandard letters such as æøåÆØÅ, nor any \U+00D9 unicode definitions.
+	; item 1 = Layer's color
+	; item 2 = Layer's description
+	; item 3 = Default color for objects intended for this layer (for use with 'AddPlaced...()' routines
+	;
+	; Example: (setq myLayDef (list "Layer name can contain spaces" "<CAD-system-color-for-the-layer-itself> "Descriptive text" "<CAD-system-color-for-objects-to-be-drawn-next>"))
+	;
 	(if (= layDef nil)
-	 	(alert "setLayer(): layDef argument cannot be nil.")
+	 	(alert "SetLayer(): layDef argument cannot be nil.")
 	 )
 	(setq 
-		layerName 	(nth 0 layDef)
-		objectColor	(nth 3 layDef)
+		layerName	(eval (nth 0 layDef))
+		objectColor	(eval (nth 3 layDef))
 	)
 	(cond
-		((isExistingLayer layerName)
+		((IsExistingLayer layerName)
 				(command _LAYER_ _thawLayer_ layerName _ENTER_)
-				(command _LAYER_ _setLayer_ layerName _unlockLayer_ layerName _turnOnLayer_ layerName  _ENTER_)
+				(command _LAYER_ _SetLayer_ layerName _unlockLayer_ layerName _turnOnLayer_ layerName  _ENTER_)
 				(command _COLOR_ objectColor) ; Default color for next graphics entities to be drawn
 		)
 		(T
-			(createLayer layDef_UnknownLayerNameRequested) ; Create layer if nonexisting. Switch to this layer.
-			(setLayer layDef_UnknownLayerNameRequested) ; recursive, fails if no definition exists for that layer in file createStandardLayers.lsp.
+			(CreateLayer layDef_UnknownLayerNameRequested) ; Create layer if nonexisting. Switch to this layer.
+			(SetLayer layDef_UnknownLayerNameRequested) ; recursive, fails if no definition exists for that layer in file CreateStandardLayers.lsp.
 		)
 	)
-	'setLayer ; For some reason, this "kills" the hanging operation inside the -LAYER command, which otherwise will mess up during debugging
+	'SetLayer ; For some reason, this "kills" the hanging operation inside the -LAYER command, which otherwise will mess up during debugging
 )
 
 
 
-(defun setDefaultOjectColor ( color / )
-	(command _COLOR_ color)
+;Not in use:
+;(defun SetDefaultOjectColor ( color / )
+;	(command _COLOR_ color)
+;)
+
+
+
+(defun SetLayerAndObjectColor ( layDef objectColor / )
+	(SetLayer layDef)
+	(command _COLOR_ objectColor) ; Override layer's usual object color, which was first set with SetLayer().
 )
 
 
 
-(defun setLayerAndObjectColor ( layDef objectColor / )
-	(setLayer layDef)
-	(command _COLOR_ objectColor) ; override layer's usual object color, which was first set with setLayer().
-)
-
-
-
-(defun freezeAllLayersExceptCurrentLayer ( / )
+(defun FreezeAllLayersExceptCurrentLayer ( / )
 	(command _LAYER_ _freezeLayer_ _anyLayerName_ _ENTER_)	; Freeze all layers except current layer
 )
 
 
 
-(defun thawAllLayers ( / )
+(defun ThawAllLayers ( / )
 	(command _LAYER_ _thawLayer_ _anyLayerName_ _ENTER_)	; Thaw all layers except current layer
 )
 
@@ -866,39 +888,39 @@
 ; CAD system TEXT entities
 ;----------------------------------------------------------
 
-(defun addTextAtPosWithJustification ( layDef textHeight pos text justification / )
-	(setLayer layDef)
+(defun AddTextAtPosWithJustification ( layDef textHeight pos text justification / )
+	(SetLayer layDef)
 	(command 
 		_TEXT_
-			_setTextStyle_ _rcTextStyle_
+			_SetTextStyle_ _rcTextStyle_
 			_justifyText_ justification
 			pos 
 			textHeight 
 			_angleZero_
 			text
 	)
-	'addTextAtPosWithJustification
+	'AddTextAtPosWithJustification
 )
 
 
 
-(defun addTextAtPos ( layDef textHeight pos text /  )
+(defun AddTextAtPos ( layDef textHeight pos text /  )
 	; Single text, no line breaking
 	; layDef textHeight pos text
 	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
 	;
 	; Note: ; For some reason, texts on layer 0 get "ByLayer" instead of "ByBlock" :-( but not when running MAIN() as a batch job.
 	;
-	(addTextAtPosWithJustification layDef textHeight pos text _middleCenter_)
-	'addTextAtPos
+	(AddTextAtPosWithJustification layDef textHeight pos text _middleCenter_)
+	'AddTextAtPos
 )
 
 
 
-(defun addMText ( layDef textHeight textBoxWidth pos text / )
+(defun AddMText ( layDef textHeight textBoxWidth pos text / )
 	; Multiline text
 	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
-	(setLayer layDef)
+	(SetLayer layDef)
 	(command 
 		_MTEXT_
 			pos 
@@ -915,14 +937,14 @@
 						; ...if Width is zero then text will remain one one single line.
 			_ENTER_		; No further text lines
 	)
-   'addMText
+   'AddMText
 )
 
 
 
 ; CAD system text ATTRIBUTE entities
 ;----------------------------------------------------------
-(defun addAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification / tmp )
+(defun AddAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification / tmp )
 	; Low-level access to CAD system Text Attribute entity creation
 	; Add text attribute (a named storage for text in a symbol, which can be read and written to later).
 	; Features the TAG, PROMPT amd VALUE field, a POSITION and lots of attribute flags (see global contants elsewhere).
@@ -964,12 +986,12 @@
 			rotation								; No qualifier first since AutoCAD demands text rotation here.
 	)
 	(setvar "AFLAGS" tmp)
-	'addAtt
+	'AddAtt
 )
 
 
 
-(defun addTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue )
+(defun AddTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue )
 	;
 	; API access to CAD system Text Attribute entity creation
 	; Single line text attribute, no line breaking
@@ -987,16 +1009,16 @@
 		attPrompt		(eval (nth 1 attDef))
 		attDefaultValue	(eval (nth 2 attDef))
 	)
-	(setLayer layDef)
-	(addAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
-	'addTextAttributeAtPos
+	(SetLayer layDef)
+	(AddAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
+	'AddTextAttributeAtPos
 )
 
 
 
 ; Graphics scaling
 ;----------------------------------------------------------
-(defun scaleAll ( factor / )
+(defun ScaleAll ( factor / )
 	(command _SCALE_ _selectAll_ _ENTER_ _origo_ factor)
 )
 
@@ -1004,76 +1026,78 @@
 
 ; Graphics rotation
 ;----------------------------------------------------------
-(defun rotateLeft ( angle / )
-	; Rotate CCW with angle [Decimal Degrees]
-	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
-)
+;Not in use:
+;(defun RotateLeft ( angle / )
+;	; Rotate CCW with angle [Decimal Degrees]
+;	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
+;)
 
 
 
-(defun rotateRight ( angle / )
-	; Rotate CCW with angle [Decimal Degrees]
-	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
-)
+;Not in use:
+;(defun RotateRight ( angle / )
+;	; Rotate CCW with angle [Decimal Degrees]
+;	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ angle)
+;)
 
 
 
 ; Graphics mirroring
 ;----------------------------------------------------------
 
-(defun mirrorAboutXaxis ( variation / )
+(defun MirrorAboutXaxis ( variation / )
 	; Mirror about horizontal axis through origo
 	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond 
 		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _keepMirrorSource_))
 		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_))
-		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutXaxis"))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function MirrorAboutXaxis"))
     )
-	'mirrorAboutXaxis
+	'MirrorAboutXaxis
 )
 
 
 
-(defun mirrorAboutYaxis ( variation / )
+(defun MirrorAboutYaxis ( variation / )
 	; Mirror about vertical axis through origo
 	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond
 		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_))
 		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _eraseMirrorSource_))
-		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutYaxis"))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function MirrorAboutYaxis"))
     )
-	'mirrorAboutYaxis
+	'MirrorAboutYaxis
 )
 
 
 
-(defun mirrorAboutDiagonal ( variation / )
+(defun MirrorAboutDiagonal ( variation / )
 	; Mirror about 45 degrees diagonal through origo
 	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond
 		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _diagonalAxis_ _keepMirrorSource_))
 		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _diagonalAxis_ _eraseMirrorSource_))
-		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutDiagonal"))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function MirrorAboutDiagonal"))
     )
-	'mirrorAboutDiagonal
+	'MirrorAboutDiagonal
 )
 
 
 
-(defun mirrorAboutReverseDiagonal ( variation / )
+(defun MirrorAboutReverseDiagonal ( variation / )
 	; Mirror about 135 degrees diagonal through origo
 	; variation should be one of _keepMirrorSource_ or _eraseMirrorSource_ (see definition of global CAD constants)
 	(cond
 		((= variation _keepMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _reverseDiagonalAxis_ _keepMirrorSource_))
 		((= variation _eraseMirrorSource_) (command _MIRROR_ _selectAll_ _ENTER_ _origo_ _reverseDiagonalAxis_ _eraseMirrorSource_))
-		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function mirrorAboutReverseDiagonal"))
+		(T (alert "*** _keepMirrorSource_ or _eraseMirrorSource_ expected as argument to function MirrorAboutReverseDiagonal"))
     )
-	'mirrorAboutReverseDiagonal
+	'MirrorAboutReverseDiagonal
 )
 
 
 
-(defun moveToQuadrant ( quadrant selection / ) 
+(defun MoveToQuadrant ( quadrant selection / ) 
 	; Mirror an object residing in the first quadrant (from 0 to 90 decimal degrees, 0 DD = East and 90 DD = North).
 	; quadrant = number 1..4, results in mirroring operations resulting from mirroring about X-axis (0 DD) and / or Y-axis (90 DD).
 	; 'selection' is typically "A" or (_selectAll_)
@@ -1097,7 +1121,7 @@
 			(command _MIRROR_ selection _ENTER_ _origo_ _xAxis_ _eraseMirrorSource_)
 		)
 	)
-	'moveToQuadrant
+	'MoveToQuadrant
 )
 
 
@@ -1107,7 +1131,7 @@
 ;
 ; See also definition of global constants - standard hatch densities
 ;
-(defun drawHatch ( hatchDensity / )
+(defun DrawHatch ( hatchDensity / )
 	(command 
 		_HATCH_ 
 			_selectHatchObjects_ _lastSelection_ _ENTER_ 
@@ -1117,12 +1141,12 @@
 	)
 	(command _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_)
 	(command _EXPLODE_ _lastSelection_)
-	'drawHatch
+	'DrawHatch
 )
 
 
 
-(defun drawHatchFromPoint ( hatchDensity pt ang offset / )
+(defun DrawHatchFromPoint ( hatchDensity pt ang offset / )
 	(command 
 		_HATCH_ 
 			pt
@@ -1132,12 +1156,12 @@
 	)
 	(command _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_)
 	(command _EXPLODE_ _lastSelection_)
-	'drawHatchFromPoint
+	'DrawHatchFromPoint
 )
 
 
 
-(defun drawHatchFromSelectionUsingStyle ( hatchDensity selectionSet style / )
+(defun DrawHatchFromSelectionUsingStyle ( hatchDensity selectionSet style / )
 ; Note: '_origo_' does not work here as 'new origin', for some reason... - use "0,0" instead.
 (command 
 		_HATCH_ 
@@ -1148,16 +1172,16 @@
 	)
 	(command _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_)
 	(command _EXPLODE_ _lastSelection_)
-	'drawHatchFromSelectionUsingStyle
+	'DrawHatchFromSelectionUsingStyle
 )
 
 
 
-(defun addWipeoutToLastClosedPolyline ( wipeoutLayDef keepOrErase / currentLayer )
+(defun AddWipeoutToLastClosedPolyline ( wipeoutLayDef keepOrErase / currentLayer )
 	; Use predefined values for keepOrErase, see above at _WIPEOUT_ definitions.
-	(if (not wipeoutLayDef) (alert (strcat "*** ERROR: addWipeoutToLastClosedPolyline( ) called with bad or nil wipeoutLayDef")))
+	(if (not wipeoutLayDef) (alert (strcat "*** ERROR: AddWipeoutToLastClosedPolyline( ) called with bad or nil wipeoutLayDef")))
 	(setq currentLayer (getvar 'CLAYER)) ; stash current layer in local variable
-	(setLayer wipeoutLayDef)
+	(SetLayer wipeoutLayDef)
 	(command _WIPEOUT_ _createWipeoutFromPolyline_ _lastSelection_ keepOrErase)
 	(command _DRAWORDER_ _lastSelection_ _ENTER_ _underAllObjects_)
 	(setvar 'CLAYER currentLayer) ; retrieve stashed value
@@ -1167,7 +1191,7 @@
 
 ; CAD system Block manipulation (block table entries)
 ;----------------------------------------------------------
-(defun createSchematicBlockFromCurrentGraphics ( blockName /  ) 
+(defun CreateSchematicBlockFromCurrentGraphics ( blockName /  ) 
 	; Create a non-annotative block from the present graphics in model space.
 	; Assume that all AttDefs have been declared as non-annotative already.
 	; See also AnnotativeBlock version.
@@ -1179,13 +1203,13 @@
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nSchematicBlocks (+ 1 nSchematicBlocks)) ; Global counter, increment.
-	(setLayer layDef_Zero)
-	(setDefaultObjectPropertiesToByBlock)
+	(SetLayer layDef_Zero)
+	(SetDefaultObjectPropertiesToByBlock)
 )
 
 
 
-(defun addGraphicsFromScaledSchematicBlock ( blockName scale / )
+(defun AddGraphicsFromScaledSchematicBlock ( blockName scale / )
 	; Insert, scale and explode an existing block.
 	; NB: No checking - the block must exist in the block table.
 	(command ; Retrieve schematic symbol - Set overall scale, rotation and position:
@@ -1194,12 +1218,12 @@
 	(command ; Convert inserted block to modelspace graphics entities:
 		_EXPLODE_ _lastSelection_
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 )
 
 
 
-(defun createAnnotativeBlockFromCurrentGraphics ( blockName /  ) 
+(defun CreateAnnotativeBlockFromCurrentGraphics ( blockName /  ) 
 	; Create an annotative block from the present graphics in model space.
 	; Typical use: The balise triangular symbol in an annotative symbol meant for geographic mode drawings
 	; Assume that all AttDefs have been declared as annotative already.
@@ -1211,13 +1235,13 @@
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nAnnotativeBlocks (+ 1 nAnnotativeBlocks)) ; Global counter, increment.
-	(setLayer layDef_Zero)
-	(setDefaultObjectPropertiesToByBlock)
+	(SetLayer layDef_Zero)
+	(SetDefaultObjectPropertiesToByBlock)
 )
 
 
 
-(defun createMetricBlockFromCurrentGraphics ( blockName /  ) 
+(defun CreateMetricBlockFromCurrentGraphics ( blockName /  ) 
 	; Create a non-annotative but real-size block from the present graphics in model space.
 	; Typical use: Yokes / cantilevers / switches
 	; Assume that all AttDefs have been declared as non-annotative already.
@@ -1229,13 +1253,13 @@
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nMetricBlocks (+ 1 nMetricBlocks)) ; Global counter, increment.
-	(setLayer layDef_Zero)
-	(setDefaultObjectPropertiesToByBlock)
+	(SetLayer layDef_Zero)
+	(SetDefaultObjectPropertiesToByBlock)
 )
 
 
 
-(defun createAnnotativeBlockFromScaledSchematicBlock ( blockName xscale / )
+(defun CreateAnnotativeBlockFromScaledSchematicBlock ( blockName xscale / )
 	;
 	; Create an annotative block based on a scaled version of a schematic symbol retrieved from the BLOCK table as an INSERT.
 	;
@@ -1261,11 +1285,11 @@
 	; will represent a 200 x 50 square meter area. The scehamtic-sized symbols will be far too big now, nbut a 4:1 reduction will usually be
 	; fine. So set the CAD system annotative drawing scale to 4:1 before printing from paperspace.
 	;
-	(addGraphicsFromScaledSchematicBlock blockName xscale)
+	(AddGraphicsFromScaledSchematicBlock blockName xscale)
 
 	(setq blockName (strcat blockName _scalable_))
 	(if (tblsearch "BLOCK" blockName)
-		 ;If block exists already (such as 'NO-BN-2D-JBTSI-FILLED-nn' for switches / signaling symbols) which is generated for several switch types)...
+		 ;If block exists already (such as 'NO-BN-2D-JBTSI-DENSE-nn' for switches / signaling symbols) which is generated for several switch types)...
 		; or using VLIDE 'manually' several times...
 		; ...then answer the additional question 'Redefine it?' which needs answer "_YES".
 		; Then "_Annotative" triggers question "Create annotative block?" which needs answers "Yes". Then set insertion point and select all graphics (_selectAll_ + _ENTER_ (Enter)).
@@ -1275,12 +1299,12 @@
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1))
-	(setLayer layDef_Zero)
-	(setDefaultObjectPropertiesToByBlock)
+	(SetLayer layDef_Zero)
+	(SetDefaultObjectPropertiesToByBlock)
 )
 
 
-(defun eraseSchematicBlock ( blockNames / selectionSet )
+(defun EraseSchematicBlock ( blockNames / selectionSet )
 	; Removes all inserts and definition of block(s)
 	; usage (deleteBlock "blkname1,blkname2,blkname3,and_so_on")
 	(if (setq selectionSet (ssget "x" (list (cons 0 "INSERT") (cons 2 blockNames)))) ; if any INSERTs found, erase them first
@@ -1291,7 +1315,7 @@
 	)
 	(command _LAYERP_) ; restore previous layer state
 	(command _PURGE_ _purgeBlocks_ blockNames _purgeWithoutVerification_) ; Erase specified block(s) from block table
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(setq nSchematicBlocks (- nSchematicBlocks 1)) ; One block removed...
-	(setDefaultObjectPropertiesToByBlock)
+	(SetDefaultObjectPropertiesToByBlock)
 )

@@ -28,13 +28,13 @@
 	(setq 
 		blockName "NO-BN-2D-JBTSI-SIGNAL-SPORSPERRESIGNAL"
 		description "SPORSPERRESIGNAL"
-		r (getLargeLanternRadius)
+		r (GetLargeLanternRadius)
 		p1 (list 0 (+ r)) 
 		p2 (list 0 (- r))
 	)
-	(drawCircle layDef_Zero r nil)
-	(drawLine layDef_Zero p1 p2)
-	(addDescriptionBelowOrigo description r)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r nil)
+	(DrawLine layDef_Zero p1 p2)
+	(AddDescriptionBelowOrigo description r)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

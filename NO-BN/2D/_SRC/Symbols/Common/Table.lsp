@@ -8,7 +8,7 @@
 ; Change log:
 ; 2019-05-07 CLFEY: This file is not in use! It's intended use was to make an internal document, an overview over all available symbols for Bane NOR.
 ; 2019-07-26 CLFEY: Cleaned up a little, it might become useful later.
-; 2020-07-26 CLFEY: Moved function 'round' here, deleted support file round.lsp in folder Utilities (was only in use here).
+; 2020-07-26 CLFEY: Moved function 'Round' here, deleted support file Round.lsp in folder Utilities (was only in use here).
 ; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
@@ -16,7 +16,7 @@
 ; Table holding each generated 2D symbol, plus the symbols description (if provided).
 ; Useful for documentation of symbols in paper / PDF drawings.
 
-(defun round ( n / ) (fix (+ n (if (minusp n) -0.5 0.5))))
+(defun Round ( n / ) (fix (+ n (if (minusp n) -0.5 0.5))))
 
 (defun C:GENERATE-SYMBOL-OVERVIEW-TABLE ( /  
 		layerFrameName  
@@ -29,11 +29,11 @@
 		layerTextsColor
 		layerTopTextsName
 		layerTopTextsColor		  
-		x1	x2
-		x	y
+		x1		x2
+		x		y
 		a3
 		cols	rows
-		ty1	ty2
+		ty1		ty2
 		n
 	)
 
@@ -71,14 +71,14 @@
 		x	   (+ x1 x2 1.5)
 		y	   6.0
 		a3	   (/ 297.0 420.0)	;a3 side ratio
-		cols	   (round (sqrt (/ (* #symbols y) (* a3 x))))
-		rows	   (1+ (fix (/ #symbols cols))) ;round up
+		cols	(Round (sqrt (/ (* #symbols y) (* a3 x))))
+		rows	(1+ (fix (/ #symbols cols))) ;Round up
 		;top cells
 		ty1 0.75
 		ty2 3.75
 	)
 	(command
-		_LAYER_ _setLayer_ layerFrameName _ENTER_
+		_LAYER_ _SetLayer_ layerFrameName _ENTER_
 		
 		_RECTANGLE_
 			_origo_
@@ -97,7 +97,7 @@
 		_LAYER_ _lockLayer_ layerFrameName _ENTER_ 
 
 		;top frame:
-		_LAYER_ _setLayer_ layerTopTextsName _ENTER_
+		_LAYER_ _SetLayer_ layerTopTextsName _ENTER_
 
 		_RECTANGLE_ 
 			(list 0 (* y rows))
@@ -114,11 +114,11 @@
 			(list x1 (+ ty1 (* y rows)))
 			(list (+ x1 x2) (+ ty1 ty2 (* y rows)))
 
-		_TEXT_ _setTextStyle_ _rcTextStyle_ _justifyText_ _middleCenter_
+		_TEXT_ _SetTextStyle_ _rcTextStyle_ _justifyText_ _middleCenter_
 			(list (/ x1 2) (+ ty1 (/ ty2 2) (* y rows))) _th090_ _angleZero_ 
 			"SYMBOL"
 
-		_TEXT_ _setTextStyle_ _rcTextStyle_ _justifyText_ _middleCenter_
+		_TEXT_ _SetTextStyle_ _rcTextStyle_ _justifyText_ _middleCenter_
 			(list (+ x1 (/ x2 2)) (+ ty1 (/ ty2 2) (* y rows))) _th090_ _angleZero_ 
 			"BETYDNING"
 		
@@ -130,9 +130,9 @@
 	(while (and (< j cols) (< n #symbols))
 		(while (and (< i rows) (< n #symbols))
 			(if description
-				(insertFunction x y x1 x2 i j rows cols (nth n blockNames) (nth n descriptions) layerTableName layerSymbolsName layerTextsName)
+				(InsertSymbolTableItem x y x1 x2 i j rows cols (nth n blockNames) (nth n descriptions) layerTableName layerSymbolsName layerTextsName)
 				;else:
-				(insertFunction x y x1 x2 i j rows cols (nth n blockNames) nil layerTableName layerSymbolsName layerTextsName)
+				(InsertSymbolTableItem x y x1 x2 i j rows cols (nth n blockNames) nil layerTableName layerSymbolsName layerTextsName)
 			)
 			(setq
 				i (1+ i)
@@ -152,7 +152,7 @@
 
 
 
-(defun insertFunction (x y x1 x2 i j rows cols blockName description
+(defun InsertSymbolTableItem (x y x1 x2 i j rows cols blockName description
 		    layerTableName layerSymbolsName layerTextsName
 		    / cellCorner radius blockPos textPos
 		    )
@@ -163,12 +163,12 @@
 		textPos (polar (polar cellCorner 0 (+ x1 radius)) (D->R _angle90_) (- y radius))
 	)
 	(command
-		_LAYER__setLayer_ layerTableName _ENTER_
+		_LAYER__SetLayer_ layerTableName _ENTER_
 		_CIRCLE_ blockPos radius
 		_CIRCLE_ textPos radius
-		_LAYER_ _setLayer_ layerSymbolsName _ENTER_
+		_LAYER_ _SetLayer_ layerSymbolsName _ENTER_
 		_INSERT_ blockName blockPos _ENTER_ _ENTER_ _ENTER_
-		_LAYER_ _setLayer_ layerTextsName _ENTER_
+		_LAYER_ _SetLayer_ layerTextsName _ENTER_
 		_MTEXT_
 			textPos
 			_setMtextHeight_ _th090_
@@ -183,7 +183,7 @@
 
 
 
-(defun GetBlockNames (/ adoc name blockNames)
+(defun GetBlockNames ( / adoc name blockNames)
 	(vl-load-com)  
 	(setq
 		adoc (vla-get-activedocument (vlax-get-acad-object))

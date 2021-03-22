@@ -8,7 +8,7 @@
 ; Change log:
 ; 2020-07-30 CLFEY Adjusted all mainPole sizes. Use floating point numbers to avoid possible later mistakes with integer division. Sorted and deleted duplicates.
 ; 2020-08-01 CLFEY New LISP code for ALL 'plain' symbols, allowing for use of nested loops and 'combinatorial computations' to ensure that all combinations are covered. Some might not be very meaningful, though.
-; 2020-09-02 CLFEY Added addMb function / ERTMS markerboards
+; 2020-09-02 CLFEY Added AddMb function / ERTMS markerboards
 ; 2021-02-10 CLFEY Release 2021.a
 ; ==========
 ;
@@ -23,11 +23,11 @@
 ;
 ; TODO list
 ; ==========
-; TODO: 2020-07-31 CLFEY Remove drawTVs() since signal 66 is treated in other LISP code file - or upgrade LISP code and include it (=best)
+; TODO: 2020-07-31 CLFEY Remove DrawTVs() since signal 66 is treated in other LISP code file - or upgrade LISP code and include it (=best)
 
 
-(defun SignalInfo ( / )
-	(subSubStep
+(defun PrintSignalInfo ( / )
+	(TraceLevel3
 		(strcat "COMPLEX SIGNAL" 
 			" MB:" (if (= mb nil) "-" mb)
 			" HS:" (itoa hs)
@@ -78,11 +78,8 @@
 ;                    |  |  |  |   |  |   |   |   |   |  |   |
 ;-------------------MB HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
 
-	(setCadSystemDefaults)
+	(SetCadSystemDefaults)
 	
-;(cond (nil 
-	; nil = on upright mast, "AAK" = yoke-mounted
-	;(foreach yokeMounted '(nil)
 	(foreach yokeMounted '(nil "AAK")
 		
 		; The 'Unknown combination' signal symbol
@@ -91,76 +88,75 @@
 
 		; 0-lys Frittstående Ds (Hs=Fs=0) Ds + MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   1  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   1   0   0  0   1  yokeMounted)
-
-		; 0-lys Frittstående Fs / Fs+MKs
-		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  1  0   0  0   0   0   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  1  0   0  0   0   1   0   0  0   0  yokeMounted)
-
-		; 0-lys Togvei Slutt signal (Hs=Fs=0) TVs + MKs,Ds
-		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   1  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   1  yokeMounted)
-
-		; 0-lys Avgangsignal AVs + Ds,MKs
-		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   1  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   1  yokeMounted)
-		
-		; 0-lys Bremseprøvesignal BPs + Ds,MKs
-		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   1  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   1  yokeMounted)
-
-		; 0-lys Høyt skiftesignal Zs + MKs
-		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 0  0  0   1  0   0   0   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 0  0  0   1  0   0   1   0   0  0   0  yokeMounted)
-
-		; 1-lys RepHs / Stopplykt Hs1 + Ds,MKs
-		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   0  yokeMounted)
-		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   1  yokeMounted)
-		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   1  yokeMounted)
-
-		; Only needed if one or more of the "foreach" loops have been commented out, 
-		; to avoid 'nil' values for commented-out arguments:
+;		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   1  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  0   0   1   0   0  0   1  yokeMounted)
+;
+;		; 0-lys Frittstående Fs / Fs+MKs
+;		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+;		(COMPLEX-SIGNAL nil 0  1  0   0  0   0   0   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  1  0   0  0   0   1   0   0  0   0  yokeMounted)
+;
+;		; 0-lys Togvei Slutt signal (Hs=Fs=0) TVs + MKs,Ds
+;		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+;		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   1  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   1  yokeMounted)
+;
+;		; 0-lys Avgangsignal AVs + Ds,MKs
+;		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+;		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   1  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   1  yokeMounted)
+;		
+;		; 0-lys Bremseprøvesignal BPs + Ds,MKs
+;		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+;		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   1  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   1  yokeMounted)
+;
+;		; 0-lys Høyt skiftesignal Zs + MKs
+;		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+;		(COMPLEX-SIGNAL nil 0  0  0   1  0   0   0   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 0  0  0   1  0   0   1   0   0  0   0  yokeMounted)
+;
+;		; 1-lys RepHs / Stopplykt Hs1 + Ds,MKs
+;		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
+;		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   0  yokeMounted)
+;		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   1  yokeMounted)
+;		(COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   1  yokeMounted)
+;
+;		; Only needed if one or more of the "foreach" loops have been commented out, 
+;		; to avoid 'nil' values for commented-out arguments:
 		(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0) 
 
-		(foreach hs '(2 3)
-			(foreach fs '(0 1)
-				(foreach fks '(0 1)
-					(foreach avs '(0 1)
-						(foreach bps '(0 1)
-							(foreach mks '(0 1)
-								(foreach ls '(0 1)
-									(foreach lhs '(0 1)
-										(progn
-											(SignalInfo)
-											; Zs and Ds never occur on the same mast.
-											(setq zs 0  ds 0 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-											(setq zs 0  ds 1 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-											(setq zs 1  ds 0 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-										)
-									)
-								)
-							)
-						)
-					)
-				)
-			)
-		)
-	);foreach yokeMounted
-;)) (cond (nil
+	;	(foreach hs '(2 3)
+	;		(foreach fs '(0 1)
+	;			(foreach fks '(0 1)
+	;				(foreach avs '(0 1)
+	;					(foreach bps '(0 1)
+	;						(foreach mks '(0 1)
+	;							(foreach ls '(0 1)
+	;								(foreach lhs '(0 1)
+	;									(progn
+	;										(PrintSignalInfo)
+	;										; Zs and Ds never occur on the same mast.
+	;										(setq zs 0  ds 0 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	;										(setq zs 0  ds 1 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	;										(setq zs 1  ds 0 ) (COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	;									)
+	;								)
+	;							)
+	;						)
+	;					)
+	;				)
+	;			)
+	;		)
+	;	)
+	);yoke or mast
 	
 	; ERTMS combinations:
 	(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0)
@@ -212,11 +208,11 @@
 	;Print current setting: (defun show ( / ) (foreach x '(HS FS TVS ZS AVS BPS MKS FKS LS LHS DS yokemounted) (progn (print x) (print (eval x)))))
 	;==================================================================================================================
 
-	(SignalInfo)
+	(PrintSignalInfo)
 	
 	; Set locals
 	(setq 
-		config _ENTER_
+		config ""
 		blockName "NO-BN-2D-JBTSI-SIGNAL"
 		description "SIGNAL"
 		yokePole 2.0			; above lanterns if suspended from yoke.
@@ -225,7 +221,7 @@
 	)
 	
 	; Set globals
-	(initalizeSignalSymbol)
+	(InitalizeSignalSymbol)
 
 	; The algorithm centers the very first item (when meaningful, such as solo MKs). Subsequent additions use the side of mast with the most free space.
 	; Items are added in this order: HS -> Fs (-> AVs -> TLs) -> MKs -> Ls -> LHs -> Zs -> Ds
@@ -235,46 +231,46 @@
 	(if (and (not MB) (= 0 (+ HS FS TVS ZS AVS BPS MKS FKS LS LHS DS)))
 		(progn
 			(setq blockName (strcat blockName "")) ; Nothing added => then RC will choose this one.
-			(addMissingSymbol)
+			(AddMissingSymbol)
 		)
 	)
 
 	; ERTMS markerboard
 	(cond
 		((= MB nil) (progn)) ; No marker board
-		((= MB _left_) (addMb _left_))
-		((= MB _right_) (addMb _right_))
-		((= MB _down_) (addMb _down_))
+		((= MB _left_) (AddMb _left_))
+		((= MB _right_) (AddMb _right_))
+		((= MB _down_) (AddMb _down_))
 	)
 
 	; Main signal ('Hovedsignal')
 	; 0, 1, 2 or 3 times
 	(repeat HS 
-		(addHs1)
+		(AddHs1)
 	)
 
 	; End of train movement signal ('Togvei slutt')
 	(if (= TVS 1)
-		(addTVs)
+		(AddTVs)
 	)
 
 	; Distant signal ('Forsignal')
 	(if (= FS 1)
-		(addFs)
+		(AddFs)
 	)
 	
 	; High shunting signal ('Høyt skiftesignal') (#1 of 2 possible locations)
 	; Place above above items such as AVs or BPs and MKs when neither Hs nor TVs is present.
 	(if (= ZS 1)
 		(if (= (+ HS TVS) 0)
-			(addZs)
+			(AddZs)
 		)
 	)
 
 	; Cautious driving ('Forsiktig kjøring')
 	; Strongly biased to the right side.
 	(if (= FKS 1)
-		(addFKs)
+		(AddFKs)
 	)
 
 	; Position lamp ('Middelkontrollampe') (#1 of 3 possible locations)
@@ -283,18 +279,18 @@
 	; Biased to the left side.
 	(if (= MKS 1)
 		(if (> HS 0) ; Hs1, Hs2, Hs3
-			(addMKs)
+			(AddMKs)
 		)
 	)
 
 	; Departure signal ('Avgangsignal')
 	(if (= AVS 1)
-		(addFormSignalWithText "A") ; 'Avgangsignal'
+		(AddFormSignalWithText "A") ; 'Avgangsignal'
 	)
 
 	; Brake test signal ('Bremseprøvesignal')
 	(if (= BPS 1)
-		(addFormSignalWithText "TL") ; 'Tilsett brems' / 'Løs brems'
+		(AddFormSignalWithText "TL") ; 'Tilsett brems' / 'Løs brems'
 	)
 
 	; Position lamp ('Middelkontrollampe') (#2 of 3 possible locations)
@@ -303,7 +299,7 @@
 	(if (= MKS 1)
 		(if (= HS 0) ; No Hs...
 			(if (= DS 0) ; ..and no Ds...
-				(addMKs) ; Place MKs below previous item (no Ds on mast)
+				(AddMKs) ; Place MKs below previous item (no Ds on mast)
 			;else 
 				; MKs will be added further down as the DsMKs combo
 			)
@@ -312,12 +308,12 @@
 
 	; Line signal ('Linjesignal')
 	(if (= LS 1)
-		(addLs)
+		(AddLs)
 	)
 
 	; Luminous speed signal ('Lysende hastighetssignal')
 	(if (= LHS 1)
-		(addLHs)
+		(AddLHs)
 	)
 
 	; High shunting signal ('Høyt skiftesignal') - alternative #2, with Hs or TVs present.
@@ -325,7 +321,7 @@
 	; Note: Zs and Ds shall not occur on the same mast.
 	(if (= ZS 1)
 		(if (/= (+ HS TVS) 0)
-			(addZs)
+			(AddZs)
 		)
 	)
 
@@ -334,9 +330,9 @@
 	; Note: Zs and Ds shall not occur on the same mast.
 	(if (= DS 1) 
 		(if (and (= HS 0) (= MKS 1))
-			(addDsMKs) ; Free-standing Ds with MKs
+			(AddDsMKs) ; Free-standing Ds with MKs
 		; else
-			(addDs) ; Free-standing Ds without Mk, or MKs has previously been added to Hs/TVs mast
+			(AddDs) ; Free-standing Ds without Mk, or MKs has previously been added to Hs/TVs mast
 		)
 	)
 
@@ -366,8 +362,8 @@
 	; Add yoke pole / add rest of main pole with Hs base
 	(if yokeMounted
 		(progn
-			(shiftSignalItemsUp (- (+ yokePole totalHeight))) ; shift *down*
-			(drawVerticalPole (- yokePole))
+			(ShiftSignalItemsUp (- (+ yokePole totalHeight))) ; shift *down*
+			(DrawVerticalPole (- yokePole))
 		)
 	;else
 		(progn
@@ -377,17 +373,17 @@
 				; Otherwise (with a Ds present, or the mast is already long enough):
 				(setq missing 0.0) ; ...just add a short pole below the lowest signal item
 			)
-			(shiftSignalItemsUp (+ missing basePole))
-			(drawVerticalPole (+ missing basePole)) ; ensures that the missing part is at least basePole
-			(drawHorizontalHsBase)
+			(ShiftSignalItemsUp (+ missing basePole))
+			(DrawVerticalPole (+ missing basePole)) ; ensures that the missing part is at least basePole
+			(DrawHorizontalHsBase)
 		)
 	)
 	
 	; Create blocks
 	(setq blockName (strcat blockName config))
-	(addDescriptionBelowOrigo description _descriptionTextHeight_) 
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description _descriptionTextHeight_) 
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -395,7 +391,7 @@
 ;====================================================================================
 ; Manage global variables, keep track of the growing signal as items are added
 ;====================================================================================
-(defun initalizeSignalSymbol ( / )
+(defun InitalizeSignalSymbol ( / )
 	(setq 
 		isTopmostItem 		T	; If True ('T'): next free-standing auxiliary signal item will be centered on pole axis
 		topOfMast			0.0 ; Global, keep track of where current bottom center of uppermost item is
@@ -406,12 +402,12 @@
 	)
 	; DEBUG: Use VLIDE or other means to set (setq _DEBUG_ T) to include model space cleanup and printing of globals:
 	(if _DEBUG_ (command _ERASE_ _selectAll_ _ENTER_)) ; For debugging - clean up modelspace (your computer screen)
-	(if _DEBUG_ (glob))
+	(if _DEBUG_ (PrintSignalCombinationGlobals))
 )
 
 
 
-(defun glob ( / ) 
+(defun PrintSignalCombinationGlobals ( / ) 
 	; Show global values for signal combination generation - useful when debugging
 	(princ 
 		(strcat 
@@ -430,7 +426,7 @@
 ;====================================================================================
 ; Add signal items
 ;====================================================================================
-(defun addAnchor ( / )
+(defun AddAnchor ( / )
 	; Force next items to start here, on the right side
 	; no pushing up
 	; Please comment out the next line - graphics only added in debug versions
@@ -442,7 +438,7 @@
 
 
 
-(defun shiftSignalItemsUp ( offs / )
+(defun ShiftSignalItemsUp ( offs / )
 	(command _MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 offs)) ; Shift everything up by 'd'. Negative 'd' shifts down.
 	(setq topOfMast (+ topOfMast offs))
 	(setq totalHeight (+ totalHeight offs))
@@ -450,70 +446,70 @@
 
 
 
-(defun addMissingSymbol ( / )
-	(shiftSignalItemsUp 3.5) ; Update globals - make space for two lines of 1.25 height text plus line spacing
-	(addMText layDef_Zero _th125_ (* 90 _th125_) _origo_ "MANGLER SYMBOL") 
+(defun AddMissingSymbol ( / )
+	(ShiftSignalItemsUp 3.5) ; Update globals - make space for two lines of 1.25 height text plus line spacing
+	(AddMText layDef_Zero _th125_ (* 90 _th125_) _origo_ "MANGLER SYMBOL") 
 )
 
 
-(defun addMb ( dir / )
+(defun AddMb ( dir / )
 	(setq 
 		itemHeight 6.0 ; Markerboard height (and width)
 	)
-	(shiftSignalItemsUp itemHeight) ; Not really needed, Mb is already the topmost item 
-	(drawMb dir)
+	(ShiftSignalItemsUp itemHeight) ; Not really needed, Mb is already the topmost item 
+	(DrawMB dir)
 	(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
-	(addAnchor)
-);addMb
+	(AddAnchor)
+);AddMb
 
 
 
-(defun addHs1 ( / )
+(defun AddHs1 ( / )
 	(setq 
-		r (getLargeLanternRadius)
+		r (GetLargeLanternRadius)
 		itemHeight (* 2 r)
 	)
-	(shiftSignalItemsUp r)
-	(drawLantern _origo_ r) ; Centered on main pole
-	(shiftSignalItemsUp r)
+	(ShiftSignalItemsUp r)
+	(DrawLantern _origo_ r) ; Centered on main pole
+	(ShiftSignalItemsUp r)
 	(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
-	(addAnchor)
-);addHs1
+	(AddAnchor)
+);AddHs1
 
 
 
-(defun addTVs ( / ) 
+(defun AddTVs ( / ) 
 	; Togvei slutt signal
 	(setq 
 		itemHeight 4.0 ; An 'S' shape
 	)
-	(shiftSignalItemsUp itemHeight)
-	(drawTVs 0 0) ; The 'S' shape will always be centered on mast axis
+	(ShiftSignalItemsUp itemHeight)
+	(DrawTVs 0 0) ; The 'S' shape will always be centered on mast axis
 	(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
-	(addAnchor)
-);addTVs
+	(AddAnchor)
+);AddTVs
 
 
 
-(defun addFs ( / ) 
+(defun AddFs ( / ) 
 	(setq 
-		r (getLargeLanternRadius)
+		r (GetLargeLanternRadius)
 		itemHeight (* 4 r)
 	)
-	(shiftSignalItemsUp r)
-	(drawLantern (list r 0) r) ; Fs lantern placed right of main pole
-	(shiftSignalItemsUp (* 2 r))
-	(drawLantern (list r 0) r) ; Fs lantern placed right of main pole
-	(shiftSignalItemsUp r)
-	(drawVerticalPole itemHeight)
+	(ShiftSignalItemsUp r)
+	(DrawLantern (list r 0) r) ; Fs lantern placed right of main pole
+	(ShiftSignalItemsUp (* 2 r))
+	(DrawLantern (list r 0) r) ; Fs lantern placed right of main pole
+	(ShiftSignalItemsUp r)
+	(DrawVerticalPole itemHeight)
 	(setq freeSpaceLeftSide (+ freeSpaceLeftSide itemHeight))
 	(setq freeSpaceRightSide 0.0)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
-);addFs
+);AddFs
 
 
 
-(defun addZs ( / itemHeight itemWidth w2 missing )
+(defun AddZs ( / itemHeight itemWidth w2 missing )
 	(setq
 		itemHeight 4.5 ; standing rectangle with horizontal bar
 		itemWidth 3.0
@@ -522,8 +518,8 @@
 	)
 	(if isTopmostItem ; centered
 		(progn
-			(shiftSignalItemsUp itemHeight)
-			(drawZs 0 0) ; Pos for bottom center of box
+			(ShiftSignalItemsUp itemHeight)
+			(DrawZs 0 0) ; Pos for bottom center of box
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			(setq freeSpaceLeftSide 0.0)
 			(setq freeSpaceRightSide 0.0)
@@ -537,15 +533,15 @@
 					(setq missing (- itemHeight freeSpaceRightSide))
 					(if (>= missing 0.0)  ; Not enough free space on right side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawZs w2 0) ; draw on right side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawZs w2 0) ; draw on right side
 							(setq freeSpaceLeftSide (+ freeSpaceLeftSide missing)) ; increase free space left side
 							(setq freeSpaceRightSide 0) ; reset free space right side
 						)
 					;else - enough free space right side
 						(progn
-							(drawZs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
+							(DrawZs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
 							; no change in free space left side
 							(setq freeSpaceRightSide (- freeSpaceRightSide itemHeight)) ; reduce free space right side
 						)
@@ -555,15 +551,15 @@
 					(setq missing (- itemHeight freeSpaceLeftSide))
 					(if (>= missing 0.0)  ; Not enough free space on left side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawZs (- w2) 0) ; draw on left side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawZs (- w2) 0) ; draw on left side
 							(setq freeSpaceLeftSide 0) ; reset free space left side
 							(setq freeSpaceRightSide (+ freeSpaceRightSide missing)) ; increase free space right side
 						)
 					;else - enough free space left side
 						(progn
-							(drawZs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
+							(DrawZs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
 							; no change in free space right side
 							(setq freeSpaceLeftSide (- freeSpaceLeftSide itemHeight)) ; reduce free space left side
 						)
@@ -573,11 +569,11 @@
 		)
 	)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
-);addZs
+);AddZs
 
 
 
-(defun addFormSignalWithText ( text / itemHeight itemWidth w2 missing )
+(defun AddFormSignalWithText ( text / itemHeight itemWidth w2 missing )
 	(setq
 		itemHeight 3.0 ; Box 3x3 with fixed text
 		itemWidth 3.0
@@ -586,8 +582,8 @@
 	)
 	(if isTopmostItem ; centered
 		(progn
-			(shiftSignalItemsUp itemHeight)
-			(drawFormSignalWithText text 0 0) ; Pos for bottom center of box
+			(ShiftSignalItemsUp itemHeight)
+			(DrawFormSignalWithText text 0 0) ; Pos for bottom center of box
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			(setq freeSpaceLeftSide 0.0)
 			(setq freeSpaceRightSide 0.0)
@@ -601,15 +597,15 @@
 					(setq missing (- itemHeight freeSpaceRightSide))
 					(if (>= missing 0.0)  ; Not enough free space on right side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawFormSignalWithText text w2 0) ; draw on right side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawFormSignalWithText text w2 0) ; draw on right side
 							(setq freeSpaceLeftSide (+ freeSpaceLeftSide missing)) ; increase free space left side
 							(setq freeSpaceRightSide 0) ; reset free space right side
 						)
 					;else - enough free space right side
 						(progn
-							(drawFormSignalWithText text w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
+							(DrawFormSignalWithText text w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
 							; no change in free space left side
 							(setq freeSpaceRightSide (- freeSpaceRightSide itemHeight)) ; reduce free space right side
 						)
@@ -619,15 +615,15 @@
 					(setq missing (- itemHeight freeSpaceLeftSide))
 					(if (>= missing 0.0)  ; Not enough free space on left side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawFormSignalWithText text (- w2) 0) ; draw on left side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawFormSignalWithText text (- w2) 0) ; draw on left side
 							(setq freeSpaceRightSide (+ freeSpaceRightSide missing)) ; increase free space right side
 							(setq freeSpaceLeftSide 0) ; reset free space left side
 						)
 					;else - enough free space left side
 						(progn
-							(drawFormSignalWithText text (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
+							(DrawFormSignalWithText text (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
 							; no change in free space right side
 							(setq freeSpaceLeftSide (- freeSpaceLeftSide itemHeight)) ; reduce free space left side
 						)
@@ -637,21 +633,21 @@
 		)
 	)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
-);addFormSignalWithText
+);AddFormSignalWithText
 
 
 
-(defun addMKs ( / r itemHeight missing )
+(defun AddMKs ( / r itemHeight missing )
 	(setq 
-		r (getMediumLanternRadius)
+		r (GetMediumLanternRadius)
 		itemHeight (* 2 r)
 		missing nil
 	)
 	(if isTopmostItem ; centered
 		(progn
-			(shiftSignalItemsUp r)
-			(drawLantern _origo_ r)
-			(shiftSignalItemsUp r)
+			(ShiftSignalItemsUp r)
+			(DrawLantern _origo_ r)
+			(ShiftSignalItemsUp r)
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			; No change to freeSpaceLeft or freeSpaceRight
 		)
@@ -663,15 +659,15 @@
 					(setq missing (- itemHeight freeSpaceRightSide))
 					(if (>= missing 0.0)  ; Not enough free space on right side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawMKs r r) ; draw on right side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawMKs r r) ; draw on right side
 							(setq freeSpaceLeftSide (+ freeSpaceLeftSide missing)) ; increase free space left side
 							(setq freeSpaceRightSide 0) ; reset free space right side
 						)
 					;else - enough free space right side
 						(progn
-							(drawLantern (list (+ r) (- freeSpaceRightSide r)) r) ; draw on right side, as high as possible
+							(DrawLantern (list (+ r) (- freeSpaceRightSide r)) r) ; draw on right side, as high as possible
 							; no change in free space left side
 							(setq freeSpaceRightSide (- freeSpaceRightSide itemHeight)) ; reduce free space right side
 						)
@@ -681,15 +677,15 @@
 					(setq missing (- itemHeight freeSpaceLeftSide))
 					(if (>= missing 0.0)  ; Not enough free space on left side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawMKs (- r) r) ; draw on left side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawMKs (- r) r) ; draw on left side
 							(setq freeSpaceRightSide (+ freeSpaceRightSide missing)) ; increase free space right side
 							(setq freeSpaceLeftSide 0) ; reset free space left side
 						)
 					;else - enough free space left side
 						(progn
-							(drawLantern (list (- r) (- freeSpaceLeftSide r)) r) ; draw on left side, as high as possible
+							(DrawLantern (list (- r) (- freeSpaceLeftSide r)) r) ; draw on left side, as high as possible
 							; no change in free space right side
 							(setq freeSpaceLeftSide (- freeSpaceLeftSide itemHeight)) ; reduce free space left side
 						)
@@ -699,11 +695,11 @@
 		)
 	)
 	(setq isTopmostItem nil)
-);addMKs
+);AddMKs
 
 
 
-(defun addFKs ( / itemHeight itemWidth w2 missing )
+(defun AddFKs ( / itemHeight itemWidth w2 missing )
 	(setq
 		itemHeight 3.0 ; the FKs32 square box with five small circles
 		itemWidth 3.0 
@@ -712,8 +708,8 @@
 	)
 	(if isTopmostItem ; centered
 		(progn
-			(shiftSignalItemsUp itemHeight)
-			(drawFKs 0 0) ; Pos for bottom center of box
+			(ShiftSignalItemsUp itemHeight)
+			(DrawFKs 0 0) ; Pos for bottom center of box
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			(setq freeSpaceLeftSide 0.0)
 			(setq freeSpaceRightSide 0.0)
@@ -727,15 +723,15 @@
 					(setq missing (- itemHeight freeSpaceRightSide))
 					(if (>= missing 0.0)  ; Not enough free space on right side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawFKs w2 0) ; draw on right side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawFKs w2 0) ; draw on right side
 							(setq freeSpaceLeftSide (+ freeSpaceLeftSide missing)) ; increase free space left side
 							(setq freeSpaceRightSide 0) ; reset free space right side
 						)
 					;else - enough free space right side
 						(progn
-							(drawFKs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
+							(DrawFKs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
 							; no change in free space left side
 							(setq freeSpaceRightSide (- freeSpaceRightSide itemHeight)) ; reduce free space right side
 						)
@@ -745,15 +741,15 @@
 					(setq missing (- itemHeight freeSpaceLeftSide))
 					(if (>= missing 0.0)  ; Not enough free space on left side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawFKs (- w2) 0) ; draw on left side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawFKs (- w2) 0) ; draw on left side
 							(setq freeSpaceRightSide (+ freeSpaceRightSide missing)) ; increase free space right side
 							(setq freeSpaceLeftSide 0) ; reset free space left side
 						)
 					;else - enough free space left side
 						(progn
-							(drawFKs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
+							(DrawFKs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
 							; no change in free space right side
 							(setq freeSpaceLeftSide (- freeSpaceLeftSide itemHeight)) ; reduce free space left side
 						)
@@ -763,11 +759,11 @@
 		)
 	)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
-);addFKs
+);AddFKs
 
 
 
-(defun addLs ( / itemHeight itemWidth w2 missing )
+(defun AddLs ( / itemHeight itemWidth w2 missing )
 	(setq
 		itemHeight 3.0
 		itemWidth 3.0 ; Box with first character of each name for the possible lines from here
@@ -776,8 +772,8 @@
 	)
 	(if isTopmostItem ; centered
 		(progn
-			(shiftSignalItemsUp itemHeight)
-			(drawLs 0 0) ; Pos for bottom center of box
+			(ShiftSignalItemsUp itemHeight)
+			(DrawLs 0 0) ; Pos for bottom center of box
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			(setq freeSpaceLeftSide 0.0)
 			(setq freeSpaceRightSide 0.0)
@@ -791,15 +787,15 @@
 					(setq missing (- itemHeight freeSpaceRightSide))
 					(if (>= missing 0.0)  ; Not enough free space on right side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawLs w2 0) ; draw on right side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawLs w2 0) ; draw on right side
 							(setq freeSpaceLeftSide (+ freeSpaceLeftSide missing)) ; increase free space left side
 							(setq freeSpaceRightSide 0) ; reset free space right side
 						)
 					;else - enough free space right side
 						(progn
-							(drawLs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
+							(DrawLs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
 							; no change in free space left side
 							(setq freeSpaceRightSide (- freeSpaceRightSide itemHeight)) ; reduce free space right side
 						)
@@ -809,15 +805,15 @@
 					(setq missing (- itemHeight freeSpaceLeftSide))
 					(if (>= missing 0.0)  ; Not enough free space on left side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawLs (- w2) 0) ; draw on left side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawLs (- w2) 0) ; draw on left side
 							(setq freeSpaceRightSide (+ freeSpaceRightSide missing)) ; increase free space right side
 							(setq freeSpaceLeftSide 0) ; reset free space left side
 						)
 					;else - enough free space left side
 						(progn
-							(drawLs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
+							(DrawLs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
 							; no change in free space right side
 							(setq freeSpaceLeftSide (- freeSpaceLeftSide itemHeight)) ; reduce free space left side
 						)
@@ -827,11 +823,11 @@
 		)
 	)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
-);addLs
+);AddLs
 
 
 
-(defun addLHs ( / itemHeight itemWidth w2 missing )
+(defun AddLHs ( / itemHeight itemWidth w2 missing )
 	(setq
 		itemHeight 3.0
 		itemWidth 3.0 ; Box with speed attribute
@@ -840,8 +836,8 @@
 	)
 	(if isTopmostItem ; centered
 		(progn
-			(shiftSignalItemsUp itemHeight)
-			(drawLHs 0 0) ; Pos for bottom center of box
+			(ShiftSignalItemsUp itemHeight)
+			(DrawLHs 0 0) ; Pos for bottom center of box
 			(setq topOfMast (- topOfMast itemHeight)) ; roll back - topOfMast remains unchanged because this is now the top-of-mast item
 			(setq freeSpaceLeftSide 0.0)
 			(setq freeSpaceRightSide 0.0)
@@ -855,15 +851,15 @@
 					(setq missing (- itemHeight freeSpaceRightSide))
 					(if (>= missing 0.0)  ; Not enough free space on right side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawLHs w2 0) ; draw on right side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawLHs w2 0) ; draw on right side
 							(setq freeSpaceLeftSide (+ freeSpaceLeftSide missing)) ; increase free space left side
 							(setq freeSpaceRightSide 0) ; reset free space right side
 						)
 					;else - enough free space right side
 						(progn
-							(drawLHs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
+							(DrawLHs w2 (- freeSpaceRightSide itemHeight)) ; draw on right side, as high as possible
 							; no change in free space left side
 							(setq freeSpaceRightSide (- freeSpaceRightSide itemHeight)) ; reduce free space right side
 						)
@@ -873,15 +869,15 @@
 					(setq missing (- itemHeight freeSpaceLeftSide))
 					(if (>= missing 0.0)  ; Not enough free space on left side?
 						(progn
-							(shiftSignalItemsUp missing) ; shift up just enough
-							(drawVerticalPole missing) ; add to pole
-							(drawLHs (- w2) 0) ; draw on left side
+							(ShiftSignalItemsUp missing) ; shift up just enough
+							(DrawVerticalPole missing) ; add to pole
+							(DrawLHs (- w2) 0) ; draw on left side
 							(setq freeSpaceRightSide (+ freeSpaceRightSide missing)) ; increase free space right side
 							(setq freeSpaceLeftSide 0) ; reset free space left side
 						)
 					;else - enough free space left side
 						(progn
-							(drawLHs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
+							(DrawLHs (- w2) (- freeSpaceLeftSide itemHeight)) ; draw on left side, as high as possible
 							; no change in free space right side
 							(setq freeSpaceLeftSide (- freeSpaceLeftSide itemHeight)) ; reduce free space left side
 						)
@@ -891,11 +887,11 @@
 		)
 	)
 	(setq isTopmostItem nil)	; Force subsequent auxiliary signals to be drawn off-center from pole axis
-);addLHs
+);AddLHs
 
 
 
-(defun addDs ( / itemHeight curvedHeight p1 p2 p3 x y p4 extraMastAbove )
+(defun AddDs ( / itemHeight curvedHeight p1 p2 p3 x y p4 extraMastAbove )
 	(setq
 		itemHeight 4.0   ; Height of dwarf + extra space above dwarf, for instance in combination TVs/AVs/BPs+Ds
 		curvedHeight (* itemHeight (/ (sqrt 3.0) 2)) ; Ds height measured along main pole axis, where the curved Ds arc intersects with the main axis
@@ -909,18 +905,18 @@
 		(progn
 			; Add a pole stub above dwarf head, to produce a minimum separation between Ds and Hs (needed since left part of Ds is higher than the arced middle)
 			(setq missing (- (+ extraMastAbove itemHeight) curvedHeight))
-			(shiftSignalItemsUp missing) 
-			(drawVerticalPole missing)
+			(ShiftSignalItemsUp missing) 
+			(DrawVerticalPole missing)
 		)
 	)
-	(shiftSignalItemsUp curvedHeight)
-	(drawDs)
-	(addAnchor)
-);addDs
+	(ShiftSignalItemsUp curvedHeight)
+	(DrawDs)
+	(AddAnchor)
+);AddDs
 
 
 
-(defun addDsMKs ( / itemHeight curvedHeight p1 p2 p3 x y p4 extraMastAbove )
+(defun AddDsMKs ( / itemHeight curvedHeight p1 p2 p3 x y p4 extraMastAbove )
 	(setq
 		itemHeight 4.0   ; Height of dwarf
 		curvedHeight (* itemHeight (/ (sqrt 3.0) 2)) ; Ds height measured along main pole axis, where the curved Ds arc intersects with the main axis
@@ -934,11 +930,11 @@
 		(progn
 			; Add a pole stub above dwarf head, to produce a minimum separation between Ds and Hs (needed since left part of Ds is higher than the arced middle)
 			(setq missing (- (+ extraMastAbove itemHeight) curvedHeight))
-			(shiftSignalItemsUp missing) 
-			(drawVerticalPole missing)
+			(ShiftSignalItemsUp missing) 
+			(DrawVerticalPole missing)
 		)
 	)
-	(shiftSignalItemsUp curvedHeight)
-	(drawDsMKs)
-	(addAnchor)
-);addDsMKs
+	(ShiftSignalItemsUp curvedHeight)
+	(DrawDsMKs)
+	(AddAnchor)
+);AddDsMKs

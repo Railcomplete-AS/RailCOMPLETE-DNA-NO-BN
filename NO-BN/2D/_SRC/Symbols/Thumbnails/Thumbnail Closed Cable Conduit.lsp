@@ -18,7 +18,7 @@
 
 
 
-(defun ALIGNMENT-ROERPAKKE (/ blockName x y r) 
+(defun ALIGNMENT-ROERPAKKE (/ blockName x y r )
 	(setq 
 		blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE"
 		y 0.155
@@ -40,7 +40,5 @@
 		;
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _ten_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
-

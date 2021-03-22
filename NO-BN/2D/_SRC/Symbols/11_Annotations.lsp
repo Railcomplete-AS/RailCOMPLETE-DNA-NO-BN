@@ -15,10 +15,10 @@
 (setq f (strcat rootFolder "\\Symbols\\Annotations"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
-(loadfolder f)
+(LoadFolder f)
 
 
 (defun C:GENERATE-ANNOTATIONS ( / )
-	(setCadSystemDefaults)
-	(subStep "ANNOTATION-CHAINBREAK")	(C:ANNOTATION-CHAINBREAK)
+	(SetCadSystemDefaults)
+	(TraceLevel2 "ANNOTATION-CHAINBREAK")	(C:ANNOTATION-CHAINBREAK)
 )

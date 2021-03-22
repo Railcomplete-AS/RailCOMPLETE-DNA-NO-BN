@@ -27,6 +27,5 @@
 		_LINE_ (list (- x) (* (/ y 3) 2)) (list x (* (/ y 3) 2)) _ENTER_
 		_LINE_ (list (+ (- x) (* (/ x 5) 2)) y) (list (+ (- x) (* (/ x 5) 2)) (- y)) _ENTER_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

@@ -14,9 +14,9 @@
 ; Train heating power connector
 
 ; For debugging:
-; (SKILT_TOGVARMEANLEGG_1000V)
+; (SKILT-TOGVARMEANLEGG-1000V)
 
-(defun Skilt_Togvarmeanlegg_1000V ( / blockName description x y )
+(defun SKILT-TOGVARMEANLEGG-1000V ( / blockName description x y )
 	; 1000V auxuliary power for parked train heating system
 	;
 	; TL------TR
@@ -29,11 +29,11 @@
 		x (* 25 0.280) ; =7.0
 		y (* 25 0.080) ; =3.0
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAtPos layDef_Zero _th180_ _origo_ "1000 V")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAtPos layDef_Zero _th180_ _origo_ "1000 V")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

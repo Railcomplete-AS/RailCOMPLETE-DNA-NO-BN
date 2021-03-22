@@ -12,20 +12,17 @@
 
 ; Marker for positions and other stuff which needs a pin-needle symbol and a text in a drawing.
 
-(defun C:MARKER ( / blockName description )
+(defun C:MARKER ( / blockName description att )
 	(setq
 		blockName "NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL"
+		description "MARKER"
+		att '("FARGE" "Farge" "" "1,2")
 	)
-	(drawMarker)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-)
-
-
-
-(defun drawMarker ( / )
 	(command _CIRCLE_ "1,1" "0.4")
 	(command _LINE_ _origo_ "0.7563,0.6828" _ENTER_)
 	(command _LINE_ _origo_ "0.6828,0.7563" _ENTER_)
-	(addAtt "FARGE" "Farge" _ENTER_ "1,2" _th100_ _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddTextAttributeAtPos layDef_Zero _th100_ _origo_ att)
+	(AddDescriptionBelowOrigo description _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; createStandardLayers.lsp
+; CreateStandardLayers.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved. 
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -9,7 +9,7 @@
 ; 2021-02-10 CLFEY Release 2021.a
 ;
 ;=========================================================================================================================
-(defun createStandardLayers ( / )
+(defun CreateStandardLayers ( / )
 	;
 	; Define layers, then create them
 	;
@@ -17,15 +17,6 @@
 		; Global definitions for all layers in use by RailCOMPLETE objects.
 		;
 		; These definitions are intended for toggling with RC-ShowLayer (see DNA code)
-		;
-		; 'Struct layDef' definition:
-		;
-		; item 0 = Layer's name (NB cannot contain nonstandard letters such as æøåÆØÅ, nor any \U+00D9 unicode definitions.
-		; item 1 = Layer's color
-		; item 2 = Layer's description
-		; item 3 = Default color for objects intended for this layer (for use with 'addPlaced...()' routines
-		;
-		; Example: (setq myLayDef (list "Layer name can contain spaces" "<CAD-system-color-for-the-layer-itself> "Descriptive text" "<CAD-system-color-for-objects-to-be-drawn-next>"))
 		;
 		
 		; General / common layers
@@ -288,50 +279,50 @@
 	;--------------
 	
 	; General / common layers
-	; (createLayer layDef_Zero) - Exists already - and does not terminate the -LAYER _D dialog correctly, due to existing / nonexisting description - CLFEY didn't figure this out :-(
+	; (CreateLayer layDef_Zero) - Exists already - and does not terminate the -LAYER _D dialog correctly, due to existing / nonexisting description - CLFEY didn't figure this out :-(
 	; (command _LAYER_ _colorizeLayer_ (nth 1 layDef_Zero) _ENTER_) ; Change color for layer zero (can't be the current layer when this is done)
 	; (command _LAYER_ _describeLayer_ (nth 2 layDef_Zero) _ENTER_) ; Change description for layer zero - no extra ENTER since description was void to start with - FAILS IF NON-VOID
 	
-	;(createLayer layDef_Defpoints) ; This one is also problematic (it fails) when debugging and the layer already exists :-(
+	;(CreateLayer layDef_Defpoints) ; This one is also problematic (it fails) when debugging and the layer already exists :-(
 	
-	(createLayer layDef_UnknownLayerNameRequested)
-	(createLayer layDef_InsertionPoint)
-	(createLayer layDef_Description)
-	(createLayer layDef_Cabinet_ReservedSpaceForDoors)
-	(createLayer layDef_Cabinet_Wipeout)
-	(createLayer layDef_MetricDetails)
+	(CreateLayer layDef_UnknownLayerNameRequested)
+	(CreateLayer layDef_InsertionPoint)
+	(CreateLayer layDef_Description)
+	(CreateLayer layDef_Cabinet_ReservedSpaceForDoors)
+	(CreateLayer layDef_Cabinet_Wipeout)
+	(CreateLayer layDef_MetricDetails)
 	
 	; Board or pole layers
-	(createLayer layDef_BoardOrPole_Wipeout)
+	(CreateLayer layDef_BoardOrPole_Wipeout)
 
 	; Substructure layers (foundations, tunnels, roads etc)
-	(createLayer layDef_FoundationLocator)
+	(CreateLayer layDef_FoundationLocator)
 	
 	; Superstructure (track and embankment) layers
-	(createLayer layDef_Turnout_Wipeout)
-	(createLayer layDef_Turnout_LongSleepers)
-	(createLayer layDef_Turnout_ShortSleepers)
-	(createLayer layDef_Turnout_TrackCenterLines)
+	(CreateLayer layDef_Turnout_Wipeout)
+	(CreateLayer layDef_Turnout_LongSleepers)
+	(CreateLayer layDef_Turnout_ShortSleepers)
+	(CreateLayer layDef_Turnout_TrackCenterLines)
 
 	; Overhead Catenary System (OCS) layers
-	(createLayer layDef_CatenaryIsolator_Wipeout)
-	(createLayer layDef_AutoTransformerTerminals)
-	(createLayer layDef_PushPullDirection)
-	(createLayer layDef_CantileverType)
+	(CreateLayer layDef_CatenaryIsolator_Wipeout)
+	(CreateLayer layDef_AutoTransformerTerminals)
+	(CreateLayer layDef_PushPullDirection)
+	(CreateLayer layDef_CantileverType)
 
 	; Signaling
-	(createLayer layDef_Derailer_Wipeout)
-	(createLayer layDef_AxleCounter_SnaplineForPositioning)
-	(createLayer layDef_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh)
-	(createLayer layDef_AxleCounter_MinimumRailSeparationAtSpeedsAbove_120_kmh)
-	(createLayer layDef_AxleCounter_ReservedAreaForTuningUnit)
-	(createLayer layDef_Balise_MetalFreeArea)
-	(createLayer layDef_Balise_3m_Separation)
-	(createLayer layDef_Balise_8m_Separation)
-	(createLayer layDef_Balise_12m_Separation)
-	(createLayer layDef_View_SchematicPlan)
-	(createLayer layDef_View_CablePlan)
-	(createLayer layDef_View_TrackIsolationPlan)
+	(CreateLayer layDef_Derailer_Wipeout)
+	(CreateLayer layDef_AxleCounter_SnaplineForPositioning)
+	(CreateLayer layDef_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh)
+	(CreateLayer layDef_AxleCounter_MinimumRailSeparationAtSpeedsAbove_120_kmh)
+	(CreateLayer layDef_AxleCounter_ReservedAreaForTuningUnit)
+	(CreateLayer layDef_Balise_MetalFreeArea)
+	(CreateLayer layDef_Balise_3m_Separation)
+	(CreateLayer layDef_Balise_8m_Separation)
+	(CreateLayer layDef_Balise_12m_Separation)
+	(CreateLayer layDef_View_SchematicPlan)
+	(CreateLayer layDef_View_CablePlan)
+	(CreateLayer layDef_View_TrackIsolationPlan)
 	
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 )

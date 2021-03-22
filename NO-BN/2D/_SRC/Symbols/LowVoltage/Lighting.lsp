@@ -13,20 +13,20 @@
 ; Lighting
 
 (defun C:LIGHTING ( / )
-	(LAVSPENNINGSMAST)
-	(LYSARMATUR)
-	(BELYSNING "PUNKT")
-	(BELYSNING "MAST-1-LYS")
-	(BELYSNING "MAST-2-LYS")
-	(BELYSNING "MAST-2-LYS-V")
-	(BELYSNING "MAST-3-LYS")
-	(BELYSNING "MAST-3-LYS-T")
-	(BELYSNING "MAST-4-LYS")
+	(TraceLevel3 "LAVSPENNINGSMAST")		(LAVSPENNINGSMAST)
+	(TraceLevel3 "LYSARMATUR")				(LYSARMATUR)
+	(TraceLevel3 "BELYSNING-PUNKT")			(BELYSNING "PUNKT")
+	(TraceLevel3 "BELYSNING-MAST-1-LYS")	(BELYSNING "MAST-1-LYS")
+	(TraceLevel3 "BELYSNING-MAST-2-LYS")	(BELYSNING "MAST-2-LYS")
+	(TraceLevel3 "BELYSNING-MAST-2-LYS-V")	(BELYSNING "MAST-2-LYS-V")
+	(TraceLevel3 "BELYSNING-MAST-3-LYS")	(BELYSNING "MAST-3-LYS")
+	(TraceLevel3 "BELYSNING-MAST-3-LYS-T")	(BELYSNING "MAST-3-LYS-T")
+	(TraceLevel3 "BELYSNING-MAST-4-LYS")	(BELYSNING "MAST-4-LYS")
 )
 
 
 
-(defun LAVSPENNINGSMAST ( / blockName radius r x y )
+(defun LAVSPENNINGSMAST ( / blockName description r rm x y )
 	; Free-standing mast - e.g. for mounting of cameras, loudspeakers etc.
 	;
 	;  \   /
@@ -36,22 +36,22 @@
 	(setq 
 		blockName "NO-BN-2D-JBTEL-LAVSPENNINGSMAST"
 		description "LAVSPENNINGSMAST"
-		r (getLightFixtureRadius)
+		r (GetLightFixtureRadius)
 		rm (* 0.5 r) ; mast symbol radius
 		x (* (sqrt 8) rm)
 		y (* (sqrt 8) rm)
 	)
-	(drawCircle layDef_Zero rm _noWipeout_)
-	(drawHatch _solidHatch_)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description rm)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero rm _noWipeout_)
+	(DrawHatch _solidHatch_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description rm)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun LYSARMATUR ( / blockName description )
+(defun LYSARMATUR ( / blockName description x y len )
 	; Single-point light fixture (ceiling mounted, wall mounted, platform edge element mounted etc)
 	;     
 	; TL-TR
@@ -71,16 +71,16 @@
 		y (* 4 0.250) ; Cross in the middle
 		len (* 4 1.200) ; Box length
 	)
-	(drawBox layDef_Zero x len _noWipeout_)
-	(drawStAndrewCross layDef_Zero x y)
-	(addDescriptionBelowOrigo description (halfOf len))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x len _noWipeout_)
+	(DrawStAndrewCross layDef_Zero x y)
+	(AddDescriptionBelowOrigo description (HalfOf len))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun BELYSNING ( variation / blockName description )
+(defun BELYSNING ( variation / blockName description r p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 )
 	; Single- or multi-point light fixture, posibly with own mast (upright mast or upright/suspended mast mounted on OCS yoke)
 	;     
 	;  	 (X)  '0' - Single point without mast (open  circle with St Andrew's cross inside the circle, at origo)
@@ -115,7 +115,8 @@
 	(setq 
 		blockName (strcat "NO-BN-2D-JBTEL-BELYSNING-LYS-" variation)
 		description (strcat "BELYSNING " variation)
-		r (getLightFixtureRadius)
+		r (GetLightFixtureRadius)
+		rm (* 0.5 r) ; mast symbol radius
 		p0 '( 0.000 -1.500)
 		p1 '( 0.000  1.500)
 		p2 '(-1.250 -2.250)
@@ -129,69 +130,69 @@
 	)
 	(cond
 		((= variation "PUNKT")
-			(addLightFixture _origo_)
+			(AddLightFixture _origo_)
 		)
 		((= variation "MAST-1-LYS")
-			(addLightFixture p0)
+			(AddLightFixture p0)
 		)
 		((= variation "MAST-2-LYS")
-			(addLightFixture p0)
-			(addLightFixture p1)
+			(AddLightFixture p0)
+			(AddLightFixture p1)
 		)
 		((= variation "MAST-2-LYS-V")
-			(addLightFixture p2)
-			(addLightFixture p3)
+			(AddLightFixture p2)
+			(AddLightFixture p3)
 		)
 		((= variation "MAST-3-LYS")
-			(addLightFixture p4)
-			(addLightFixture p5)
-			(addLightFixture p6)
+			(AddLightFixture p4)
+			(AddLightFixture p5)
+			(AddLightFixture p6)
 		)
 		((= variation "MAST-3-LYS-T")
-			(addLightFixture p6)
-			(addLightFixture p7)
-			(addLightFixture p8)
+			(AddLightFixture p6)
+			(AddLightFixture p7)
+			(AddLightFixture p8)
 		)
 		((= variation "MAST-4-LYS")
-			(addLightFixture p6)
-			(addLightFixture p7)
-			(addLightFixture p8)
-			(addLightFixture p9)
+			(AddLightFixture p6)
+			(AddLightFixture p7)
+			(AddLightFixture p8)
+			(AddLightFixture p9)
 		)
 		(T (alert (strcat "*** ERROR: BELYSNING() bad variation [" variation "] .")))
 	)
 	(cond 
 		((= variation "PUNKT") 
-			(addDescriptionBelowOrigo description r)
+			(AddDescriptionBelowOrigo description r)
 		)
 		(T
-			(drawCircle layDef_Zero rm _noWipeout_)
-			(drawHatch _solidHatch_)
-			(addDescriptionBelowOrigo description (* 3 r)) ; well below...
+			(DrawCircle layDef_Zero rm _noWipeout_)
+			(DrawHatch _solidHatch_)
+			(AddDescriptionBelowOrigo description (* 3 r)) ; well below...
 		)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
 ; Helpers
 ;--------------
-(defun getLightFixtureRadius ( / r )
+(defun GetLightFixtureRadius ( / r )
 	(setq r 1.25)
 )
 
 
 
-(defun addLightFixture ( pos / r rm x y pX pY h p1 p2 )
+(defun AddLightFixture ( pos / r rm x y pX pY h p1 p2 )
 	;
 	;    (X) ; Place bulb at a position defined as (a*r,b*r) where r=bulb symbol radius
 	;    /   ; Arm
-	;   .    ; The arm start at rm/2 from origo and stops at r from bulb center (if bulb center is more than rm+r away from origo)
+	;   .    ; The arm starts at rm/2 from origo and stops at r from bulb center (if bulb center is more than rm+r away from origo)
 	;
 	(setq 
-		r (getLightFixtureRadius)
+		r (GetLightFixtureRadius)
 		rm (* 0.5 r) ; mast symbol radius (not drawn here)
 		x (* (sqrt 2) r) ; St Andrew's cross in light bulb symbol
 		y (* (sqrt 2) r)
@@ -199,15 +200,15 @@
 		pY (* (nth 1 pos) r)
 		h (sqrt (+ (* pX pX) (* pY pY))) ; distance from origo to center light bulb
 	)
-	(drawCircleAtPos layDef_Zero (list pX pY) r _noWipeout_)
-	(drawStAndrewCrossAtPos layDef_Zero (list pX pY) x y)
+	(DrawCircleAtPos layDef_Zero (list pX pY) r _noWipeout_)
+	(DrawStAndrewCrossAtPos layDef_Zero (list pX pY) x y)
 	(cond
 		((> h (+ rm r)) 
 			(setq 
 				p1 (list (* (/ rm h) pX)   (* (/ rm h) pY)) ; start of arm closest to origo where mast symbol ends
 				p2 (list (* (/ (- h r) h) pX)   (* (/ (- h r) h) pY)) ; end of arm where light bulb circle starts
 			)
-			(drawLine layDef_Zero p1 p2)
+			(DrawLine layDef_Zero p1 p2)
 		)
 	)
 )

@@ -34,12 +34,12 @@
 		attTen	'("HAST_10" "Vent-hastighet (10-ere):" "12")
 		attFive	'("HAST_5" "Blank eller 5" _ENTER_)
 	)
-	(drawTriangle side) ; pointing down
-	(addTextAttributeAtPos layDef_Zero _th250_ p1 attTen)
-	(addTextAttributeAtPos layDef_Zero _th100_ p2 attFive)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawTriangle side) ; pointing down
+	(AddTextAttributeAtPos layDef_Zero _th250_ p1 attTen)
+	(AddTextAttributeAtPos layDef_Zero _th100_ p2 attFive)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -63,14 +63,14 @@
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
 		attFive	'("HAST_5" "Blank eller 5" _ENTER_)
 	)
-	(drawTriangle side) ; pointing down
-	(mirrorAboutXaxis _eraseMirrorSource_)
-	(moveUp (* (sqrt 0.75) side))
-	(addTextAttributeAtPos layDef_Zero _th250_ p1 attTen)
-	(addTextAttributeAtPos layDef_Zero _th100_ p2 attFive)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawTriangle side) ; pointing down
+	(MirrorAboutXaxis _eraseMirrorSource_)
+	(MoveUp (* (sqrt 0.75) side))
+	(AddTextAttributeAtPos layDef_Zero _th250_ p1 attTen)
+	(AddTextAttributeAtPos layDef_Zero _th100_ p2 attFive)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -89,12 +89,12 @@
 		r 		2.75
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
 	)
-	(drawCircle layDef_Zero r layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attTen)
-	(moveUp r)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th250_ _origo_ attTen)
+	(MoveUp r)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -113,10 +113,10 @@
 		description "SKILT SIGNAL 68D-1 MARKERINGSMERKE"
 		side 3.75
 	)
-	(drawTriangle side)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawTriangle side)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -150,15 +150,15 @@
 		p10	'( 0.250 0.433)
 		p11	'( 3.000 0.433)
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p4 p5 p7 p11 p10 _origo_ p9 p8 p6 p2 p3 _closedPolyline_) ; contour
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(command _POLYLINE_ p1 p3 p4 _closedPolyline_)	(drawHatch _solidHatch_) ; top triangle
-	(command _POLYLINE_ p6 p8 p9 _closedPolyline_)	(drawHatch _solidHatch_) ; left triangle
-	(command _POLYLINE_ p7 p10 p11 _closedPolyline_)	(drawHatch _solidHatch_) ; right triangle
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(command _POLYLINE_ p1 p3 p4 _closedPolyline_)	(DrawHatch _solidHatch_) ; top triangle
+	(command _POLYLINE_ p6 p8 p9 _closedPolyline_)	(DrawHatch _solidHatch_) ; left triangle
+	(command _POLYLINE_ p7 p10 p11 _closedPolyline_)	(DrawHatch _solidHatch_) ; right triangle
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -190,16 +190,16 @@
 		p9	'( 0.000 2.900)
 		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 p3 p4 p5 p6 p7 _closedPolyline_) ; contour
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
 	(command _POLYLINE_ p1 p2 p3 p6 p7 _closedPolyline_)
-	(drawHatchFromPoint _solidHatch_ (addVectors p1 _slightlyBelow_) _angleZero_ _offsetZero_) ; top 5-edge
+	(DrawHatchFromPoint _solidHatch_ (AddVectors p1 _slightlyBelow_) _angleZero_ _offsetZero_) ; top 5-edge
 	(command _POLYLINE_ p3 p4 p5 p6 p8 _closedPolyline_)
-	(drawHatchFromPoint _solidHatch_ (addVectors p8 _slightlyBelow_) _angleZero_ _offsetZero_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawHatchFromPoint _solidHatch_ (AddVectors p8 _slightlyBelow_) _angleZero_ _offsetZero_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -219,12 +219,12 @@
 		y 4.0
 		attDef '("PLUSS_HAST" "Pluss-hastighet" "+5")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attDef)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th250_ _origo_ attDef)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
  
@@ -248,13 +248,13 @@
 		y2 5.0
 		attDef '("KRENGE_HAST" "Krengetoghastighet (km/h)" "160")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(drawBox layDef_Zero x2 y2 _noWipeout_)
-	(moveUp (halfOf y))
-	(drawHatchFromPoint _solidHatch_ _slightlyAbove_ _angleZero_ _offsetZero_)
-	(addTextAttributeAtPos layDef_Zero _th350_ (list 0 (halfOf y)) attDef)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawBox layDef_Zero x2 y2 _noWipeout_)
+	(MoveUp (HalfOf y))
+	(DrawHatchFromPoint _solidHatch_ _slightlyAbove_ _angleZero_ _offsetZero_)
+	(AddTextAttributeAtPos layDef_Zero _th350_ (list 0 (HalfOf y)) attDef)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

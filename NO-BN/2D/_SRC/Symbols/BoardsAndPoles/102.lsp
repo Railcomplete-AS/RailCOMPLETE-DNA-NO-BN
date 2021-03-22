@@ -24,13 +24,12 @@
 		x 6.0
 		y 3.0
 	)
-	; Schematic symbol
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(drawRightArrow x y)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawRightArrow x y)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -44,16 +43,12 @@
 		x 6.0
 		y 3.0
 	)
-	; Schematic symbol
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(drawLeftArrow x y)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-
-	; Annotative symbol
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawLeftArrow x y)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -67,15 +62,11 @@
 		x 6.0
 		y 3.0
 	)
-	; Schematic symbol
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(drawDoubleArrow x y)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-
-	; Annotative symbol
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawDoubleArrow x y)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

@@ -15,22 +15,17 @@
 (setq f (strcat rootFolder "\\Symbols\\BoardsAndPoles"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
-(loadfolder f)
+(LoadFolder f)
 
-(defun C:GENERATE-BOARDSANDPOLES-OBJECTS ( / 
-		#symbols
-		blockNames
-		descriptions
-	)
-	(setCadSystemDefaults)
-	
+(defun C:GENERATE-BOARDSANDPOLES-OBJECTS ( / #symbols blockNames descriptions )
+	(SetCadSystemDefaults)
 	(setq
-		blockNames (getBoardAndPoleNames)	; Funksjon med liste over alle skilt som skal lages - filnavn må være samme som funksjonens navn.
+		blockNames (GetBoardAndPoleNames)	; Funksjon med liste over alle skilt som skal lages - filnavn må være samme som funksjonens navn.
 		#symbols (length blockNames)
 	)
 	(setq n 0)
 	(repeat #symbols
-		(subStep (nth n blocknames))
+		(TraceLevel2 (nth n blocknames))
 		(setq descriptions (append descriptions (list (eval (list (read (nth n blocknames))))))) ; Call function, create object, return description
 		(setq n (1+ n))
 	)

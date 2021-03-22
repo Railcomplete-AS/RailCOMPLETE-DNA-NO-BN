@@ -42,8 +42,7 @@
 			_closedPolyline_
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
   
   
@@ -66,8 +65,7 @@
 			_closedPolyline_
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
 
   
@@ -96,7 +94,7 @@
 			_closedPolyline_
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 	blockName
 )
 
@@ -133,6 +131,5 @@
 
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

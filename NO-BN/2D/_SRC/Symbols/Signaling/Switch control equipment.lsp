@@ -13,9 +13,9 @@
 ; Turnout, derailer and level crossing boom operation (point machine, derailer machine, boom machine)
 
 (defun C:SWITCH-CONTROL-EQUIPMENT ( / )
-	(subSubStep "POINT-MACHINE")		(POINT-MACHINE)
-	(subSubStep "DERAILER-MACHINE")	(DERAILER-MACHINE)
-	(subSubStep "LOCAL-CONTROL-PANEL")	(LOCAL-CONTROL-PANEL)
+	(TraceLevel3 "POINT-MACHINE")		(POINT-MACHINE)
+	(TraceLevel3 "DERAILER-MACHINE")	(DERAILER-MACHINE)
+	(TraceLevel3 "LOCAL-CONTROL-PANEL")	(LOCAL-CONTROL-PANEL)
 )
 
 
@@ -24,15 +24,15 @@
 	(setq 
 		blockName "NO-BN-2D-JBTSI-DRIVMASKIN-SPORVEKSEL"
 		description	"DRIVMASKIN FOR SPORVEKSEL"
-		r1 (getLargeLanternRadius)
+		r1 (GetLargeLanternRadius)
 		r2 (* 0.5 r1)
 	)
-	(drawCircle layDef_Zero r1 _noWipeout_)
-	(drawCircle layDef_Zero r2 _noWipeout_)
+	(DrawCircle layDef_Zero r1 _noWipeout_)
+	(DrawCircle layDef_Zero r2 _noWipeout_)
 	; no hatch
-	(addDescriptionBelowOrigo description r1)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description r1)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -41,15 +41,15 @@
 	(setq 
 		blockName "NO-BN-2D-JBTSI-DRIVMASKIN-SPORSPERRE"
 		description	"DRIVMASKIN FOR SPORSPERRE"
-		r1 (getLargeLanternRadius)
+		r1 (GetLargeLanternRadius)
 		r2 (* 0.5 r1)
 	)
-	(drawCircle layDef_Zero r1 _noWipeout_)
-	(drawCircle layDef_Zero r2 _noWipeout_)
+	(DrawCircle layDef_Zero r1 _noWipeout_)
+	(DrawCircle layDef_Zero r2 _noWipeout_)
 	; no hatch
-	(addDescriptionBelowOrigo description r1)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description r1)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -58,13 +58,13 @@
 	(setq 
 		blockName	"NO-BN-2D-JBTSI-LOKALSTILLER"
 		description	"LOKALOMSTILLER FOR SPORVEKSEL OG SPORSPERRE"
-		r1 (getLargeLanternRadius)
+		r1 (GetLargeLanternRadius)
 		r2 (* 0.5 r1)
 	)
-	(drawCircle layDef_Zero r1 _noWipeout_)
-	(drawCircle layDef_Zero r2 _noWipeout_)
-	(drawHatch _denseHatch_)
-	(addDescriptionBelowOrigo description r1)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawCircle layDef_Zero r1 _noWipeout_)
+	(DrawCircle layDef_Zero r2 _noWipeout_)
+	(DrawHatch _denseHatch_)
+	(AddDescriptionBelowOrigo description r1)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

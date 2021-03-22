@@ -12,13 +12,13 @@
 
 ; Symbols showing the topology of alignments (tracks, wires, cables, ducts, roads etc)
 
-; Concerns schematic symbols that scale with paperspace drawing scale.
-
 (defun C:CONNECTOR-CROSSING ( / )
 	
-	(setCadSystemDefaults)  
+	(SetCadSystemDefaults)  
 	(CONNECTOR-CROSSING)
 )
+
+
 
 (defun CONNECTOR-CROSSING ( / blockName description r )
 	;
@@ -35,7 +35,7 @@
 		description	"CONNECTOR, CROSSING"
 		r 0.5 ; r of 180 deg half-circle arc, to be shown at the ends of a long horizontal and short vertical line meeting at the crossing
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command
 		_LINE_ (list (* -4 r) 0) (list (* 4 r) 0) _ENTER_ ; long horizontal line
 		_LINE_ (list 0 (* -2 r)) (list 0 (* 2 r)) _ENTER_ ; short vertical line
@@ -44,7 +44,7 @@
 		_ARC_ _setArcCenter_ (list 0 (* -3 r)) (list (* 1 r) (* -3 r)) (list (* -1 r) (* -3 r)) ; Bottom arc
 		_ARC_ _setArcCenter_ (list 0 (* 3 r)) (list (* -1 r) (* 3 r)) (list (* 1 r) (* 3 r)) ; Top arc
 	)
-	(addDescriptionBelowOrigo description (* 4 r))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description (* 4 r))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

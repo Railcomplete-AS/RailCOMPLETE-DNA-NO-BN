@@ -34,15 +34,15 @@
 		gy 0.2
 	)
 	; Schematic symbol
-	(drawBox layDef_Zero x y _noWipeout_)
-	(moveDown (halfOf y))
-	(addDescriptionBelowOrigo description y)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(MoveDown (HalfOf y))
+	(AddDescriptionBelowOrigo description y)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBox layDef_Zero gx gy _noWipeout_)
-	(addTextAtPos layDef_Zero (* 0.8 gy) _origo_ "T")
-	(moveDown (halfOf gy))
-	(addDescriptionBelowOrigo description gy)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawBox layDef_Zero gx gy _noWipeout_)
+	(AddTextAtPos layDef_Zero (* 0.8 gy) _origo_ "T")
+	(MoveDown (HalfOf gy))
+	(AddDescriptionBelowOrigo description gy)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )

@@ -19,6 +19,7 @@
 
 
 (defun BILVEI ( / blockName ) 
+	; A piece of two-lane road seen in perspective in the direction of driving.
 	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-BILVEI")
 	(command 
 		_LINE_ _origo_ (list 0 1) _ENTER_
@@ -29,6 +30,5 @@
 		_LINE_ (list 1.5 0) (list 0.5 3.375) _ENTER_
 		_MIRROR_ _lastSelection_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

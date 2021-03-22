@@ -19,8 +19,8 @@
 
 
 (defun ALIGNMENT-GANGVEI ( / blockName ) 
-; Start drawing child, then draw adult, then scale down and reposition.
-; Polyline starts at center neck and continues clockwise.
+	; Start drawing child, then draw adult, then scale down and reposition.
+	; Polyline starts at center neck and continues clockwise.
 	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-GANGVEI")
 	(command 
 		; CHILD:
@@ -75,7 +75,5 @@
 		_SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_
 		_MOVE_ _selectAll_ _ENTER_ (list 2.5 2.5) _origo_
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
-

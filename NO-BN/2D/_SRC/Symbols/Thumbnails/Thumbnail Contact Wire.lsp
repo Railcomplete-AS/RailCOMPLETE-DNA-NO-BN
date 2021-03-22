@@ -17,6 +17,7 @@
 )
 
 (defun ALIGNMENT-KONTAKTLEDNING ( / blockName radiusWire radiusSmall radiusLarge ) 
+	; 2D cross-section of a contact wire
 	(setq
 		blockName (strcat "NO-BN-2D-JBTKL-THUMBNAIL-KONTAKTLEDNING")
 		radiusWire 6.0
@@ -45,8 +46,7 @@
 			_ENTER_
 	)
 	(command _MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_)
-	(drawHatch _denseHatch_)
+	(DrawHatch _denseHatch_)
 	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _fifth_)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

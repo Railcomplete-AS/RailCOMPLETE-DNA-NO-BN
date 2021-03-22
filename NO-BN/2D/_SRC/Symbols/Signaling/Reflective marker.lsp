@@ -33,11 +33,11 @@
 		_LINE_ (list (/ r 2) (* r (/ (sqrt 3) 2))) (list (- (/ r 2)) (- (* r (/ (sqrt 3) 2)))) _ENTER_
 		_MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (* r (/ (sqrt 3) 2)))
 	)
-	(addDescriptionBelowOrigo description r)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description r)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
@@ -60,10 +60,10 @@
 		_LINE_ _origo_(list (/ r 2) (- (* r (/ (sqrt 3) 2)))) _ENTER_
 		_MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 (* r (/ (sqrt 3) 2)))
 	)
-	(addDescriptionBelowOrigo description r)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description r)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 	

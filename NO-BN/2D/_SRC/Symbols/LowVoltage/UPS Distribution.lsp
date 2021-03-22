@@ -18,7 +18,7 @@
 
 
 
-(defun UPS-FORDELER ( / blockName description x y )
+(defun UPS-FORDELER ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 )
 	;
 	;  TL-------TR
 	;  | \ 5\/8\ |  567 and 8910 = two arcs
@@ -47,13 +47,13 @@
 		p9	(list (* 0.30 x) (* 0.25 y))
 		p10	(list (* 0.40 x) (* 0.15 y))
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawLine layDef_Zero (posTL x y) (posBR x y))
-	(drawLine layDef_Zero p1 p2)
-	(drawLine layDef_Zero p3 p4)
-	(drawArc layDef_Zero p5 p6 p7)
-	(drawArc layDef_Zero p8 p9 p10)
-	(addDescriptionBelowOrigo description (halfOf y))
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawLine layDef_Zero (PosTL x y) (PosBR x y))
+	(DrawLine layDef_Zero p1 p2)
+	(DrawLine layDef_Zero p3 p4)
+	(DrawArc layDef_Zero p5 p6 p7)
+	(DrawArc layDef_Zero p8 p9 p10)
+	(AddDescriptionBelowOrigo description (HalfOf y))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

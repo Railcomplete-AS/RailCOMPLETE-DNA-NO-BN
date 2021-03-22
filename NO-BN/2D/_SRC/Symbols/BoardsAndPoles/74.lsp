@@ -16,7 +16,7 @@
 ; For debugging:
 ; (74-1) (74-2)
 
-(defun 74-1 ( / blockname description dim1 dim2 )
+(defun 74-1 ( / blockname description x y attDef )
 	; Train length
 	;
 	; TL---------TR
@@ -30,18 +30,18 @@
 		y 3.0
 		attDef '("TOGLENGDE" "Toglengde" "220m")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(addTextAttributeAtPos layDef_Zero _th250_ _origo_ attDef)
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(AddTextAttributeAtPos layDef_Zero _th250_ _origo_ attDef)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
 
 
-(defun 74-2 ( / blockName description dim1 dim2 )
+(defun 74-2 ( / blockName description x y p1 p2 p3 p4 attHundred attTen attOne )
 	; Train length (old type, narrow stacked)
 	;
 	; TL---TR
@@ -64,14 +64,14 @@
 		attTen		'("TI_M" 	"10 m" "2")
 		attOne		'("EN_M" 	 "1 m" "0")
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(moveUp (halfOf y))
-	(addTextAttributeAtPos layDef_Zero _th180_ p1 attHundred)
-	(addTextAttributeAtPos layDef_Zero _th180_ p2 attTen)
-	(addTextAttributeAtPos layDef_Zero _th180_ p3 attOne)
-	(addTextAtPos layDef_Zero _th180_ p4 "m")
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(MoveUp (HalfOf y))
+	(AddTextAttributeAtPos layDef_Zero _th180_ p1 attHundred)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p2 attTen)
+	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attOne)
+	(AddTextAtPos layDef_Zero _th180_ p4 "m")
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

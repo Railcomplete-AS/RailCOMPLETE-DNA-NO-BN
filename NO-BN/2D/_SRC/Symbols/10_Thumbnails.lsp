@@ -19,10 +19,10 @@
 (setq f (strcat rootFolder "\\Symbols\\Thumbnails"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
-(loadfolder f)
+(LoadFolder f)
 
 (defun C:GENERATE-THUMBNAILS ( / )
-	(setCadSystemDefaults)
+	(SetCadSystemDefaults)
 	(C:THUMBNAIL-ROAD)
 	(C:THUMBNAIL-PEDESTRIAN-LANE)
 	(C:THUMBNAIL-EARTHING-WIRE)

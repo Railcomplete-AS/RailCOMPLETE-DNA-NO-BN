@@ -18,21 +18,22 @@
 	(sporstopper "HYDRAULISK")
 )
 
-(defun sporstopper ( variation / blockName x y )
+(defun sporstopper ( variation / blockName description x y )
 	(setq	
 		blockName (strcat "NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-" variation)
 		description (strcat "SPORSTOPPER, " variation)
 		x 10.0
 		y 8.5
 	)
-	(drawBox layDef_Zero x y _noWipeout_)
+	(DrawBox layDef_Zero x y _noWipeout_)
 	(if (= variation "GLIDBAR")
-		(drawHatch _mediumHatch_)
+		(DrawHatch _mediumHatch_)
 	)
 	(if (= variation "HYDRAULISK")
-		(drawHatch _solidHatch_)
+		(DrawHatch _solidHatch_)
 	)
 	(command _ROTATE_ _selectAll_ _ENTER_ _origo_ _angle90_)
-	(addDescriptionBelowOrigo description 0.0)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(AddDescriptionBelowOrigo description 1.0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

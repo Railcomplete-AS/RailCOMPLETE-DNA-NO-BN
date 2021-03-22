@@ -19,6 +19,7 @@
 
 
 (defun ALIGNMENT-SKINNE ( / blockName ) 
+	; Rail profile. 2D cross-section of a rail.
 	(setq
 		blockName (strcat "NO-BN-2D-JBTOB-THUMBNAIL-SKINNE")
 	)
@@ -47,6 +48,5 @@
 		_MIRROR_ _selectAll_ _ENTER_ _origo_ _yAxis_ _keepMirrorSource_
 		_MOVE_ _selectAll_ _ENTER_ _origo_ (list 0 3.5)
 	)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )

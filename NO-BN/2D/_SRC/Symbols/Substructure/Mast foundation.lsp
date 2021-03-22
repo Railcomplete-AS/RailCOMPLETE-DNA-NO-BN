@@ -14,7 +14,7 @@
 
 ; Debug helpers:
 ; (C:MAST-FOUNDATION)
-; (BETONG-HS-FUNDAMENT-FRI-LINJE)
+; (BETONG-HS-FUNDAMENT-FRI-LINJE) 
 ; (BETONG-HS-FUNDAMENT-PLATTFORM)
 ; (BETONG-HS-FUNDAMENT-Ø680-300)
 ; (BETONG-VEIBOMDRIVMASKIN-FUNDAMENT-Ø680-210-1600)
@@ -30,11 +30,11 @@
 ; (FJELLBOLTER-FOR-KONSOLL-PAA-VEGG)
 ; (METALL-KL-KONSOLL-VEGGFESTE)
 ; (SPESIAL-KL-FUNDAMENT)
-; (drawSmallBolt)
+; (DrawSmallBolt)
 
 
 (defun C:MAST-FOUNDATION ( / )
-	(subSubStep "BETONG-HS-FUNDAMENT")
+	(TraceLevel3 "BETONG-HS-FUNDAMENT")
 		(BETONG-HS-FUNDAMENT-FRI-LINJE)
 		(BETONG-HS-FUNDAMENT-PLATTFORM)
 		(BETONG-HS-FUNDAMENT-Ø680-300)
@@ -42,14 +42,14 @@
 		(BETONG-VEIBOMDRIVMASKIN-FUNDAMENT-Ø680-210-1600) ; OK, kanskje ikke en mast... men samme slags fundament, nesten, som gammelt signalfundament
 		(BETONG-HS-FUNDAMENT-BORET) ; Ø555 Med signalfagets boltegruppe 164x164 mm
 
-	(subSubStep "BETONG-DS-FUNDAMENT")
+	(TraceLevel3 "BETONG-DS-FUNDAMENT")
 		(BETONG-DS-FUNDAMENT-KONISK)
 		(BETONG-DS-FUNDAMENT-RETTSIDET)
 
 	; Ny standard, med boltegruppe 374x191xM36 - arg=sålebredde (1600-2200) og 'såleoffset'.
 	; Offset 000=søyle bakerst på sålen (lengst fra sporet innsatt med dir="both")
 	; Offset 100=søyle 100 mm fra bakerst på sålen, osv
-	(subSubStep "BETONG-KL-FUNDAMENT-BJELKEMAST")
+	(TraceLevel3 "BETONG-KL-FUNDAMENT-BJELKEMAST")
 		(BETONG-KL-FUNDAMENT-BJELKEMAST "1600" "000") 
 		(BETONG-KL-FUNDAMENT-BJELKEMAST "1700" "000")
 		(BETONG-KL-FUNDAMENT-BJELKEMAST "1800" "000")
@@ -67,18 +67,18 @@
 		(BETONG-KL-FUNDAMENT-BJELKEMAST "2200" "200")
 		(BETONG-KL-FUNDAMENT-BJELKEMAST "2200" "300")
 
-	(subSubStep "BETONG-KL-FUNDAMENT-B3/B6/H3")
+	(TraceLevel3 "BETONG-KL-FUNDAMENT-B3/B6/H3")
 		(BETONG-KL-FUNDAMENT-B3-B6-LAV-MAST) ; B3 og B6 med 240x800 boltegruppe
 		(BETONG-KL-FUNDAMENT-B6-HOEY-MAST)	 ; B6 med 260x940 boltegruppe
 		(BETONG-KL-FUNDAMENT-H3 "6000-9500") ; Beregnet for mastehøyder fra-til [mm]
 		(BETONG-KL-FUNDAMENT-H3 "10000-12000")
 		(BETONG-KL-FUNDAMENT-H3 "12500-13000")
 
-	(subSubStep "BETONG-KL-FUNDAMENT-BORET-355/555")
+	(TraceLevel3 "BETONG-KL-FUNDAMENT-BORET-355/555")
 		(BETONG-KL-FUNDAMENT-BORET-355) ; Ø355 Med KL-fagets boltegruppe
 		(BETONG-KL-FUNDAMENT-BORET-555) ; Ø555 Med KL-fagets boltegruppe
 
-	(subSubStep "FJELLBOLTER / METALL-KL-KONSOLL-VEGGFESTE / FJELLBOLTER-FOR-KONSOLL-PAA-VEGG / SPESIAL-KL-FUNDAMENT")
+	(TraceLevel3 "FJELLBOLTER / METALL-KL-KONSOLL-VEGGFESTE / FJELLBOLTER-FOR-KONSOLL-PAA-VEGG / SPESIAL-KL-FUNDAMENT")
 		(FJELLBOLTER-FOR-HENGEMAST)
 		(FJELLBOLTER-FOR-KONSOLL-PAA-VEGG)
 		(METALL-KL-KONSOLL-VEGGFESTE)
@@ -87,7 +87,7 @@
 
 
 
-(defun BETONG-HS-FUNDAMENT-FRI-LINJE ( / blockName description baseX baseY shaftX shaftY x y boltRadius cutoutX cutoutY paperScale )
+(defun BETONG-HS-FUNDAMENT-FRI-LINJE ( / blockName description baseX baseY shaftX shaftY x y boltRadius cutoutX cutoutY )
 	; Ref. S.xxxxxx
 	(setq
 		blockName	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-FRI-LINJE-300x300xM24"
@@ -102,8 +102,8 @@
 		cutoutX 0.150 ; For cables / flexible tubes, front of shaft
 		cutoutY 0.050
 	)
-	(defun localGraphics ( layDef /)
-		(setLayer layDef)
+	(defun LocalGraphics ( layDef /)
+		(SetLayer layDef)
 		(command
 			_POLYLINE_ ; 
 				(list (- (/ baseX 2)) (/ baseY 2))
@@ -113,31 +113,31 @@
 				_closedPolyline_
 			_CIRCLE_ (list x y) boltRadius
 		)
-		(mirrorAboutXaxis _keepMirrorSource_)
-		(mirrorAboutYaxis _keepMirrorSource_)
-		(mirrorAboutDiagonal _keepMirrorSource_)
+		(MirrorAboutXaxis _keepMirrorSource_)
+		(MirrorAboutYaxis _keepMirrorSource_)
+		(MirrorAboutDiagonal _keepMirrorSource_)
 		(command _RECTANGLE_ (list (- (/ cutoutX 2)) (- (/ shaftY 2))) (list (+ (/ cutoutX 2)) (- cutoutY (/ shaftY 2))))
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-HS-FUNDAMENT-PLATTFORM ( / blockName description s1 s2 dim1 dim2 radius_gjengejern radius_roer roer_y paperScale )
+(defun BETONG-HS-FUNDAMENT-PLATTFORM ( / blockName description s1 s2 dim1 dim2 rThreadedIron rFlexibleTube yFlexibleTube )
 	; Ref. S.xxxxxx
 	(setq
 		blockName	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-PLATTFORM-300x300xM24"
@@ -146,12 +146,12 @@
 		s2 0.6
 		dim1 0.15
 		dim2 0.05
-		radius_gjengejern 0.0120
-		radius_roer 0.0420
-		roer_y (+ (/ s2 2) radius_roer) 
+		rThreadedIron 0.0120
+		rFlexibleTube 0.0420
+		yFlexibleTube (+ (/ s2 2) rFlexibleTube) 
 	)
-	(defun localGraphics ( layDef /)
-		(setLayer layDef)
+	(defun LocalGraphics ( layDef /)
+		(SetLayer layDef)
 		(command
 			_RECTANGLE_	(list (- (/ s1 2)) (- (/ s1 2)))	(list (/ s1 2) (/ s1 2))			;stort kvadrat, ytre
 			_RECTANGLE_	(list (- (/ s2 2)) (- (/ s2 2)))	(list (/ s2 2) (/ s2 2))			;lite kvadrat, indre
@@ -160,158 +160,159 @@
 			_LINE_		(list (/ s1 2) (/ s1 2))			(list (/ s2 2) (/ s2 2)) _ENTER_
 			_LINE_		(list (/ s1 -2) (/ s1 2))			(list (/ s2 -2) (/ s2 2)) _ENTER_
 			_LINE_		(list (/ s1 2) (/ s1 -2))			(list (/ s2 2) (/ s2 -2)) _ENTER_
-			_CIRCLE_		(list dim1 dim1) radius_gjengejern
-			_CIRCLE_		(list (- dim1) dim1) radius_gjengejern
-			_CIRCLE_		(list dim1 (- dim1)) radius_gjengejern
-			_CIRCLE_		(list (- dim1) (- dim1)) radius_gjengejern
-			_CIRCLE_		_origo_ radius_gjengejern
-			_CIRCLE_		(list (- radius_roer) (- roer_y)) radius_roer
-			_CIRCLE_		(list radius_roer (- roer_y)) radius_roer
-			_CIRCLE_		(list 0 roer_y) radius_roer
+			_CIRCLE_		(list dim1 dim1) rThreadedIron
+			_CIRCLE_		(list (- dim1) dim1) rThreadedIron
+			_CIRCLE_		(list dim1 (- dim1)) rThreadedIron
+			_CIRCLE_		(list (- dim1) (- dim1)) rThreadedIron
+			_CIRCLE_		_origo_ rThreadedIron
+			_CIRCLE_		(list (- rFlexibleTube) (- yFlexibleTube)) rFlexibleTube
+			_CIRCLE_		(list rFlexibleTube (- yFlexibleTube)) rFlexibleTube
+			_CIRCLE_		(list 0 yFlexibleTube) rFlexibleTube
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-HS-FUNDAMENT-Ø680-300 ( / blockName description r1 r2 d radius_gjengejern paperScale )
+(defun BETONG-HS-FUNDAMENT-Ø680-300 ( / blockName description ri ro d rThreadedIron )
 	; Ref. S.xxxxxx
 	(setq 
 		blockName 	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-Ø680-300x300xM24"
 		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT " _uOE_ "300/" _uOE_ "680 300x300xM24")
-		r1 (/ 0.680 2) ; Ytre radius, stående betongrør
-		r2 (/ 0.300 2) ; Indre radius, stående betongrør
+		ri (/ 0.680 2) ; Ytre radius, stående betongrør
+		ro (/ 0.300 2) ; Indre radius, stående betongrør
 		d (/ 0.300 2) ; 300x300 bolteplassering for de ytre hullene i S.023166 signalmastefot
-		radius_gjengejern (/ 0.024 2) ; M24 gjengejern (stikker 100 opp)
+		rThreadedIron (/ 0.024 2) ; M24 gjengejern (stikker 100 opp)
 	)
-	(defun localGraphics ( layDef /)
-		(setLayer layDef)
+	(defun LocalGraphics ( layDef /)
+		(SetLayer layDef)
 		(command
-			_CIRCLE_ _origo_ r1
-			_CIRCLE_ _origo_ r2
-			_CIRCLE_ (list d d) radius_gjengejern
-			_CIRCLE_ (list d (- d)) radius_gjengejern
-			_CIRCLE_ (list (- d) d) radius_gjengejern
-			_CIRCLE_ (list (- d) (- d)) radius_gjengejern
+			_CIRCLE_ _origo_ ri
+			_CIRCLE_ _origo_ ro
+			_CIRCLE_ (list d d) rThreadedIron
+			_CIRCLE_ (list d (- d)) rThreadedIron
+			_CIRCLE_ (list (- d) d) rThreadedIron
+			_CIRCLE_ (list (- d) (- d)) rThreadedIron
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-VEIBOMDRIVMASKIN-FUNDAMENT-Ø680-210-1600 ( / blockName description r1 r2 d radius_gjengejern paperScale )
+(defun BETONG-VEIBOMDRIVMASKIN-FUNDAMENT-Ø680-210-1600 ( / blockName description ri ro d rThreadedIron )
 	; Ref. S.xxxxxx
 	(setq 
 		blockName	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-VEIBOMDRIVMASKIN-Ø680-210x210xM20-1600"
 		description	(strcat "BETONG VEIBOMDRIVMASKIN- FUNDAMENT " _uOE_ "210/" _uOE_ "680 210x210xM20 h=1600")
-		r1 (/ 0.680 2) ; Ytre radius, stående betongrør
-		r2 (/ 0.210 2) ; Indre radius, stående betongrør
+		ri (/ 0.680 2) ; Ytre radius, stående betongrør
+		ro (/ 0.210 2) ; Indre radius, stående betongrør
 		d (/ 0.300 2) ; 300x300 bolteplassering for de ytre hullene i S.023166 signalmastefot
-		radius_gjengejern (/ 0.020 2) ; M20 gjengejern (stikker 100 opp)
+		rThreadedIron (/ 0.020 2) ; M20 gjengejern (stikker 100 opp)
 	)
-	(defun localGraphics ( layDef /)
-		(setLayer layDef)
+	(defun LocalGraphics ( layDef /)
+		(SetLayer layDef)
 		(command ; Add metric graphics
-			_CIRCLE_ _origo_ r1
-			_CIRCLE_ _origo_ r2
-			_CIRCLE_ (list d d) radius_gjengejern
-			_CIRCLE_ (list d (- d)) radius_gjengejern
-			_CIRCLE_ (list (- d) d) radius_gjengejern
-			_CIRCLE_ (list (- d) (- d)) radius_gjengejern
+			_CIRCLE_ _origo_ ri
+			_CIRCLE_ _origo_ ro
+			_CIRCLE_ (list d d) rThreadedIron
+			_CIRCLE_ (list d (- d)) rThreadedIron
+			_CIRCLE_ (list (- d) d) rThreadedIron
+			_CIRCLE_ (list (- d) (- d)) rThreadedIron
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-HS-FUNDAMENT-BORET ( / blockName description r R1 R2 R_circ x ang d_ang )
+(defun BETONG-HS-FUNDAMENT-BORET ( / blockName description r R1 R2 rConcretePpole x ang angArcLen )
 	; Ref. S.xxxxxx
+	; 2D symbol: The Ø555 concrete pole with two layers of dashed arcs around
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-BORET-" _uOE_ "555-164x164xM32")
 		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT BORET " _uOE_ "555 164x164xM32")
-		r (/ 0.032 2) ; M32 gjengejern for de indre Ø45 hullene i signalets mastefot-plate
+		rThreadedIron (/ 0.032 2) ; M32 gjengejern for de indre Ø45 hullene i signalets mastefot-plate
 		R1 0.15
 		R2 0.4
-		R_pole (/ 0.555 2) ; Ø555
+		rConcretePpole (/ 0.555 2) ; Ø555
 		x (/ 0.164 2) ; Bolteplassering 164x164 mm for signalers mastefot (de indre hullene)
 		ang 5
-		d_ang 45
+		angArcLen 45
 	)
-	(defun localGraphics ( layDef /)
-		(setLayer layDef)
+	(defun LocalGraphics ( layDef /)
+		(SetLayer layDef)
 		(command
-			_CIRCLE_ (list x x) r
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R ang) R2) _setArcAngle_ d_ang
-			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (/ d_ang -2)) R1) _setArcAngle_ d_ang
+			_CIRCLE_ (list x x) rThreadedIron
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R ang) R2) _setArcAngle_ angArcLen
+			_ARC_ _setArcCenter_ _origo_ (polar _origo_ (D->R (/ angArcLen -2.0)) R1) _setArcAngle_ angArcLen
 			_ARRAY_ _selectAll_ _ENTER_ _polarArray_ _origo_ 4 _fullCircle_ _rotateObjects_
-			_CIRCLE_ _origo_ R_pole
+			_CIRCLE_ _origo_ rConcretePpole
 		)
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-DS-FUNDAMENT-KONISK ( / blockName description s1 s2 dim1 dim2 paperScale )
+(defun BETONG-DS-FUNDAMENT-KONISK ( / blockName description s1 s2 dim1 dim2 )
 	; Ref. S.xxxxxx
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-" _uOE_ "76-KONISK")
@@ -321,8 +322,8 @@
 		dim1 0.12
 		dim2 0.10
 	)
-	(defun localGraphics ( layDef /)
-		(drawSmallBolt layDef)
+	(defun LocalGraphics ( layDef /)
+		(DrawSmallBolt layDef)
 		; make three of them:
 		(command	
 			_MIRROR_ _selectAll_ _ENTER_ (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) _eraseMirrorSource_
@@ -360,24 +361,24 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun BETONG-DS-FUNDAMENT-RETTSIDET ( / blockName description s1 s2 dim1 dim2 paperScale )
+(defun BETONG-DS-FUNDAMENT-RETTSIDET ( / blockName description s1 s2 dim1 dim2 )
 	; Ref. S.xxxxxx
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-" _uOE_ "76-RETTSIDET")
@@ -388,8 +389,8 @@
 		dim1 0.12
 		dim2 0.10
 	)
-	(defun localGraphics ( layDef /)
-		(drawSmallBolt layDef)
+	(defun LocalGraphics ( layDef /)
+		(DrawSmallBolt layDef)
 		(command
 			_MIRROR_ _selectAll_ _ENTER_ (list -1 (/ (+ 0.045 0.0380) 2)) (list 1 (/ (+ 0.045 0.0380) 2)) _eraseMirrorSource_
 			_ARRAY_ _selectAll_ _ENTER_ _polarArray_ _origo_ 3 _fullCircle_ _rotateObjects_
@@ -415,19 +416,19 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "S")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "S")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -455,9 +456,9 @@
 		baseOffsetY (/ (atof baseOffsetYmm) 1000.0) ; Convert offset from millimeter to meter, varies from 0.000 to 0.300
 		ductRadius (* _half_ 0.050)
 	)
-	(defun localGraphics ( layDef / )
-		(setLayer layDef)
-		(drawBoltGroup191x374xM36 layDef)
+	(defun LocalGraphics ( layDef / )
+		(SetLayer layDef)
+		(DrawBoltGroup191x374xM36 layDef)
 		(command
 			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
@@ -470,19 +471,19 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -514,8 +515,8 @@
 		by	0.800	; Bolt distance transversl to track
 		bd	0.036	; Bolt diameter
 	)
-	(defun localGraphics ( layDef / )
-		(drawBoltGroup layDef bx by bd)
+	(defun LocalGraphics ( layDef / )
+		(DrawBoltGroup layDef bx by bd)
 		(command
 			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
@@ -528,19 +529,19 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -572,8 +573,8 @@
 		by	0.940	; Bolt distance transversal to track
 		bd	0.036	; Bolt diameter
 	)
-	(defun localGraphics ( layDef / )
-		(drawBoltGroup layDef bx by bd)
+	(defun LocalGraphics ( layDef / )
+		(DrawBoltGroup layDef bx by bd)
 		(command
 			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
@@ -586,19 +587,19 @@
 	)
 	
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -665,9 +666,9 @@
 			)
 		)
 	)
-	(defun localGraphics ( layDef / )
-		(setLayer layDef)
-		(drawBoltGroup layDef bx by bd)
+	(defun LocalGraphics ( layDef / )
+		(SetLayer layDef)
+		(DrawBoltGroup layDef bx by bd)
 		(command ; Draw shaft and duct
 			_RECTANGLE_ ; base
 				(list (- (/ baseX 2)) (+ 0.800 baseOffsetY (- baseY)))
@@ -680,19 +681,19 @@
 	)	
 	
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -722,31 +723,31 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(drawLine layDef_Zero _origo_ (posTR x y))					; ./ line from origo
-	(drawCircleAtPos layDef_Zero (posTR bx by) br _noWipeout_)	; ( ) bolt
-	(drawLine layDef_Zero (posTR x1 y1) (posTR x2 y2))			; (/) hatch over bolt
-	(mirrorAboutXaxis _keepMirrorSource_)
-	(mirrorAboutYaxis _keepMirrorSource_)
-	(mirrorAboutDiagonal _keepMirrorSource_) ; Now we have 8 bolts
-	(drawCircle layDef_Zero pr _noWipeout_) ; Foundation concrete pole
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_Zero _origo_ (PosTR x y))					; ./ line from origo
+	(DrawCircleAtPos layDef_Zero (PosTR bx by) br _noWipeout_)	; ( ) bolt
+	(DrawLine layDef_Zero (PosTR x1 y1) (PosTR x2 y2))			; (/) hatch over bolt
+	(MirrorAboutXaxis _keepMirrorSource_)
+	(MirrorAboutYaxis _keepMirrorSource_)
+	(MirrorAboutDiagonal _keepMirrorSource_) ; Now we have 8 bolts
+	(DrawCircle layDef_Zero pr _noWipeout_) ; Foundation concrete pole
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(drawLine layDef_MetricDetails _origo_ (posTR x y))					
-	(drawCircleAtPos layDef_MetricDetails (posTR bx by) br _noWipeout_)	
-	(drawLine layDef_MetricDetails (posTR x1 y1) (posTR x2 y2))			
-	(mirrorAboutXaxis _keepMirrorSource_)
-	(mirrorAboutYaxis _keepMirrorSource_)
-	(mirrorAboutDiagonal _keepMirrorSource_)
-	(drawCircle layDef_MetricDetails pr _noWipeout_)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawLine layDef_MetricDetails _origo_ (PosTR x y))					
+	(DrawCircleAtPos layDef_MetricDetails (PosTR bx by) br _noWipeout_)	
+	(DrawLine layDef_MetricDetails (PosTR x1 y1) (PosTR x2 y2))			
+	(MirrorAboutXaxis _keepMirrorSource_)
+	(MirrorAboutYaxis _keepMirrorSource_)
+	(MirrorAboutDiagonal _keepMirrorSource_)
+	(DrawCircle layDef_MetricDetails pr _noWipeout_)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -769,21 +770,21 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(drawBoltGroup191x374xM36 layDef_Zero)
-	(drawCircle layDef_Zero pr _noWipeout_)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawBoltGroup191x374xM36 layDef_Zero)
+	(DrawCircle layDef_Zero pr _noWipeout_)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(drawBoltGroup191x374xM36 layDef_MetricDetails)
-	(drawCircle layDef_MetricDetails pr _noWipeout_)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawBoltGroup191x374xM36 layDef_MetricDetails)
+	(DrawCircle layDef_MetricDetails pr _noWipeout_)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -804,21 +805,21 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBoltGroup layDef_Zero bx by bd)
-	(drawStAndrewCross layDef_Zero x y)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawBoltGroup layDef_Zero bx by bd)
+	(DrawStAndrewCross layDef_Zero x y)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawBoltGroup layDef_MetricDetails bx by bd)
-	(drawStAndrewCross layDef_MetricDetails x y)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawBoltGroup layDef_MetricDetails bx by bd)
+	(DrawStAndrewCross layDef_MetricDetails x y)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -842,21 +843,21 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBoxAtPos layDef_Zero (list (* -0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Left bolts, viewed from above
-	(drawBoxAtPos layDef_Zero (list (*  0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Right bolts, viewed from above
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawBoxAtPos layDef_Zero (list (* -0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Left bolts, viewed from above
+	(DrawBoxAtPos layDef_Zero (list (*  0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Right bolts, viewed from above
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(drawBoxAtPos layDef_MetricDetails (list (* -0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Left bolts, viewed from above
-	(drawBoxAtPos layDef_MetricDetails (list (*  0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Right bolts, viewed from above
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawBoxAtPos layDef_MetricDetails (list (* -0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Left bolts, viewed from above
+	(DrawBoxAtPos layDef_MetricDetails (list (*  0.5 bx) (* 0.5 bl)) bd bl _noWipeout_) ; Right bolts, viewed from above
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -898,10 +899,10 @@
 		by 0.374
 		bd 0.036 ; Bolt diameter
 	)
-	(defun localGraphics ( layDef /)
-		(setLayer layDef)
-		(drawBoltGroup191x374xM36 layDef)
-		(moveDown (+ wy (* _half_ cy)))
+	(defun LocalGraphics ( layDef /)
+		(SetLayer layDef)
+		(DrawBoltGroup191x374xM36 layDef)
+		(MoveDown (+ wy (* _half_ cy)))
 		(command 
 			; Wallmount plate:
 			_RECTANGLE_ (list (/ wx -2) 0) (list (/ wx 2) (- wy))
@@ -913,19 +914,19 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(localGraphics layDef_Zero)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_Zero)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(localGraphics layDef_MetricDetails)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(LocalGraphics layDef_MetricDetails)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
@@ -957,30 +958,30 @@
 	)
 
 	; Schematic symbol
-	(drawProxySymbol layDef_FoundationLocator "KL")
-	(addDescriptionBelowOrigo description _proxySymbolRadius_)
-	(createSchematicBlockFromCurrentGraphics blockName)
+	(DrawProxySymbol layDef_FoundationLocator "KL")
+	(AddDescriptionBelowOrigo description _proxySymbolRadius_)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(drawBoltGroup191x374xM36 layDef_Zero)
-	(drawStAndrewCross layDef_Zero x y)
-	(scaleAll _four_)
-	(addGraphicsFromScaledSchematicBlock blockName _one_)
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawBoltGroup191x374xM36 layDef_Zero)
+	(DrawStAndrewCross layDef_Zero x y)
+	(ScaleAll _four_)
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric symbol
-	(drawBoltGroup191x374xM36 layDef_MetricDetails)
-	(drawStAndrewCross layDef_MetricDetails x y)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(DrawBoltGroup191x374xM36 layDef_MetricDetails)
+	(DrawStAndrewCross layDef_MetricDetails x y)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )
 
 
 
 ;==========================
-; Private draw...X...() functions
+; Private Draw...X...() functions
 ;==========================
-(defun drawSmallBolt ( layDef / )
-	(setLayer layDef)
+(defun DrawSmallBolt ( layDef / )
+	(SetLayer layDef)
 	(command
 		_LINE_ _origo_ "0.00519615,0" _ENTER_
 		_LINE_ "0.00347980,0.005" "@0,-0.00407180" _ENTER_
@@ -1013,7 +1014,7 @@
 
 
 
-(defun drawBoltGroup191x374xM36 ( layDef / x y x1 y1 x2 y2 bx by bd br )
+(defun DrawBoltGroup191x374xM36 ( layDef / x y x1 y1 x2 y2 bx by bd br )
 	(setq
 		; TRV symbol bolt group:
 		x	(* 0.200 (* (DDcos 63))) ; diagonal distance - X in the middle
@@ -1027,27 +1028,27 @@
 		bd	0.036 ; Bolt diameter
 		br 	(* _half_ bd)
 	)
-	(drawStAndrewCross layDef x y) ; inner cross
-	(drawLine layDef (posTL x1 y1) (posTL x2 y2))
-	(drawLine layDef (posTR x1 y1) (posTR x2 y2))
-	(drawLine layDef (posBL x1 y1) (posBL x2 y2))
-	(drawLine layDef (posBR x1 y1) (posBR x2 y2))
-	(drawCircleAtPos layDef (posTL bx by) br _noWipeout_)
-	(drawCircleAtPos layDef (posTR bx by) br _noWipeout_)
-	(drawCircleAtPos layDef (posBL bx by) br _noWipeout_)
-	(drawCircleAtPos layDef (posBR bx by) br _noWipeout_)
+	(DrawStAndrewCross layDef x y) ; inner cross
+	(DrawLine layDef (PosTL x1 y1) (PosTL x2 y2))
+	(DrawLine layDef (PosTR x1 y1) (PosTR x2 y2))
+	(DrawLine layDef (PosBL x1 y1) (PosBL x2 y2))
+	(DrawLine layDef (PosBR x1 y1) (PosBR x2 y2))
+	(DrawCircleAtPos layDef (PosTL bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosTR bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosBL bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosBR bx by) br _noWipeout_)
 )
 
 
 
-(defun drawBoltGroup ( layDef bx by bd / br )
+(defun DrawBoltGroup ( layDef bx by bd / br )
 	(setq
 		br 	(* _half_ bd) ; Bolt radius
 	)
-	(drawCircleAtPos layDef (posTL bx by) br _noWipeout_)
-	(drawCircleAtPos layDef (posTR bx by) br _noWipeout_)
-	(drawCircleAtPos layDef (posBL bx by) br _noWipeout_)
-	(drawCircleAtPos layDef (posBR bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosTL bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosTR bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosBL bx by) br _noWipeout_)
+	(DrawCircleAtPos layDef (PosBR bx by) br _noWipeout_)
 )
 
 

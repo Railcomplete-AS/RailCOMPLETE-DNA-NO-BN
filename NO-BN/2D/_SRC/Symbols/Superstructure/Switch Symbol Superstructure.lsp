@@ -41,16 +41,16 @@
 ;-------------------------------------------------------------------------------------------------------------------------
 
 
-(defun SWITCH-SYMBOL-SUPERSTRUCTURE (quadrant Drawing_Number 
+(defun SWITCH-SYMBOL-SUPERSTRUCTURE (quadrant drawingNumber 
 	/ 	blockName
 		description
 		switchParameters
-		crossType  A B C D E F L R x railProfile ang radius
+		switchDiamondType  A B C D E F L R x railProfile ang radius
 		str pt pts
 	)
 	(setq 
-		switchParameters (getSwitchParameters Drawing_Number)
-		crossType	(cadr (assoc "SwitchCrossing" switchParameters))
+		switchParameters (getSwitchParameters drawingNumber)
+		switchDiamondType	(cadr (assoc "SwitchCrossing" switchParameters))
 		A			(/ (cadr (assoc "A" switchParameters)) 1000.0)
 		B			(/ (cadr (assoc "B" switchParameters)) 1000.0)
 		C			(/ (cadr (assoc "C" switchParameters)) 1000.0)
@@ -64,15 +64,16 @@
 		ang (R->D (atan (/ 1.0 x)))
 		radius 0.75
 	)
-	(setq str _emptyString_)
 	(if (< x 10)
-		(setq str "0")
+		(setq str "0") ; Pad with leading zeros
+	;else
+		(setq str "")
 	)
 	(setq 
-		blockName	(strcat "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-"  str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" (rtos quadrant 2 0))
-		description	(strcat "SPORVEKSEL / OVERBYGNING-SYMBOL, " str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" crossType "-" (rtos quadrant 2 0))
+		blockName	(strcat "NO-BN-2D-JBTOB-CONNECTOR-SWITCH-"  str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" (rtos quadrant 2 0))
+		description	(strcat "SPORVEKSEL / OVERBYGNING-SYMBOL, " str (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" (rtos quadrant 2 0))
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
  	(command
 		_COLOR_ _ByBlock_
 		_LINE_ _origo_ (list A 0) _ENTER_
@@ -88,7 +89,7 @@
 			_setPolylineLineMode_
 			_closedPolyline_
 	)
-	(drawHatch _mediumHatch_)
+	(DrawHatch _mediumHatch_)
 	(command 
 		_POLYLINE_ 
 			(list (+ A C) 0)
@@ -103,10 +104,10 @@
 			_setPolylineLineMode_
 			_closedPolyline_
 	)
-	(drawHatch _sparseHatch_)
+	(DrawHatch _sparseHatch_)
 
 	; Deviating track / geometry axis
-	(setLayer layDef_Turnout_TrackCenterLines)
+	(SetLayer layDef_Turnout_TrackCenterLines)
 	(command
 		_POLYLINE_ 
 			_origo_
@@ -122,7 +123,7 @@
 	) 
   
 	; Show long-sleepers area outside rear end of switch
-	(setLayer layDef_Turnout_LongSleepers)
+	(SetLayer layDef_Turnout_LongSleepers)
 	(command 
 		_POLYLINE_
 			(list L 0)
@@ -139,7 +140,7 @@
 	)
 
 	; Show short-sleepers area outside rear end of switch, after the long-sleeper area (if any)
-	(setLayer layDef_Turnout_ShortSleepers)
+	(SetLayer layDef_Turnout_ShortSleepers)
 	(command
 		_POLYLINE_
 			(list (+ L E) 0)
@@ -157,7 +158,7 @@
 		_LINE_ (list (+ A (* (+ B E) (DDcos (/ ang 2.0)))) (* (+ B E) (DDsin (/ ang 2.0)))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) _ENTER_
 	)
 
-	(moveToQuadrant quadrant _selectAll_)
-	(addDescriptionBelowOrigo description 1.0)
-	(createMetricBlockFromCurrentGraphics blockName)
+	(MoveToQuadrant quadrant _selectAll_)
+	(AddDescriptionBelowOrigo description 1.0)
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )

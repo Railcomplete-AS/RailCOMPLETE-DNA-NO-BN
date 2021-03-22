@@ -18,7 +18,26 @@
 
 
 
-(defun ALIGNMENT-KONTAKTLEDNINGSOPPHENG (/ blockName ) 
+(defun ALIGNMENT-KONTAKTLEDNINGSOPPHENG ( / 
+		blockName 
+		w1 w2
+		c1 c2 c3 c4 c5 c6 c7 c8 
+		s11 s12 s13 s21 s22 s23
+		d11 d12 d21 d22 d31 d32 d41 d42 d51 d52 d61 d62
+	) 
+	;
+	; 18 c1                                                         c8
+	; 16   \                                                       /
+	; 14     \                                                   /
+	; 12       c2=s13                                    s21=c7
+	; 10 s11-s12     \                                  /      s22-s23
+	; 8     =d11       c3--                        --c6       =d61
+	; 6      |        =d21 \-----c4--------c5-----/ =d51       |
+	; 4      |         |        =d31      =d41       |         |
+	; 2      |         |         |         |         |         |
+	; 0  ----d12-------d22-------d32-------d42-------d52-------d62---
+	;  
+	;   0    5 7       15        25        35        45      5355   60
 	(setq
 		blockName (strcat "NO-BN-2D-JBTKL-THUMBNAIL-KONTAKTLEDNINGSOPPHENG")
 		; spanLength 60
@@ -73,8 +92,5 @@
 	)
 	; Reduce to about 10 drawing units overall size (standard for alignment thumbnails, even if they will be auto-scaled in RailCOMPLETE)
 	(command _SCALE_ _selectAll_ _ENTER_ _origo_ _tenth_)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	blockName
+	(CreateSchematicBlockFromCurrentGraphics blockName)
 )
-
-

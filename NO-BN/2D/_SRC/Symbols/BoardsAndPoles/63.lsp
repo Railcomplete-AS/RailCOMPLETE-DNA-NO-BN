@@ -39,14 +39,14 @@
 		attPrompt		"FAll"
 		attDefaultValue	"18"
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ p1 p2 p3 _closedPolyline_)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(setLayer layDef_Zero)
-	(addAtt attTag attPrompt attDefaultValue p4 _th180_ _angleMinus45_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description -2)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(SetLayer layDef_Zero)
+	(AddAtt attTag attPrompt attDefaultValue p4 _th180_ _angleMinus45_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description -2)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
@@ -74,14 +74,14 @@
 		attPrompt		"Stigning"
 		attDefaultValue	"11"
 	)
-	(setLayer layDef_Zero)
+	(SetLayer layDef_Zero)
 	(command _POLYLINE_ _origo_ p1 p2 p3 _closedPolyline_)
-	(setLayer layDef_BoardOrPole_Wipeout)
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(setLayer layDef_Zero)
-	(addAtt attTag attPrompt attDefaultValue p4 _th180_ _angle45_ _rcTextStyle_ _middleCenter_)
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(SetLayer layDef_BoardOrPole_Wipeout)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
+	(SetLayer layDef_Zero)
+	(AddAtt attTag attPrompt attDefaultValue p4 _th180_ _angle45_ _rcTextStyle_ _middleCenter_)
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

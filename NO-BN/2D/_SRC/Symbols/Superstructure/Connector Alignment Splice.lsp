@@ -17,7 +17,7 @@
 (defun C:CONNECTOR-SPLICE ( / )
 	; Connects an alignment to another alignment when it has been recognized as a valid extension of the first alignment.
 	; The symbols look like this: [>>], [><], [<>], and [<<]. The arrows represent each alignment's direction of increasing mileages.
-	(setCadSystemDefaults)  
+	(SetCadSystemDefaults)  
 	(CONNECTOR-SPLICE 0 0) ; [> >]
 	(CONNECTOR-SPLICE 0 1) ; [> <]
 	(CONNECTOR-SPLICE 1 0) ; [< >]
@@ -65,11 +65,9 @@
 		p15 (list (*  0.167 x) (* -0.500 y))
 		p16	(list (*  0.333 x) (* -0.500 y))
 	)
-
-	(drawBox layDef_Zero x y _noWipeout_)
-	(drawLine layDef_Zero p1 p2)
-	(drawLine layDef_Zero p3 p4)
-
+	(DrawBox layDef_Zero x y _noWipeout_)
+	(DrawLine layDef_Zero p1 p2)
+	(DrawLine layDef_Zero p3 p4)
 	(if (= leftArrow 0)
 		(command _POLYLINE_ p5 p10 p13 _openPolyline_)
 		(command _POLYLINE_ p6 p9 p14 _openPolyline_)
@@ -78,8 +76,7 @@
 		(command _POLYLINE_ p7 p12 p15 _openPolyline_)
 		(command _POLYLINE_ p8 p11 p16 _openPolyline_)
 	)
-
-	(addDescriptionBelowOrigo description y)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description y)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

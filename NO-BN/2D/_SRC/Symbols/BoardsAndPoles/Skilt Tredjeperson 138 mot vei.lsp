@@ -16,7 +16,7 @@
 ; For debugging:
 ; (SKILT-TREDJEPERSON-138-MOT-VEI) (SKILT-TREDJEPERSON-138-MOT-VEI-FLERE-SPOR)
 
-(defun Skilt_Tredjeperson_138_mot_vei ( / blockName description 
+(defun SKILT-TREDJEPERSON-138-MOT-VEI ( / blockName description x
 		x1 x2 x3 x4 x5 x6
 		y1 y2 y3 y4 y5 y6
 		p11 p12 p13 p14 p15 p16
@@ -56,22 +56,22 @@
 	)
 	; Upper 'X' arms:
 	(command _POLYLINE_ p11 p13 p14 p16  p46 p44 p43 p41  p31 p33 p34 p36  p26 p24 p23 p21 _closedPolyline_) ; Contour
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)	
-	(command _POLYLINE_ p12 p13 p14 p15 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p22 p23 p24 p25 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p32 p33 p34 p35 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p42 p43 p44 p45 _closedPolyline_)	(drawHatch _solidHatch_)
-	(moveUp y1)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)	
+	(command _POLYLINE_ p12 p13 p14 p15 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p22 p23 p24 p25 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p32 p33 p34 p35 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p42 p43 p44 p45 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(MoveUp y1)
 	; Epilog
-	(addDescriptionBelowOrigo description 1.0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description 1.0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
   
   
   
-(defun Skilt_Tredjeperson_138_mot_vei_Flere_spor ( / blockName description
+(defun SKILT-TREDJEPERSON-138-MOT-VEI-FLERE-SPOR ( / blockName description x
 		x1 x2 x3 x4 x5 x6
 		y1 y2 y3 y4 y5 y6
 		p11 p12 p13 p14 p15 p16
@@ -135,21 +135,21 @@
 	)
 	; Upper 'X' arms:
 	(command _POLYLINE_ p11 p13 p14 p16  p46 p44 p43 p41  p31 p33 p34 p36  p26 p24 p23 p21 _closedPolyline_) ; Contour
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)	
-	(command _POLYLINE_ p12 p13 p14 p15 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p22 p23 p24 p25 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p32 p33 p34 p35 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p42 p43 p44 p45 _closedPolyline_)	(drawHatch _solidHatch_)
-	(moveUp y1)
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)	
+	(command _POLYLINE_ p12 p13 p14 p15 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p22 p23 p24 p25 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p32 p33 p34 p35 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p42 p43 p44 p45 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(MoveUp y1)
 	; Lower reversed 'V':
 	(command _POLYLINE_ p51 p53 p54 p56   p66 p64 p63 p61 _closedPolyline_) ; Contour
-	(addWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)	
-	(command _POLYLINE_ p52 p53 p54 p55 _closedPolyline_)	(drawHatch _solidHatch_)
-	(command _POLYLINE_ p62 p63 p64 p65 _closedPolyline_)	(drawHatch _solidHatch_)
-	(moveUp (- y6a))
+	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)	
+	(command _POLYLINE_ p52 p53 p54 p55 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(command _POLYLINE_ p62 p63 p64 p65 _closedPolyline_)	(DrawHatch _solidHatch_)
+	(MoveUp (- y6a))
 	; Epilog
-	(addDescriptionBelowOrigo description 1.0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigo description 1.0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )

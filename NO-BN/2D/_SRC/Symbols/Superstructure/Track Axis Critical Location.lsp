@@ -13,17 +13,19 @@
 ; Characteristic locations in track (gradient, tangent/curve/spiral, cant ramp)
 
 (defun C:TRACK-AXIS-CRITICAL-LOCATION ( / )
-	(drawTrasepunkt)
+	(DrawAlignmentCharacteristicLocation)
 )
 
 
 
 ; Symmetrical short line transversal to track, to be centered on alignment axis (whereas insulated joints are located on one of the rails).
- (defun drawTrasepunkt ( / blockName sideLength )
+ (defun DrawAlignmentCharacteristicLocation ( / blockName description )
 	(setq 
 		blockName "NO-BN-2D-JBTOB-TRACK-AXIS-CRITICAL-LOCATION"
-		sideLength 1.5
+		description "ALIGNMENT CHARACTERISTIC POINT"
 	)
-	(command _LINE_ (list 0 (- sideLength)) (list 0 sideLength) _ENTER_ )
-	(createAnnotativeBlockFromCurrentGraphics blockName)
+	(command _LINE_ (list 0 (- _cantReferenceGauge_)) (list 0 _cantReferenceGauge_) _ENTER_ )
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

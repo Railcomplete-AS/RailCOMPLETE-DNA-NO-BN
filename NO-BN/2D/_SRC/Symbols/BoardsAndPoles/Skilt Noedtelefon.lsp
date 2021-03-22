@@ -14,9 +14,9 @@
 ; Distress call telephone
 
 ; For debugging:
-; (SKILT_NOEDTELEFON)
+; (SKILT-NOEDTELEFON)
 
-(defun Skilt_Noedtelefon ( / blockName description p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 )
+(defun SKILT-NOEDTELEFON ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 )
 	;
 	; +-----------------+
 	; |   _____2_____   |
@@ -48,20 +48,20 @@
 		p13 (list (*  0.282 x) (*  0.073 y))
 		p14 (list (*  0.000 x) (* -0.167 y))
 	)
-	(drawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(drawArc layDef_Zero p1 p2 p3)
-	(drawArc layDef_Zero p1 p6 p12)
-	(drawArc layDef_Zero p3 p7 p13)
-	(drawArc layDef_Zero p4 p8 p10)
-	(drawArc layDef_Zero p5 p9 p11)
-	(drawLine layDef_Zero p4 p5)
-	(drawLine layDef_Zero p12 p10)
-	(drawLine layDef_Zero p11 p13)
-	(addTextAtPos layDef_Zero _th180_ p14 "SOS")
-	(moveUp (halfOf y))
-	(addDescriptionBelowOrigo description 0)
-	(createSchematicBlockFromCurrentGraphics blockName)
-	(createAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawArc layDef_Zero p1 p2 p3)
+	(DrawArc layDef_Zero p1 p6 p12)
+	(DrawArc layDef_Zero p3 p7 p13)
+	(DrawArc layDef_Zero p4 p8 p10)
+	(DrawArc layDef_Zero p5 p9 p11)
+	(DrawLine layDef_Zero p4 p5)
+	(DrawLine layDef_Zero p12 p10)
+	(DrawLine layDef_Zero p11 p13)
+	(AddTextAtPos layDef_Zero _th180_ p14 "SOS")
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigo description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
 
