@@ -344,7 +344,7 @@ positive feeder in AT system	positiv leder i AT-system
 
 		<LuaExpression Name="code" ><Formula>_EH_KLO_code()</Formula></LuaExpression>
 		<LuaFunction Name="_EH_KLO_code()" ReturnType="String"
-			Description="Obtains the code for the OCS catenary wire supsension system component, inherited from the associated contact wire, through the 'Er oppheng for kontaktledning' relation." >
+			Description="Obtains the code for the OCS catenary wire suspension system component, inherited from the associated contact wire, through the 'Er oppheng for kontaktledning' relation." >
 			<Constructor>String _EH_KLO_code()</Constructor>
 			<Formula>
 				function _EH_KLO_code()
@@ -375,7 +375,7 @@ positive feeder in AT system	positiv leder i AT-system
 					elseif Variant == "Z-line" then return "Zl."..code
 					elseif Variant == "Bardun" then return "Bar."..code
 					elseif Variant == "Strever" then return "Str."..code
-					else return _error,"Bad contact wire support Variant ["..Variant.."]."
+					else return _error,"*** Bad contact wire support Variant ["..Variant.."]."
 					end
 				end
 			</Formula>
@@ -399,6 +399,21 @@ positive feeder in AT system	positiv leder i AT-system
 		<LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
 		<SetValue Key="Model3DOffset" Value="0.0" />
 		
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="_EH_BAR_chkSpannerAndStretcherDirection" DisplayName="Bardun / strever tegneretning" 
+			Description="Checking that a spanner or strecher alignment shall start at an OCS mast's insertion point and extend to the strecher's / spanner's base plate." />
+		<LuaExpression Name="mc_EH_BAR_SpannerAndStrecherDirection" IsModelCheck="true" ><Formula>_EH_BAR_chkSpannerAndStretcherDirection()</Formula></LuaExpression>
+		<LuaFunction Name="_EH_BAR_chkSpannerAndStretcherDirection()" ReturnType="String"
+			Description = "Checking that a spanner or strecher alignment shall start at an OCS mast's insertion point and extend to the strecher's / spanner's base plate." >
+			<Constructor>String _EH_BAR_chkSpannerAndStrecherDirection()</Constructor>
+			<Formula>
+				function _EH_BAR_chkSpannerAndStretcherDirection()
+					if true then -- 2021-03-30 TODO - XXXXXXXXXXXXXXXXXXXXXXXXXXXX code must be written--
+							return "WARNING - Model check for _EH_BAR_chkSpannerAndStretcherDirection has not been written yet.",_warning
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+
 		<InsertAlignment VariantName="Bæreline" DisplayBlockName="NO-BN-2D-JBTKL-THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="WireMaterial" Value="Bz II 70/19" />
@@ -733,12 +748,12 @@ positive feeder in AT system	positiv leder i AT-system
 						end
 					end
 					--Offset from object's insertion point to the midpoint between the displaypoints for the masts that are involved:
-					local startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
-					local startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
-					local endX = closest.geoCoord.X + closest.SymbolOffsets[0].Value[0]
-					local endY = closest.geoCoord.Y + closest.SymbolOffsets[0].Value[1]
-					return { this.SymbolOffsets[0].Value[0] + (endX - startX)/2 + worldOffsetX,
-					         this.SymbolOffsets[0].Value[1] + (endY - startY)/2 + worldOffsetY }
+					local startX = geoCoord.X + SymbolOffset.X
+					local startY = geoCoord.Y + SymbolOffset.Y
+					local endX = closest.geoCoord.X + closest.SymbolOffset.X
+					local endY = closest.geoCoord.Y + closest.SymbolOffset.Y
+					return { SymbolOffset.X + (endX - startX)/2 + worldOffsetX,
+							SymbolOffset.Y + (endY - startY)/2 + worldOffsetY }
 				end
 			end
 		</Formula>
@@ -774,12 +789,12 @@ positive feeder in AT system	positiv leder i AT-system
 						end
 					end
 					--Offset from object's insertion point to the midpoint between the displaypoints for the masts that are involved:
-					local startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
-					local startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
-					local endX = closest2.geoCoord.X + closest2.SymbolOffsets[0].Value[0]
-					local endY = closest2.geoCoord.Y + closest2.SymbolOffsets[0].Value[1]
-					return { this.SymbolOffsets[0].Value[0] + (endX - startX)/2 + worldOffsetX,
-					         this.SymbolOffsets[0].Value[1] + (endY - startY)/2 + worldOffsetY }
+					local startX = geoCoord.X + SymbolOffset.X
+					local startY = geoCoord.Y + SymbolOffset.Y
+					local endX = closest2.geoCoord.X + closest2.SymbolOffset.X
+					local endY = closest2.geoCoord.Y + closest2.SymbolOffset.Y
+					return { SymbolOffset.X + (endX - startX)/2 + worldOffsetX,
+					         SymbolOffset.Y + (endY - startY)/2 + worldOffsetY }
 				end
 			end
 		</Formula>
@@ -806,10 +821,10 @@ positive feeder in AT system	positiv leder i AT-system
 						end
 					end
 					--WCS angle between the displaypoints for the masts that are involved:
-					startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
-					startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
-					endX = closest.geoCoord.X + closest.SymbolOffsets[0].Value[0]
-					endY = closest.geoCoord.Y + closest.SymbolOffsets[0].Value[1]
+					startX = geoCoord.X + SymbolOffset.X
+					startY = geoCoord.Y + SymbolOffset.Y
+					endX = closest.geoCoord.X + closest.SymbolOffset.X
+					endY = closest.geoCoord.Y + closest.SymbolOffset.Y
 					return math.deg(math.atan(endY - startY, endX - startX)) + (MileageIncreasesTowardsLeft and 180 or 0)
 				end
 			end
@@ -844,10 +859,10 @@ positive feeder in AT system	positiv leder i AT-system
 						end
 					end
 					--WCS angle between the displaypoints for the masts that are involved:
-					startX = this.geoCoord.X + this.SymbolOffsets[0].Value[0]
-					startY = this.geoCoord.Y + this.SymbolOffsets[0].Value[1]
-					endX = closest2.geoCoord.X + closest2.SymbolOffsets[0].Value[0]
-					endY = closest2.geoCoord.Y + closest2.SymbolOffsets[0].Value[1]
+					startX = geoCoord.X + SymbolOffset.X
+					startY = geoCoord.Y + SymbolOffset.Y
+					endX = closest2.geoCoord.X + closest2.SymbolOffset.X
+					endY = closest2.geoCoord.Y + closest2.SymbolOffset.Y
 					return math.deg(math.atan(endY - startY, endX - startX)) + (MileageIncreasesTowardsLeft and 180 or 0)
 				end
 			end
@@ -3559,7 +3574,7 @@ positive feeder in AT system	positiv leder i AT-system
 			</Variant>
 		</Variants>
 
-        <LuaExpression Name="code" ><Formula>_EH_BAR_Model3DName()</Formula></LuaExpression>
+        <LuaExpression Name="Model3DName" ><Formula>_EH_BAR_Model3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_EH_BAR_Model3DName()" 
 			ReturnType="String"
 			Description="Obtains the Model 3D Name for this OCS contact wire strecher/spanner object (the point object). Deduces its dimensions from the closest OCS mast." >
@@ -3626,23 +3641,33 @@ positive feeder in AT system	positiv leder i AT-system
 					--Both stretchers and spanners require an OCS mast at the START of the wire / the rod. 
 					local tol = 0.25 
 					local t
-					if Alignment == nil then 
-						return "UNFINISHED - spanner / stretcher fastening has no reference to strecher wire / spanner rod alignment - please assign an own alignment." 
-					else
-						if Variant:lower():match("bardun") then 
-							t = "-B"
-						elseif Variant:lower():match("strever") then 
-							t = "-Schematic"
-						else 
-							return "Bad strecher / spanner fastening Variant ["..Variant.."]."
+					local isStrecher = Variant:lower():match("strever")
+					local isSpanner = Variant:lower():match("bardun")
+					if isStrecher then 
+						if Alignment == nil or Alignment.RcType ~= "EH-KLO Kontaktledningsoppheng" then
+							return "UNFINISHED - Attach strecher footplate to an alignment of type 'EH-KLO Kontaktledningsoppheng', variant 'Bardun'."
+						elseif alignment.Variant ~= "Bardun" then 
+							return "*** Bad Own Alignment Variant ["..Alignment.Variant.. "], 'Bardun' was expected."
 						end
-					end					
-					local m = getNearbyPointObjects2D(tol,"EH-MAS KL-mast",Alignment.RcAlignment.StartPoint)
-					local n = getCollectionLength(m)
-					if n &gt; 0 then 
-						return m[0].code..t
+						t = "-B"
+					elseif isSpanner then
+						if Alignment == nil or Alignment.RcType ~= "EH-KLO Kontaktledningsoppheng" then
+							return "UNFINISHED - Attach spanner footplate to an alignment of type 'EH-KLO Kontaktledningsoppheng', variant 'Spanner'."
+						elseif alignment.Variant ~= "Strever" then 
+							return "*** Bad Own Alignment Variant ["..Alignment.Variant.. "], 'Strever' was expected."
+						end
+						t = "-S"
 					else 
-						return "UNFINISHED - no OCS mast found at start of strecher wire / spanner rod alignment - cannot deduce stretcher / spanner code."
+						return "Bad strecher / spanner fastening Variant ["..Variant.."]."
+					end
+					local masts = getNearbyPointObjects2D(tol,"EH-MAS KL-mast",Alignment.RcAlignment.StartPoint) --Ignore tunnel, bridge and yoke suspension masts
+					local n = getCollectionLength(m)
+					if n == 0 then 
+						return "UNFINISHED - No OCS mast found at start of strecher wire / spanner rod alignment - cannot deduce stretcher / spanner code."
+					elseif n == 1 then 
+						return m[0].code..t
+					else -- Two or more masts were found
+						return m[0].code..t,_info("WARNING - Multiple OCS masts found at start of strecher wire / spanner rod alignment.")
 					end
 				end
 			</Formula>
@@ -3674,8 +3699,8 @@ positive feeder in AT system	positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<!-- Strechers' dir = DOWN, spanner's dir = UP -->
-		<LuaExpression Name="dir" ><Formula>Variant:lower():match("strever") and "up" or "down"</Formula></LuaExpression>
+		<!-- Strechers' dir = down, spanner's dir = down, assuming the spanner / strecher has been drawn from mast to the force relief's foundation -->
+		<LuaExpression Name="dir" ><Formula>Variant:lower():match("strever") and "down" or "down"</Formula></LuaExpression>
 		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
 		<LuaExpression Name="RelativeElevation" ><Formula>
