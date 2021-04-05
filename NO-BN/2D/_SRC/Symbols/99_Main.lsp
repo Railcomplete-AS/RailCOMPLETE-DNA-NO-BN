@@ -24,7 +24,7 @@
 ;
 ; 2)
 ; Note: Unicode hex 'nnnn' is '\U+nnnn' in AutoCAD text - but in later versions (2019) of AutoCAD, non-English characters don't work at all. 
-; Use globals defined in the global-constant file, with (eval (strcat "Skj" _oe_ "testykke")) where you need to use the combined string.
+; Use globals defined in the global-constant file, with (eval (strcat "Skj" _OSLASH_ "testykke")) where you need to use the combined string.
 ;
 ; We cannot use special national characters in folder names in a 'findfile' Visual LISP command.
 ; It also appears that Windows substitutes 'oe' for Scandinavian 'ø' in folder names without telling - so
@@ -114,7 +114,7 @@
 			_plottability_		_isNotPlottable_ "Defpoints" _ENTER_
 	)
 	(TraceLevel1 "Purge")										(PurgeAll)
-	(TraceLevel1 "Define global CAD constants")					 (DefineGlobalCadSystemConstants)
+	(TraceLevel1 "Define global CAD constants")					(DefineGlobalCadSystemConstants)
 	(TraceLevel1 "Set CAD defaults")							(SetCadSystemDefaults)
 	(TraceLevel1 "Create ISO text style")						(CreateIsoTextStyle)
 	(TraceLevel1 "Create standard RailCOMPLETE layers")			(CreateStandardLayers)
@@ -126,14 +126,14 @@
 	
 	(TraceLevel1 "GENERATE-THUMBNAILS")							(C:GENERATE-THUMBNAILS)
 	(TraceLevel1 "GENERATE-ANNOTATIONS")						(C:GENERATE-ANNOTATIONS)
-	(TraceLevel1 "GENERATE-COMMON-OBJECTS")						(C:GENERATE-COMMON-OBJECTS)
-	(TraceLevel1 "GENERATE-BOARDSANDPOLES-OBJECTS")				(C:GENERATE-BOARDSANDPOLES-OBJECTS)
-	(TraceLevel1 "GENERATE-SUBSTRUCTURE-OBJECTS")				(C:GENERATE-SUBSTRUCTURE-OBJECTS)
-	(TraceLevel1 "GENERATE-SUPERSTRUCTURE-OBJECTS")				(C:GENERATE-SUPERSTRUCTURE-OBJECTS)
-	(TraceLevel1 "GENERATE-HIGH-VOLTAGE-OBJECTS")				(C:GENERATE-HIGH-VOLTAGE-OBJECTS)
-	(TraceLevel1 "GENERATE-SIGNALING-OBJECTS")					(C:GENERATE-SIGNALING-OBJECTS)
-	(TraceLevel1 "GENERATE-TELECOM-OBJECTS")					(C:GENERATE-TELECOM-OBJECTS)
-	(TraceLevel1 "GENERATE-LOWVOLTAGE-OBJECTS")					(C:GENERATE-LOWVOLTAGE-OBJECTS)
+;	(TraceLevel1 "GENERATE-COMMON-OBJECTS")						(C:GENERATE-COMMON-OBJECTS)
+;	(TraceLevel1 "GENERATE-BOARDSANDPOLES-OBJECTS")				(C:GENERATE-BOARDSANDPOLES-OBJECTS)
+;	(TraceLevel1 "GENERATE-SUBSTRUCTURE-OBJECTS")				(C:GENERATE-SUBSTRUCTURE-OBJECTS)
+;	(TraceLevel1 "GENERATE-SUPERSTRUCTURE-OBJECTS")				(C:GENERATE-SUPERSTRUCTURE-OBJECTS)
+;	(TraceLevel1 "GENERATE-HIGH-VOLTAGE-OBJECTS")				(C:GENERATE-HIGH-VOLTAGE-OBJECTS)
+;	(TraceLevel1 "GENERATE-SIGNALING-OBJECTS")					(C:GENERATE-SIGNALING-OBJECTS)
+;	(TraceLevel1 "GENERATE-TELECOM-OBJECTS")					(C:GENERATE-TELECOM-OBJECTS)
+;	(TraceLevel1 "GENERATE-LOWVOLTAGE-OBJECTS")					(C:GENERATE-LOWVOLTAGE-OBJECTS)
 
 	;;;; (C:GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
 	

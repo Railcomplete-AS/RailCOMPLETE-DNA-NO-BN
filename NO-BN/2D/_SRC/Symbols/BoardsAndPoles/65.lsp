@@ -122,7 +122,7 @@
 	; 
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-65C-UTKOBLING"
-		description (strcat "SKILT SIGNAL 65C UTKOBLING FORAN D" _uOE_ "DSEKSJON")
+		description (strcat "SKILT SIGNAL 65C UTKOBLING FORAN D" _uOSLASH_ "DSEKSJON")
 		x 5.25
 		y 5.25
 		r	(* 0.14 x)
@@ -178,7 +178,7 @@
 	; 
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-65D-INNKOBLING"
-		description (strcat "SKILT SIGNAL 65D INNKOBLING ETTER D" _uOE_ "DSEKSJON")
+		description (strcat "SKILT SIGNAL 65D INNKOBLING ETTER D" _uOSLASH_ "DSEKSJON")
 		x 5.25
 		y 5.25
 		p11 (list (* -0.40 x) (* 0.90 y))
@@ -218,7 +218,7 @@
 	; 
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-65E-SENKSTROEMAVTAKER"
-		description (strcat "SKILT SIGNAL 65E SENKING AV STR" _uOE_ "MAVTAKER")
+		description (strcat "SKILT SIGNAL 65E SENKING AV STR" _uOSLASH_ "MAVTAKER")
 		x 5.25
 		y 5.25
 		p11 (list (* -0.45 x) (*  0.60 y))
@@ -254,7 +254,7 @@
 	; 
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-65F-HEVSTROEMAVTAKER"
-		description (strcat "SKILT SIGNAL 65F HEVING AV STR" _uOE_ "MAVTAKER")
+		description (strcat "SKILT SIGNAL 65F HEVING AV STR" _uOSLASH_ "MAVTAKER")
 		x 5.25
 		y 5.25
 		p11 (list (* -0.10 x) (*  0.95 y))
@@ -319,7 +319,7 @@
 	; 
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-65G-2-STOPPELLOK-VSIDE"
-		description (strcat "SKILT SIGNAL 65G-2 65G MED H" _uOE_ "YREPIL")
+		description (strcat "SKILT SIGNAL 65G-2 65G MED H" _uOSLASH_ "YREPIL")
 		x 5.25
 		y 5.25
 		r1 2.0

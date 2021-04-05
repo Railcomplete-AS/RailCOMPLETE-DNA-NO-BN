@@ -13,7 +13,7 @@
 ; Usage:  
 ;
 ; 1) Start AutoCAD
-; 2) Write VLIDE
+; 2) Write _VLIDE
 ; 3) In the Visual LISP IDE, press Ctrl+Shift+L and select this file.
 ; 4) In VLIDE, write (MkAll)
 ;

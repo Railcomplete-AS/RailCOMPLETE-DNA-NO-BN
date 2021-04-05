@@ -37,7 +37,7 @@
 		y	9.0
 		att1 '(
 			"ID_BOKSTAV"
-			(strcat "ID-skilt " _oe_ "vre linje (bokstav)")
+			(strcat "ID-skilt " _OSLASH_ "vre linje (bokstav)")
 			"M"
 		)
 		att2 '(
@@ -61,7 +61,7 @@
 		y	9.0
 		att1 '(
 			"ID_BOKSTAV"
-			(strcat "ID-skilt " _oe_ "vre linje (bokstav)")
+			(strcat "ID-skilt " _OSLASH_ "vre linje (bokstav)")
 			"M"
 		)
 		att2 '(
@@ -113,7 +113,7 @@
 		y	6.0
 		att1 '(
 			"ID_BOKSTAV_OG_NR"
-			(strcat "ID-skilt " _oe_ "vre linje (Evt. bokstav, signalnummer)")
+			(strcat "ID-skilt " _OSLASH_ "vre linje (Evt. bokstav, signalnummer)")
 			"M 15894"
 		)
 		att2 '(
@@ -151,7 +151,7 @@
 		y (* 2 r)
 		att1 '(
 			"ID_BOKSTAV"
-			(strcat "ID-SKILT " _uOE_ "VRE LINJE (LITRA)")
+			(strcat "ID-SKILT " _uOSLASH_ "VRE LINJE (LITRA)")
 			"A"
 		)
 		att2 '(
@@ -258,7 +258,7 @@
 (defun 101-8 ( / blockName description x y att1 )
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-101-8-ID-MINDRE-SIGNAL-300x200"
-		description (strcat "SKILT SIGNAL 101-8 IDENTIFIKASJONSSKILT Z H" _uOE_ "YT SKIFTESIGNAL 300x200")
+		description (strcat "SKILT SIGNAL 101-8 IDENTIFIKASJONSSKILT Z H" _uOSLASH_ "YT SKIFTESIGNAL 300x200")
 		x 3.0
 		y 2.0
 		att1 '(

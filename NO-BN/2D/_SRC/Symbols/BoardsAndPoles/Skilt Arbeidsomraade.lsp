@@ -30,7 +30,7 @@
 	;
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-1-2"
-		description (strcat "SKILT ARBEIDSOMR" _uAA_ "DE 1-2")
+		description (strcat "SKILT ARBEIDSOMR" _uARING_ "DE 1-2")
 		x 12.0
 		y 4.5
 		att1 '("TEKST1" "Tekst 1" "Arbeidsområde")
@@ -69,7 +69,7 @@
 	;
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-1-3"
-		description (strcat "SKILT ARBEIDSOMR" _uAA_ "DE 1-3")
+		description (strcat "SKILT ARBEIDSOMR" _uARING_ "DE 1-3")
 		x 12.0
 		y 6.0
 		att1 '("TEKST1" "Tekst 1" "Arbeidsområde")
@@ -111,13 +111,13 @@
 	;
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-2-2"
-		description (strcat "SKILT ARBEIDSOMR" _uAA_ "DE 2-2")
+		description (strcat "SKILT ARBEIDSOMR" _uARING_ "DE 2-2")
 		x 20.0
 		y 4.5
 		att1 '("TEKST1" "Venstre linje 1" "Arb.omr.")
 		att2 '("TEKST2" "Venstre linje 2"   "OSL"   )
-		att4 '("TEKST4" (strcat "H" _oe_ "yre linje 1") "Arb.omr.")
-		att5 '("TEKST5" (strcat "H" _oe_ "yre linje 2")   "OSL "  )
+		att4 '("TEKST4" (strcat "H" _OSLASH_ "yre linje 1") "Arb.omr.")
+		att5 '("TEKST5" (strcat "H" _OSLASH_ "yre linje 2")   "OSL "  )
 		p1  (list (* -0.45 x) (*  0.40 y))
 		p2  (list (* -0.49 x) (*  0.00 y))
 		p3  (list (* -0.45 x) (* -0.40 y))
@@ -159,15 +159,15 @@
 	;
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-2-3"
-		description (strcat "SKILT ARBEIDSOMR" _uAA_ "DE 2-3")
+		description (strcat "SKILT ARBEIDSOMR" _uARING_ "DE 2-3")
 		x 20.0
 		y 6.0
 		att1 '("TEKST1" "Venstre linje 1" "Arb.omr.")
 		att2 '("TEKST2" "Venstre linje 2"   "OSL"   )
 		att3 '("TEKST3" "Venstre linje 3"  "OSL 19" )
-		att4 '("TEKST4" (strcat "H" _oe_ "yre linje 1") "Arb.omr.")
-		att5 '("TEKST5" (strcat "H" _oe_ "yre linje 2")   "OSL"   )
-		att6 '("TEKST6" (strcat "H" _oe_ "yre linje 3")  "OSL 27" )
+		att4 '("TEKST4" (strcat "H" _OSLASH_ "yre linje 1") "Arb.omr.")
+		att5 '("TEKST5" (strcat "H" _OSLASH_ "yre linje 2")   "OSL"   )
+		att6 '("TEKST6" (strcat "H" _OSLASH_ "yre linje 3")  "OSL 27" )
 		p1  (list (* -0.45 x) (*  0.40 y))
 		p2  (list (* -0.49 x) (*  0.00 y))
 		p3  (list (* -0.45 x) (* -0.40 y))
@@ -205,12 +205,12 @@
 (defun SKILT-ARBEIDSOMRAADE-3 ( / blockName description x y att1 att2 att3 att4 att5 att6 )
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-ARBEIDSOMRAADE-3"
-		description (strcat "SKILT ARBEIDSOMR" _uAA_ "DE 3")
+		description (strcat "SKILT ARBEIDSOMR" _uARING_ "DE 3")
 		x 12.0
 		y 12.0
-		att1 '("TEKST1" "Tekst 1" (strcat "Arbeidsomr" _aa_ "de"))
+		att1 '("TEKST1" "Tekst 1" (strcat "Arbeidsomr" _ARING_ "de"))
 		att2 '("TEKST2" "Tekst 2" "Port leder til")
-		att3 '("TEKST3" "Tekst 3" (strcat "omr" _aa_ "der"))
+		att3 '("TEKST3" "Tekst 3" (strcat "omr" _ARING_ "der"))
 		att4 '("TEKST4" "Tekst 4" "OSL")
 		att5 '("TEKST5" "Tekst 5" "OSL 19")
 		att6 '("TEKST6" "Tekst 6" "OSL 27")

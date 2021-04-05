@@ -56,7 +56,7 @@
 	;
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60B-ATC-REPETER-MAALPUNKT"
-		description (strcat "SKILT SIGNAL 60B ATC REP.M" _uAA_ "LPUNKT")
+		description (strcat "SKILT SIGNAL 60B ATC REP.M" _uARING_ "LPUNKT")
 		side	(GetLosangeSide)	; Losange side
 		x	(* (sqrt 2) side)
 		y	(* (sqrt 2) side)
@@ -89,7 +89,7 @@
 	;
 	(setq	
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-60C-ATC-NOEDBREMS"
-		description (strcat "SKILT SIGNAL 60C ATC N" _uOE_ "DBREMS")
+		description (strcat "SKILT SIGNAL 60C ATC N" _uOSLASH_ "DBREMS")
 		x 1.5 ; horizontal bar
 		y 0.6 ; horizontal bar
 	)

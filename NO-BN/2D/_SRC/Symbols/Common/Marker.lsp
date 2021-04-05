@@ -14,7 +14,7 @@
 
 (defun C:MARKER ( / blockName description att )
 	(setq
-		blockName "NO-BN-2D-JBTFE-MARKOER-KNAPPENAAL"
+		blockName "NO-BN-2D-JBTFE-MARKER-HAIRPIN"
 		description "MARKER"
 		att '("FARGE" "Farge" "" "1,2")
 	)

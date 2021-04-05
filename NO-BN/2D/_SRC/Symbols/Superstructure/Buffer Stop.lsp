@@ -20,7 +20,7 @@
 
 (defun sporstopper ( variation / blockName description x y )
 	(setq	
-		blockName (strcat "NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-" variation)
+		blockName (strcat "NO-BN-2D-JBTOB-TRACK-OBJECT-SPORSTOPPER-" variation)
 		description (strcat "SPORSTOPPER, " variation)
 		x 10.0
 		y 8.5

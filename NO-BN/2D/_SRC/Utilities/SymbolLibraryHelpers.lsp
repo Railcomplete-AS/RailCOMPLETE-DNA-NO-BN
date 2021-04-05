@@ -34,7 +34,7 @@
 		_sleeperSpacing_				0.600	; This administrations normal sleeper spacing.
 		_schematicGauge_				9.000	; Spacing between rails in a schematic 2-line drawing (insulation, return current etc, showing both rails).
 		_schematicTrackSpacing_			21.000	; Standard spacing between track centerlines in a schematic 1-line or 2-line drawing (signaling isolation, return current drawing - not track schematic).
-		_geographicTrackSpacing_		 4.700	; Standard spacing between track centerlines in real installations.
+		_geographicTrackSpacing_		4.700	; Standard spacing between track centerlines in real installations.
 
 
 
@@ -42,16 +42,110 @@
 		;============================================================================
 
 		; Strings
-		_emptyString_					""
-		
-		; The 'Scandinavian extras'
-		_uAE_							"\U+00C6"	; Æ = Unicode decimal 198 - hex 00C6 - AutoLISP \U+00C6
-		_uOE_							"\U+00D8"	; Ø = Unicode decimal 216 - hex 00D8 - AutoLISP \U+00D8
-		_uAA_							"\U+00C5"	; Å = Unicode decimal 197 - hex 00C5 - AutoLISP \U+00C5
-		_ae_							"\U+00E6"	; æ = Unicode decimal 230 - hex 00E6 - AutoLISP \U+00E6
-		_oe_							"\U+00F8"	; ø = Unicode decimal 248 - hex 00F8 - AutoLISP \U+00F8
-		_aa_							"\U+00E5"	; å = Unicode decimal 229 - hex 00E5 - AutoLISP \U+00E5
-		
+		_emptyString_					""			; Same as _ENTER_ but used in a string context.
+
+		; See https://en.wikipedia.org/wiki/List_of_Unicode_characters
+
+		; AutoLISP 	Unicode	  Glyph Dec		HTML		Description and Unicode number
+		; =============================================================================
+		_NBSP_		"U+00A0" ;	 	0160	&nbsp;		Non-breaking space	0096
+		_IEXCL_		"U+00A1" ;	¡	0161	&iexcl;		Inverted Exclamation Mark	0097
+		_CENT_		"U+00A2" ;	¢	0162	&cent;		Cent sign	0098
+		_POUND_		"U+00A3" ;	£	0163	&pound;		Pound sign	0099
+		_CURREN_	"U+00A4" ;	¤	0164	&curren;	Currency sign	0100
+		_YEN_		"U+00A5" ;	¥	0165	&yen;		Yen sign	0101
+		_BRVBAR_	"U+00A6" ;	¦	0166	&brvbar;	Broken bar	0102
+		_SECT_		"U+00A7" ;	§	0167	&sect;		Section sign	0103
+		_UML_		"U+00A8" ;	¨	0168	&uml;		Diaeresis (Umlaut)	0104
+		_COPY_		"U+00A9" ;	©	0169	&copy;		Copyright sign	0105
+		_ORDF_		"U+00AA" ;	ª	0170	&ordf;		Feminine Ordinal Indicator	0106
+		_LAQUO_		"U+00AB" ;	«	0171	&laquo;		Left-pointing double angle quotation mark	0107
+		_NOT_		"U+00AC" ;	¬	0172	&not;		Not sign	0108
+		_SHY_		"U+00AD" ;		0173	&shy;		Soft hyphen	0109
+		_REG_		"U+00AE" ;	®	0174	&reg;		Registered sign	0110
+		_MACR_		"U+00AF" ;	¯	0175	&macr;		macron	0111
+		_DEG_		"U+00B0" ;	°	0176	&deg;		Degree sign	0112
+		_PLUSMN_	"U+00B1" ;	±	0177	&plusmn;	Plus-minus sign	0113
+		_SUP2_		"U+00B2" ;	²	0178	&sup2;		Superscript two	0114
+		_SUP3_		"U+00B3" ;	³	0179	&sup3;		Superscript three	0115
+		_ACUTE_		"U+00B4" ;	´	0180	&acute;		Acute accent	0116
+		_MICRO_		"U+00B5" ;	µ	0181	&micro;		Micro sign	0117
+		_PARA_		"U+00B6" ;	¶	0182	&para;		Pilcrow sign	0118
+		_MIDDOT_	"U+00B7" ;	·	0183	&middot;	Middle dot	0119
+		_CEDIL_		"U+00B8" ;	¸	0184	&cedil;		Cedilla	0120
+		_SUP1_		"U+00B9" ;	¹	0185	&sup1;		Superscript one	0121
+		_ORDM_		"U+00BA" ;	º	0186	&ordm;		Masculine ordinal indicator	0122
+		_RAQUO_		"U+00BB" ;	»	0187	&raquo;		Right-pointing double angle quotation mark	0123
+		_FRAC14_	"U+00BC" ;	¼	0188	&frac14;	Vulgar fraction one quarter	0124
+		_FRAC12_	"U+00BD" ;	½	0189	&frac12;	Vulgar fraction one half	0125
+		_FRAC34_	"U+00BE" ;	¾	0190	&frac34;	Vulgar fraction three quarters	0126
+		_IQUEST_	"U+00BF" ;	¿	0191	&iquest;	Inverted Question Mark	0127
+		_uAGRAVE_	"U+00C0" ;	À	0192	&Agrave;	Latin Capital Letter A with grave	0128
+		_uAACUTE_	"U+00C1" ;	Á	0193	&Aacute;	Latin Capital letter A with acute	0129
+		_uACIRC_	"U+00C2" ;	Â	0194	&Acirc;		Latin Capital letter A with circumflex	0130
+		_uATILDE_	"U+00C3" ;	Ã	0195	&Atilde;	Latin Capital letter A with tilde	0131
+		_uAUML_		"U+00C4" ;	Ä	0196	&Auml;		Latin Capital letter A with diaeresis	0132
+		_uARING_	"U+00C5" ;	Å	0197	&Aring;		Latin Capital letter A with ring above	0133
+		_uAELIG_	"U+00C6" ;	Æ	0198	&AElig;		Latin Capital letter Æ	0134
+		_uCCEDIL_	"U+00C7" ;	Ç	0199	&Ccedil;	Latin Capital letter C with cedilla	0135
+		_uEGRAVE_	"U+00C8" ;	È	0200	&Egrave;	Latin Capital letter E with grave	0136
+		_uEACUTE_	"U+00C9" ;	É	0201	&Eacute;	Latin Capital letter E with acute	0137
+		_uECIRC_	"U+00CA" ;	Ê	0202	&Ecirc;		Latin Capital letter E with circumflex	0138
+		_uEUML_		"U+00CB" ;	Ë	0203	&Euml;		Latin Capital letter E with diaeresis	0139
+		_uIGRAVE_	"U+00CC" ;	Ì	0204	&Igrave;	Latin Capital letter I with grave	0140
+		_uIACUTE_	"U+00CD" ;	Í	0205	&Iacute;	Latin Capital letter I with acute	0141
+		_uICIRC_	"U+00CE" ;	Î	0206	&Icirc;		Latin Capital letter I with circumflex	0142
+		_uIUML_		"U+00CF" ;	Ï	0207	&Iuml;		Latin Capital letter I with diaeresis	0143
+		_ETH_		"U+00D0" ;	Ð	0208	&ETH;		Latin Capital letter Eth	0144
+		_uNTILDE_	"U+00D1" ;	Ñ	0209	&Ntilde;	Latin Capital letter N with tilde	0145
+		_uOGRAVE_	"U+00D2" ;	Ò	0210	&Ograve;	Latin Capital letter O with grave	0146
+		_uOACUTE_	"U+00D3" ;	Ó	0211	&Oacute;	Latin Capital letter O with acute	0147
+		_uOCIRC_	"U+00D4" ;	Ô	0212	&Ocirc;		Latin Capital letter O with circumflex	0148
+		_uOTILDE_	"U+00D5" ;	Õ	0213	&Otilde;	Latin Capital letter O with tilde	0149
+		_uOUML_		"U+00D6" ;	Ö	0214	&Ouml;		Latin Capital letter O with diaeresis	0150
+		_TIMES_		"U+00D7" ;	×	0215	&times;		Multiplication sign	0151
+		_uOSLASH_	"U+00D8" ;	Ø	0216	&Oslash;	Latin Capital letter O with stroke	0152
+		_uUGRAVE_	"U+00D9" ;	Ù	0217	&Ugrave;	Latin Capital letter U with grave	0153
+		_uUACUTE_	"U+00DA" ;	Ú	0218	&Uacute;	Latin Capital letter U with acute	0154
+		_uUCIRC_	"U+00DB" ;	Û	0219	&Ucirc;		Latin Capital Letter U with circumflex	0155
+		_uUUML_		"U+00DC" ;	Ü	0220	&Uuml;		Latin Capital Letter U with diaeresis	0156
+		_uYACUTE_	"U+00DD" ;	Ý	0221	&Yacute;	Latin Capital Letter Y with acute	0157
+		_uTHORN_	"U+00DE" ;	Þ	0222	&THORN;		Latin Capital Letter Thorn	0158
+		_SZLIG_		"U+00DF" ;	ß	0223	&szlig;		Latin Small Letter sharp S	0159
+		_AGRAVE_	"U+00E0" ;	à	0224	&agrave;	Latin Small Letter A with grave	0160
+		_AACUTE_	"U+00E1" ;	á	0225	&aacute;	Latin Small Letter A with acute	0161
+		_ACIRC_		"U+00E2" ;	â	0226	&acirc;		Latin Small Letter A with circumflex	0162
+		_ATILDE_	"U+00E3" ;	ã	0227	&atilde;	Latin Small Letter A with tilde	0163
+		_AUML_		"U+00E4" ;	ä	0228	&auml;		Latin Small Letter A with diaeresis	0164
+		_ARING_		"U+00E5" ;	å	0229	&aring;		Latin Small Letter A with ring above	0165
+		_AELIG_		"U+00E6" ;	æ	0230	&aelig;		Latin Small Letter Æ	0166
+		_CCEDIL_	"U+00E7" ;	ç	0231	&ccedil;	Latin Small Letter C with cedilla	0167
+		_EGRAVE_	"U+00E8" ;	è	0232	&egrave;	Latin Small Letter E with grave	0168
+		_EACUTE_	"U+00E9" ;	é	0233	&eacute;	Latin Small Letter E with acute	0169
+		_ECIRC_		"U+00EA" ;	ê	0234	&ecirc;		Latin Small Letter E with circumflex	0170
+		_EUML_		"U+00EB" ;	ë	0235	&euml;		Latin Small Letter E with diaeresis	0171
+		_IGRAVE_	"U+00EC" ;	ì	0236	&igrave;	Latin Small Letter I with grave	0172
+		_IACUTE_	"U+00ED" ;	í	0237	&iacute;	Latin Small Letter I with acute	0173
+		_ICIRC_		"U+00EE" ;	î	0238	&icirc;		Latin Small Letter I with circumflex	0174
+		_IUML_		"U+00EF" ;	ï	0239	&iuml;		Latin Small Letter I with diaeresis	0175
+		_ETH_		"U+00F0" ;	ð	0240	&eth;		Latin Small Letter Eth	0176
+		_NTILDE_	"U+00F1" ;	ñ	0241	&ntilde;	Latin Small Letter N with tilde	0177
+		_OGRAVE_	"U+00F2" ;	ò	0242	&ograve;	Latin Small Letter O with grave	0178
+		_OACUTE_	"U+00F3" ;	ó	0243	&oacute;	Latin Small Letter O with acute	0179
+		_OCIRC_		"U+00F4" ;	ô	0244	&ocirc;		Latin Small Letter O with circumflex	0180
+		_OTILDE_	"U+00F5" ;	õ	0245	&otilde;	Latin Small Letter O with tilde	0181
+		_OUML_		"U+00F6" ;	ö	0246	&ouml;		Latin Small Letter O with diaeresis	0182
+		_DIVIDE_	"U+00F7" ;	÷	0247	&divide;	Division sign	0183
+		_OSLASH_	"U+00F8" ;	ø	0248	&oslash;	Latin Small Letter O with stroke	0184
+		_UGRAVE_	"U+00F9" ;	ù	0249	&ugrave;	Latin Small Letter U with grave	0185
+		_UACUTE_	"U+00FA" ;	ú	0250	&uacute;	Latin Small Letter U with acute	0186
+		_UCIRC_		"U+00FB" ;	û	0251	&ucirc;		Latin Small Letter U with circumflex	0187
+		_UUML_		"U+00FC" ;	ü	0252	&uuml;		Latin Small Letter U with diaeresis	0188
+		_YACUTE_	"U+00FD" ;	ý	0253	&yacute;	Latin Small Letter Y with acute	0189
+		_THORN_		"U+00FE" ;	þ	0254	&thorn;		Latin Small Letter Thorn	0190
+		_YUML_		"U+00FF" ;	ÿ	0255	&yuml;		Latin Small Letter Y with diaeresis	0191
+
+
 		; Text heights
 		; Text height is 10x linewidth. Font name is based on the linewidth, i.e. '180' is 1.80 m text height (suitable for 1:1000 scale drawings) (0.18 mm linewidth)
 		_th020_							0.2 
@@ -122,9 +216,9 @@
 		; COLOR command
 		; Set default drawing color
 		_COLOR_							"._COLOR"
-		_colorWhite_					"White"
-		_colorYellow_					"Yellow"
-		_colorMagenta_					"Magenta"
+		_colorWhite_					"White" 	;	EN:White	FR:Blanc	DE:Weiss
+		_colorYellow_					"Yellow"	;	EN:Yellow	FR:Jaune	DE:Gelb
+		_colorMagenta_					"Magenta" 	;	EN:Magenta 	FR:Magenta	DE:Magenta
 		_colorMetaDataLayer_			62 ; a dark yellowish color
 
 		; LINETYPE command
@@ -298,10 +392,15 @@
 		_diagonalAxis_					"1,1"
 		_reverseDiagonalAxis_			"-1,1"
 
+
 		; SCALE command
 		_SCALE_							"._SCALE"
 	
 	
+		; JOIN command
+		_JOIN_							"._JOIN"
+
+
 		; HATCH command
 		_HATCH_							"._-HATCH"	; NB! The dash '-' brings up to commandline version
 		_selectHatchObjects_			"_S"
@@ -554,10 +653,10 @@
 	(command
 		_ERASE_ _selectAll_ _ENTER_ _ENTER_
 		"._SNAP" 1.0
-		"._OSNAP" "OFF"
+		"._OSNAP" "_OFF"
 		"._OSNAPCOORD" 1
 		"._SNAPMODE" 0
-		"._GRID" "ON"
+		"._GRID" "_ON"
 		"._GRID" 0.1
 
 		"._UNITS" 2 3 1 3 0 "_NO" ; Numbers=15.500, Angles=<45.000, 0 degrees=East, positive rotation=CCW

@@ -13,15 +13,15 @@
 ; Thumbnail for flexible tube (cable conduit) alignment selection
 
 (defun C:THUMBNAIL-FLEXIBLE-TUBE ( / )
-	(ALIGNMENT-TREKKEROER)
+	(THUMBNAIL-FLEXIBLE-TUBE)
 )
 
 
 
-(defun ALIGNMENT-TREKKEROER ( / blockName r1 r2)
+(defun THUMBNAIL-FLEXIBLE-TUBE ( / blockName r1 r2)
 	; Flexible tubing. Three rounds of coiled-up flexible tube.
 	(setq 
-		blockName "NO-BN-2D-JBTUB-THUMBNAIL-TREKKEROER"
+		blockName "NO-BN-2D-JBTUB-THUMBNAIL-FLEXIBLE-TUBE"
 		r1 0.5
 		r2 0.45
 	)

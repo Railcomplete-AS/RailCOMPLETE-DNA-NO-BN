@@ -13,13 +13,13 @@
 ; Thumbnail for bicycle lane alignment selection
 
 (defun C:THUMBNAIL-BICYCLE-LANE ( / )
-	(ALIGNMENT-SYKKELVEI)
+	(THUMBNAIL-BICYCLE-LANE)
 )
 
 
 
-(defun ALIGNMENT-SYKKELVEI ( / blockName ) 
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-SYKKELVEI")
+(defun THUMBNAIL-BICYCLE-LANE ( / blockName ) 
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-BICYCLE-LANE")
 	(command _POLYLINE_ _origo_ (list 6 10) (list 19 10) (list 11 0) _closedPolyline_
 		_LINE_ (list 11 0) (list 5.25 11.5) _ENTER_
 		_LINE_ (list 4.25 11.5) (list 7.25 11.5) _ENTER_

@@ -148,8 +148,8 @@
 	(command _POLYLINE_ p21 p22 TR TL _closedPolyline_) ; 2
 	(DrawHatch _redHatch_)
 	
-	(AddAtt "LeftUp" "LeftUp" (strcat "R" _oe_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(AddAtt "RightUp" "RightUp" (strcat "R" _oe_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "LeftUp" "LeftUp" (strcat "R" _OSLASH_ "d/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" (strcat "R" _OSLASH_ "d/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(AddDescriptionBelowOrigo description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
@@ -372,8 +372,8 @@
 	(command _POLYLINE_ p51 p52 TR TL _closedPolyline_) ; 5
 	(DrawHatch _blueHatch_) 
 	
-	(AddAtt "LeftUp" "LeftUp" (strcat "Bl" _aa_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
-	(AddAtt "RightUp" "RightUp" (strcat "Bl" _aa_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "LeftUp" "LeftUp" (strcat "Bl" _ARING_ "/Hvit") t1 _th180_ _angle90_ _rcTextStyle_ _middleCenter_)
+	(AddAtt "RightUp" "RightUp" (strcat "Bl" _ARING_ "/Hvit") t2 _th180_ _angleMinus90_ _rcTextStyle_ _middleCenter_)
 	(AddDescriptionBelowOrigo description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)

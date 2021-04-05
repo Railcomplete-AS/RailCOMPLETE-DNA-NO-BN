@@ -57,7 +57,7 @@
 (defun HENGEMAST-FOR-AAK ( / blockName description r )
 	(setq 
 		blockName "NO-BN-2D-JBTKL-HENGEMAST-FOR-AAK"
-		description (strcat "HENGEMAST I " _uAA_ "K")
+		description (strcat "HENGEMAST I " _uARING_ "K")
 		r 0.525
 	)
 	(DrawCircle layDef_Zero r _noWipeout_)

@@ -44,7 +44,7 @@
 	;   
 	(setq				   
 		blockName (strcat "NO-BN-2D-JBTUB-TREKKEKUM-RUND-" manholeDiameter)
-		description (strcat "TREKKEKUM RUND " _uOE_ manholeDiameter) 
+		description (strcat "TREKKEKUM RUND " _uOSLASH_ manholeDiameter) 
 		mr	(/ (atof manholeDiameter) 2000.0)
 		cr	(HalfOf coverDiameter)	
 		p1 	(list coverOffsetX coverOffsetY)

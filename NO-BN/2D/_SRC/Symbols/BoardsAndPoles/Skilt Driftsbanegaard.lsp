@@ -25,7 +25,7 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-DRIFTSBANEGAARD"
-		description (strcat "SKILT DRIFTSBANEG" _uAA_ "RD")
+		description (strcat "SKILT DRIFTSBANEG" _uARING_ "RD")
 		x 9.0
 		y 6.0
 	)
@@ -55,7 +55,7 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-DRIFTSBANEGAARD-SLUTTER"
-		description (strcat "SKILT DRIFTSBANEG" _uAA_ "RD SLUTTER")
+		description (strcat "SKILT DRIFTSBANEG" _uARING_ "RD SLUTTER")
 		x	9.0
 		y	6.0
 		p1 (list (* -0.5 x) (* -0.4 y))

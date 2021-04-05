@@ -29,7 +29,7 @@
 	;--------- manuelle brytere ---------
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-AAPEN"
-		description	(strcat "KL SKILLEBRYTER, " _uAA_ "PEN")
+		description	(strcat "KL SKILLEBRYTER, " _uARING_ "PEN")
 	)
 	(DrawSkillebryter "AAPEN" 0)
 	(AddDescriptionBelowOrigo description distBelow)
@@ -47,7 +47,7 @@
   
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-TOPOLET-AAPEN"
-		description	(strcat "KL SKILLEBRYTER, TOPOLET " _uAA_ "PEN")
+		description	(strcat "KL SKILLEBRYTER, TOPOLET " _uARING_ "PEN")
 	)
 	(DrawSkillebryter "AAPEN" 0)
 	(DrawSkillebryter "AAPEN" (- 6.0))
@@ -69,7 +69,7 @@
   
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-TREPOLET-AAPEN"
-		description	(strcat "KL SKILLEBRYTER, TREPOLET " _uAA_ "PEN")
+		description	(strcat "KL SKILLEBRYTER, TREPOLET " _uARING_ "PEN")
 	)
 	(DrawSkillebryter "AAPEN" 0)
 	(DrawSkillebryter "AAPEN" (- 6.0))
@@ -94,7 +94,7 @@
 	;--------- motoriserte brytere ---------
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-MOTORISERT-AAPEN"
-		description	(strcat "KL SKILLEBRYTER, MOTORISERT " _uAA_ "PEN")
+		description	(strcat "KL SKILLEBRYTER, MOTORISERT " _uARING_ "PEN")
 	)
 	(DrawMotor "AAPEN")
 	(DrawSkillebryter "AAPEN" 0)
@@ -114,7 +114,7 @@
 
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-MOTORISERT-TOPOLET-AAPEN"
-		description	(strcat "KL SKILLEBRYTER, MOTORISERT TOPOLET " _uAA_ "PEN")
+		description	(strcat "KL SKILLEBRYTER, MOTORISERT TOPOLET " _uARING_ "PEN")
 	)
 	(DrawMotor "AAPEN")
 	(DrawSkillebryter "AAPEN" 0)
@@ -138,7 +138,7 @@
 
 	(setq 
 		blockName	"NO-BN-2D-JBTKL-BRYTER-SKILLEBRYTER-MOTORISERT-TREPOLET-AAPEN"
-		description	(strcat "KL SKILLEBRYTER, MOTORISERT TREPOLET " _uAA_ "PEN")
+		description	(strcat "KL SKILLEBRYTER, MOTORISERT TREPOLET " _uARING_ "PEN")
 	)
 	(DrawMotor "AAPEN")
 	(DrawSkillebryter "AAPEN" 0)
@@ -169,7 +169,7 @@
 	;--------- manuelle brytere ---------
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-LASTSKILLEBRYTER-AAPEN"
-		description	(strcat "KL LASTSKILLEBRYTER, " _uAA_ "PEN")
+		description	(strcat "KL LASTSKILLEBRYTER, " _uARING_ "PEN")
 	)
 	(DrawLastSkilleBryter "AAPEN" 0)
 	(AddDescriptionBelowOrigo description distBelow)
@@ -187,7 +187,7 @@
   
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-LASTSKILLEBRYTER-TOPOLET-AAPEN"
-		description	(strcat "KL LASTSKILLEBRYTER, TOPOLET " _uAA_ "PEN")
+		description	(strcat "KL LASTSKILLEBRYTER, TOPOLET " _uARING_ "PEN")
 	)
 	(DrawLastSkilleBryter "AAPEN" 0)
 	(DrawLastSkilleBryter "AAPEN" (- 6.0))
@@ -209,7 +209,7 @@
 	
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-LASTSKILLEBRYTER-TREPOLET-AAPEN"
-		description	(strcat "KL LASTSKILLEBRYTER, TREPOLET " _uAA_ "PEN")
+		description	(strcat "KL LASTSKILLEBRYTER, TREPOLET " _uARING_ "PEN")
 	)
 	(DrawLastSkilleBryter "AAPEN" 0)
 	(DrawLastSkilleBryter "AAPEN" (- 6.0))
@@ -234,7 +234,7 @@
 	;--------- motoriserte brytere ---------
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-LASTSKILLEBRYTER-MOTORISERT-AAPEN"
-		description	(strcat "KL LASTSKILLEBRYTER, MOTORISERT " _uAA_ "PEN")
+		description	(strcat "KL LASTSKILLEBRYTER, MOTORISERT " _uARING_ "PEN")
 	)
 	(DrawMotor "AAPEN")
 	(DrawLastSkilleBryter "AAPEN" 0)
@@ -254,7 +254,7 @@
 	
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-LASTSKILLEBRYTER-MOTORISERT-TOPOLET-AAPEN"
-		description	(strcat "KL LASTSKILLEBRYTER, MOTORISERT TOPOLET " _uAA_ "PEN")
+		description	(strcat "KL LASTSKILLEBRYTER, MOTORISERT TOPOLET " _uARING_ "PEN")
 	)
 	(DrawMotor "AAPEN")
 	(DrawLastSkilleBryter "AAPEN" 0)
@@ -278,7 +278,7 @@
   
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-LASTSKILLEBRYTER-MOTORISERT-TREPOLET-AAPEN"
-		description	(strcat "KL LASTSKILLEBRYTER, MOTORISERT TREPOLET " _uAA_ "PEN")
+		description	(strcat "KL LASTSKILLEBRYTER, MOTORISERT TREPOLET " _uARING_ "PEN")
 	)
 	(DrawMotor "AAPEN")
 	(DrawLastSkilleBryter "AAPEN" 0)
@@ -322,7 +322,7 @@
 	;--------- manuelle brytere ---------
 	(setq 
 		blockName	"NO-BN-2D-JBTKL-BRYTER-JORDINGSBRYTER-AAPEN"
-		description	(strcat "KL JORDINGSBRYTER, " _uAA_ "PEN")
+		description	(strcat "KL JORDINGSBRYTER, " _uARING_ "PEN")
 	)
 	(DrawSkinneJord (list 5.5426 3.2))
 	(DrawSkillebryter "AAPEN" 0)
@@ -342,7 +342,7 @@
 
 	(setq 
 		blockName	"NO-BN-2D-JBTKL-BRYTER-JORDINGSBRYTER-TOPOLET-AAPEN"
-		description	(strcat "KL JORDINGSBRYTER, TOPOLET " _uAA_ "PEN")
+		description	(strcat "KL JORDINGSBRYTER, TOPOLET " _uARING_ "PEN")
 	)
 	(DrawSkinneJord (list 5.5426 3.2))
 	(DrawSkillebryter "AAPEN" 0)
@@ -366,7 +366,7 @@
 
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-JORDINGSBRYTER-TREPOLET-AAPEN"
-		description	(strcat "KL JORDINGSBRYTER, TREPOLET " _uAA_ "PEN")
+		description	(strcat "KL JORDINGSBRYTER, TREPOLET " _uARING_ "PEN")
 	)
 	(DrawSkinneJord (list 5.5426 3.2))
 	(DrawSkillebryter "AAPEN" 0)
@@ -393,7 +393,7 @@
 	;--------- motoriserte brytere ---------
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-JORDINGSBRYTER-MOTORISERT-AAPEN"
-		description	(strcat "KL JORDINGSBRYTER, MOTORISERT " _uAA_ "PEN")
+		description	(strcat "KL JORDINGSBRYTER, MOTORISERT " _uARING_ "PEN")
 	)
 	(DrawSkinneJord (list 5.5426 3.2))
 	(DrawMotor "AAPEN")
@@ -415,7 +415,7 @@
 
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-JORDINGSBRYTER-MOTORISERT-TOPOLET-AAPEN"
-		description	(strcat "KL JORDINGSBRYTER, MOTORISERT TOPOLET " _uAA_ "PEN")
+		description	(strcat "KL JORDINGSBRYTER, MOTORISERT TOPOLET " _uARING_ "PEN")
 	)
 	(DrawSkinneJord (list 5.5426 3.2))
 	(DrawMotor "AAPEN")
@@ -441,7 +441,7 @@
 
 	(setq
 		blockName	"NO-BN-2D-JBTKL-BRYTER-JORDINGSBRYTER-MOTORISERT-TREPOLET-AAPEN"
-		description	(strcat "KL JORDINGSBRYTER, MOTORISERT TREPOLET " _uAA_ "PEN")
+		description	(strcat "KL JORDINGSBRYTER, MOTORISERT TREPOLET " _uARING_ "PEN")
 	)
 	(DrawSkinneJord (list 5.5426 3.2))
 	(DrawMotor "AAPEN")

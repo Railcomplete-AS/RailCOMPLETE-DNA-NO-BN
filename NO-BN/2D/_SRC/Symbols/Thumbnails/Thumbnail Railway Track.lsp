@@ -10,16 +10,16 @@
 ;
 ;=========================================================================================================================
 
-; Thumbnail for railway track alignment selection (two sweeped rails / two rails and sleeper as repeated objects)
+; Thumbnail for railway track alignment (two sweeped rails / two rails and sleeper as repeated objects)
 
-(defun C:THUMBNAIL-TRACK ( / )
-	(ALIGNMENT-SPOR)
+(defun C:THUMBNAIL-RAILWAY-TRACK ( / )
+	(THUMBNAIL-RAILWAY-TRACK)
 )
 
-(defun ALIGNMENT-SPOR ( / blockName trackLength railFoot railHead sleeperWidth sleeperLength sleeperSeparation sleeperGap trackLengthBeforeFirstSleeper centerTrack ) 
+(defun THUMBNAIL-RAILWAY-TRACK ( / blockName trackLength railFoot railHead sleeperWidth sleeperLength sleeperSeparation sleeperGap trackLengthBeforeFirstSleeper centerTrack ) 
 	; A piece of track viewed from above, featuring the two rails and five sleepers.
 	(setq
-		blockName (strcat "NO-BN-2D-JBTOB-THUMBNAIL-SPOR")
+		blockName (strcat "NO-BN-2D-JBTOB-THUMBNAIL-RAILWAY-TRACK")
 		trackLength 1800
 		railFoot 150
 		railHead 72
@@ -28,7 +28,7 @@
 		sleeperSeparation 600
 		sleeperGap (- sleeperSeparation SleeperWidth)
 		trackLengthBeforeFirstSleeper (/ (- trackLength (* sleeperWidth 3) (* sleeperGap 2)) 2)
-		centerTrack (- (/ _normalGauge_ 2) (- (/ railFoot 2) (/ railHead 2 )))
+		centerTrack (- (/ (* 1000 _normalGauge_) 2) (- (/ railFoot 2) (/ railHead 2 )))
 	)
 	(command
 		_RECTANGLE_ (list 0 centerTrack) (list trackLength (+ centerTrack railFoot))

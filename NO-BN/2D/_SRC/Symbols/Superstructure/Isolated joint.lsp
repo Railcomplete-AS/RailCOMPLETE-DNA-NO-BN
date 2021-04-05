@@ -77,7 +77,7 @@
 	;
 	(setq
 		blockName	(strcat "NO-BN-2D-JBTOB-RAILJOINT-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
-		description (strcat "ISOLERT SKINNESKJ" _uOE_ "T, KVADRANT IV-III-II-I = " (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
+		description (strcat "ISOLERT SKINNESKJ" _uOSLASH_ "T, KVADRANT IV-III-II-I = " (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
 	)
 	
 	; Schematic symbol

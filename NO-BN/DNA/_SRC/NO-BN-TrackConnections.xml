@@ -82,12 +82,11 @@ end
 	
 	
 <!--========================================================================================================
-	OVERBYGNING
-	SPORFORTSETTELSER
-	KO-SPF Sporfortsettelse
-	Objekt som lar grafsøk-algoritmer fortsette fra enden av en alignment og videre i neste alignment.
-	NB: 'KO-SPF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'.
+	TRACK AND EMBANKMENT
+	ALIGNMENT CONTINUATIONS
+	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
+	<!-- NB: 'KO-SPF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
 	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="KO-SPF Sporfortsettelse"
 				Layer="JBTOB_KO_SPF" Color="ByLayer"
 				Group="Overbygning/Sporfortsettelser"
@@ -111,12 +110,17 @@ end
 		<!-- Model checks Continuation -->
 		<xpp:expand select="NOBN_trk_CHK_CONNECTION___CONTINUATION" />
 
-		<LuaExpression Name="code" ><Formula>NOBN_trk_getContinuationCode()</Formula></LuaExpression>
-		<LuaFunction Name="NOBN_trk_getContinuationCode()" ReturnType="String"
+		<Variants DefaultValue="Sporfortsettelse" >
+			<Variant Name="Sporfortsettelse" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="code" ><Formula>_KO_SPF_code()</Formula></LuaExpression>
+		<LuaFunction Name="_KO_SPF_code()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two tracks that meet in a track continuation." >
-			<Constructor>String NOBN_trk_getContinuationCode()</Constructor>
+			<Constructor>String _KO_SPF_code()</Constructor>
 			<Formula>
-				function NOBN_trk_getContinuationCode()
+				function _KO_SPF_code()
 					local first,second
 					if RcType ~= "KO-SPF Sporfortsettelse" then
 						return _error,"Bad object type ["..RcType.."] - 'KO-SPF Sporfortsettelse' was expected"
@@ -148,8 +152,8 @@ end
 			<Constructor>Double _KO_SPF_mileage()</Constructor>
 			<Formula>
 				function _KO_SPF_mileage()
-					ai = getAlignmentInfo() -- 'Pos' is ,ed as 'RelativePosition'
-					if RC__isNan(ai.RelativePosition) then return nil,_info("Relative position not found.") end
+					ai = getAlignmentInfo()
+					if RC__isNan(ai.RelativePosition) then return nil,_info("Position not found.") end
 					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
 							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
 				end
@@ -163,7 +167,7 @@ end
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 				
-		<!-- Superstructure viewpoint's symbol (the other disciplines don't show anything) -->
+		<!-- Track and embankment viewpoint's symbol (the other disciplines don't show anything) -->
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="false" Layer="JBTOB__KO_SPF"
 				Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock" >
 			<Rotation Add180DegreesIfDirIsDown="true" />
@@ -185,9 +189,8 @@ end
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	SPORKRYSS
-	KO-SPV Sporkryss
+	TRACK AND EMBANKMENT
+	CROSSING
 =========================================================================================================-->
 	<ObjectType DataType="eCrossing" Class="RailwayPlacedObject" Name="KO-SPV Sporkryss"
 				Layer="JBTOB_KO_SPV" Color="ByLayer"
@@ -261,7 +264,7 @@ end
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 		
-		<!-- Superstructure viewpoint's symbol (the other disciplines don't show anything) -->
+		<!-- Track and embankment viewpoint's symbol (the other disciplines don't show anything) -->
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="false" Layer="JBTOB__KO_SPV" 
 				Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="0" />
@@ -781,7 +784,7 @@ end
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 
-		<!-- Superstructure viewpoint's symbol -->
+		<!-- Track and embankment viewpoint's symbol -->
 		<SymbolDefinition  X="0.0" Y="0.0" DefaultBlockName="" AllowSymbolMove="false" Layer="JBTOB__KO_SPV"
 			Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock"
 		>
@@ -996,8 +999,8 @@ end
 				<SnapPoint X="3.89367110" Y="1.75002238" TargetSpace="sporvekseldrivmaskin" />
 				<SnapPoint X="3.93" Y="-1.75" TargetSpace="sporvekseldrivmaskin" />
 				<!-- Fabrikkslevert isolert skjøt -->
-				<SnapPoint X="16.8592" Y="0.7495" TargetSpace="isolert skjøt" />
-				<SnapPoint X="16.8907" Y="0" TargetSpace="isolert skjøt" />
+				<SnapPoint X="16.8592" Y="0.7495" TargetSpace="skinneskjøt" />
+				<SnapPoint X="16.8907" Y="0" TargetSpace="skinneskjøt" />
 				<!-- Sporsperre -->
 				<SnapPoint X="18.0416" Y="1.613" TargetSpace="sporsperre" />
 				<SnapPoint X="18.1541" Y="-0.751" TargetSpace="sporsperre" />
@@ -1036,8 +1039,8 @@ end
 				<SnapPoint X="5.20487399" Y="1.79794469" TargetSpace="sporvekseldrivmaskin" />
 				<SnapPoint X="5.237" Y="-1.75" TargetSpace="sporvekseldrivmaskin" />
 				<!-- Fabrikkslevert isolert skjøt-->
-				<SnapPoint X="15.7829" Y="0.4187" TargetSpace="isolert skjøt" />
-				<SnapPoint X="15.79" Y="0" TargetSpace="isolert skjøt" />
+				<SnapPoint X="15.7829" Y="0.4187" TargetSpace="skinneskjøt" />
+				<SnapPoint X="15.79" Y="0" TargetSpace="skinneskjøt" />
 				<!-- Sporsperre -->
 				<SnapPoint X="21.1317" Y="1.5006" TargetSpace="sporsperre" />
 				<SnapPoint X="21.2113" Y="-0.7535" TargetSpace="sporsperre" />
@@ -1055,8 +1058,8 @@ end
 				<!-- <SnapPoint X="7.66716867" Y="1.80887624" TargetSpace="sporvekseldrivmaskin" /> -->
 				<!-- <SnapPoint X="7.695" Y="-1.75" TargetSpace="sporvekseldrivmaskin" /> -->
 				<!-- Fabrikkslevert isolert skjøt-->
-				<!-- <SnapPoint X="19.4052" Y="0.3768" TargetSpace="isolert skjøt" /> -->
-				<!-- <SnapPoint X="19.41" Y="0" TargetSpace="isolert skjøt" /> -->
+				<!-- <SnapPoint X="19.4052" Y="0.3768" TargetSpace="skinneskjøt" /> -->
+				<!-- <SnapPoint X="19.41" Y="0" TargetSpace="skinneskjøt" /> -->
 				<!-- Sporsperre -->
 				<!-- <SnapPoint X="27.3045" Y="1.4990" TargetSpace="sporsperre" /> -->
 				<!-- <SnapPoint X="27.3639" Y="-0.7552" TargetSpace="sporsperre" /> -->
@@ -1074,8 +1077,8 @@ end
 				<SnapPoint X="7.66716867" Y="1.80887624" TargetSpace="sporvekseldrivmaskin" />
 				<SnapPoint X="7.695" Y="-1.75" TargetSpace="sporvekseldrivmaskin" />
 				<!-- Fabrikkslevert isolert skjøt-->
-				<SnapPoint X="19.4052" Y="0.3768" TargetSpace="isolert skjøt" />
-				<SnapPoint X="19.41" Y="0" TargetSpace="isolert skjøt" />
+				<SnapPoint X="19.4052" Y="0.3768" TargetSpace="skinneskjøt" />
+				<SnapPoint X="19.41" Y="0" TargetSpace="skinneskjøt" />
 				<!-- Sporsperre -->
 				<SnapPoint X="27.3045" Y="1.4990" TargetSpace="sporsperre" />
 				<SnapPoint X="27.3639" Y="-0.7552" TargetSpace="sporsperre" />
@@ -1171,8 +1174,8 @@ end
 				<SnapPoint X="59.21244152" Y="3.20359522" TargetSpace="sporvekseldrivmaskin" />
 				<SnapPoint X="59.3335" Y="-1.75" TargetSpace="sporvekseldrivmaskin" />
 				<!-- Fabrikkslevert isolert skjøt -->
-				<SnapPoint X="37.3372" Y="0.8103" TargetSpace="isolert skjøt" />
-				<SnapPoint X="37.3152" Y="-0.3382" TargetSpace="isolert skjøt" />
+				<SnapPoint X="37.3372" Y="0.8103" TargetSpace="skinneskjøt" />
+				<SnapPoint X="37.3152" Y="-0.3382" TargetSpace="skinneskjøt" />
 
 				<!-- Sporsperre -->
 				<SnapPoint X="50.6568" Y="1.8293" TargetSpace="sporsperre" />

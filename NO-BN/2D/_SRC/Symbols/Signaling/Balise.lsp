@@ -45,7 +45,7 @@
 
 	; Schematic symbol
 	(setq 
-		blockName (drawBalise variation) ; NOTE: Schematic size graphics routine draws the balise and returns the basic block name
+		blockName (DrawBalise variation) ; NOTE: Schematic size graphics routine draws the balise and returns the basic block name
 		description (strcat "BALISE " (cond 
 			((= variation 1) "TOM/FAST")
 			((= variation 2) "TOM/STYRT")
@@ -125,7 +125,7 @@
 ;==========================
 ; Draw...X...() functions
 ;==========================
-(defun drawBalise ( variation / blockName side h dh )
+(defun DrawBalise ( variation / blockName side h dh )
 	; Draw balise triangle in schematic size
 	(setq 
 		; Balise triangle:

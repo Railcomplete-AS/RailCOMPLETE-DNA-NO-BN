@@ -13,12 +13,12 @@
 ; Thumbnail for area selection (interlocking areas, contract parcels, paperspace layout frames etc)
 
 (defun C:THUMBNAIL-AREA ( / )
-	(AREA-GENERELL)
+	(THUMBNAIL-AREA)
 )
 
-(defun AREA-GENERELL ( / blockName x y )
+(defun THUMBNAIL-AREA ( / blockName x y )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-THUMBNAIL-OMRAADE-GENERELL"
+		blockName "NO-BN-2D-JBTFE-THUMBNAIL-AREA"
 		x 12
 		y 9
 	)

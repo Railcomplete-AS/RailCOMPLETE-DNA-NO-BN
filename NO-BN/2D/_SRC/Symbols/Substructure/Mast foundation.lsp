@@ -193,7 +193,7 @@
 	; Ref. S.xxxxxx
 	(setq 
 		blockName 	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-HS-Ø680-300x300xM24"
-		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT " _uOE_ "300/" _uOE_ "680 300x300xM24")
+		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT " _uOSLASH_ "300/" _uOSLASH_ "680 300x300xM24")
 		ri (/ 0.680 2) ; Ytre radius, stående betongrør
 		ro (/ 0.300 2) ; Indre radius, stående betongrør
 		d (/ 0.300 2) ; 300x300 bolteplassering for de ytre hullene i S.023166 signalmastefot
@@ -233,7 +233,7 @@
 	; Ref. S.xxxxxx
 	(setq 
 		blockName	"NO-BN-2D-JBTUB-FUNDAMENT-BETONG-VEIBOMDRIVMASKIN-Ø680-210x210xM20-1600"
-		description	(strcat "BETONG VEIBOMDRIVMASKIN- FUNDAMENT " _uOE_ "210/" _uOE_ "680 210x210xM20 h=1600")
+		description	(strcat "BETONG VEIBOMDRIVMASKIN- FUNDAMENT " _uOSLASH_ "210/" _uOSLASH_ "680 210x210xM20 h=1600")
 		ri (/ 0.680 2) ; Ytre radius, stående betongrør
 		ro (/ 0.210 2) ; Indre radius, stående betongrør
 		d (/ 0.300 2) ; 300x300 bolteplassering for de ytre hullene i S.023166 signalmastefot
@@ -273,8 +273,8 @@
 	; Ref. S.xxxxxx
 	; 2D symbol: The Ø555 concrete pole with two layers of dashed arcs around
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-BORET-" _uOE_ "555-164x164xM32")
-		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT BORET " _uOE_ "555 164x164xM32")
+		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-BORET-" _uOSLASH_ "555-164x164xM32")
+		description	(strcat "BETONG HOVEDSIGNAL- FUNDAMENT BORET " _uOSLASH_ "555 164x164xM32")
 		rThreadedIron (/ 0.032 2) ; M32 gjengejern for de indre Ø45 hullene i signalets mastefot-plate
 		R1 0.15
 		R2 0.4
@@ -315,8 +315,8 @@
 (defun BETONG-DS-FUNDAMENT-KONISK ( / blockName description s1 s2 dim1 dim2 )
 	; Ref. S.xxxxxx
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-" _uOE_ "76-KONISK")
-		description	(strcat "BETONG DVERGSIGNAL- FUNDAMENT KONISK 600(400)x600(400)x500 " _uOE_ "76")
+		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-" _uOSLASH_ "76-KONISK")
+		description	(strcat "BETONG DVERGSIGNAL- FUNDAMENT KONISK 600(400)x600(400)x500 " _uOSLASH_ "76")
 		s1 (/ 0.600 2)
 		s2 (/ 0.400 2)
 		dim1 0.12
@@ -381,8 +381,8 @@
 (defun BETONG-DS-FUNDAMENT-RETTSIDET ( / blockName description s1 s2 dim1 dim2 )
 	; Ref. S.xxxxxx
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-" _uOE_ "76-RETTSIDET")
-		description	(strcat "BETONG DVERGSIGNAL- FUNDAMENT RETTSIDET 600(400)x600(400)x500 " _uOE_ "76")
+		blockName	(strcat "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-DS-" _uOSLASH_ "76-RETTSIDET")
+		description	(strcat "BETONG DVERGSIGNAL- FUNDAMENT RETTSIDET 600(400)x600(400)x500 " _uOSLASH_ "76")
         ;miderste rør med skruer:
 		s1 (/ 0.600 2)
 		s2 (/ 0.400 2)
@@ -706,8 +706,8 @@
 	; Insertion point is center symbol.
 	; Foundation for OCS masts.
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTKL-FUNDAMENT-BETONG-BORET-" _uOE_ "355-" _uOE_ "232xDD27xM36")
-		description	(strcat "BETONG KL- FUNDAMENT BORET " _uOE_ "355 " _uOE_ "232x27DDxM36")
+		blockName	(strcat "NO-BN-2D-JBTKL-FUNDAMENT-BETONG-BORET-" _uOSLASH_ "355-" _uOSLASH_ "232xDD27xM36")
+		description	(strcat "BETONG KL- FUNDAMENT BORET " _uOSLASH_ "355 " _uOSLASH_ "232x27DDxM36")
 		x	(* 0.090 (DDcos 27)) ; Line from origo
 		y	(* 0.090 (DDsin 27))
 		x1	(* 0.160 (DDcos 27)) ; Start hatch over bolt, from centre pole
@@ -760,8 +760,8 @@
 	; Insertion point is center symbol.
 	; Foundation for OCS masts.
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTKL-FUNDAMENT-BETONG-BORET-" _uOE_ "555-191x374xM36")
-		description	(strcat "BETONG KL- FUNDAMENT BORET " _uOE_ "555 191x374xM36")
+		blockName	(strcat "NO-BN-2D-JBTKL-FUNDAMENT-BETONG-BORET-" _uOSLASH_ "555-191x374xM36")
+		description	(strcat "BETONG KL- FUNDAMENT BORET " _uOSLASH_ "555 191x374xM36")
 		bx 0.191 ; Bolt group
 		by 0.374
 		bd 0.036 ; Bolt diameter

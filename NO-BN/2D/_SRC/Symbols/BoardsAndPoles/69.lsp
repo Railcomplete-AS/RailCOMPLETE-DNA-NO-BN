@@ -75,7 +75,7 @@
 		p4  '( 1.875 4.875)
 		p5  '( 1.875 0.000)
 		p6  '( 0.0 2.5)
-		attTen '("HAST_10" (strcat "Gjenoppta kj" _oe_ "r-hastighet (10-ere)") "9")
+		attTen '("HAST_10" (strcat "Gjenoppta kj" _OSLASH_ "r-hastighet (10-ere)") "9")
 	)
 	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 p3 p4 p5 _closedPolyline_)

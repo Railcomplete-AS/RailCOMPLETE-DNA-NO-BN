@@ -20,8 +20,8 @@
 
 (defun OPPKJOERSBJELKE ( / blockName description fotX fotY bjelkeX bjelkeY )
 	(setq
-		blockName "NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE"
-		description (strcat "OPPKJ" _uOE_ "RSBJELKE")
+		blockName "NO-BN-2D-JBTOB-TRACK-OBJECT-OPPKJOERSBJELKE"
+		description (strcat "OPPKJ" _uOSLASH_ "RSBJELKE")
 		fotX (/ 0.16 2)
 		fotY (/ 0.8 2)
 		bjelkeX (/ 1.0 2)

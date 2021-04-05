@@ -11,16 +11,17 @@
 ;=========================================================================================================================
 
 ; Thumbnail for concrete-encapsulated tubes (alignment objects)
+; Norw.: 'Rørpakke'
 
 (defun C:THUMBNAIL-CLOSED-CABLE-CONDUIT ( / )
-	(ALIGNMENT-ROERPAKKE)
+	(THUMBNAIL-CLOSED-CABLE-CONDUIT)
 )
 
 
 
-(defun ALIGNMENT-ROERPAKKE (/ blockName x y r )
+(defun THUMBNAIL-CLOSED-CABLE-CONDUIT (/ blockName x y r )
 	(setq 
-		blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROERPAKKE"
+		blockName "NO-BN-2D-JBTUB-CLOSED-CABLE-CONDUIT"
 		y 0.155
 		x 0.45
 		r 0.055

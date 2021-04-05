@@ -13,14 +13,14 @@
 ; Thumbnail for road alignment selection
 
 (defun C:THUMBNAIL-ROAD ( / )
-	(BILVEI)
+	(ROAD)
 )
 
 
 
-(defun BILVEI ( / blockName ) 
+(defun ROAD ( / blockName ) 
 	; A piece of two-lane road seen in perspective in the direction of driving.
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-BILVEI")
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROAD")
 	(command 
 		_LINE_ _origo_ (list 0 1) _ENTER_
 		_LINE_ (list 0 1.4) (list 0 2) _ENTER_

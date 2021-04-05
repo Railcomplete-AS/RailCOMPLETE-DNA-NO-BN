@@ -47,8 +47,7 @@ rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%
 
 if "%COPY3D%" neq "yes" goto Noecho
 	echo - 3D object models:
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\3D\STD\*.dwg											"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D\STD"
- 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\3D\LayerMappings\*.*									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D\LayerMappings"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\3D													"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D"
 :Noecho
 
 	echo - AutoCAD stuff (color table, fonts etc):
@@ -60,8 +59,8 @@ rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE
 rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches\%ADM%-%RELEASE%-SwitchGeometries.xml 	"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
 rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\DnaMappings\*.xml 								"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\DnaMappings"
 	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\*.xml												"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches\*.xml 									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\DnaMappings\*.xml 								"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\DnaMappings"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\Switches		 									"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\DNA\DnaMappings		 								"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\DnaMappings"
 
 	echo - FAQ:
 rem	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\FAQ\%ADM%-%RELEASE%-faq.xml            				"%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"

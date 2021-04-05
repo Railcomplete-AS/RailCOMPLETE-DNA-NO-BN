@@ -191,7 +191,7 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-SIGNAL-75C-1-HEV-HSIDE"
-		description (strcat "SKILT 75C-1 HEV SPORRENSER, H" _uOE_ "YREMONTERT")
+		description (strcat "SKILT 75C-1 HEV SPORRENSER, H" _uOSLASH_ "YREMONTERT")
 		p1 (list -8.0 0.0)
 		p2 (list -8.0 2.0)
 		p3 (list -6.0 5.5)
@@ -253,7 +253,7 @@
 	;
 	(setq
 		blockName "NO-BN-2D-SKILT-VEDLIKEHOLD-SIGNAL-75D-1-SENK-HSIDE"
-		description (strcat "SKILT 75D-1 SENK SPORRENSER, H" _uOE_ "YREMONTERT")
+		description (strcat "SKILT 75D-1 SENK SPORRENSER, H" _uOSLASH_ "YREMONTERT")
 		p1 (list  0.0  2.0)
 		p2 (list -8.0  2.0)
 		p3 (list -8.0  0.0)

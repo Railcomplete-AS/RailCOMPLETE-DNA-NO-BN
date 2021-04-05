@@ -22,7 +22,7 @@
 (defun REFLEKS_HEL ( / blockName r )
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-REFLEKS-HEL"
-		description (strcat "REFLEKS P" _uAA_ " FORSIDEN OG BAKSIDEN AV INNKJ" _uOE_ "RHOVEDSIGNAL OG BLOKKSIGNAL")
+		description (strcat "REFLEKS P" _uARING_ " FORSIDEN OG BAKSIDEN AV INNKJ" _uOSLASH_ "RHOVEDSIGNAL OG BLOKKSIGNAL")
 		r 1.5
 	)
 	; Schematic symbol
@@ -45,7 +45,7 @@
 (defun REFLEKS_HALV ( / blockName r )
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-REFLEKS-HALV"
-		description (strcat "REFLEKS P" _uAA_ " FORSIDEN AV INDRE HOVEDSIGNAL I INNKJ" _uOE_ "RTOGVEI")
+		description (strcat "REFLEKS P" _uARING_ " FORSIDEN AV INDRE HOVEDSIGNAL I INNKJ" _uOSLASH_ "RTOGVEI")
 		r 1.5
 	)
 	; Schematic symbol

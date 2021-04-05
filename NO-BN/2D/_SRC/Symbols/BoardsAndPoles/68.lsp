@@ -60,7 +60,7 @@
 		side 	6.0
 		p1		(list (* 0.00 side) (* 0.30 side))
 		p2		(list (* 0.30 side) (* 0.15 side))
-		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
+		attTen	'("HAST_10" (strcat "Kj" _OSLASH_ "-hastighet (10-ere):") "12")
 		attFive	'("HAST_5" "Blank eller 5" _ENTER_)
 	)
 	(DrawTriangle side) ; pointing down
@@ -87,7 +87,7 @@
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-68C-NEDSATT-HASTIGHET"
 		description "SKILT SIGNAL 68C NEDSATT KJØREHASTIGHET"
 		r 		2.75
-		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
+		attTen	'("HAST_10" (strcat "Kj" _OSLASH_ "-hastighet (10-ere):") "12")
 	)
 	(DrawCircle layDef_Zero r layDef_BoardOrPole_Wipeout)
 	(AddTextAttributeAtPos layDef_Zero _th250_ _origo_ attTen)
@@ -188,7 +188,7 @@
 		p7	'( 1.875 4.875)
 		p8	'( 0.000 0.750)
 		p9	'( 0.000 2.900)
-		attTen	'("HAST_10" (strcat "Kj" _oe_ "-hastighet (10-ere):") "12")
+		attTen	'("HAST_10" (strcat "Kj" _OSLASH_ "-hastighet (10-ere):") "12")
 	)
 	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 p3 p4 p5 p6 p7 _closedPolyline_) ; contour

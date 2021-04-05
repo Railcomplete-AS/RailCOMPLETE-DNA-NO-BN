@@ -13,15 +13,15 @@
 ; Thumbnail for pedestrian lane alignment selection
 
 (defun C:THUMBNAIL-PEDESTRIAN-LANE ( / )
-	(ALIGNMENT-GANGVEI)
+	(THUMBNAIL-PEDESTRIAN-LANE)
 )
 
 
 
-(defun ALIGNMENT-GANGVEI ( / blockName ) 
+(defun THUMBNAIL-PEDESTRIAN-LANE ( / blockName ) 
 	; Start drawing child, then draw adult, then scale down and reposition.
 	; Polyline starts at center neck and continues clockwise.
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-GANGVEI")
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-PEDESTRIAN-LANE")
 	(command 
 		; CHILD:
 		_POLYLINE_ 

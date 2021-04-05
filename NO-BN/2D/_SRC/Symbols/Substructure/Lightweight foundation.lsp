@@ -71,8 +71,8 @@
 
 	; Schematic symbol
 	(cond
-		((= variation "500") (setq description (strcat "SKILTFESTE, BETONGFOT " _uOE_ "60/H500")))
-		((= variation "700") (setq description (strcat "SKILTFESTE, BETONGFOT " _uOE_ "60/H700")))
+		((= variation "500") (setq description (strcat "SKILTFESTE, BETONGFOT " _uOSLASH_ "60/H500")))
+		((= variation "700") (setq description (strcat "SKILTFESTE, BETONGFOT " _uOSLASH_ "60/H700")))
 		(T (setq description "Something is fishy with SKILTFESTE BETONGFOT "))
 	)
 	(DrawProxySymbol layDef_FoundationLocator "F")
@@ -97,7 +97,7 @@
 (defun SKILTFESTE-BETONGFOT-60-200-1200 ( / blockName description angBias andArc r1 r2 pr fr )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BETONGFOT-60-200-1200"
-		description	(strcat "SKILTFESTE, BETONGFOT " _uOE_ "60/H1200")
+		description	(strcat "SKILTFESTE, BETONGFOT " _uOSLASH_ "60/H1200")
 		angBias 5.0	; Add a bias angle to the symbol
 		angArc 45.0	; Angular 'arc length' of "surrounding lines"
 		r1 0.18	; Ø360 surrounding lines in symbol (4 times 45-deg pieces)
@@ -143,7 +143,7 @@
 (defun SKILTFESTE-JORDFUNDAMENT-60-70 ( / blockName description pr r2 ang )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-JORDFUNDAMENT-60-700"
-		description	(strcat "SKILTFESTE, JORDFUNDAMENT " _uOE_ "60/H700")
+		description	(strcat "SKILTFESTE, JORDFUNDAMENT " _uOSLASH_ "60/H700")
 		pr		0.030 ; Ø060 pole
 		r2	0.181 ; 0.151 side wings from the inner pole/tube
 		ang		_angle45_
@@ -179,7 +179,7 @@
 (defun SKILTFESTE-JORDSPYD-60 ( / blockName description x y r )
 	(setq 
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-JORDSPYD-60"
-		description	(strcat "SKILTFESTE, JORDSPYD " _uOE_ "60/H600")
+		description	(strcat "SKILTFESTE, JORDSPYD " _uOSLASH_ "60/H600")
 		x   0.100	; Square symbolizes the L-iron bar
 		y	0.100
 		r	0.030	; For Ø60 poles, an L-iron with a Ø60 hose on top
@@ -261,7 +261,7 @@
 (defun SKILTFESTE-STRIPS-ELLER-PATENTBAAND ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-STRIPS-ELLER-PATENTBAAND"
-		description	(strcat "SKILTFESTE, STRIPS ELLER PATENTB" _uAA_ "ND")
+		description	(strcat "SKILTFESTE, STRIPS ELLER PATENTB" _uARING_ "ND")
 		r	0.030	; For Ø60 pole
 	)
 	(defun LocalGraphics (/)
@@ -315,7 +315,7 @@
 	;
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BRAKETT-MOT-GULV-60-308"
-		description	(strcat "SKILTFESTE, BRAKETT MOT GULV " _uOE_ "60/308")
+		description	(strcat "SKILTFESTE, BRAKETT MOT GULV " _uOSLASH_ "60/308")
 		s	0.255	; baseplate side
 		b	0.164	; baseplate holes spacing
 		pr 	0.030	; Ø60 pole radius
@@ -358,7 +358,7 @@
 (defun SKILTFESTE-BRAKETT-MOT-MAST ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BRAKETT-PAA-ANNEN-MAST"
-		description	(strcat "SKILTFESTE, BRAKETT P" _uAA_ " ANNEN MAST")
+		description	(strcat "SKILTFESTE, BRAKETT P" _uARING_ " ANNEN MAST")
 		r	0.030	; For Ø60 pole
 	)
 	(defun LocalGraphics (/)
@@ -392,7 +392,7 @@
 (defun SKILTFESTE-BRAKETT-MOT-VEGG-60-110 ( / blockName description backPlate wingStart wingLength wingIncrY )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-BRAKETT-MOT-VEGG-60-110"
-		description	(strcat "SKILTFESTE, VEGGFESTE " _uOE_ "60/110")
+		description	(strcat "SKILTFESTE, VEGGFESTE " _uOSLASH_ "60/110")
 		backPlate	0.200
 		wingStart	0.150
 		wingLength	0.150
@@ -453,8 +453,8 @@
 	;
 	;
 	(cond
-		((= variation 1) (setq t1 "ENKEL-SAMLELAAS"  t2 (strcat "ENKEL S-L" _uAA_ "S")  x1 0.170)) ; x1 = plate width
-		((= variation 2) (setq t1 "DOBBEL-SAMLELAAS" t2 (strcat "DOBBEL S-L" _uAA_ "S") x1 0.410))
+		((= variation 1) (setq t1 "ENKEL-SAMLELAAS"  t2 (strcat "ENKEL S-L" _uARING_ "S")  x1 0.170)) ; x1 = plate width
+		((= variation 2) (setq t1 "DOBBEL-SAMLELAAS" t2 (strcat "DOBBEL S-L" _uARING_ "S") x1 0.410))
 		((= variation 3) (setq t1 "LOKALSTILLER"     t2 "LOKALSTILLER"                  x1 0.148))
 		((= variation 4) (setq t1 "OVERDRAGSTRAFO"   t2 "OVERDRAGSTRAFO"                x1 0.195))
 	)
@@ -518,13 +518,13 @@
 	; Dersom rørmasten benyttes kun for små skap så påsettes svart plasthette S.040149 høyde 35+ca10 = ca 45 mm høy, 10mm over topp rørmast.
 	(cond
 		((= variation 1) (setq r 0.038 d "76"  t1 "DS-OG-TSS-2000"         t2 "DVERGSIGNAL / TOGSPORSIGNAL, h=2000 (910+1090)"))
-		((= variation 2) (setq r 0.038 d "76"  t1 "HOEY-DS-OG-TSS-3000"    t2 (strcat "H" _uOE_ "Y DVERG / H" _uOE_ "YT TOGSPORSIGNAL, h=3000 (910+2090)")))
+		((= variation 2) (setq r 0.038 d "76"  t1 "HOEY-DS-OG-TSS-3000"    t2 (strcat "H" _uOSLASH_ "Y DVERG / H" _uOSLASH_ "YT TOGSPORSIGNAL, h=3000 (910+2090)")))
 		((= variation 3) (setq r 0.038 d "76"  t1 "KRYSSVEKSELSIGNAL-1600" t2 "KRYSSVEKSELSIGNAL, h=1600 (910+690)"))
-		((= variation 4) (setq r 0.064 d "127" t1 "SIGNAL-3200"            t2 (strcat "SIGNAL P" _uAA_ " KORT MAST, h=3200")))
+		((= variation 4) (setq r 0.064 d "127" t1 "SIGNAL-3200"            t2 (strcat "SIGNAL P" _uARING_ " KORT MAST, h=3200")))
 	)
 	(setq 
 		blockName	(strcat "NO-BN-2D-JBTSI-ROERMAST-" d "-MED-LJERN-FOR-" t1)
-		description	(strcat _uOE_ d " R" _uOE_ "RMAST MED L-JERN FOT FOR " t2)
+		description	(strcat _uOSLASH_ d " R" _uOSLASH_ "RMAST MED L-JERN FOT FOR " t2)
 		; Actual measures from construction drawing:
 		ri (* 0.9 r) ; Inner diameter of mast is approx 9/10 of outer diameter
 		xBar 0.500 ; L-bar foot length

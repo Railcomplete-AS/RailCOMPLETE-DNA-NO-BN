@@ -13,10 +13,10 @@
 ; Thumbnail for cable duct alignment selection
 
 (defun C:THUMBNAIL-CABLE-DUCT ( / )
-	(ALIGNMENT-KABELKANAL-ETTLOEPS-300)
-	(ALIGNMENT-KABELKANAL-ETTLOEPS-400)
-	(ALIGNMENT-KABELKANAL-TOLOEPS-620)
-	(ALIGNMENT-KABELKANAL-TRELOEPS-620)
+	(THUMBNAIL-CABLE-DUCT-1-CHAMBER-300)
+	(THUMBNAIL-CABLE-DUCT-1-CHAMBER-400)
+	(THUMBNAIL-CABLE-DUCT-2-CHAMBER-620)
+	(THUMBNAIL-CABLE-DUCT-3-CHAMBER-620)
 )
 
 
@@ -24,8 +24,8 @@
 
 ; 1-løps skal ha 50 mm lokk, 2- og 3-løps har 70 mm lokk. Overkant lokk bygges normalt på SOK-10 cm. Innsettingspunkt for kanaler er senter underkant kanal.
 
-(defun ALIGNMENT-KABELKANAL-ETTLOEPS-300 ( / blockName ) 
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-ETTLOEPS-300")
+(defun THUMBNAIL-CABLE-DUCT-1-CHAMBER-300 ( / blockName ) 
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-CABLE-DUCT-1-CHAMBER-300")
 	(command 
 		_POLYLINE_ 
 			_origo_ 
@@ -47,8 +47,8 @@
   
   
   
-(defun ALIGNMENT-KABELKANAL-ETTLOEPS-400 ( / blockName ) 
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-ETTLOEPS-400")
+(defun THUMBNAIL-CABLE-DUCT-1-CHAMBER-400 ( / blockName ) 
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-CABLE-DUCT-1-CHAMBER-400")
 	(command 
 		_POLYLINE_ 
 			_origo_ 
@@ -70,8 +70,8 @@
 
   
   
-(defun ALIGNMENT-KABELKANAL-TOLOEPS-620 ( / blockName ) 
-  (setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-TOLOEPS-620")
+(defun THUMBNAIL-CABLE-DUCT-2-CHAMBER-620 ( / blockName ) 
+  (setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-CABLE-DUCT-2-CHAMBER-620")
 	(command 
 		_POLYLINE_ 
 			_origo_ 
@@ -100,8 +100,8 @@
 
   
   
-(defun ALIGNMENT-KABELKANAL-TRELOEPS-620 ( / blockName ) 
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-KABELKANAL-TRELOEPS-620")
+(defun THUMBNAIL-CABLE-DUCT-3-CHAMBER-620 ( / blockName ) 
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-CABLE-DUCT-3-CHAMBER-620")
 	(command 
 		_POLYLINE_ 
 			_origo_ 

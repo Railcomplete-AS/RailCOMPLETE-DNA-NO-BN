@@ -27,7 +27,7 @@
 (defun AAK ( len / blockName description )
 	(setq 
 		blockName (strcat "NO-BN-2D-JBTKL-AAK-" (rtos (* 1000 len) _decimal_ 0))
-		description (strcat "KL-" _uAA_ "K " (rtos len _decimal_ 0) " METER")
+		description (strcat "KL-" _uARING_ "K " (rtos len _decimal_ 0) " METER")
 	)
 
 	; Schematic symbol
@@ -51,7 +51,7 @@
 (defun UTLIGGERAAK ( len / blockName description )
 	(setq 
 		blockName (strcat "NO-BN-2D-JBTKL-AAK-UTLIGGERAAK-" (rtos (* 1000 len) _decimal_ 0))
-		description (strcat "KL UTLIGGER-" _uAA_ "K " (rtos len _decimal_ 0) " METER")
+		description (strcat "KL UTLIGGER-" _uARING_ "K " (rtos len _decimal_ 0) " METER")
 	)
 
 	; Schematic symbol

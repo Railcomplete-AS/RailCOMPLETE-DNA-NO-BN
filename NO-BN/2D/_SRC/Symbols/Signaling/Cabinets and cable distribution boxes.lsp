@@ -60,7 +60,7 @@
 	;                 open
     (setq 
 		blockName (strcat "NO-BN-2D-JBTSI-SKAP-APPARATSKAP-STORT-" door)
-		description (strcat "APPARATSKAP, STORT, " door " D" _uOE_ "R")
+		description (strcat "APPARATSKAP, STORT, " door " D" _uOSLASH_ "R")
 		x	9.0		; schematic width
 		y	4.5		; schematic depth
 		gx	1.200	; geo width

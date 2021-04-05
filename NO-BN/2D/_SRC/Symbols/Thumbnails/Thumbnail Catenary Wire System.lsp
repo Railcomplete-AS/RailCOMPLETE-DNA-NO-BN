@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Thumbnail Catenary.lsp
+; Thumbnail Catenary Wire System.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -13,12 +13,12 @@
 ; Thumbnail for contact wire and catenary alignment selection
 
 (defun C:THUMBNAIL-CATENARY ( / )
-	(ALIGNMENT-KONTAKTLEDNINGSOPPHENG)
+	(THUMBNAIL-CATENARY-WIRE-SYSTEM)
 )
 
 
 
-(defun ALIGNMENT-KONTAKTLEDNINGSOPPHENG ( / 
+(defun THUMBNAIL-CATENARY-WIRE-SYSTEM ( / 
 		blockName 
 		w1 w2
 		c1 c2 c3 c4 c5 c6 c7 c8 
@@ -39,7 +39,7 @@
 	;  
 	;   0    5 7       15        25        35        45      5355   60
 	(setq
-		blockName (strcat "NO-BN-2D-JBTKL-THUMBNAIL-KONTAKTLEDNINGSOPPHENG")
+		blockName (strcat "NO-BN-2D-JBTKL-THUMBNAIL-CATENARY-WIRE-SYSTEM")
 		; spanLength 60
 		; stitchWireLength 14
 		; systemHeight (* 1.8 5)  ; System height is exaggerated 10-fold in Z direction

@@ -13,14 +13,14 @@
 ; Thumbnail for escape route alignment selection (from tunnels, e.g. side-tunnels where distances shall be measured and depicted)
 
 (defun C:THUMBNAIL-ESCAPE-ROUTE ( / )
-	(ALIGNMENT-ROEMNINGSVEI)
+	(THUMBNAIL-ESCAPE-ROUTE)
 )
 
 
 
-(defun ALIGNMENT-ROEMNINGSVEI ( / blockName ) 
+(defun THUMBNAIL-ESCAPE-ROUTE ( / blockName ) 
 	; Pictogram featuring a running adult and an escape route doorway passage.
-	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-ROEMNINGSVEI")
+	(setq blockName "NO-BN-2D-JBTUB-THUMBNAIL-ESCAPE-ROUTE")
 	(command 
 		; PERSON:
 		_POLYLINE_ 

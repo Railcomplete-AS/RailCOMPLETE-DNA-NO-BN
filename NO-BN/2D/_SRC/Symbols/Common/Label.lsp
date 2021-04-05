@@ -14,53 +14,53 @@
 
 (defun C:LABEL ( / )
 	(TraceLevel3 "...LABEL A-1-0")
-		(NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLB-018)
-		(NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLT-018)
-		(NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRB-018)
-		(NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRT-018)
+		(LABEL-A-1-0-VLB-018)
+		(LABEL-A-1-0-VLT-018)
+		(LABEL-A-1-0-VRB-018)
+		(LABEL-A-1-0-VRT-018)
 		
 	(TraceLevel3 "...LABEL B-1-0")
-		(NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLB-018)
-		(NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLT-018)
-		(NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRB-018)
-		(NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRT-018)
+		(LABEL-B-1-0-HLB-018)
+		(LABEL-B-1-0-HLT-018)
+		(LABEL-B-1-0-HRB-018)
+		(LABEL-B-1-0-HRT-018)
 		
 	(TraceLevel3 "...LABEL C-1-0")
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLB-025)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLT-025)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRB-025)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRT-025)
+		(LABEL-C-1-0-HLB-025)
+		(LABEL-C-1-0-HLT-025)
+		(LABEL-C-1-0-HRB-025)
+		(LABEL-C-1-0-HRT-025)
 		
 	(TraceLevel3 "...LABEL C-1-1")
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLT-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRT-025-018)
+		(LABEL-C-1-1-HLB-025-018)
+		(LABEL-C-1-1-HLT-025-018)
+		(LABEL-C-1-1-HRB-025-018)
+		(LABEL-C-1-1-HRT-025-018)
 		
 	(TraceLevel3 "...LABEL C-1-2")
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLT-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRT-025-018)
+		(LABEL-C-1-2-HLB-025-018)
+		(LABEL-C-1-2-HLT-025-018)
+		(LABEL-C-1-2-HRB-025-018)
+		(LABEL-C-1-2-HRT-025-018)
 		
 	(TraceLevel3 "...LABEL D-1-1")
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLT-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRT-025-018)
+		(LABEL-D-1-1-HLB-025-018)
+		(LABEL-D-1-1-HLT-025-018)
+		(LABEL-D-1-1-HRB-025-018)
+		(LABEL-D-1-1-HRT-025-018)
 		
 	(TraceLevel3 "...LABEL D-1-2")
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLT-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRB-025-018)
-		(NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRT-025-018)
+		(LABEL-D-1-2-HLB-025-018)
+		(LABEL-D-1-2-HLT-025-018)
+		(LABEL-D-1-2-HRB-025-018)
+		(LABEL-D-1-2-HRT-025-018)
 )
 	
 	
 	
-(defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLB-018 ( / blockName description )
+(defun LABEL-A-1-0-VLB-018 ( / blockName description )
 	(setq 
-		blockName	"NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLB-018"
+		blockName	"NO-BN-2D-JBTFE-LABEL-A-1-0-VLB-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,10" _ENTER_)
@@ -70,9 +70,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLT-018 ( / blockName description )
+(defun LABEL-A-1-0-VLT-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-A-1-0-VLT-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-A-1-0-VLT-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,10" _ENTER_)
@@ -82,9 +82,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRB-018 ( / blockName description )
+(defun LABEL-A-1-0-VRB-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRB-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-A-1-0-VRB-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,10" _ENTER_)
@@ -94,9 +94,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRT-018 ( / blockName description )
+(defun LABEL-A-1-0-VRT-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-A-1-0-VRT-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-A-1-0-VRT-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,10" _ENTER_)
@@ -107,9 +107,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLB-018 ( / blockName description )
+(defun LABEL-B-1-0-HLB-018 ( / blockName description )
 	(setq
-		blockName "NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLB-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-B-1-0-HLB-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "-10,3" _ENTER_)
@@ -118,9 +118,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLT-018 ( / blockName description )
+(defun LABEL-B-1-0-HLT-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-B-1-0-HLT-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-B-1-0-HLT-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "-10,0" _origo_ "0,3" _ENTER_)
@@ -130,9 +130,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRB-018 ( / blockName description )
+(defun LABEL-B-1-0-HRB-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRB-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-B-1-0-HRB-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "10,3" _ENTER_)
@@ -141,9 +141,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRT-018 ( / blockName description )
+(defun LABEL-B-1-0-HRT-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-B-1-0-HRT-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-B-1-0-HRT-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "10,3" _ENTER_)
@@ -154,9 +154,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLB-025 ( / blockName description )
+(defun LABEL-C-1-0-HLB-025 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLB-025"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-0-HLB-025"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 (command _LINE_ "0,3" _origo_ "-3,3" "-21,3" _ENTER_)
@@ -165,9 +165,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLT-025 ( / blockName description )
+(defun LABEL-C-1-0-HLT-025 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-0-HLT-025"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-0-HLT-025"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,-3" _origo_ "-3,-3" "-21,-3" _ENTER_)
@@ -176,9 +176,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRB-025 ( / blockName description )
+(defun LABEL-C-1-0-HRB-025 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRB-025"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-0-HRB-025"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,3" _origo_ "3,3" "21,3" _ENTER_)
@@ -187,9 +187,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRT-025 ( / blockName description )
+(defun LABEL-C-1-0-HRT-025 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-0-HRT-025"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-0-HRT-025"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,-3" _origo_ "3,-3" "21,-3" _ENTER_)
@@ -198,9 +198,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLB-025-018 ( / blockName description )
+(defun LABEL-C-1-1-HLB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-1-HLB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,3" _origo_ "-3,3" "-21,3" _ENTER_)
@@ -210,9 +210,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLT-025-018 ( / blockName description )
+(defun LABEL-C-1-1-HLT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-1-HLT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-1-HLT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "-3,0" "-21,0" _ENTER_)
@@ -223,9 +223,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRB-025-018 ( / blockName description )
+(defun LABEL-C-1-1-HRB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-1-HRB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,3" _origo_ "3,3" "21,3" _ENTER_)
@@ -235,9 +235,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRT-025-018 ( / blockName description )
+(defun LABEL-C-1-1-HRT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-1-HRT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-1-HRT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "3,0" "21,0" _ENTER_)
@@ -248,9 +248,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLB-025-018 ( / blockName description )
+(defun LABEL-C-1-2-HLB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-2-HLB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,3" _origo_ "-3,3" "-21,3" _ENTER_)
@@ -261,9 +261,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLT-025-018 ( / blockName description )
+(defun LABEL-C-1-2-HLT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-2-HLT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-2-HLT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "-3,0" "-21,0" _ENTER_)
@@ -275,9 +275,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRB-025-018 ( / blockName description )
+(defun LABEL-C-1-2-HRB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-2-HRB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,-3" "3,0" "21,0" _ENTER_)
@@ -288,9 +288,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRT-025-018 ( / blockName description )
+(defun LABEL-C-1-2-HRT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-C-1-2-HRT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-C-1-2-HRT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,3" "3,0" "21,0" _ENTER_)
@@ -302,9 +302,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLB-025-018 ( / blockName description )
+(defun LABEL-D-1-1-HLB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-1-HLB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,6" _origo_ _ENTER_)
@@ -315,9 +315,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLT-025-018 ( / blockName description )
+(defun LABEL-D-1-1-HLT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-1-HLT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-1-HLT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,6" _origo_ _ENTER_)
@@ -329,9 +329,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRB-025-018 ( / blockName description )
+(defun LABEL-D-1-1-HRB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-1-HRB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,6" _origo_ _ENTER_)
@@ -342,9 +342,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRT-025-018 ( / blockName description )
+(defun LABEL-D-1-1-HRT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-1-HRT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-1-HRT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,6" _origo_ _ENTER_)
@@ -356,9 +356,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLB-025-018 ( / blockName description )
+(defun LABEL-D-1-2-HLB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-2-HLB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,6" _origo_ _ENTER_)
@@ -370,9 +370,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLT-025-018 ( / blockName description )
+(defun LABEL-D-1-2-HLT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-2-HLT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-2-HLT-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,-6" _ENTER_)
@@ -384,9 +384,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRB-025-018 ( / blockName description )
+(defun LABEL-D-1-2-HRB-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRB-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-2-HRB-025-018"
 		description (strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ "0,6" _origo_ _ENTER_)
@@ -398,9 +398,9 @@
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
-(defun NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRT-025-018 ( / blockName description )
+(defun LABEL-D-1-2-HRT-025-018 ( / blockName description )
 	(setq 
-		blockName "NO-BN-2D-JBTFE-ETIKETT-D-1-2-HRT-025-018"
+		blockName "NO-BN-2D-JBTFE-LABEL-D-1-2-HRT-025-018"
 		description	(strcat "ETIKETT " (substr blockName 24 13))
 	)
 	(command _LINE_ _origo_ "0,-6" _ENTER_)

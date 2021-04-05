@@ -74,7 +74,7 @@
 	; Wall-mounted (no base), upright knee mast with 2 lanterns
 	(setq 
 		blockName (strcat "NO-BN-2D-JBTSI-SIGNAL-TOGSPORSIGNAL-3-" side)
-		description (strcat "TOGSPORSIGNAL P" _uAA_ " KNE, TO ARMER")
+		description (strcat "TOGSPORSIGNAL P" _uARING_ " KNE, TO ARMER")
 	)
 
 	; Schematic symbol

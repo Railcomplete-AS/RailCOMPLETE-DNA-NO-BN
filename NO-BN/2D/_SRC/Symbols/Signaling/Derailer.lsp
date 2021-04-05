@@ -27,9 +27,9 @@
 
 (defun DERAILER ( variation state quadrant / variationText stateText blockName description x y a1 a2 ang pt )
 	(setq
-		variationText	(cond ((= variation _single_) "ENKEL") (T "DOBBEL"))
-		stateText		(cond ((= state _inactive_) "AVLAGT") (T "PAALAGT"))
-		blockName 	(strcat "NO-BN-2D-JBTOB-SPOROBJEKT-SPORSPERRE" "-" variationText "-" stateText "-" (rtos quadrant 2 0))
+		variationText	(cond ((= variation _single_) "SINGLE") (T "DOUBLE"))
+		stateText		(cond ((= state _inactive_) "INACTIVE") (T "ACTIVE"))
+		blockName 	(strcat "NO-BN-2D-JBTOB-TRACK-OBJECT-DERAILER" "-" variationText "-" stateText "-" (rtos quadrant 2 0))
 		description	(strcat variationText " SPORSPERRE, " stateText)
 		x 6.0		; Box 6x3 with diagonal, and extension as arrow
 		y 3.0

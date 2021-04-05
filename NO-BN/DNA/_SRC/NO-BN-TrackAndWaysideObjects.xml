@@ -18,10 +18,8 @@
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	SPORVEKSELRELATERTE OBJEKTER
-	KO-???
-	Objekter i tilknytning til sporveksel
+	TRACK AND EMBANKMENT
+	OBJECTS RELATED TO TURNOUTS
 =========================================================================================================-->
 	<!--TODO Modellere ulike typer tungeruller, glideskoplater, osv??  -->
 	<!--TODO Modellere ulike typer skinner, sviller og skinnebefestigelser -->
@@ -29,19 +27,9 @@
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	SPOR
-	KO-SPO Spor
-	Kan skapes med import av LandXML, import fra DWG, tegne fra scratch, konvertere fra 2D/3D polyline.
-	TODO: 2019-06-21 Fjerne AlignmentSystem i sin nåværende form. 2020-10-14 CLFEY: Check IfcRail def first.
+	TRACK AND EMBANKMENT
+	RAILWAY TRACK
 =========================================================================================================-->
-	<!-- TODO 2020-10-14 CLFEY: Remove deprecated code for NOBN_trk_CANTGAUGE() -->
-	<!-- <LuaFunction Name="NOBN_trk_CANTGAUGE()" ReturnType="Double" -->
-		<!-- Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." > -->
-		<!-- <Constructor>Double NOBN_trk_CANTGAUGE()</Constructor> -->
-		<!-- <Formula>function NOBN_trk_CANTGAUGE() return 1.5 end</Formula> -->
-	<!-- </LuaFunction> -->
-
 	<!-- Note: TrackGauge is needed by KO-SKI functions, which operate on already offset'ed rails which have no sensible cantGauge or trackGauge values -->
 	<LuaFunction Name="NOBN_trk_TRACKGAUGE()" ReturnType="Double"
 		Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." >
@@ -87,7 +75,7 @@
 		<!--Kategori "spor" er et geografisk spor med alignment data.-->
 		<!--TODO 2019-09-01 CLFEY Definere en ny klasse for "skjematisk spor", som kan relatere seg til et geografisk spor -->
 
-		<CustomAttribute DataType="String" Name="InclinedRailProfile" DisplayName="Skråstilt skinneprofil" DefaultValue="1:20"
+		<CustomAttribute DataType="Enumeration" Name="InclinedRailProfile" DisplayName="Skråstilt skinneprofil" DefaultValue="1:20"
 			Description="Rails are either upright or inclined 1:20 [ Opprett | 1:20 ]." >
 			<Values>
 				<Value>Opprett</Value>
@@ -146,80 +134,80 @@
 
 		<!-- If using sweep and formulas, a step size of 8.0 gives a few centimeters error sideways with R190 curves - a reasonable speed/error trade-off -->
 
-		<LuaExpression Name="Model3DName" ><Formula>_KO_SPO_Track_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_SPO_Track_Model3DName()" 
+		<LuaExpression Name="Model3DName" ><Formula>_KO_SPO_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_KO_SPO_Model3DName()" 
 			ReturnType="String"
 			Description="Obtains the 'Model3DName' for this track." >
 			<Formula>
-function _KO_SPO_Track_Model3DName()
-	if Variant == "Sviller og skinner" then
-		return Sweep3D and "NO-BN-SWEEP-KO-SPO-SVILLE-MED-SKINNER-ENKEL"
-						or "NO-BN-3D-KO-SPO-SVILLE-MED-SKINNER-ENKEL"
-
-	elseif Variant == "Sviller og skinner med ledeskinner" then
-		return Sweep3D and "NO-BN-SWEEP-KO-SPO-SVILLE-MED-SKINNER-OG-LEDESKINNER-ENKEL"
-						or "NO-BN-3D-KO-SPO-SVILLE-MED-SKINNER-OG-LEDESKINNER-ENKEL"
-
-	elseif Variant == "Kun ledeskinner" then
-		return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-CC536-LEDESKINNER-ENKEL"
-				or "NO-BN-3D-UKJENT"
-
-	elseif Variant == "Skinnestrenger 60E1" then
-		if InclinedRailProfile == "1:20" then
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-1_20"
-				or "NO-BN-3D-KO-SVI-SVILLE-BETONG-JBV60-DETALJERT-MED-SKINNER-60E1-1_20"
-		else
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-OPPRETT"
-				or "NO-BN-3D-UKJENT"
-		end
-
-	elseif Variant == "Skinnestrenger 60E1 med 54E3 ledeskinner" then
-		if InclinedRailProfile == "1:20" then
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-1_20-MED-LEDESKINNER-54E3"
-				or "NO-BN-3D-KO-SVI-SVILLE-BETONG-JBV60-DETALJERT-MED-SKINNER-60E1-1_20"
-		else --Opprett
-			return "NO-BN-3D-UKJENT"
-		end
-
-	elseif Variant == "Skinnestrenger 54E3 ledeskinner" then
-		if InclinedRailProfile == "1:20" then
-			return "NO-BN-3D-UKJENT"
-		else --Opprett
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-CC536-LEDESKINNER-54E3"
-				or "NO-BN-3D-UKJENT"
-		end
-
-	elseif Variant == "Skinnestrenger 54E3" then
-		if InclinedRailProfile == "1:20" then
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-54E3-1_20"
-				or "NO-BN-3D-UKJENT"
-		else --Opprett
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-54E3-OPPRETT"
-				or "NO-BN-3D-UKJENT"
-		end
-
-	elseif Variant == "Skinnestrenger 49E1" then
-		if InclinedRailProfile == "1:20" then
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-49E1-1_20"
-				or "NO-BN-3D-UKJENT"
-		else --Opprett
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-49E1-OPPRETT"
-				or "NO-BN-3D-UKJENT"
-		end
-
-	elseif Variant == "Skinnestrenger 39 Kg" then
-		if InclinedRailProfile == "1:20" then
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-39KG-1_20"
-				or "NO-BN-3D-UKJENT"
-		else --Opprett
-			return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-39KG-OPPRETT"
-				or "NO-BN-3D-UKJENT"
-		end
-
-	else
-		return "Ukjent Variant ["..Variant.."]",_warning
-	end
-end
+				function _KO_SPO_Model3DName()
+					if Variant == "Sviller og skinner" then
+						return Sweep3D and "NO-BN-SWEEP-KO-SPO-SVILLE-MED-SKINNER-ENKEL"
+										or "NO-BN-3D-KO-SPO-SVILLE-MED-SKINNER-ENKEL"
+				
+					elseif Variant == "Sviller og skinner med ledeskinner" then
+						return Sweep3D and "NO-BN-SWEEP-KO-SPO-SVILLE-MED-SKINNER-OG-LEDESKINNER-ENKEL"
+										or "NO-BN-3D-KO-SPO-SVILLE-MED-SKINNER-OG-LEDESKINNER-ENKEL"
+				
+					elseif Variant == "Kun ledeskinner" then
+						return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-CC536-LEDESKINNER-ENKEL"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+				
+					elseif Variant == "Skinnestrenger 60E1" then
+						if InclinedRailProfile == "1:20" then
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-1_20"
+								or "NO-BN-3D-KO-SVI-SVILLE-BETONG-JBV60-DETALJERT-MED-SKINNER-60E1-1_20"
+						else
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-OPPRETT"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						end
+				
+					elseif Variant == "Skinnestrenger 60E1 med 54E3 ledeskinner" then
+						if InclinedRailProfile == "1:20" then
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-60E1-1_20-MED-LEDESKINNER-54E3"
+								or "NO-BN-3D-KO-SVI-SVILLE-BETONG-JBV60-DETALJERT-MED-SKINNER-60E1-1_20"
+						else --Opprett
+							return "NO-BN-3D-FE-DIV-UKJENT"
+						end
+				
+					elseif Variant == "Skinnestrenger 54E3 ledeskinner" then
+						if InclinedRailProfile == "1:20" then
+							return "NO-BN-3D-FE-DIV-UKJENT"
+						else --Opprett
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-CC536-LEDESKINNER-54E3"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						end
+				
+					elseif Variant == "Skinnestrenger 54E3" then
+						if InclinedRailProfile == "1:20" then
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-54E3-1_20"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						else --Opprett
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-54E3-OPPRETT"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						end
+				
+					elseif Variant == "Skinnestrenger 49E1" then
+						if InclinedRailProfile == "1:20" then
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-49E1-1_20"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						else --Opprett
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-49E1-OPPRETT"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						end
+				
+					elseif Variant == "Skinnestrenger 39 Kg" then
+						if InclinedRailProfile == "1:20" then
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-39KG-1_20"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						else --Opprett
+							return Sweep3D and "NO-BN-SWEEP-KO-SKI-SPORVIDDE-1435-SKINNER-39KG-OPPRETT"
+								or "NO-BN-3D-FE-DIV-UKJENT"
+						end
+				
+					else
+						return "Ukjent Variant ["..Variant.."]",_warning
+					end
+				end
 			</Formula>
 		</LuaFunction>
 
@@ -228,24 +216,24 @@ end
 
 		<PropertyPrompt Key="code" DefaultValue="Spor" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Sviller og skinner" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SPOR-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Sviller og skinner" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-RAILWAY-TRACK-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
 			<SetValue Key="AlignmentSystem" Value="Normalspor 1435 mm" />
-			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasepunkt" />
-			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasepunkt" />
+			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasépunkt" />
+			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasépunkt" />
 			<SetValue Key="HorizontalGeometrySectionObjectTypeRef" Value="KO-HOS Horisontal traseseksjon" />
 			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="KO-VES Vertikal traseseksjon" />
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Sviller og skinner med ledeskinner" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-SPOR-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Sviller og skinner med ledeskinner" DisplayBlockName="NO-BN-2D-JBTOB-THUMBNAIL-RAILWAY-TRACK-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
 			<SetValue Key="AlignmentSystem" Value="Normalspor 1435 mm" />
-			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasepunkt" />
-			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasepunkt" />
+			<SetValue Key="HorizontalGeometryPointObjectTypeRef" Value="KO-HOT Horisontaltrasépunkt" />
+			<SetValue Key="VerticalGeometryPointObjectTypeRef" Value="KO-VET Vertikaltrasépunkt" />
 			<SetValue Key="HorizontalGeometrySectionObjectTypeRef" Value="KO-HOS Horisontal traseseksjon" />
 			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="KO-VES Vertikal traseseksjon" />
 		</InsertAlignment>
@@ -395,19 +383,18 @@ end
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	KARAKTERISTISKE TRASEPUNKTER
-	KO-HOT Horisontaltrasepunkt
-	Karakteristiske trasépunkter for horisontalgeometri, for eksport til Banedata
+	TRACK AND EMBANKMENT
+	CHARACTERISTIC POINT OF AXIS
+	Characteristic points for horizontal geometry (between two consecutive segments)
 =========================================================================================================-->
-	<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-HOT Horisontaltrasepunkt"
+	<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-HOT Horisontaltrasépunkt"
 				Layer="JBTOB_KO_HOT" Color="ByLayer"
-				Group="Overbygning/Karakteristiske trasepunkter"
+				Group="Overbygning/Karakteristiske trasépunkter"
 				AttAddX="0"
 				AttAddY="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}"
 				>
 				
-		<RelationSpace>horisontaltrasepunkt</RelationSpace>
+		<RelationSpace>horisontaltrasépunkt</RelationSpace>
 		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" />
@@ -508,7 +495,7 @@ end
 
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED-SCHEMATIC" AllowSymbolMove="true">
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTOB-KARAKTERISTISK-TRASEPUNKT
+				NO-BN-2D-JBTOB-KARAKTERISTISK-trasépunkt
 			</BlockNameFormat>
 		</SymbolDefinition>
 
@@ -519,19 +506,18 @@ end
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	KARAKTERISTISKE TRASEPUNKTER
-	KO-VET Vertikaltrasepunkt
-	Karakteristiske trasépunkter for vertikalprofil, for eksport til Banedata
+	TRACK AND EMBANKMENT
+	CHARACTERISTIC POINT OF AXIS
+	Characteristic points for vertical profile (between two consecutive segments)
 =========================================================================================================-->
-	<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-VET Vertikaltrasepunkt"
+	<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-VET Vertikaltrasépunkt"
 				Layer="JBTOB_KO_VET" Color="ByLayer"
-				Group="Overbygning/Karakteristiske trasepunkter"
+				Group="Overbygning/Karakteristiske trasépunkter"
 				AttAddX="0"
 				AttAddY="{% assign boolsk = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if boolsk == 'True' %}180{% else %}0{% endif %}"
 				>
 				
-		<RelationSpace>vertikaltrasepunkt</RelationSpace>
+		<RelationSpace>vertikaltrasépunkt</RelationSpace>
 		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" />
@@ -607,10 +593,9 @@ end
 	
 	
 <!--========================================================================================================
-	OVERBYGNING
-	TRASESEKSJONER
-	KO-HOS Horisontal traseseksjon
-	Traséseksjoner - horisontal. Benyttes for å annotere sporet og være datakilde for KO-HOT.
+	TRACK AND EMBANKMENT
+	SEGMENT OF AXIS
+	Horizontal geometry segment
 =========================================================================================================-->
 	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="KO-HOS Horisontal traseseksjon"
 				Layer="JBTOB_KO_HOS" Color="ByLayer"
@@ -691,7 +676,7 @@ end
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 			<SetValue Key="SymbolFrame" Value="SectionFrame-2.75" />
-			<SetValue Key="DelimiterType" Value="KO-HOT Horisontaltrasepunkt" />
+			<SetValue Key="DelimiterType" Value="KO-HOT Horisontaltrasépunkt" />
 		</InsertPointObject>
 		
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true" >
@@ -709,10 +694,9 @@ end
 
 	
 <!--========================================================================================================
-	OVERBYGNING
-	TRASESEKSJONER
-	KO-VES Vertikal traseseksjon
-	Traséseksjoner - vertikal. Benyttes for å annotere sporet og være datakilde for KO-VET.
+	TRACK AND EMBANKMENT
+	SEGMENT OF AXIS
+	Vertical profile segment
 =========================================================================================================-->
 	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="KO-VES Vertikal traseseksjon"
 				Layer="JBTOB_KO_VES" Color="ByLayer"
@@ -740,7 +724,7 @@ end
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 			<SetValue Key="SymbolFrame" Value="SectionFrame-2.75" />
-			<SetValue Key="DelimiterType" Value="KO-VET Vertikaltrasepunkt" />
+			<SetValue Key="DelimiterType" Value="KO-VET Vertikaltrasépunkt" />
 		</InsertPointObject>
 		
 		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-SECTION-SYMBOL" AllowSymbolMove="true" >
@@ -758,9 +742,8 @@ end
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	PLATTFORMER
-	KO-PLF Plattformkant
+	TRACK AND EMBANKMENT
+	PLATFORMS
 =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KO-PLF Plattformkant"
 				Layer="JBTOB_KO_PLF" Color="ByLayer"
@@ -863,25 +846,25 @@ end
 			</Variant>
 		</Variants>
 		
-		<InsertPointObject VariantName="Fast" DisplayName="Fast sporstopper" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-FAST-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Fast" DisplayBlockName="NO-BN-2D-JBTOB-TRACK-OBJECT-SPORSTOPPER-FAST-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Glidbar" DisplayName="Glidbar sporstopper" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-GLIDBAR-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Glidbar" DisplayBlockName="NO-BN-2D-JBTOB-TRACK-OBJECT-SPORSTOPPER-GLIDBAR-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Hydraulisk" DisplayName="Hydraulisk sporstopper" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-HYDRAULISK-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Hydraulisk" DisplayBlockName="NO-BN-2D-JBTOB-TRACK-OBJECT-SPORSTOPPER-HYDRAULISK-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 
-		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER-FAST" AllowSymbolMove="true" >
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-TRACK-OBJECT-SPORSTOPPER-FAST" AllowSymbolMove="true" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -891,7 +874,7 @@ end
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-			NO-BN-2D-JBTOB-SPOROBJEKT-SPORSTOPPER
+			NO-BN-2D-JBTOB-TRACK-OBJECT-SPORSTOPPER
 			{% if variant == 'Fast' %}FAST
 			{% elsif variant == 'Glidbar' %}GLIDBAR
 			{% elsif variant == 'Hydraulisk' %}HYDRAULISK
@@ -906,10 +889,10 @@ end
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	OPPKJØRSBJELKER
-	KO-MVS Oppkjørsbjelke (Maskinelt Vedlikehold av Spor)
+	TRACK AND EMBANKMENT
+	PROTECTION BEAM AGAINST SNOW CLEARING MACHINES
 =========================================================================================================-->
+	<!-- KO-MVS Oppkjørsbjelke (Maskinelt Vedlikehold av Spor) -->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KO-MVS Oppkjørsbjelke"
 				Layer="JBTOB_KO_MVS" Color="ByLayer"
 				Group="Overbygning/Oppkjørsbjelker"
@@ -944,14 +927,14 @@ end
 			</Variant>
 		</Variants>
 		
-		<InsertPointObject VariantName="Oppkjørsbjelke, kort" DisplayBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Oppkjørsbjelke, kort" DisplayBlockName="NO-BN-2D-JBTOB-TRACK-OBJECT-OPPKJOERSBJELKE-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="false" />
 		</InsertPointObject>
 
 		<!-- Note: LeftSided == RightSided == false whenever DistanceToAlignment is zero - use 4e-4 as DistanceToAlignment. -->
-		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE" AllowSymbolMove="true" >
+		<SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-TRACK-OBJECT-OPPKJOERSBJELKE" AllowSymbolMove="true" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -961,7 +944,7 @@ end
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTOB-SPOROBJEKT-OPPKJOERSBJELKE-{{SymbolMode}}
+				NO-BN-2D-JBTOB-TRACK-OBJECT-OPPKJOERSBJELKE-{{SymbolMode}}
 			</BlockNameFormat>
 		</SymbolDefinition>
 

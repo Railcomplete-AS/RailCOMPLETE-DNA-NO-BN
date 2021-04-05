@@ -152,7 +152,7 @@
 	;Default insertion direction is "both", i.e. spanner is located at the track side of its bridge / tunnel suspension mast.
 	(setq
 		blockName "NO-BN-2D-JBTKL-KRAFTAVLASTING-STREVER-MED-FESTEPLATE-FOR-BRU-OG-TUNNEL-120"
-		description (strcat "KL KRAFTAVLASTING, STREVER MED FESTEPLATE FOR BRU OG TUNNEL, " _uOE_ "120")
+		description (strcat "KL KRAFTAVLASTING, STREVER MED FESTEPLATE FOR BRU OG TUNNEL, " _uOSLASH_ "120")
 	)
 	(command
 		; Base plate with holes for roof fastening (draw right side, then mirror left side):

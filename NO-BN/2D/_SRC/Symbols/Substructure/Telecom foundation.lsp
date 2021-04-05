@@ -83,7 +83,7 @@
 (defun BETONG-ANVISERSOEYLE ( / blockName description s1 radius1 radius_skrue radius_roer dist1 skrue_xy roer_y )
 	(setq
 		blockName "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-ANVISERSOEYLE"
-		description (strcat "BETONG ANVISERS" _uOE_ "YLE- FUNDAMENT 1500x1500x1000-" _uOE_ "600")
+		description (strcat "BETONG ANVISERS" _uOSLASH_ "YLE- FUNDAMENT 1500x1500x1000-" _uOSLASH_ "600")
 		s1 (/ 1.5 2)
 		radius1 0.3
 		radius_skrue 0.0120
@@ -150,7 +150,7 @@
 (defun BETONG-MONITOR ( / blockName description s1 radius1 radius_skrue radius_roer dist1 skrue_xy roer_y )
 	(setq
 		blockName "NO-BN-2D-JBTUB-FUNDAMENT-BETONG-MONITOR"
-		description (strcat "BETONG TELEMONITOR- FUNDAMENT 1000x1000x1000-" _uOE_ "600")
+		description (strcat "BETONG TELEMONITOR- FUNDAMENT 1000x1000x1000-" _uOSLASH_ "600")
 		s1 (/ 1.0 2)
 		radius1 0.3
 		radius_skrue 0.0120

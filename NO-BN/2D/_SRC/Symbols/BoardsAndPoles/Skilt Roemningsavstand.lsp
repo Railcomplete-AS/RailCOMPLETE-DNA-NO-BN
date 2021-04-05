@@ -27,17 +27,17 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-TREDJEPERSON-ROEMNINGSVEI-V"
-		description (strcat "R" _uOE_ "MNINGSAVSTAND MOT VENSTRE")
+		description (strcat "R" _uOSLASH_ "MNINGSAVSTAND MOT VENSTRE")
 		x 12.0
 		y 9.0
 		p0 (list (*  0.00 x) (*  0.3 y))
 		p1 (list (* -0.15 x) (*  0.0 y))
 		p3 (list (*  0.00 x) (* -0.3 y))
-		attMetersLeft	'("VDIST" (strcat "Avstand til r" _oe_ "mning mot venstre") "275")
+		attMetersLeft	'("VDIST" (strcat "Avstand til r" _OSLASH_ "mning mot venstre") "275")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
 	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
 
@@ -61,17 +61,17 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-TREDJEPERSON-ROEMNINGSVEI-H"
-		description (strcat "R" _uOE_ "MNINGSAVSTAND MOT H" _uOE_ "YRE")
+		description (strcat "R" _uOSLASH_ "MNINGSAVSTAND MOT H" _uOSLASH_ "YRE")
 		x 12.0
 		y 9.0
 		p0 (list (*  0.00 x) (*  0.3 y))
 		p2 (list (*  0.15 x) (*  0.0 y))
 		p4 (list (*  0.00 x) (* -0.3 y))
-		attMetersRight	'("HDIST" (strcat "Avstand til r" _oe_ "mning mot h" _oe_ "yre") "625")
+		attMetersRight	'("HDIST" (strcat "Avstand til r" _OSLASH_ "mning mot h" _OSLASH_ "yre") "625")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
 	(AddTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
 
@@ -95,7 +95,7 @@
 	;
 	(setq 
 		blockName "NO-BN-2D-SKILT-TREDJEPERSON-ROEMNINGSVEI-VH"
-		description (strcat "R" _uOE_ "MNINGSAVSTAND MOT H" _uOE_ "YRE OV VENSTRE")
+		description (strcat "R" _uOSLASH_ "MNINGSAVSTAND MOT H" _uOSLASH_ "YRE OV VENSTRE")
 		x 12.0
 		y 9.0
 		p0 (list (*  0.0  x) (*  0.3 y))
@@ -103,16 +103,16 @@
 		p3 (list (* -0.25 x) (* -0.3 y))
 		p2 (list (*  0.4  x) (*  0.0 y))
 		p4 (list (*  0.25 x) (* -0.3 y))
-		attMetersLeft	'("VDIST" (strcat "Avstand til r" _oe_ "mning mot venstre") "275")
-		attMetersRight	'("HDIST" (strcat "Avstand til r" _oe_ "mning mot h" _oe_ "yre") "625")
+		attMetersLeft	'("VDIST" (strcat "Avstand til r" _OSLASH_ "mning mot venstre") "275")
+		attMetersRight	'("HDIST" (strcat "Avstand til r" _OSLASH_ "mning mot h" _OSLASH_ "yre") "625")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
 	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOE_ "MNINGSVEI"))
+	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
 	(AddTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
 

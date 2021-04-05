@@ -30,7 +30,7 @@
 	;
 	(setq
 		blockName "NO-BN-2D-SKILT-TREDJEPERSON-NOEDTELEFON"
-		description (strcat "SKILT N" _uOE_ "DTELEFON")
+		description (strcat "SKILT N" _uOSLASH_ "DTELEFON")
 		x 4.5
 		y 4.5
 		p1  (list (* -0.328 x) (*  0.200 y))

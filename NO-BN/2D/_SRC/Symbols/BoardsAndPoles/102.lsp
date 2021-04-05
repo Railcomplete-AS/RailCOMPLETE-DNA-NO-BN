@@ -20,7 +20,7 @@
 	; Right arrow board
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-SIGNAL-102-1-PIL-H"
-		description (strcat "SKILT SIGNAL 102-1 PIL H" _uOE_ "YRE")
+		description (strcat "SKILT SIGNAL 102-1 PIL H" _uOSLASH_ "YRE")
 		x 6.0
 		y 3.0
 	)

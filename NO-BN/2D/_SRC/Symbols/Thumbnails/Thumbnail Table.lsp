@@ -13,13 +13,13 @@
 ; Thumbnail for pre-defined table object selection
 
 (defun C:THUMBNAIL-TABLE ( / )
-	(TABLE-GENERELL)
+	(THUMBNAIL-TABLE)
 )
 
 
 
-(defun TABLE-GENERELL (/ blockName x y) 
-	(setq blockName (strcat "NO-BN-2D-JBTFE-THUMBNAIL-TABELL-GENERELL")
+(defun THUMBNAIL-TABLE (/ blockName x y) 
+	(setq blockName (strcat "NO-BN-2D-JBTFE-THUMBNAIL-TABLE")
 		x (/ 5.0 2)
 		y (/ 3.0 2)
 	)

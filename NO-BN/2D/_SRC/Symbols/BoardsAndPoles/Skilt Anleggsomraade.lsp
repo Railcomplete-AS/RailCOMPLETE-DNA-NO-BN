@@ -27,7 +27,7 @@
 	; 
 	(setq
 		blockName "NO-BN-2D-SKILT-KJOERENDE-ANLEGGSOMRAADE-BEGYNNER"
-		description (Strcat "SKILT ANLEGGSOMR" _uAA_ "DE BEGYNNER")
+		description (Strcat "SKILT ANLEGGSOMR" _uARING_ "DE BEGYNNER")
 		x 6.0
 		y 4.5
 		p9  (list 0 (*  0.322 y))
@@ -36,7 +36,7 @@
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(AddTextAtPos layDef_Zero _th100_ p9 "Anleggs-")
-	(AddTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _aa_ "de"))
+	(AddTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _ARING_ "de"))
 	(AddTextAtPos layDef_Zero _th100_ p11 "jernbane")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigo description 0)
@@ -60,7 +60,7 @@
 	; 
 	(setq 
 		blockName "NO-BN-2D-SKILT-KJOERENDE-ANLEGGSOMRAADE-SLUTTER"
-		description (strcat "SKILT ANLEGGSOMR" _uAA_ "DE SLUTTER")
+		description (strcat "SKILT ANLEGGSOMR" _uARING_ "DE SLUTTER")
 		x 6.0
 		y 4.5
 		p1 (list (* -0.50 x) (* -0.30 y))
@@ -77,7 +77,7 @@
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(AddTextAtPos layDef_Zero _th100_ p9 "Anleggs-")
-	(AddTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _aa_ "de"))
+	(AddTextAtPos layDef_Zero _th100_ p10 (strcat "omr" _ARING_ "de"))
 	(AddTextAtPos layDef_Zero _th100_ p11 "jernbane")
 	(DrawLine layDef_Zero p1 p2)
 	(DrawLine layDef_Zero p3 p4)

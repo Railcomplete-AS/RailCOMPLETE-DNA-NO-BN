@@ -215,7 +215,7 @@
 	;
 	(setq
 		blockName	"NO-BN-2D-JBTKL-AVSPENNING-FJAER-ENKEL"
-		description	(strcat "KL AVSPENNING, 1 x FJ" _uAE_ "R")
+		description	(strcat "KL AVSPENNING, 1 x FJ" _uAELIG_ "R")
 		p1	'( -1.0  2.4)
 		p2	'(  1.0  2.4)
 		p3	'(  0.0  2.4) 
@@ -255,7 +255,7 @@
 	;
 	(setq
 		blockName	"NO-BN-2D-JBTKL-AVSPENNING-FJAER-DOBBEL"
-		description	(strcat "KL AVSPENNING, 2 x FJ" _uAE_ "R")
+		description	(strcat "KL AVSPENNING, 2 x FJ" _uAELIG_ "R")
 		p1	'( -1.0  2.4)
 		p2	'(  1.0  2.4)
 		p3	'(  0.0  2.4) 
