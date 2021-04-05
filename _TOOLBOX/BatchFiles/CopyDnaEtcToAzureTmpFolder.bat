@@ -86,11 +86,11 @@ if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
 :Noxcopy /Y /E /ITutorials
 
 	echo - Vector images (administration's logo etc):
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\VectorImages\*.xaml									%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\VectorImages
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\VectorImages\*.xaml									"..\TMP\%ADM%\VectorImages"
 
 	echo - WebLinks:
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\%ADM%-%RELEASE%-weblinks.xml   	         	%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks
-	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\Images\*.*									%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks\Images
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\%ADM%-%RELEASE%-weblinks.xml   	         	"..\TMP\%ADM%\WebLinks"
+	echo d | xcopy /Y /E /I /exclude:xcopyignore.txt ..\%ADM%\WebLinks\Images\*.*									"..\TMP\%ADM%\WebLinks\Images"
 
 	echo OFF
 	echo          *********************************************************************************
