@@ -30,12 +30,13 @@
 	TRACK AND EMBANKMENT
 	RAILWAY TRACK
 =========================================================================================================-->
+	<!-- TODO 2021-04-24 CLFEY Deprecated NOBN_trk_TRACKGAUGE - instead, we defined track gauge to 1.500 in inner rail object, functions shall use obj.AlignmentSystem.AlignmentGauge -->
 	<!-- Note: TrackGauge is needed by KO-SKI functions, which operate on already offset'ed rails which have no sensible cantGauge or trackGauge values -->
-	<LuaFunction Name="NOBN_trk_TRACKGAUGE()" ReturnType="Double"
-		Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." >
-		<Constructor>Double NOBN_trk_TRACKGAUGE()</Constructor>
-		<Formula>function NOBN_trk_TRACKGAUGE() return 1.435 end</Formula>
-	</LuaFunction>
+	<!-- <LuaFunction Name="NOBN_trk_TRACKGAUGE()" ReturnType="Double" -->
+		<!-- Description="Returns distance between rail head centers for normal-gauge track (1.5 meter)." > -->
+		<!-- <Constructor>Double NOBN_trk_TRACKGAUGE()</Constructor> -->
+		<!-- <Formula>function NOBN_trk_TRACKGAUGE() return 1.435 end</Formula> -->
+	<!-- </LuaFunction> -->
 	
 	<ObjectType DataType="eTrack" Class="RailwayAlignment" Name="KO-SPO Spor"
 				Layer="JBTOB_KO_SPO" Color="ByLayer"
@@ -294,8 +295,8 @@
 
 		<AlignmentSystems DefaultSystemName="Kjørekant" >
 			<AlignmentSystem Name="Kjørekant"
-				CantGauge="0.000"
-				AlignmentGauge="0.000"
+				CantGauge="1.500"
+				AlignmentGauge="1.435"
 				QuickMode3DLiftWithCant="false"
 		 />
 		</AlignmentSystems>
@@ -335,13 +336,14 @@
 					local tol = 0.050 --[m]
 					ps = alg.RcAlignment.StartPoint
 					pe = alg.RcAlignment.EndPoint
+					trackGauge = alg.AlignmentSystemAlignmentGauge
 					--Get point near midpoint of rail:
 					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
 					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
 					ts = getClosestTracks(ps.X,ps.Y):
 						filter(function (x)
 								local d = getAlignmentInfo(x.id,ps.X,ps.Y).DistanceToAlignment
-								return math.abs(math.abs(d) - NOBN_trk_TRACKGAUGE()/2.0) &lt; tol
+								return math.abs(math.abs(d) - trackGauge/2.0) &lt; tol
 							end)
 					n = getCollectionLength(ts)
 					if n == 0  then

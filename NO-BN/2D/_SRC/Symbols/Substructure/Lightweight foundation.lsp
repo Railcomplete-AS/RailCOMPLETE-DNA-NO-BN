@@ -207,7 +207,7 @@
 (defun SKILTFESTE-TILBAKEFYLT-GROP ( / blockName description r )
 	(setq
 		blockName	"NO-BN-2D-JBTUB-SKILTFESTE-TILBAKEFYLT-GROP"
-		description	"SKILTFTESTE, TILBAKEFYLT GROP"
+		description	"SKILTFESTE, TILBAKEFYLT GROP"
 		r	0.030	; For Ø60 pole
 	)
 	(defun LocalGraphics (/)

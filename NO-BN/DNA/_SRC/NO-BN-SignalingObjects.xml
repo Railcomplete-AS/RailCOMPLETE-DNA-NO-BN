@@ -57,7 +57,7 @@ function NOBN_sig_getBaliseGroupId()
 	if Variant == "Hastighetsbalisegruppe" then
 		a = "-H"
 	elseif Variant == "Signalhøyningsbalisegruppe" then
-		a = "-Schematic"
+		a = "-S"
 	elseif Variant == "Grensebalisegruppe" then
 		a = "-G"
 	elseif Variant == "Lenkingsbalisegruppe" then
@@ -283,7 +283,7 @@ function NOBN_sig_getBaliseTextAboveSymbol()
 			elseif t == "C" then
 				return ""
 			else
-				return "WARNING - Cannot determine text above balise symbol.",_warning,_info("Balise is neither A, B or C balise.")
+				return "?",_warning,_info("WARNING - Cannot determine text above balise symbol (balise is neither A, B or C balise).")
 			end
 		elseif bg.Variant == "ET-balisegruppe" then
 			if t == "A" then
@@ -297,7 +297,7 @@ function NOBN_sig_getBaliseTextAboveSymbol()
 			elseif t == "C" then
 				return ""
 			else
-				return "?",_warning,_info("Cannot determine text above balise symbol (neither A, B nor C balise).")
+				return "?",_warning,_info("WARNING - Cannot determine text above balise symbol (balise is neither A, B or C balise).")
 			end
 		elseif code:sub(-1) == "P" then
 			return "P"
@@ -444,7 +444,7 @@ function NOBN_sig_chkBaliseDistanceToTrackVertically()
 	hDiff = math.abs(getAlignmentInfo().Elevation - getAlignmentInfo(nearestId).Elevation)
 	if (hDiff &lt;= 0.8) then
 		-- Assume that closest other track is part of a point or crossing, but still accept 80 cm difference for diverging track profiles
-		return string.format("%.3f",hDiff)..": OK - Balise is close to another track, which we assume to represent the same elevation.",_ok
+		return string.format("%.3f",hDiff)..": OK - Balise is close to a neighbouring track which we consider to be part of a switch or crossing.",_ok
 	elseif (hDiff &gt; 0.8 and hDiff &lt;= 7.0) then 
 		return string.format("%.3f",hDiff)..": ERROR - Balise may be read by a train running in a track above/under us - increase vertical track separation or move balise.",_error
 	elseif (distance &lt;= 8.0) then 
@@ -2527,17 +2527,6 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<CustomAttribute DataType="String" Name="Bxyz" DisplayName="Bxyz" DefaultValue="" />
 		<CustomAttribute DataType="String" Name="Cxyz" DisplayName="Cxyz" DefaultValue="" />
 		-->
-		<CustomAttribute DataType="Enumeration" Name="Balisetype" DefaultValue="ATC2 parallellbaliser" >
-			<Values>
-				<Value>ATC2 parallellbaliser</Value>
-				<Value>ATC2 seriebaliser, store</Value>
-				<Value>ATC2 seriebaliser, små</Value>
-				<Value>Eurobaliser, store</Value>
-				<Value>Eurobaliser, små</Value>
-				<Value>Annen balisetype</Value>
-			</Values>
-		</CustomAttribute>
-				   
 		<Variants DefaultValue="ETCS L2 balisegruppe" >
 			<Variant Name="ETCS L2 balisegruppe" />
 			<Variant Name="Hovedsignalbalisegruppe" />
@@ -2678,6 +2667,17 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
+		<CustomAttribute DataType="Enumeration" Name="Balisetype" DefaultValue="ATC2 parallellbaliser" >
+			<Values>
+				<Value>ATC2 parallellbaliser</Value>
+				<Value>ATC2 seriebaliser, store</Value>
+				<Value>ATC2 seriebaliser, små</Value>
+				<Value>Eurobaliser, store</Value>
+				<Value>Eurobaliser, små</Value>
+				<Value>Annen balisetype</Value>
+			</Values>
+		</CustomAttribute>
+				   
 		<CustomAttribute DataType="String" Name="TekstOver" DisplayName="Tekst over" DefaultValue="" 
 			Description="Text above balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC tables 7.1 and 7.2."
 			ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" IncludeIn3DExport="true" />
@@ -2734,35 +2734,36 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextBalise" DisplayName="Avstand til neste balise" 
 			Description="
-			Below 2.35 meter: ERROR - Balise magnetic fields may merge - increase distance\n
-			2.35-2.8 meter: WARNING - Outside recommended tolerance - increase distance\n
-			2.8-3.2 meter: OK - The train will treat the balises as in the same group\n
-			3.2-3.5 meter: WARNING - Outside recommended tolerance - decrease distance\n
-			3.5-10.5 meter: ERROR - The train cannot determine balise group assignment\n
-			10.5-11.8 meter: WARNING - Outside recommended tolerance - Increase distance\n
-			Above 11.8 meter: OK - The train will treat the balises as belonging to different groups" />
+			Below 2.35 m: ERROR - Balise magnetic fields may merge - increase distance\n
+			2.35-2.8 m: WARNING - Outside recommended tolerance - increase distance\n
+			2.8-3.2 m: OK - The train will treat the balises as in the same group\n
+			3.2-3.5 m: WARNING - Outside recommended tolerance - decrease distance\n
+			3.5-10.5 m: ERROR - The train cannot determine balise group assignment\n
+			10.5-11.8 m: WARNING - Outside recommended tolerance - Increase distance\n
+			Above 11.8 m: OK - The train will treat the balises as belonging to different groups" />
 			
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousBalise" DisplayName="Avstand til forrige balise"
 			Description="
-			Below 2.35 meter: ERROR - Balise magnetic fields may merge - increase distance\n
-			2.35-2.8 meter: WARNING - Outside recommended tolerance - increase distance\n
-			2.8-3.2 meter: OK - The train will treat the balises as in the same group\n
-			3.2-3.5 meter: WARNING - Outside recommended tolerance - decrease distance\n
-			3.5-10.5 meter: ERROR - The train cannot determine balise group assignment\n
-			10.5-11.8 meter: WARNING - Outside recommended tolerance - Increase distance\n
-			Above 11.8 meter: OK - The train will treat the balises as belonging to different groups" />
+			Below 2.35 m: ERROR - Balise magnetic fields may merge - increase distance\n
+			2.35-2.8 m: WARNING - Outside recommended tolerance - increase distance\n
+			2.8-3.2 m: OK - The train will treat the balises as in the same group\n
+			3.2-3.5 m: WARNING - Outside recommended tolerance - decrease distance\n
+			3.5-10.5 m: ERROR - The train cannot determine balise group assignment\n
+			10.5-11.8 m: WARNING - Outside recommended tolerance - Increase distance\n
+			Above 11.8 m: OK - The train will treat the balises as belonging to different groups" />
 			
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackVertically" DisplayName="Avstand til spor i høyden"
 			Description="
-			Below 2 meter: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
-			2-2.6 meter: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 meter from neighbouring track (large balise) resp. 2.3 meter (minibalise) – increase distance\n
-			Over 2.6 meter: OK – Train in neighbouring track will pass without reading the balise" />
-			
+			&lt; 0.8 m: OK - Balise is close to a neighbouring track which we consider to be part of a switch or crossing\n
+			0.8-7.0 m: ERROR - Balise may be read by a train running in a track above/under us - increase vertical track separation or move balise\n
+			7.0-8.0 m: WARNING - Outside recommended tolerance - increase vertical track separation or move balise\n
+			&gt; 8.0m: OK - A Train in a track above/under us will pass without reading the balise" />
+
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackSideways" DisplayName="Avstand til nabospor"
 			Description="
-			Below 2 meter: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
-			2-2.6 meter: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 meter from neighbouring track (large balise) resp. 2.3 meter (minibalise) – increase distance\n
-			Over 2.6 meter: OK – Train in neighbouring track will pass without reading the balise" />
+			Below 2 m: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
+			2-2.6 m: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 m from neighbouring track (large balise) resp. 2.3 m (minibalise) – increase distance\n
+			Over 2.6 m: OK – Train in neighbouring track will pass without reading the balise" />
 		
 		<LuaExpression Name="TekstOver" ><Formula>NOBN_sig_getBaliseTextAboveSymbol()</Formula></LuaExpression>
 		<LuaExpression Name="TekstUnder" ><Formula>NOBN_sig_getBaliseTextBelowSymbol()</Formula></LuaExpression>
