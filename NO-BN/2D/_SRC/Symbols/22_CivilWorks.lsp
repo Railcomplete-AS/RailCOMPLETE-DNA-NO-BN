@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; 22_Substructure.lsp
+; 22_CivilWorks.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2021. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -10,14 +10,14 @@
 ;
 ;=========================================================================================================================
 
-; Substructure objects top-level LISP routine
+; Civil Works objects top-level LISP routine
 
-(setq f (strcat rootFolder "\\Symbols\\Substructure"))
+(setq f (strcat rootFolder "\\Symbols\\CivilWorks"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
 (LoadFolder f)
 
-(defun C:GENERATE-SUBSTRUCTURE-OBJECTS ( / )
+(defun C:GENERATE-CIVIL-WORKS-OBJECTS ( / )
 	(SetCadSystemDefaults)
 	(TraceLevel2 "CABINET-FOUNDATION")		(C:CABINET-FOUNDATION) ; Brukes både for store signalskap, gruppeskap, andre
 	(TraceLevel2 "MAST-FOUNDATION")			(C:MAST-FOUNDATION) ; Signalmaster og KL-master, bardunfester i bakken - store, som krever pakking av spor etterpå
