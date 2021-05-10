@@ -756,7 +756,7 @@ function NOBN_com_assistAssignEarthingAlignment(obj)
 			n = getCollectionLength(r)
 			d0 = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
 			d1 = getAlignmentInfo(r[1].id,obj).DistanceToAlignment
-			if math.abs(math.abs(d0-d1) - NOBN_trk_TRACKGAUGE()) &lt; gaugeTolerance then
+			if math.abs(math.abs(d0-d1) - r[0].AlignmentSystem.AlignmentGauge) &lt; gaugeTolerance then
 				--Pick closest un-insulated rail, although it is 'bad taste' if we thereby end up
 				--with objects earthed to both rails within one double-insulated track circuit:
 				return r[0]
@@ -3869,30 +3869,6 @@ end
   </Profiles>
  </DisplayGaugeSettings>
  <Relations>
-  <SourceSpace>markør</SourceSpace>
-  <Relation Name="Markør" AskForRelation="true" Color="4">
-   <TargetSpace>anything</TargetSpace>
-   <RelatesTo Prompt="Er markør for" Min="0" Max="inf"/>
-   <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
-  </Relation>
- </Relations>
- <Relations>
-  <SourceSpace>etikett</SourceSpace>
-  <Relation Name="Etikett" AskForRelation="true" Color="4">
-   <TargetSpace>anything</TargetSpace>
-   <RelatesTo Prompt="Er etikett for" Min="0" Max="inf"/>
-   <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
-  </Relation>
- </Relations>
- <Relations>
-  <SourceSpace>watch</SourceSpace>
-  <Relation Name="Watch" AskForRelation="true" Color="70">
-   <TargetSpace>anything</TargetSpace>
-   <RelatesTo Prompt="Is watch for" Min="0" Max="inf"/>
-   <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
-  </Relation>
- </Relations>
- <Relations>
   <SourceSpace>skilt</SourceSpace>
   <Relation Name="Montert på" AskForRelation="false" Color="120">
    <TargetSpace>skiltfeste</TargetSpace>
@@ -3944,7 +3920,7 @@ end
  <Relations>
   <SourceSpace>kl-annotering</SourceSpace>
   <Relation Name="KL-annotering" AskForRelation="true" Color="4">
-   <TargetSpace>anything</TargetSpace>
+   <TargetSpace>kontaktledning</TargetSpace>
    <RelatesTo Prompt="Er KL-annotering for" Min="0" Max="inf"/>
    <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
   </Relation>
@@ -4167,6 +4143,30 @@ end
    <TargetSpace>balisegruppe</TargetSpace>
    <RelatesTo Prompt="Tilhører" Min="1" Max="inf" NumberOfPromptsDuringInsertion="1"/>
    <ReverseRelatesTo Prompt="Inneholder" WarnAtSaturation="true" Min="2" Max="4" NumberOfPromptsDuringInsertion="4"/>
+  </Relation>
+ </Relations>
+ <Relations>
+  <SourceSpace>markør</SourceSpace>
+  <Relation Name="Markør" AskForRelation="true" Color="4">
+   <TargetSpace>anything</TargetSpace>
+   <RelatesTo Prompt="Er markør for" Min="0" Max="inf"/>
+   <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
+  </Relation>
+ </Relations>
+ <Relations>
+  <SourceSpace>etikett</SourceSpace>
+  <Relation Name="Etikett" AskForRelation="true" Color="4">
+   <TargetSpace>anything</TargetSpace>
+   <RelatesTo Prompt="Er etikett for" Min="0" Max="inf"/>
+   <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
+  </Relation>
+ </Relations>
+ <Relations>
+  <SourceSpace>watch</SourceSpace>
+  <Relation Name="Watch" AskForRelation="true" Color="70">
+   <TargetSpace>anything</TargetSpace>
+   <RelatesTo Prompt="Is watch for" Min="0" Max="inf"/>
+   <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
   </Relation>
  </Relations>
  <LuaFunction Name="NOBN_bnp_getBoardOrPoleName()" ReturnType="String" Description="Returns a short type name for signs (boards and poles), according to the object's variant.">
@@ -9620,7 +9620,7 @@ end
    </SnapPoints>
   </DisplayPointDefinitions>
  </ObjectType>
- <ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="SA-MSS ERTMS" Layer="JBTSI_SA_MSS" Color="ByLayer" Group="Skilt/ERTMS" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+ <ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="TFES_ERP ERTMS" Layer="JBTSI_SA_MSS" Color="ByLayer" Group="Skilt/ERTMS" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>ertms_skilt</RelationSpace>
   <AttachmentCategory Name="ertms_skilt"/>
   <AttachTo Category="ertms_skilt"/>
@@ -11853,6 +11853,7 @@ end	</Data>
   </LuaExpression>
   <Variants DefaultValue="Master">
    <Variant Name="Master"/>
+   <Variant Name="Mastetabell NOEIRH"/>
    <Variant Name="Utliggere"/>
    <Variant Name="Ledninger"/>
    <Variant Name="Barduner"/>
@@ -11916,7 +11917,7 @@ end	</Data>
        </Header>
       </Headers>
       <Width>20</Width>
-      <Data>string.format("%d",Spennlengde)</Data>
+      <Data>string.format("%d",SpanLength)</Data>
       <Title>Spenn-\Plengde</Title>
       <Sort/>
       <Guid>10272f0b-a413-49f6-bd6a-b520ea345d97</Guid>
@@ -12164,6 +12165,493 @@ end</Data>
     <SortOrder>
      <string>630b8470-4cee-4f85-875f-9634b9076eef</string>
      <string>71b321ec-4bc3-493d-974b-2b01236d720c</string>
+    </SortOrder>
+   </TableSpecification>
+  </InsertTable>
+  <InsertTable VariantName="Mastetabell NOEIRH" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-TABLE-Schematic">
+   <TableSpecification>
+    <Title>Mastetabell</Title>
+    <IncludeTitle>true</IncludeTitle>
+    <ShowInvisibleObjects>false</ShowInvisibleObjects>
+    <OMFilterList/>
+    <EnableLuaFilter>true</EnableLuaFilter>
+    <LuaFilter>RcType:sub(1,6) == "EH-MAS" and Alignment.name:match("1") ~= nil and isVisible() == true</LuaFilter>
+    <UseDataSetFilter>false</UseDataSetFilter>
+    <EnableCustomSettings>true</EnableCustomSettings>
+    <TitleTextHeight>3.5</TitleTextHeight>
+    <HeaderTextHeight>2.5</HeaderTextHeight>
+    <DataTextHeight>1.8</DataTextHeight>
+    <VerticalCellMargin>1</VerticalCellMargin>
+    <HorizontalCellMargin>1</HorizontalCellMargin>
+    <BlockScale>1</BlockScale>
+    <MinRowHeight>3</MinRowHeight>
+    <EnableWrap>false</EnableWrap>
+    <WrapDepth>270</WrapDepth>
+    <WrapSpacing>10</WrapSpacing>
+    <WrapDirection>Right</WrapDirection>
+    <RepeatHeaders>true</RepeatHeaders>
+    <VerticalNumbering>
+     <Enabled>false</Enabled>
+     <IsVertical>true</IsVertical>
+     <Location>Left</Location>
+     <NumberFormat>Numbers</NumberFormat>
+     <TextHeight>2</TextHeight>
+     <HideBorders>true</HideBorders>
+     <Alignment>MiddleCenter</Alignment>
+     <NumberingTitle>Vertical numbering</NumberingTitle>
+    </VerticalNumbering>
+    <HorizontalNumbering>
+     <Enabled>false</Enabled>
+     <IsVertical>false</IsVertical>
+     <Location>Bottom</Location>
+     <NumberFormat>Numbers</NumberFormat>
+     <TextHeight>2</TextHeight>
+     <HideBorders>true</HideBorders>
+     <Alignment>MiddleCenter</Alignment>
+     <NumberingTitle>Horizontal numbering</NumberingTitle>
+    </HorizontalNumbering>
+    <TableFormat>Standard</TableFormat>
+    <Font>RC-STANDARD</Font>
+    <Columns>
+     <ColumnSpecification>
+      <Guid>ebeae652-c017-4e38-bd24-c31a859dd006</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="Nr"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>Name</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>10272f0b-a413-49f6-bd6a-b520ea345d97</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="Spenn-\Plengde [m]"/>
+      </Headers>
+      <Width>20</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>(SpanLength == 0 and "" or string.format("%.01f",SpanLength))..(SpanLength2 == 0 and "" or string.format("/%.01f",SpanLength2))</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>eb169134-3c23-4575-8073-fa8da33a13a7</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="Mastetype"/>
+      </Headers>
+      <Width>20</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>if (string.find(Variant,"Hengemast")) then 
+												if (string.find(OcsMastProfile,"Ø120")) then
+													s = "HGM Ø120" 
+												elseif (string.find(OcsMastProfile,"100x100")) then
+													s = "HGM" 
+												elseif (string.find(OcsMastProfile,"150x100")) then
+													s = "HGM" 
+												elseif (string.find(OcsMastProfile,"200x100")) then
+													s = "HGM" 
+												else
+													s = "Ukjent Masteprofil ["..OcsMastProfile.."]",_warning
+												end
+												return s
+											else
+												return tostring(OcsMastProfile:gsub("eksisterende","eks."))
+											end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>cc20a186-debe-4ea2-954f-f7be1f77b7fe</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="Åk"/>
+      </Headers>
+      <Width>10</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>local s = "Er åk-mast for åk"
+				local h = "Er hengemast i åk"
+				local r,n = RC__getCollectionOfRelatedObjects(s)
+				local b,t = RC__getCollectionOfRelatedObjects(h)
+				
+				if n == 0 and t == 0 then
+					return ""
+				elseif n&gt;0 then
+					return r[0].code
+				elseif t&gt;0 then
+					return b[0].code
+				end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>5eeb2da8-04be-46f2-82a8-e33d3de50004</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="Retning"/>
+      </Headers>
+      <Width>10</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>-- "Mastens stilling" betyr egentlig "mastesymbol med utligger".
+				--
+				--   Nedenfor vil "*" bety enten O = gittermast, X = hengemast, 8 = bjelkemast G = GMB-mast
+				--
+				--   *-   Enkel utligger til høyre side i økende km-retning
+				--  -*    Enkel utligger til venstre side i økende km-retning
+				--   *=   Dobbel utligger til høyre side i økende km-retning
+				--  =*    Dobbel utligger til venstre side i økende km-retning
+				--
+				-- Kombinasjoner er tillatt - enkel/dobbel til begge sider.
+				--
+				
+				local symbol = "*"
+				if Variant:match("Henge") ~= nil then 
+					symbol = "X"
+				elseif Variant:match("GMB") ~= nil then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master. NB! Test på 'GMB' før 'B-mast'  
+					symbol = "G"
+				elseif Variant:match("B%-mast") ~= nil or Variant:match("H%-mast") ~= nil then 
+					symbol = "O"
+				elseif Variant:match("Bjelke") ~= nil then 
+					symbol = "O"
+				else
+					return "",_warning
+				end
+				
+				if (getCollectionLength(Relations["Er kl-mast for utligger"]) == 0) then
+					return "",_warning --Har ikke utligger
+				elseif (getCollectionLength(Relations["Er kl-mast for utligger"]) == 1) then
+					if (this.DistanceToAlignment - Relations["Er kl-mast for utligger"][0].DistanceToAlignment &gt; 0) then
+						return "-"..symbol
+					else 
+						return symbol.."-"
+					end
+				elseif (getCollectionLength(Relations["Er kl-mast for utligger"]) == 2) then
+					if (this.DistanceToAlignment - Relations["Er kl-mast for utligger"][0].DistanceToAlignment &gt; 0) then
+						return "="..symbol
+					else 
+						return symbol.."="
+					end
+				end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>f3d18f52-4971-46a6-a83b-0e834c0ea2f3</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="CL mast\PCL spor [m]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>string.format("%.02f",getAlignmentInfo().DistanceToAlignment)</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>be125708-f0f2-484a-8a30-0bf4f5ef351d</Guid>
+      <Headers>
+       <Header Name="Mast"/>
+       <Header Name="BaneData ID"/>
+      </Headers>
+      <Width>25</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tag</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>000c2d2c-237b-4553-9d80-abbc643c9a95</Guid>
+      <Headers>
+       <Header Name="Utligger"/>
+       <Header Name="Kth [m]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>local s = "Er kl-mast for utligger"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+				
+				if n == 0 or isVisible(r[0]) == false then 
+					return ""
+				elseif n == 1 then
+					return r[0].ContactWireHeight
+				elseif n == 2 then	
+				return r[0].ContactWireHeight.."/"..r[1].ContactWireHeight
+				end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>8c81f720-43ed-4520-a78f-19410c849895</Guid>
+      <Headers>
+       <Header Name="Utligger"/>
+       <Header Name="Sh [m]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>local s = "Er kl-mast for utligger"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+				
+				if n == 0 or isVisible(r[0]) == false then 
+					return ""
+				elseif n == 1 then
+					return r[0].SystemHeight
+				elseif n == 2 then	
+				return r[0].SystemHeight.."/"..r[1].SystemHeight
+				end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>00e2d0b2-3318-4838-93bd-7528d83478b2</Guid>
+      <Headers>
+       <Header Name="Utligger"/>
+       <Header Name="Sikk\PSakk [m]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>local s = "Er kl-mast for utligger"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+				
+				if n == 0 or isVisible(r[0]) == false then 
+					return ""
+				elseif n == 1 then
+					return r[0].Stagger
+				elseif n == 2 then	
+				return r[0].Stagger.."/"..r[1].Stagger
+				end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>94bca7ee-e084-48c4-8129-42573b7b259c</Guid>
+      <Headers>
+       <Header Name="Eget spor"/>
+       <Header Name="Nr"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>Alignment.code</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>630b8470-4cee-4f85-875f-9634b9076eef</Guid>
+      <Headers>
+       <Header Name="Eget spor"/>
+       <Header Name="PEL [km]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort>Ascending</Sort>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>RC__toKm(Mileage)</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>861ae53f-c887-4774-86c2-122e8369dd8c</Guid>
+      <Headers>
+       <Header Name="Eget spor"/>
+       <Header Name="Kurve-\Pradius [m]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>r = getAlignmentInfo().CurveRadius
+											if r == "Infinity" then 
+												return "RL"
+											else 
+												if math.abs(r) &gt; 5e5 then 
+													return "RL"
+												else
+													if getAlignmentInfo().CurveRotation:upper() == "CCW" then
+														return string.format("%.f",r)
+													else
+														return string.format("%.f",-r)
+													end
+												end
+											end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>1378d22d-c88d-41c9-a54b-96db95d2d3c4</Guid>
+      <Headers>
+       <Header Name="Eget spor"/>
+       <Header Name="OH [mm]"/>
+      </Headers>
+      <Width>10</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>local c = getAlignmentInfo().Cant
+											if (RC__isNan(c)) then
+												return "-"
+											else
+												return string.format("%.0f",c)
+											end
+										</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>74af20b1-7ec9-4ec6-85b6-7e8bda973470</Guid>
+      <Headers>
+       <Header Name="Bestemmende spor"/>
+       <Header Name="Nr"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>ReferenceAlignment.code</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>5c76f0af-f694-4c2b-b22d-378169c7fdf3</Guid>
+      <Headers>
+       <Header Name="Bestemmende spor"/>
+       <Header Name="Km. [km]"/>
+      </Headers>
+      <Width>10</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>--string.format("%.03f",ReferenceMileage/1000,10*(ReferenceMileage%1000))
+				RC__toKm(ReferenceMileage)</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>87fda45d-6ea8-465c-9994-907106a84c16</Guid>
+      <Headers>
+       <Header Name="Bestemmende spor"/>
+       <Header Name="CL mast\PCL spor [m]"/>
+      </Headers>
+      <Width>15</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>string.format("%.02f",getAlignmentInfo(getObjectFromId(ReferenceAlignment)).DistanceToAlignment)</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>57a7dcc0-e348-4e8a-a6db-542f7c13ce67</Guid>
+      <Headers>
+       <Header Name="Eks.spor"/>
+       <Header Name="Km [km]"/>
+      </Headers>
+      <Width>20</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>r = string.format("%.03f", (Mileage+1483.104)/1000)
+				return "\\C10;"..r</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>d2a36cb1-b7cb-4c8e-8a87-671ca9cabfe7</Guid>
+      <Headers>
+       <Header Name="Av-\Pspenning"/>
+       <Header Name="Avsp."/>
+      </Headers>
+      <Width>20</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>if RcType == "EH-MAS KL-mast" 
+				then
+					vpil = "←" --"\8592"
+					opil = "↑"--"\8593"
+					hpil = "→" --"\8594"
+					npil = "↓"--"\8595"
+					ba = getClosestAlignments("EH-KLO Kontaktledningsoppheng"):
+						filter(function  (x) return x.Variant:lower() == "bardun" and RC__getDistance2D(x.rcalignment.startpoint) &lt; 1.0 end )
+					nb = getCollectionLength(ba)
+					--if true then return nb,ba end
+					t = getClosestTracks()
+					tgt= getAlignmentInfo(t[0].id).tangent
+					--if true then return tgt end
+					sporvinkel = math.atan(tgt.Y, tgt.X) * 180.0/math.pi 
+					--if true then return sporvinkel end
+					first = true
+					for i = 0, nb-1 do
+						s = first and "" or s..", "
+						b = ba[i]
+						pe = b.RcAlignment.EndPoint
+						bf = getNearbyPointObjects2D(0.25, "EH-BAR Bardun", pe)[0]
+						--if true then return bf end
+						tgb= b.RcAlignment.StartTangent
+						--if true then return tgb end
+						bardunvinkel = math.atan(tgb.Y, tgb.X) * 180.0/math.pi
+						--if true then return bardunvinkel end
+						vinkel = bardunvinkel - sporvinkel
+						if vinkel &lt; -180 then vinkel = vinkel + 360 end
+						if vinkel &gt; 180 then vinkel = vinkel - 360 end
+						hkurve = vinkel &gt; 50 and vinkel &lt; 130
+						vkurve = vinkel &lt; -50 and vinkel &gt; -130
+						medrettet = vinkel &gt; -25 and vinkel &lt; 25
+						motrettet = vinkel &lt; -155 or vinkel &gt; 155
+						--if true then return vinkel,bf.Variant, end
+						--if true then return sporvinkel, bardunvinkel, vinkel, hkurve, vkurve medrettet, motrettet end
+						if (vkurve or hkurve or medrettet or motrettet) == false then 
+							return "Feil, ulovlig bardunvinkel ("..vinkel..")"
+						end
+						if hkurve and bf.Variant == "Enkel" then s = s..vpil
+						elseif vkurve and bf.Variant == "Enkel" then s = s..hpil
+						elseif motrettet and bf.Variant == "Enkel" then s = s..opil
+						elseif motrettet and bf.Variant == "Dobbel" then s = s..opil..opil
+						elseif medrettet and bf.Variant == "Enkel"  then s = s..npil
+						elseif medrettet and bf.Variant == "Dobbel" then s = s..npil..npil
+						else
+							return bf.variant.."" --"Feil skal ikke skje" -- Har ingen Bardun
+						end
+						first = false
+					end
+					return s
+				end</Data>
+     </ColumnSpecification>
+     <ColumnSpecification>
+      <Guid>0b9b2747-97b6-46de-ba8b-31d4d400faf9</Guid>
+      <Headers>
+       <Header Name="Merknader"/>
+      </Headers>
+      <Width>50</Width>
+      <Sort/>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+				avspenning = getClosestAlignments("EH-KLO Kontaktledningsoppheng"):filter(
+					function (x) 
+						return x.Variant:lower() == "bardun" and RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
+					end)
+				strever = getClosestAlignments("EH-KLO Kontaktledningsoppheng"):filter(
+					function (x) 
+						return x.Variant:lower() == "strever" and RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
+					end)
+					
+				fix = {}	
+					if getCollectionLength(Relations["Er kl-mast for utligger"]) ~= 0 and getCollectionLength(Relations["Er kl-mast for utligger"][0].Relations["Har kl-oppheng"]) ~= 0 then
+						fix = Relations["Er kl-mast for utligger"][0].Relations["Har kl-oppheng"]
+					end
+				
+				--fix = getNearbyPointObjects2D(5, "EH-AEH Avspenning")
+				
+				--fix = Relations["Er kl-mast for utligger"][0].Relations["Har kl-oppheng"]
+				ta = avspenning and RC__identify(avspenning[0]) or ""
+				ts = strever and RC__identify(strever[0]) or ""
+				tf = fix and RC__identify(fix[0]) or ""
+				
+				
+				t = {}
+				
+				
+				
+				if ObjectInfo ~= "" then table.insert(t, ObjectInfo) end
+				if avspenning.Count ~= 0 then table.insert(t, ta) end
+				if strever.Count ~= 0 then table.insert(t, ts) end
+				if fix.Count ~= nil then table.insert(t, tf) end
+				
+				--s = ""
+				--if #t == 1 then
+				--	s = t[1]
+				--elseif #t &gt;= 1 then
+				--	for i = 1,#t do s = s..", "..t[i] end
+				--	string.gsub(s,)
+				--end
+				
+				s = ""
+				
+				first = true
+				
+				for i = 1,#t do
+				
+					if not first then s = s..", " else first = false end
+				
+					s = s..t[i]
+				
+				end
+				
+				return s
+				
+				--return Relations["Er kl-mast for utligger"][0].Relations["Har kontaktledningsoppheng"][0].variant == "fixline" --Sjekk navn</Data>
+     </ColumnSpecification>
+    </Columns>
+    <SortOrder>
+     <string>630b8470-4cee-4f85-875f-9634b9076eef</string>
     </SortOrder>
    </TableSpecification>
   </InsertTable>
@@ -17691,10 +18179,6 @@ end
   </SymbolDefinition>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
- <LuaFunction Name="NOBN_trk_TRACKGAUGE()" ReturnType="Double" Description="Returns distance between rail head centers for normal-gauge track (1.5 meter).">
-  <Constructor>Double NOBN_trk_TRACKGAUGE()</Constructor>
-  <Formula>function NOBN_trk_TRACKGAUGE() return 1.435 end</Formula>
- </LuaFunction>
  <ObjectType DataType="eTrack" Class="RailwayAlignment" Name="KO-SPO Spor" Layer="JBTOB_KO_SPO" Color="ByLayer" Group="Overbygning/Spor">
   <RelationSpace>spor</RelationSpace>
   <CustomAttribute DataType="String" Name="Tag" DisplayName="Tag" DefaultValue="" Category="Metadata" Description="The 'Tag' custom property holds a unique identifier, within an administration's context, such as a unique key for the administration's asset management database. Hide/unhide using the ShowLayer tool."/>
@@ -17929,7 +18413,7 @@ end
   </CustomAttribute>
   <SetValue Key="Discipline" Value="Overbygning"/>
   <AlignmentSystems DefaultSystemName="Kjørekant">
-   <AlignmentSystem Name="Kjørekant" CantGauge="0.000" AlignmentGauge="0.000" QuickMode3DLiftWithCant="false"/>
+   <AlignmentSystem Name="Kjørekant" CantGauge="1.500" AlignmentGauge="1.435" QuickMode3DLiftWithCant="false"/>
   </AlignmentSystems>
   <Variants DefaultValue="Kjørekant">
    <Variant Name="Kjørekant"/>
@@ -17964,13 +18448,14 @@ end
 					local tol = 0.050 --[m]
 					ps = alg.RcAlignment.StartPoint
 					pe = alg.RcAlignment.EndPoint
+					trackGauge = alg.AlignmentSystemAlignmentGauge
 					--Get point near midpoint of rail:
 					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
 					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
 					ts = getClosestTracks(ps.X,ps.Y):
 						filter(function (x)
 								local d = getAlignmentInfo(x.id,ps.X,ps.Y).DistanceToAlignment
-								return math.abs(math.abs(d) - NOBN_trk_TRACKGAUGE()/2.0) &lt; tol
+								return math.abs(math.abs(d) - trackGauge/2.0) &lt; tol
 							end)
 					n = getCollectionLength(ts)
 					if n == 0  then
@@ -18171,14 +18656,10 @@ end
    <Variant Name="RE"/>
    <Variant Name="REB"/>
   </Variants>
-  <InsertPointObject DisplayName="Horisontalt geometripunkt" VariantName="Horisontalt geometripunkt" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED-SCHEMATIC" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Horisontalt geometripunkt" VariantName="Horisontalt geometripunkt" DisplayBlockName="NO-BN-2D-JBTOB-TRACK-AXIS-CRITICAL-LOCATION" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED-SCHEMATIC" AllowSymbolMove="true">
-   <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTOB-KARAKTERISTISK-trasépunkt
-			</BlockNameFormat>
-  </SymbolDefinition>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-ALIGNMENT-CHARACTERISTIC-POINT-{{SymbolMode}}" AllowSymbolMove="true"/>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="KO-VET Vertikaltrasépunkt" Layer="JBTOB_KO_VET" Color="ByLayer" Group="Overbygning/Karakteristiske trasépunkter" AttAddX="0" AttAddY="{% assign boolsk = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if boolsk == 'True' %}180{% else %}0{% endif %}">
@@ -18317,10 +18798,10 @@ end
    <Variant Name="HBP"/>
    <Variant Name="LBP"/>
   </Variants>
-  <InsertPointObject DisplayName="Vertikalt geometripunkt" VariantName="Vertikalt geometripunkt" DisplayBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED-SCHEMATIC" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject DisplayName="Vertikalt geometripunkt" VariantName="Vertikalt geometripunkt" DisplayBlockName="NO-BN-2D-JBTOB-TRACK-AXIS-CRITICAL-LOCATION" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTFE-THUMBNAIL-UNSPECIFIED-SCHEMATIC" AllowSymbolMove="true"/>
+  <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-JBTOB-ALIGNMENT-CHARACTERISTIC-POINT-{{SymbolMode}}" AllowSymbolMove="true"/>
   <SymbolDefinition X="0.0" Y="0.0" DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="KO-HOS Horisontal traseseksjon" Layer="JBTOB_KO_HOS" Color="ByLayer" Group="Overbygning/Traseseksjoner" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
@@ -18458,7 +18939,7 @@ end
     </LuaExpression>
    </Variant>
   </Variants>
-  <InsertPointObject VariantName="Horisontal Traseseksjon" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Rettlinje" DisplayBlockName="NO-BN-2D-JBTFE-SECTION-JIGSYMBOL-Schematic" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
    <SetValue Key="SymbolFrame" Value="SectionFrame-2.75"/>
@@ -22956,7 +23437,7 @@ end
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
   </InsertPointObject>
-  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-TUNNELBARDUN">
+  <SymbolDefinition X="0.0" Y="0.0" AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-KRAFTAVLASTING-FOR-TUNNELFESTE">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -30074,7 +30555,7 @@ end
   <LuaExpression Name="Model3DName">
    <Formula>_SA_SIG_ertms_model3DName()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_SA_SIG_ertms_model3DName()" ReturnType="String" HideFromUser="false" Description="Returns the 3D model name [String] for the current ERTMS board. Covers position/stop markerboards. See also SA-MSS ERTMS boards.">
+  <LuaFunction Name="_SA_SIG_ertms_model3DName()" ReturnType="String" HideFromUser="false" Description="Returns the 3D model name [String] for the current ERTMS board. Covers position/stop markerboards. See also TFES_ERP ERTMS boards.">
    <Constructor>String _SA_SIG_ertms_model3DName()</Constructor>
    <Formula>
 				function _SA_SIG_ertms_model3DName()
