@@ -3,11 +3,11 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-# RailCOMPLETE Azure build pipeline for NO-BN, Norway - Bane NOR
+# RailCOMPLETE Azure build pipeline for administration 'XX-YY'
 #
-# Variables that must be defined to build correct name for installation file etc:
+# Variables that must be defined to build correct name for installation file etc (example values):
 #
-# adm               NO-BN
+# adm               XX-YY
 # buildNumberMajor  2021
 # buildNumberMinor  a
 #
@@ -22,9 +22,6 @@ pool:
 
 variables:
 - group: Code-signing-variables
-  buildNumberMajor: 2021
-  buildNumberMinor: a
-  adm: NO-BN
 
 name: $(buildNumberMajor).$(buildNumberMinor)$(Rev:.rrrr)
 
@@ -48,6 +45,7 @@ steps:
   displayName: 'Create installer'
   inputs:
     scriptFile: '$(adm)\Installer\$(adm)_install.nsi'
+    arguments: '/DPRODUCT=RC-$(adm)-$(Build.BuildNumber)'
     justInclude: 'no'
     includeMorePlugins: 'no'
 
@@ -62,8 +60,8 @@ steps:
 - task: CmdLine@2
   displayName: 'Sign installer'
   inputs:
-    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://timestamp.globalsign.com/tsa/r6advanced1" -td "SHA256" -v "$(adm)/Installer/RC-$(adm).install-$(date).exe"'
-
+    #script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://timestamp.globalsign.com/tsa/r6advanced1" -td "SHA256" -v "$(adm)/Installer/RC-$(adm).install-$(date).exe"'
+    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td "SHA256" -v "$(adm)/Installer/RC-$(adm).install-$(date).exe"'
 
 - task: PublishPipelineArtifact@1
   inputs:
