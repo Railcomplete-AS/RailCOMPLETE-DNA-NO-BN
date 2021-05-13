@@ -12,6 +12,8 @@ pool:
 variables:
 - group: Code-signing-variables
 
+name: $(buildNumberMajor).$(buildNumberMinor)$(Rev:.rrrr)
+
 steps:
 
 - task: PowerShell@2
@@ -25,13 +27,13 @@ steps:
 - task: CmdLine@2
   displayName: 'Copy contents to tmp folder'
   inputs:
-    script: '_NO-BN_TransferFilesToAzureTmpFolder.bat'
+    script: 'TransferFilesToAzureTmpFolder.bat'
     
 
 - task: nsis@1
   displayName: 'Create installer'
   inputs:
-    scriptFile: 'NO-BN\Installer\NOBN_install.nsi'
+    scriptFile: '$(adm)\Installer\$(adm)_install.nsi'
     justInclude: 'no'
     includeMorePlugins: 'no'
 
@@ -46,12 +48,12 @@ steps:
 - task: CmdLine@2
   displayName: 'Sign installer'
   inputs:
-    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://timestamp.globalsign.com/tsa/r6advanced1" -td "SHA256" -v "NO-BN/Installer/RC-NO-BN.install-$(date).exe"'
+    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://timestamp.globalsign.com/tsa/r6advanced1" -td "SHA256" -v "$(adm)/Installer/RC-$(adm).install-$(date).exe"'
 
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: 'NO-BN/Installer/RC-NO-BN.install-$(date).exe'
-    artifact: 'NO-BN Installer'
+    targetPath: '$(adm)/Installer/RC-$(adm).install-$(date).exe'
+    artifact: '$(adm) Installer'
     publishLocation: 'pipeline'
 

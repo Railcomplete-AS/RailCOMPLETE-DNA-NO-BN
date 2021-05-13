@@ -1,14 +1,34 @@
 echo off
-echo     ENTER CompileDna.bat (with Adm=%ADM%, Release=%RELEASE%)
-echo         Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
-
-rem Assume that environent variables ADM, RELEASE and LOG are defined elsewhere. RELEASE may be undefined, ADM not.
-rem This Batch file is supposed to be called from another batchfile which has set the environment variables 
-rem ADM RELEASE and LOG. RELEASE may be empty, ADM may not.
-rem
-rem  Release name shall be same as extracted from the DNA Rootfile.xml IRI element.
-rem Use other batch file to copy result as release-candidate to folders such as:
-rem ...\Github\RailCOMPLETE-XX-YY\Solutions\RC.bundle\Adm\%ADM%\DNA.
+echo	ENTER CompileDna.bat (with Adm=%ADM%, Release=%RELEASE%)
+echo		Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
+rem			.
+rem			*********************************************************************************
+rem			Batch file to expand XPPq macros and assemble partial DNA XML files into one DNA
+rem			XML file. The source files and the XPPq.exe application and config files must 
+rem			reside in this folder:
+rem			...\Github\RailCOMPLETE-XX-YY\DNA\_SRC
+rem			where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
+rem			.
+rem			Assume that environent variables ADM, RELEASE and LOG are defined elsewhere. 
+rem			This Batch file is supposed to be called from another batchfile which has set the 
+rem			environment variables ADM RELEASE and LOG. RELEASE may be empty, ADM may not.
+rem			.
+rem			Release name shall be same as extracted from the DNA Rootfile.xml IRI element.
+rem			Use other batch file to copy result as release-candidate to folders such as:
+rem			...\Github\RailCOMPLETE-XX-YY\Solutions\RC.bundle\Adm\%ADM%\DNA.
+rem			*********************************************************************************
+rem			.
+rem			This batch file must be called from this folder:
+rem			...\Github\RailCOMPLETE-XX-YY
+rem			.
+rem			Please read about batch file processing here: https://ss64.com/nt
+rem			.
+rem			Please note that general folders and paths, which RC must know before a RC-START'ed 
+rem			document has been opened, must be specified in the RC.bundle\startup.xml file.
+rem			The administration-specific folders and paths, which RC must know when using RC-START'ed 
+rem			document, must be specified in the RC.bundle\Adm\%ADM%\DNA folder's DNA file.
+rem			.
+rem			*********************************************************************************
 
 if "%ADM%" equ "" (
 	echo         *
@@ -54,4 +74,4 @@ if "%ADM%" equ "" (
 )
 
 :TheEnd
-echo     EXIT CompileDna.bat
+echo	EXIT CompileDna.bat
