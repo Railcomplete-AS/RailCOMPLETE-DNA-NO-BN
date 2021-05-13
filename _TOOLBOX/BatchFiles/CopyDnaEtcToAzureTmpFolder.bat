@@ -67,6 +67,11 @@ if "%COPY3D%" neq "yes" goto Noecho
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipViews\*.xaml    "..\TMP\%ADM%\Lua\LuaTooltipPages\TooltipViews"
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipImages\TooltipImages.xaml    "..\TMP\%ADM%\Lua\LuaTooltipPages\TooltipImages"
 
+	@echo.
+	@echo - Release notes:
+	@echo.
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes\*.txt    "..\TMP\%ADM%\ReleaseNotes"
+
 if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
