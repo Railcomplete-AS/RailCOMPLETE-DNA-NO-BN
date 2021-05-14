@@ -8,9 +8,9 @@ rem			...\Github\RailCOMPLETE-XX-YY
 rem			where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
 rem			.
 rem			to the folder/subfolders used by your local AutoCAD installation to run tests:
-rem			%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-XX
+rem			%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-YY
 rem			.
-rem			This batch file must be called from this folder ('XX-XX' is NO-BN etc given by ADM):
+rem			This batch file must be called from this folder ('XX-YY' is NO-BN etc given by ADM):
 rem			...\Github\RailCOMPLETE-XX-YY
 rem			.
 rem			Please read about batch file processing here: https://ss64.com/nt
@@ -35,16 +35,28 @@ rem /E = Create folder if non-existent
 rem /I = If in doubt always assume the destination is a folder e.g. when the destination does not exist.
 pause
 
-if "%ADM%" neq "" goto Continue
-	@echo.
-	@echo          *********************************************************************************
-	@echo          The ADM argument cannot be undefined - should be one of the
-	@echo          administration abbrevs such as NO-BN.
-	@echo          Set ADM environment variable in calling batch file.
-	@echo          *********************************************************************************
-	@echo.
+if "%ADM%" neq "" goto DeletePrevious
+	echo          *
+	echo          *********************************************************************************
+	echo          The ADM argument cannot be undefined - should be one of the
+	echo          administration abbrevs such as NO-BN.
+	echo          Set ADM environment variable in calling batch file.
+	echo          *********************************************************************************
+	echo          *
 goto TheEnd
  
+:DeletePrevious
+if "%CLEAN%" neq "yes" goto Continue
+	echo          *
+	echo          *********************************************************************************
+	echo          *  WARNING Press ENTER to delete the current target folders, or Ctrl+C to abort *
+	echo		  *  (set 'CLEAN' to 'no' in batch file DefineVersion.bat to skip this step)      *
+	echo          *********************************************************************************
+	echo          *
+	pause
+	rem del command arg: /f forces delete of write-protected files, /s includes subdirs, /q quite mode.
+	del /f /s /q "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%"
+  
 :Continue
 	@echo          *********************************************************************************
 	@echo          Transfering customization files for %ADM% to local machine's APPDATA folder...

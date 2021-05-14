@@ -8,9 +8,9 @@ echo		...\Github\RailCOMPLETE-XX-YY
 echo		where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
 echo		.
 echo		to the folder/subfolders used by your local AutoCAD installation to run tests:
-echo		%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-XX
+echo		%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-YY
 echo		.
-echo		This batch file must be called from this folder ('XX-XX' is NO-BN etc given by ADM):
+echo		This batch file must be called from this folder ('XX-YY' is NO-BN etc given by ADM):
 echo		...\Github\RailCOMPLETE-XX-YY
 echo		.
 echo		Please read about batch file processing here: https://ss64.com/nt
@@ -23,7 +23,7 @@ echo		.
 echo		*********************************************************************************
 pause
 
-if "%ADM%" neq "" goto Continue
+if "%ADM%" neq "" goto DeletePrevious
 	echo          *
 	echo          *********************************************************************************
 	echo          The ADM argument cannot be undefined - should be one of the
@@ -32,7 +32,19 @@ if "%ADM%" neq "" goto Continue
 	echo          *********************************************************************************
 	echo          *
 goto TheEnd
-	
+ 
+:DeletePrevious
+if "%CLEAN%" neq "yes" goto Continue
+	echo          *
+	echo          *********************************************************************************
+	echo          *  WARNING Press ENTER to delete the current target folders, or Ctrl+C to abort *
+	echo		  *  (set 'CLEAN' to 'no' in batch file DefineVersion.bat to skip this step)      *
+	echo          *********************************************************************************
+	echo          *
+	pause
+	rem del command arg: /f forces delete of write-protected files, /s includes subdirs, /q quite mode.
+	del /f /s /q "..\..\Solutions\RC.bundle\Adm\%ADM%"
+ 
 :Continue
 	echo          *********************************************************************************
 	echo          Transfering customization files for %ADM% to Solutions\RC-bundle 'build' folder...

@@ -2,26 +2,27 @@ echo off
 echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
 echo          Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 
-echo          *********************************************************************************
-echo          .
-echo          Batch file to transfer DNA and related files from these folders with subfolders:
-echo          ...\Github\RailCOMPLETE\Customization\XX-XX
-echo          .
-echo          to the folder/subfolders used by your local AutoCAD installation to run tests:
-echo          TMP\XX-XX
-echo          .
-echo          This batch file must be called from this folder ('XX-XX' is NO-BN etc given by ADM):
-echo           ...\Github\RailCOMPLETE\Customization\XX-XX
-echo          .
-echo          Please read about batch file processing here: https://ss64.com/nt
-echo          .
-echo          Please note that general folders and paths, which RC must know before a RC-START'ed 
-echo          document has been opened, must be specified in the RC.bundle\startup.xml file.
-echo          The administration-specific folders and paths, which RC must know when using RC-START'ed 
-echo          document, must be specified in the RC.bundle\Adm\%ADM%\DNA folder's DNA file.
-echo          .
-echo          *********************************************************************************
-pause
+rem         *********************************************************************************
+rem			.
+rem			Batch file to transfer DNA and related files from these folders with subfolders:
+rem			...\Github\RailCOMPLETE-XX-YY
+rem			where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
+rem			.
+rem			to the folder/subfolders used by the Azure cloud build agent to make an installation file:
+rem			%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-YY
+rem			.
+rem			This batch file must be called from this folder ('XX-YY' is NO-BN etc given by ADM):
+rem			...\Github\RailCOMPLETE-XX-YY
+rem			.
+rem			Please read about batch file processing here: https://ss64.com/nt
+rem			.
+rem			Please note that general folders and paths, which RC must know before a RC-START'ed 
+rem			document has been opened, must be specified in the RC.bundle\startup.xml file.
+rem			The administration-specific folders and paths, which RC must know when using RC-START'ed 
+rem			document, must be specified in the RC.bundle\Adm\%ADM%\DNA folder's DNA file.
+rem			.
+rem			*********************************************************************************
+rem
 
 if "%ADM%" neq "" goto Continue
 	echo          *
