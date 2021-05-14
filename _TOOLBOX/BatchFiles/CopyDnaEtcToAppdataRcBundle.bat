@@ -33,7 +33,6 @@ rem /exclude:..\xcopyignore.txt : The 'ignore' file contains snippets of folder 
 rem /Y = Suppress prompt to confirm overwriting a file. Can be preset in the echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txtCMD env
 rem /E = Create folder if non-existent
 rem /I = If in doubt always assume the destination is a folder e.g. when the destination does not exist.
-pause
 
 if "%ADM%" neq "" goto DeletePrevious
 	echo          *
@@ -47,15 +46,24 @@ goto TheEnd
  
 :DeletePrevious
 if "%CLEAN%" neq "yes" goto Continue
+	rem 
+	rem RMDIR [/S] [/Q] [drive:]path
+	rem RD [/S] [/Q] [drive:]path
+	rem 
+    rem /S      Removes all directories and files in the specified directory
+    rem         in addition to the directory itself.  Used to remove a directory
+    rem         tree.
+	rem 
+    rem /Q      Quiet mode, do not ask if ok to remove a directory tree with /S
+	rem
 	echo          *
 	echo          *********************************************************************************
 	echo          *  WARNING Press ENTER to delete the current target folders, or Ctrl+C to abort *
-	echo		  *  (set 'CLEAN' to 'no' in batch file DefineVersion.bat to skip this step)      *
+	echo          *  (set 'CLEAN' to 'no' in batch file DefineVersion.bat to skip this step)      *
 	echo          *********************************************************************************
 	echo          *
 	pause
-	rem del command arg: /f forces delete of write-protected files, /s includes subdirs, /q quite mode.
-	del /f /s /q "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%"
+	rmdir /s /q "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%"
   
 :Continue
 	@echo          *********************************************************************************
@@ -66,45 +74,38 @@ if "%CLEAN%" neq "yes" goto Continue
 	@echo.
 	@echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D\*.dwg    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D\*.rc    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
 
 if "%COPY3D%" neq "yes" goto Noecho
 	@echo.
 	@echo - 3D object models:
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D\STD    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D\STD"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D\LayerMappings    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D\LayerMappings"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D"
 :Noecho
 	@echo.
 	@echo - AutoCAD stuff (color table, fonts etc):
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD\*.*    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\AutoCAD"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\AutoCAD"
 
 	@echo.
 	@echo - DNA, style definitions, switches and DNA mappings:
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\*.xml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\Switches    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\Switches"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\DnaMappings    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA\DnaMappings"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
 
 	@echo.
 	@echo - FAQ:
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ\*.xml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ\Images\*.*    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ\Images"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
 
 	@echo.
 	@echo - Lua snippets and Tooltips (Lua and XAML code):
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\*.xml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipViews\*.xaml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages\TooltipViews"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipImages\TooltipImages.xaml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages\TooltipImages"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages"
 
 	@echo.
 	@echo - Release notes:
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes\*.txt    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\ReleaseNotes"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\ReleaseNotes"
 
 if "%TUTORIALS%" neq "yes" goto Noecho
 	@echo.
@@ -123,13 +124,12 @@ if "%TUTORIALS%" neq "yes" goto Noecho
 	@echo .
 	@echo - Vector images (administration's logo etc):
 	@echo .
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages\*.xaml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\VectorImages"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\VectorImages"
 
 	@echo .
 	@echo - WebLinks:
 	@echo .
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks\*.xml    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks\Images\*.*    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks\Images"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
 
 	@echo .
 	@echo OFF
