@@ -5,13 +5,12 @@
 
 # RailCOMPLETE Azure build pipeline for administration 'XX-YY'
 #
-# Variables that must be defined to build correct name for installation file etc (example values):
+# Variables that must be defined to build correct name for installation file etc (example values).
+# ACcess / modify by selecting EDIT on a pipeline in Azure DevOps, then add/modify variable.
 #
 # adm               XX-YY
 # buildNumberMajor  2021
 # buildNumberMinor  a
-#
-# The remaining ones are created automatically by Azure.
 #
 
 trigger:
@@ -22,7 +21,6 @@ pool:
 
 variables:
 - group: Code-signing-variables
-# - group: Version     2021-05-13 CLFEY - DID NOT WORK AS EXPECTED
 
 name: $(buildNumberMajor).$(buildNumberMinor)$(Rev:.rrrr)
 
@@ -46,7 +44,7 @@ steps:
   displayName: 'Create installer'
   inputs:
     scriptFile: '$(adm)\Installer\$(adm)_install.nsi'
-    arguments: '/DPRODUCT=RC-$(adm)-$(Build.BuildNumber)'
+    arguments: '/DPRODUCT=RC-$(adm)-$(Build.BuildNumber) /DBUNDLEDIR=$(adm)'
     justInclude: 'no'
     includeMorePlugins: 'no'
 
@@ -61,13 +59,12 @@ steps:
 - task: CmdLine@2
   displayName: 'Sign installer'
   inputs:
-    #2021-05-13 CLFEY - USE SAME REF AS IN FR-SR:
-    #script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://timestamp.globalsign.com/tsa/r6advanced1" -td "SHA256" -v "$(adm)/Installer/RC-$(adm).install-$(date).exe"'
     script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td "SHA256" -v "$(adm)/Installer/RC-$(adm)-$(Build.BuildNumber).install-$(date).exe"'
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(adm)/Installer/RC-$(adm).install-$(date).exe'
+    targetPath: '$(adm)/Installer/RC-$(adm)-$(Build.BuildNumber).install-$(date).exe'
+
     artifact: '$(adm) Installer'
     publishLocation: 'pipeline'
 
