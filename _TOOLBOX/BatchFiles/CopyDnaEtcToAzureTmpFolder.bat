@@ -41,37 +41,29 @@ goto TheEnd
 	echo          ON
 	
 	echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%-2D.dwg    "..\TMP\%ADM%\2D"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D\%ADM%-%RELEASE%-SymbolThumbnails.rc    "..\TMP\%ADM%\2D"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D    "..\TMP\%ADM%\2D"
 
 if "%COPY3D%" neq "yes" goto Noecho
 	echo - 3D object models:
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D\STD\*.dwg    "..\TMP\%ADM%\3D\STD"
- 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D\LayerMappings\*.*    "..\TMP\%ADM%\3D\LayerMappings"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D    "..\TMP\%ADM%\3D"
 :Noecho
 
 	echo - AutoCAD stuff (color table, fonts etc):
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD\*.*    "..\TMP\%ADM%\AutoCAD"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "..\TMP\%ADM%\AutoCAD"
 
 	echo - DNA, style definitions and switches:
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-DNA.xml    "..\TMP\%ADM%\DNA"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\%ADM%-%RELEASE%-StyleDefinitions.xml    "..\TMP\%ADM%\DNA"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\Switches\%ADM%-%RELEASE%-SwitchGeometries.xml    "..\TMP\%ADM%\DNA\Switches"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA\DnaMappings\*.xml    "..\TMP\%ADM%\DNA\DnaMappings"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA    "..\TMP\%ADM%\DNA"
 
 	echo - FAQ:
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ\%ADM%-%RELEASE%-faq.xml    "..\TMP\%ADM%\FAQ"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ\Images\*.*    "..\TMP\%ADM%\FAQ\Images"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ    "..\TMP\%ADM%\FAQ"
 
 	echo - Lua snippets and Tooltips (Lua and XAML code):
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\*.xml    "..\TMP\%ADM%\Lua\LuaTooltipPages"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipViews\*.xaml    "..\TMP\%ADM%\Lua\LuaTooltipPages\TooltipViews"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages\TooltipImages\TooltipImages.xaml    "..\TMP\%ADM%\Lua\LuaTooltipPages\TooltipImages"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua    "..\TMP\%ADM%\Lua"
 
 	@echo.
 	@echo - Release notes:
 	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes\*.txt    "..\TMP\%ADM%\ReleaseNotes"
+	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "..\TMP\%ADM%\ReleaseNotes"
 
 if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
  	echo - Administration-specific tutorials:
@@ -92,11 +84,10 @@ if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
 :Noxcopy /Y /E /ITutorials
 
 	echo - Vector images (administration's logo etc):
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages\*.xaml    "..\TMP\%ADM%\VectorImages"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "..\TMP\%ADM%\VectorImages"
 
 	echo - WebLinks:
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks\%ADM%-%RELEASE%-weblinks.xml    "..\TMP\%ADM%\WebLinks"
-	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks\Images\*.*    "..\TMP\%ADM%\WebLinks\Images"
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks    "..\TMP\%ADM%\WebLinks"
 
 	echo OFF
 	echo          *********************************************************************************

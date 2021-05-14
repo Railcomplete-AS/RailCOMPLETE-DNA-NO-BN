@@ -35,16 +35,25 @@ goto TheEnd
  
 :DeletePrevious
 if "%CLEAN%" neq "yes" goto Continue
+	rem 
+	rem RMDIR [/S] [/Q] [drive:]path
+	rem RD [/S] [/Q] [drive:]path
+	rem 
+    rem /S      Removes all directories and files in the specified directory
+    rem         in addition to the directory itself.  Used to remove a directory
+    rem         tree.
+	rem 
+    rem /Q      Quiet mode, do not ask if ok to remove a directory tree with /S
+	rem
 	echo          *
 	echo          *********************************************************************************
 	echo          *  WARNING Press ENTER to delete the current target folders, or Ctrl+C to abort *
-	echo		  *  (set 'CLEAN' to 'no' in batch file DefineVersion.bat to skip this step)      *
+	echo          *  (set 'CLEAN' to 'no' in batch file DefineVersion.bat to skip this step)      *
 	echo          *********************************************************************************
 	echo          *
 	pause
-	rem del command arg: /f forces delete of write-protected files, /s includes subdirs, /q quite mode.
-	del /f /s /q "..\..\Solutions\RC.bundle\Adm\%ADM%"
- 
+	rmdir /s /q "..\..\Solutions\RC.bundle\Adm\%ADM%"
+  
 :Continue
 	echo          *********************************************************************************
 	echo          Transfering customization files for %ADM% to Solutions\RC-bundle 'build' folder...
