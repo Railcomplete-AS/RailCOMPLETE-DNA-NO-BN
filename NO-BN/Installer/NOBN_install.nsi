@@ -3,11 +3,13 @@
 ;Written by Joost Verburg
 
 ;--------------------------------
+; Last changed: 2021-05-14 THBEN/CLFEY
+; Change: Rely on PRODUCT and BUNDLEDIR to be defined by calling YAML file
+;--------------------------------
+;
 ;Include Modern UI
 !include "MUI2.nsh"
 
-!define PRODUCT "RC-NO-BN"
-!define BUNDLEDIR "NO-BN"
 !define MUI_ICON "rc.ico"
 !define MUI_UNICON "rcun.ico"
 !define /date DATE "%Y%m%d"
@@ -57,28 +59,6 @@
 Section "${PRODUCT}" SecRC1 
 
   SetOutPath "$INSTDIR"
-  
-  ;;Cleanup 
-  ;Delete "$INSTDIR\Adm\NO-BN\DNA\StyleDefinitions\StyleDefinitions.xml"
-  ;RMDir /r "$INSTDIR\Adm\NO-BN\DNA\StyleDefinitions"
-  ;
-  ;;LuaToolTips
-  ;Delete "$INSTDIR\Adm\NO-BN\NO-BN\LUA\LuaTooltipPages\TooltipViews\*.*"
-  ;RMDir /r "$INSTDIR\Adm\NO-BN\LUA\LuaTooltipPages\TooltipViews"
-  ;Delete "$INSTDIR\Adm\NO-BN\NO-BN\LUA\LuaTooltipPages\*.*"
-  ;RMDir /r "$INSTDIR\Adm\NO-BN\LUA\LuaTooltipPages"
-  ;
-  ;;Remove all old dll's, and help resources
-  ;Delete "$INSTDIR\Contents\*.*"
-  ;;Delete "$INSTDIR\UserGuide\video\*.*"
-  ;Delete "$INSTDIR\UserGuide\img\*.*"
-  ;Delete "$INSTDIR\UserGuide\*.*"
-  ;Delete "$INSTDIR\Help\ReleaseNotes\*.txt"
-  ;
-  ;CreateDirectory "$DOCUMENTS\RailCOMPLETE\LuaScripts"
-  ;CreateDirectory "$DOCUMENTS\RailCOMPLETE\TableDefinitions"
-  ;CreateDirectory "$DOCUMENTS\RailCOMPLETE\DNA"
-  ;CreateDirectory "$DOCUMENTS\RailCOMPLETE\StyleDefinitions"
   
   ;Add files
   File /r "..\..\TMP\${BUNDLEDIR}\*"
