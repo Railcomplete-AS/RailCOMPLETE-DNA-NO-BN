@@ -61,7 +61,7 @@ Section "${PRODUCT}" SecRC1
   SetOutPath "$INSTDIR"
   
   ;Add files
-  File /r "..\..\TMP\${BUNDLEDIR}\*"
+  File /r "..\TMP\${BUNDLEDIR}\*"
   ;File "..\${BUNDLEDIR}\UserGuide\video\*.*"
   
   ;Store installation folder
