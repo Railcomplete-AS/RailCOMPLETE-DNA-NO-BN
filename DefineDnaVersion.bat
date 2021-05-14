@@ -12,7 +12,7 @@ set   RELEASE=2021.a
 set       LOG=no
 set    COPY3D=yes
 set TUTORIALS=yes
-set     CLEAN=no
+set     CLEAN=yes
 
 echo %ADM%>__adm.txt
 echo %RELEASE%>__release.txt
