@@ -5,12 +5,16 @@
 
 # RailCOMPLETE Azure build pipeline for administration 'XX-YY'
 #
-# Variables that must be defined to build correct name for installation file etc (example values).
-# ACcess / modify by selecting EDIT on a pipeline in Azure DevOps, then add/modify variable.
+# Variables that must be defined to build correct name for installation file etc (example 
+# values) - # access / modify by selecting EDIT on a pipeline in Azure DevOps, then add/modify 
+# variable:
 #
-# adm               XX-YY
-# buildNumberMajor  2021
-# buildNumberMinor  a
+# Note: The embedded DNA's own version (YYYY.n) is set in the github repo's ...\Customization\DefineDnaVersion.bat file
+# and must be consistent with DNA IRI information located in the DNA's root file in the XX-YY\DNA\-SRC folder.
+#
+# dnaAdmName                XX-YY ; The intended administration's abbreviation (FR-SR, DE-DB etc)
+# dnaBuildNumberMajor       YYYY  ; The intended calendar year for first usage
+# dnaBuildNumberMinor       ltr   ; Letter(s) a..z, aa..az etc
 #
 
 trigger:
@@ -22,7 +26,7 @@ pool:
 variables:
 - group: Code-signing-variables
 
-name: $(buildNumberMajor).$(buildNumberMinor)$(Rev:.rrrr)
+name: $(dnaAdmName)-$(dnaBuildNumberMajor).$(dnaBuildNumberMinor)$(Rev:.rrrr)
 
 steps:
 
@@ -44,7 +48,7 @@ steps:
   displayName: 'Create installer'
   inputs:
     scriptFile: 'Installer\DnaInstallScript.nsi'
-    arguments: '/DPRODUCT=RC-$(adm)-$(Build.BuildNumber) /DBUNDLEDIR=$(adm)'
+    arguments: '/DPRODUCT=RC-$(dnaAdmName)-$(Build.BuildNumber) /DBUNDLEDIR=$(dnaAdmName)'
     justInclude: 'no'
     includeMorePlugins: 'no'
 
@@ -59,12 +63,12 @@ steps:
 - task: CmdLine@2
   displayName: 'Sign installer'
   inputs:
-    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td "SHA256" -v "Installer/RC-$(adm)-$(Build.BuildNumber).install-$(date).exe"'
+    script: 'AzureSignTool sign -du "$(DescriptionURL)" -kvu "$(SigningVaultURL)" -kvi "$(SigningClientId)" -kvs "$(SigningClientSecret)" -kvc "$(CertificateName)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td "SHA256" -v "Installer/RC-$(dnaAdmName)-$(Build.BuildNumber).install-$(date).exe"'
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: 'Installer/RC-$(adm)-$(Build.BuildNumber).install-$(date).exe'
+    targetPath: 'Installer/RC-$(dnaAdmName)-$(Build.BuildNumber).install-$(date).exe'
 
-    artifact: '$(adm) Installer'
+    artifact: '$(dnaAdmName) Installer'
     publishLocation: 'pipeline'
 
