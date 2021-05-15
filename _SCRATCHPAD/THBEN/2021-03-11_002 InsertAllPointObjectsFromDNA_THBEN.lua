@@ -7,7 +7,9 @@
 --
 -- Change log:
 -- 2021-03-05_000 THBEN Created
--- 2021-03-06_001 CLFEY Renamed identifiers, added guidelines, renamed Lua file, moved to github, added Contact Wire alignment.
+-- 2021-03-06_001 CLFEY Renamed identifiers, added guidelines, renamed Lua file, moved to github, 
+--					added Contact Wire alignment.
+-- 2021-03-11_002 THBEN Modified
 --
 --=========================================================================================================================
 
