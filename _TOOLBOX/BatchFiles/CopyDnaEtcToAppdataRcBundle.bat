@@ -1,12 +1,13 @@
 @echo off
 @echo	ENTER CopyDnaEtcToAppdataRcBundle.bat
 @echo		Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
-@echo		*********************************************************************************
+rem			*********************************************************************************
 rem			.
 rem			Batch file to transfer DNA and related files from these folders with subfolders:
 rem			...\Github\RailCOMPLETE-XX-YY
 rem			where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
-rem			.
+rem			The embedded DNA for XX-GL resides in ...github\RailCOMPLETE\Customization.
+rem			
 rem			to the folder/subfolders used by your local AutoCAD installation to run tests:
 rem			%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-YY
 rem			.

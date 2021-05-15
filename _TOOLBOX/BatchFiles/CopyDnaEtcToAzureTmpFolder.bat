@@ -1,14 +1,14 @@
 echo off
 echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
-echo          Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
-
-rem         *********************************************************************************
+echo        Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
+rem			*********************************************************************************
 rem			.
 rem			Batch file to transfer DNA and related files from these folders with subfolders:
 rem			...\Github\RailCOMPLETE-XX-YY
 rem			where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
-rem			.
-rem			to the folder/subfolders used by the Azure cloud build agent to make an installation file:
+rem			The embedded DNA for XX-GL resides in ...github\RailCOMPLETE\Customization.
+rem			
+rem			to the folder/subfolders used by your local AutoCAD installation to run tests:
 rem			%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-YY
 rem			.
 rem			This batch file must be called from this folder ('XX-YY' is NO-BN etc given by ADM):
@@ -22,7 +22,18 @@ rem			The administration-specific folders and paths, which RC must know when usi
 rem			document, must be specified in the RC.bundle\Adm\%ADM%\DNA folder's DNA file.
 rem			.
 rem			*********************************************************************************
+rem ECHO syntax:
+rem Use caret '^' as escape character for pipe ^|, caret ^^, angles ^> and ^< etc. An '@'
+rem in front of a command name suppresses echoing for that command only: @MyCommand
+rem 'echo.' (a period right after the command name) prints an empty line.
+rem 'echo d | MyCommand' sets up a file system pipe, the output of 'echo d' becomes the input of 'MyCommand'. The 'd' means ???????????
 rem
+rem XCOPY syntax:
+rem Usage:     echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt
+rem /exclude:..\xcopyignore.txt : The 'ignore' file contains snippets of folder names or file names that, if encountered, shall be ignored by XCOPY.
+rem /Y = Suppress prompt to confirm overwriting a file. Can be preset in the echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txtCMD env
+rem /E = Create folder if non-existent
+rem /I = If in doubt always assume the destination is a folder e.g. when the destination does not exist.
 
 if "%ADM%" neq "" goto Continue
 	echo          *
