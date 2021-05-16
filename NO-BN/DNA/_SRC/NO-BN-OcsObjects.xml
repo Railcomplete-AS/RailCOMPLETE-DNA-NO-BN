@@ -40,44 +40,8 @@ connection feeders		forbindelsesleder
 negative feeder in AT system	negativ leder i AT-system
 positive feeder in AT system	positiv leder i AT-system
 
-=========================================================================================================-->
-	<!-- Note: We let these OCS functions be globally accessible, since we want them to be shared between several OCS mast object types. -->
-	<!-- We let HideFromUser="false" so that users may benefit from these functions in their own Lua. -->
-
-	<LuaFunction Name="NOBN_ocs_getRollFromCant()" ReturnType="Double"
-		Description="Returns a roll angle deduced from an OCS wire alignment's cant. NB! Cant is interpreted as decimal degrees CW/CCW for non-tracks." >
-		<Constructor>Double NOBN_ocs_getRollFromCant([_position])</Constructor>
-		<Formula>
-			function NOBN_ocs_getRollFromCant(where)
-				--If called to express e.g. wire clamps or sweeping a contact wire, then '_position' is provided by RC, sampled along the alignment.
-				if where == nil then
-					ai = getAlignmentInfo()
-				else
-					ai = getAlignmentInfo(where)
-				end
-				angleInDecimalDegrees = ai.Cant --  NB! Cant is interpreted as decimal degrees CW/CCW for non-tracks.
-				if (RC__isNan(angleInDecimalDegrees)) then
-					return 0,_info("UNFINISHED - No cant (to be interpreted as an angle in decimal degrees) data in non-track alignment, assuming zero cant.")
-				elseif angleInDecimalDegrees == 0 then
-					return 0
-				else
-					-- Cant is measured in millimeter superelevation, with rotation clockwise or counterclockwise in the track's direction
-					-- Assume that only one rail is lifted at a time.
-					cr = tostring(ai.CantRotation)
-					if  cr:upper() == "CW" then
-						return angleInDecimalDegrees
-					elseif cr:upper() == "CCW" then 
-						return -angleInDecimalDegrees
-					else
-						return 45,_error,_info("Bad cant rotation data ["..CantRotation.."], assuming 90 degrees roll as a visual warning.")
-					end
-				end
-			end
-		</Formula>
-	</LuaFunction>
 
 
-	
 <!-- ========================================================================================================
 	ELEKTRO HØYSPENT
 	KONTAKTLEDNINGER
@@ -217,7 +181,7 @@ positive feeder in AT system	positiv leder i AT-system
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
-		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_ocs_getRollFromCant(_position)</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Z" ><Formula>0.0</Formula></LuaExpression>
 		
 		<!-- The 2D Sweep profile: -->
@@ -390,7 +354,7 @@ positive feeder in AT system	positiv leder i AT-system
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
-		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_ocs_getRollFromCant(_position)</Formula></LuaExpression>
+		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Z" ><Formula>0</Formula></LuaExpression>
 		
 		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
@@ -3441,7 +3405,7 @@ positive feeder in AT system	positiv leder i AT-system
 		<!-- <LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression> -->
 		<!-- <LuaExpression Name="RelativeElevation" ><Formula>0</Formula></LuaExpression> -->
 		<!-- <LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient()</Formula></LuaExpression> -->
-		<!-- <LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_ocs_getRollFromCant()</Formula></LuaExpression> -->
+		<!-- <LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees()</Formula></LuaExpression> -->
 		<!-- <LuaExpression Name="Rotation3D.Z" ><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression> -->
 		
 		<LuaExpression Name="ReferenceMileage" ><Formula>_EH_KLK_ReferenceMileage()</Formula></LuaExpression>
