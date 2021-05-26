@@ -1,0 +1,558 @@
+<!--========================================================================================================
+
+    NO-BN-OcsVariousObjects.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
+
+	(c) Railcomplete AS, Norway, 2015-2020. All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+<!--========================================================================================================
+	Line(ca)	Contents:
+	  25		PROTECTION SCREEN AGAINST OVERVOLTAGE
+	 220		SECTIONING ISOLATOR
+	 290		CONTACT WIRE ISOLATOR
+	 350		CATENARY SUPPORT WIRE ISOLATOR (and for contact wires outside the pantograph's reach)
+	 420		FLOATING CROSSING
+	 500		CURRENT BRIDGE
+	 560		End Of File
+=========================================================================================================-->
+
+
+	
+<!--========================================================================================================
+	HIGH VOLTAGE
+	PROTECTION SCREEN AGAINST OVERVOLTAGE
+=========================================================================================================-->
+	<!-- See EH.705338, 900x1400 single screen construction. -->
+	<!-- See EH.704042, 2000x775 double-screen construction. -->
+	<!-- See EH.705339, Utførelse type I, II, III, IV/V - various ways to mount 2 x 900x1400 screens. -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-XBE Beskyttelsesskjerm"
+				Layer="JBTKL_EH_XBE" Color="ByLayer"
+				Group="Kontaktledning/Beskyttelse"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				 
+		<RelationSpace>beskyttelse</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTKL" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTKL" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<Variants DefaultValue="Beskyttelsesskjerm 2x900x1400xØ32 på betongmast / bjelkemast" >
+			<Variant Name="Beskyttelsesskjerm 2x900x1400xØ32 på tunnelmast / tremast" >
+				<!-- See EH.705338, Utførelse type I, II, III, IV/V-->
+			</Variant>
+			<Variant Name="Beskyttelsesskjerm 2x900x1400xØ32 på betongmast / bjelkemast" >
+				<!-- See EH.705338, Utførelse type VI -->
+				<!-- Assume HEB mast 200..280, or 240x240 concrete mast (3D models are made only for 240x240): -->
+			</Variant>
+			<Variant Name="Beskyttelsesskjerm 2x900x1400xØ32 på B-mast bredside" >
+				<!-- See EH.705338, Utførelse type VI -->
+			</Variant>
+			<Variant Name="Beskyttelsesskjerm 2x900x1400xØ32 på B-mast smalside / H-mast" >
+				<!-- See EH.705338, Utførelse type VI -->
+			</Variant>
+			<Variant Name="Beskyttelsesskjerm 2x900x1400xØ32 på hengemast" >
+				<!-- See EH.705338, Utførelse type VI -->
+			</Variant>
+			<Variant Name="Beskyttelsesskjerm 2000x775xØ32 i åk, ett felt" >
+				<!-- See EH.704042 type I+II (two plus two ears, placed one pair above the other) -->
+			</Variant>
+			<Variant Name="Beskyttelsesskjerm 2000x775xØ32 i åk, to felt" >
+				<!-- See EH.704042 type I+II (two plus two ears, placed one pair above the other) -->
+			</Variant>
+		</Variants>
+
+		<CustomAttribute DataType="Enumeration" Name="Tilt" DisplayName="Tilt"
+			Description=
+			"900x1400 protective screen inclination [00|01|10|11]: 00=none tilted, 01=tilted right, 10=tilted left, 11=both tilted." >
+			<Values >
+				<Value>00</Value>
+				<Value>01</Value>
+				<Value>10</Value>
+				<Value>11</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<LuaExpression Name="name" >
+			<Formula>
+				if Variant:match("Beskyttelsesskjerm") then return "Beskyttelseskjerm"
+				else return "Unknown protective screen variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<!-- Reference 3D elevation is assumed to be be center of upper Ø32 tube frame -->
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				local s = "NO-BN-3D-EH-XBE-BESKYTTELSE-SKJERM-2x900x1400xØ32-UTF"
+				local t = "NO-BN-3D-EH-XBE-BESKYTTELSE-SKJERM-2000x775xØ32"
+				if Variant == "Beskyttelsesskjerm 2x900x1400xØ32 på tunnelmast / tremast" then 
+					return string.format("%s-%d-%02d",s,1,tonumber(Tilt))
+				elseif Variant == "Beskyttelsesskjerm 2x900x1400xØ32 på betongmast / bjelkemast" then 
+					return string.format("%s-%d-%02d",s,2,tonumber(Tilt))
+				elseif Variant == "Beskyttelsesskjerm 2x900x1400xØ32 på B-mast bredside" then 
+					return string.format("%s-%d-%02d",s,3,tonumber(Tilt))
+				elseif Variant == "Beskyttelsesskjerm 2x900x1400xØ32 på B-mast smalside / H-mast" then 
+					return string.format("%s-%d-%02d",s,45,tonumber(Tilt))
+				elseif Variant == "Beskyttelsesskjerm 2x900x1400xØ32 på hengemast" then 
+					return string.format("%s-%d-%02d",s,6,tonumber(Tilt))
+				elseif Variant == "Beskyttelsesskjerm 2000x775xØ32 i åk, ett felt" then 
+					return string.format("%s-%s",t,"A")
+				elseif Variant == "Beskyttelsesskjerm 2000x775xØ32 i åk, to felt" then 
+					return string.format("%s-%s",t,"B")
+				else 
+					return "Unknown protective screen Variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2x900x1400xØ32 på tunnelmast / tremast"
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-1-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2x900x1400xØ32 på betongmast / bjelkemast" 
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-2-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2x900x1400xØ32 på B-mast bredside" 
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-3-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2x900x1400xØ32 på B-mast smalside / H-mast" 
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-45-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2x900x1400xØ32 på hengemast" 
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-6-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2000x775xØ32 i åk, ett felt" 
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-704042-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Beskyttelsesskjerm 2000x775xØ32 i åk, to felt" 
+				DisplayBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-704042-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="Tilt" Value="00" />
+			<SetValue Key="dir" Value="both" />
+			<SetValue Key="RelativeElevation" Value="6.8" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-BESKYTTELSE-SKJERM-1-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKL-BESKYTTELSE
+				{% if Variant == 'Beskyttelsesskjerm 2x900x1400xØ32 på tunnelmast / tremast' %}SKJERM-1
+				{% elsif Variant == 'Beskyttelsesskjerm 2x900x1400xØ32 på betongmast / bjelkemast' %}SKJERM-2
+				{% elsif Variant == 'Beskyttelsesskjerm 2x900x1400xØ32 på B-mast bredside' %}SKJERM-3
+				{% elsif Variant == 'Beskyttelsesskjerm 2x900x1400xØ32 på B-mast smalside / H-mast' %}SKJERM-45
+				{% elsif Variant == 'Beskyttelsesskjerm 2x900x1400xØ32 på hengemast' %}SKJERM-6
+				{% elsif Variant == 'Beskyttelsesskjerm 2000x775xØ32 i åk, ett felt' %}SKJERM-704042
+				{% elsif Variant == 'Beskyttelsesskjerm 2000x775xØ32 i åk, to felt' %}SKJERM-704042
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	SECTIONING ISOLATOR
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-SIL Seksjonsisolator"
+				Layer="JBTKL_EH_SIL" Color="ByLayer"
+				Group="Kontaktledning/Isolatorer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>seksjonsisolator</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTKL" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+	
+		<Variants DefaultValue="Seksjonsisolator" >
+			<Variant Name="Seksjonsisolator" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="name" >
+			<Formula>
+				if Variant == "Seksjonsisolator" then return "SI"
+				else return "Unknown section insulator variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				-- Ref. EK.704790, for speeds up to 80 km/h. Not drawn entirely to scale!
+				if Variant == "Seksjonsisolator" then return "NO-BN-3D-EH-SIL-SEKSJONSISOLATOR-BICC"
+				else return "Unknown section insulator variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<InsertPointObject VariantName="Seksjonsisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-SEKSJONSISOLATOR-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="true" />
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKL-ISOLATOR
+				{% if Variant == 'Seksjonsisolator' %}SEKSJONSISOLATOR
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	CONTACT WIRE ISOLATOR
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-ISO Lineisolator"
+				Layer="JBTKL_EH_ISO" Color="ByLayer"
+				Group="Kontaktledning/Isolatorer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>lineisolator</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTKL" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<Variants DefaultValue="Lineisolator" >
+			<Variant Name="Lineisolator" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="name" >
+			<Formula>
+				if Variant == "Lineisolator" then return "Isol."
+				else return "Bad variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<!-- TODO lage 3D for stavisolator -->
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				if Variant == "Lineisolator" then return "NO-BN-3D-EH-ISO-LINEISOLATOR-600x100"
+				else return "Bad variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="true" />
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKL-ISOLATOR
+				{% if Variant == 'Lineisolator' %}LINEISOLATOR
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	CATENARY SUPPORT WIRE ISOLATOR (and for contact wires outside the pantograph's reach)
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-ISO Stavisolator"
+				Layer="JBTKL_EH_ISO" Color="ByLayer"
+				Group="Kontaktledning/Isolatorer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>stavisolator</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTKL" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<Variants DefaultValue="Stavisolator" >
+			<Variant Name="Stavisolator" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="name" >
+			<Formula>
+				if Variant == "Stavisolator" then return "Stavisol."
+				else return "Bad variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<!-- TODO lage 3D for stavisolator -->
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				if Variant == "Stavisolator" then return "NO-BN-3D-EH-ISO-STAVISOLATOR"
+				else return "Bad variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<InsertPointObject VariantName="Stavisolator" DisplayBlockName="NO-BN-2D-JBTKL-ISOLATOR-STAVISOLATOR-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-ISOLATOR-STAVISOLATOR-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="true" />
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKL-ISOLATOR
+				{% if Variant == 'Lineisolator' %}STAVISOLATOR
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	FLOATING CROSSING
+	(Norwegian: svevende kryss Ref. EH.707403)
+=========================================================================================================-->
+	<!-- TODO: This one may form the connection object between high voltage wires -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-SVE Svevende kryss"
+				Layer="JBTKL_EH_SVE" Color="ByLayer"
+				Group="Kontaktledning/Svevende kryss"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>svevendekryss</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTKL" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTKL" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<Variants DefaultValue="Svevende kryss" >
+			<Variant Name="Svevende kryss" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="name" >
+			<Formula>
+				if Variant == "Svevende kryss" then return "Svevende kryss"
+				else return _error,"Bad OCS crossing lines conncector variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression>
+
+		<!-- TODO Lage 3D-modeller for svevende kryss osv -->
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				if Variant == "Svevende kryss" then return "NO-BN-3D-EH-SVE-SVEVENDE-KRYSS-2500"
+				else return _error,"Bad OCS crossing lines connector variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+
+		<InsertPointObject VariantName="Svevende kryss" DisplayBlockName="NO-BN-2D-JBTKL-FORBINDELSE-SVEVENDE-KRYSS-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace> 
+			<SetValue Key="name" Value="Svevende kryss" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTKL-FORBINDELSE-SVEVENDE-KRYSS-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKL-FORBINDELSE
+				{% if Variant == 'Svevende kryss' %}SVEVENDE-KRYSS
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	CURRENT BRIDGE
+	EH-FOR Forbindelse (Strømbro "C" mellom kontaktledning og bæreline i to ledninger, med "M" mellom dem)
+	Dvs elektrisk sammenkobling av to kontakttråder i et vekslingsfelt (seksjonsfelt har bryter)
+	Ref. EH.705051.
+
+	TODO 2020-09-26: Add 3D symbols to the library: Single / double Strømbro
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-FOR KL-forbindelse"
+				Layer="JBTKL_EH_FOR" Color="ByLayer"
+				Group="Kontaktledning/Forbindelser"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>kl-forbindelse</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_TAG_OBJECTINFO_METADATA_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTKL" />
+		<xpp:expand select="NOBN_com_DISCIPLINE_JBTKL" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<Variants DefaultValue="Strømbro" >
+			<Variant Name="Strømbro" >
+			</Variant>
+		</Variants>
+		
+		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
+
+		<InsertPointObject VariantName="Strømbro" DisplayBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-H-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true" />
+			<OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace> 
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace> 
+			<SetValue Key="name" Value="Strømbro" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" 
+				DefaultBlockName="NO-BN-2D-JBTKL-FORBINDELSE-STROEMBRO-{% if dir == 'up' %}{% if RightSided %}H{% else %}V{% endif %}{% else %}{% if LeftSided %}H{% else %}V{% endif %}{% endif %}" >
+			<Rotation Add180DegreesIfDirIsDown="false" 
+				AddAngle="{% if RightSided %}{{0.0|plus:AngularOffset}}{% else %}{{180.0|plus:AngularOffset}}{% endif %}" />	
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKL-FORBINDELSE
+				{% if Variant == 'Strømbro' %}STROEMBRO
+					{% if dir == 'up' %}{% if RightSided %}H{% else %}V{% endif %}{% else %}{% if RightSided %}V{% else %}H{% endif %}{% endif %}
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-INSERTION-POINT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
