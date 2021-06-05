@@ -636,14 +636,14 @@ positive feeder in AT system				positiv leder i AT-system
 		<CustomAttribute DataType="String" Name="StaggerDisplay" DisplayName="Sikk-sakk visning" DefaultValue="" 
 			Description="The stagger value, as shown next to the cantilever [cm]." />
 		<TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-1" 
-			Layer="JBTKL__EH_UTL_SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0"
+			Layer="JBTKL@SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0"
 			ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false" />       
 		<LuaExpression Name="StaggerDisplay" ><Formula>string.format("%.f",Stagger*100) --Centimeters</Formula></LuaExpression>
 		
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
         <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="1.5" 
-				Layer="JBTKL__EH_UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" 
+				Layer="JBTKL@UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" 
 				Invisible="false" Lock="false" MText="false" /> 
 		<LuaExpression Name="OcsWireNameDisplay" ><Formula>_EH_UTL_OcsWireNameDisplay()</Formula></LuaExpression>
 		<LuaFunction Name="_EH_UTL_OcsWireNameDisplay()" 
@@ -822,6 +822,7 @@ positive feeder in AT system				positiv leder i AT-system
 						H = p.Z - (ai.Point.Z + h/2) --survey point Z relative to this track's center track after cant
 						d = ai.DistanceToAlignment
 						ss = h / Alignment.AlignmentSystem.CantGauge -- equals the sine of the cant angle
+						ss = ss * (ai.CantRotation == "CW" and 1 or -1)
 						cc = math.sqrt(1 - ss^2) --the cosine
 						cwh = ss*d + cc*H
 						return cwh --Intended for the ContactWireHeight property
@@ -849,7 +850,7 @@ positive feeder in AT system				positiv leder i AT-system
 						d = ai.DistanceToAlignment
 						ss = h / Alignment.AlignmentSystem.CantGauge -- equals the sine of the cant angle
 						cc = math.sqrt(1 - ss^2) --the cosine
-						zigzag = (ss*(z - h/2) - cc*d) * (RightSided and 1 or -1)
+						zigzag = (ss*H - cc*d) * (RightSided and 1 or -1)
 						return zigzag --Intended for the Stagger property
 					end
 				end
@@ -960,7 +961,8 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="code" ><Formula>_EH_KLK_code()</Formula></LuaExpression>
 		<LuaFunction Name="_EH_KLK_code()" 
 			ReturnType="String"
-			Description="Copies the cantilever's code." >
+			Description="Copies the cantilever's code."
+		>
 			<Constructor>String _EH_KLK_code()</Constructor>
 			<Formula>
 				function _EH_KLK_code()
@@ -969,7 +971,7 @@ positive feeder in AT system				positiv leder i AT-system
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						return code = r[0].code
+						return r[0].code
 					end
 				end
 			</Formula>
@@ -987,7 +989,7 @@ positive feeder in AT system				positiv leder i AT-system
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						return Alignment = r[0].Alignment
+						return r[0].Alignment
 					end
 				end
 			</Formula>
@@ -1006,7 +1008,7 @@ positive feeder in AT system				positiv leder i AT-system
 						return _info("INCOMPLET - Relier par '"..s.."' à son armement.")
 						--return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						return Mileage = r[0].Mileage
+						return r[0].Mileage
 					end
 				end
 			</Formula>
@@ -1024,7 +1026,7 @@ positive feeder in AT system				positiv leder i AT-system
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						return DistanceToAlignment = r[0].DistanceToAlignment
+						return r[0].DistanceToAlignment
 					end
 				end
 			</Formula>
@@ -1042,7 +1044,7 @@ positive feeder in AT system				positiv leder i AT-system
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						return RelativeElevation = r[0].RelativeElevation
+						return r[0].RelativeElevation
 					end
 				end
 			</Formula>
