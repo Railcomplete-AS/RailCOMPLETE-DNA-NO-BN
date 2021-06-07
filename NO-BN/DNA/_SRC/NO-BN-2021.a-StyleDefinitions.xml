@@ -209,7 +209,7 @@ But Lua code assigning colors must follow the language pack they are used in.
 		Locked			As defined in AutoCAD
 		Frozen			As defined in AutoCAD
 		On				As defined in AutoCAD
-		Transparency	As defined in AutoCAD
+		Transparency	As defined in AutoCAD. In the API (and in DNA declarations)
 		Color			As defined in AutoCAD. Note: Colors can be given as a number 1..255, where *index colors* are (1..7). If an index color
 						has been set by number, AutoCAD will still display its textual name. "1" is "Red" / "Rouge" / "Rot" etc depending on the
 						AutoCAD language pack that has been installed. But if colors were stated as "Jaune" (yellow) in one DNA, and that file
@@ -279,7 +279,7 @@ But Lua code assigning colors must follow the language pack they are used in.
 			Gray   : 252 = "132,132,132"	...
 			Gray   : 253 = "173,173,173"	...
 			Gray   : 254 = "214,214,214"	Lightest index color for gray
-			ORANGE : "255,165,0" 			Orange 
+			Orange : "255,165,0" 			Orange 
 	
 	Examples:
 	<Layer Name="JBTFE@NAVN" On="true" Color="3" 
@@ -405,11 +405,11 @@ Note on 'Transient graphics layers':
 
 
 	<!-- 'RC' generic, intrinsic, mechanisms '[SingleDollar]' $ -->
-	<Layer Name="RCCO$CADRE_SYMBOLES_PAR_DEFAUT"		On="true" Color="62" 							Description="Cadre symbole par défaut (pour objects de type 'Section', 'Surveillant' etc)" />
-	<Layer Name="RCCO$CADRE_INCOMPLET"					On="true" Color="62" 							Description="Cadres symboles pour objects qui ne sont pas encore entièrement spécifiés" />
-	<Layer Name="RCCO$CADRES_SYMBOLES_HISTORIQUE"		On="true" Color="62" LineWeight="LineWeight009"	Description="Cadres symboles pour objets historiques - où le nom de calque commence par arrobase '@'" />
-	<Layer Name="RCCO$CADRE_ERREUR"						On="true" Color="62" LineWeight="LineWeight035"	Description="Cadres symboles pour objects dont un ou plusieurs contrôles affichent une erreur" />
-	<Layer Name="RCCO$CADRE_AVERTISSEMENT"				On="true" Color="62" LineWeight="LineWeight018"	Description="Cadres symboles pour objects dont un ou plusieurs contrôles affichent un avertissement" />
+	<Layer Name="RCFE$SYMBOLRAMMER_HISTORIC"			On="true" Color="62" Description="Symbolrammer for historiske objekter (på et lag med navn som begynner med krøllalfa '@')" />
+	<Layer Name="RCFE$SYMBOLRAMMER_UNFINISHED"			On="true" Color="62" Description="Symbolrammer for objekter som ikke er ferdig spesifisert ennå (objektnavnet inneholder 'UNFINISHED')" />
+	<Layer Name="RCFE$SYMBOLRAMMER_ERROR"				On="true" Color="62" Description="Symbolrammer for objekter der en eller flere modelchecks returnerer '_error'" />
+	<Layer Name="RCFE$SYMBOLRAMMER_WARNING"				On="true" Color="62" Description="Symbolrammer for objekter der en eller flere modelchecks returnerer '_warning'" />
+	<Layer Name="RCFE$SYMBOLRAMMER_DEFAULT"				On="true" Color="62" Description="Symbolrammer for objekter som ikke viser rammen for historisk / uferdig / error / warning" />
 
 
 
@@ -875,6 +875,7 @@ T S C = Tangent - Spiral - Curve
 -->
 	<SymbolFrames Layer="RCFE$SYMBOLRAMMER_DEFAULT" >
 		<!-- Ignore certain layers when computing the outline (size) of the symbol frame: -->
+		<IgnoreLayer>RCFE$$SYMBOLBESKRIVELSE</IgnoreLayer>
 		<IgnoreLayer>JBTSI$$BALISE_SNAPPELINJER_3m</IgnoreLayer>
 		<IgnoreLayer>JBTSI$$BALISE_SNAPPELINJER_8m</IgnoreLayer>
 		<IgnoreLayer>JBTSI$$BALISE_SNAPPELINJER_12m</IgnoreLayer>
@@ -884,6 +885,7 @@ T S C = Tangent - Spiral - Curve
 		<SymbolFrame Name="SectionFrame-2.75" CircleRadius="2.75" HorizontalMargin="1" VerticalMargin="1" >
 			<Tail CornerCutDistance="1.5" SegmentLengthBeforeCornerCut="2.5" />
 		</SymbolFrame>
+
 		<SymbolFrame Name="Watch" CircleRadius="2.5" HorizontalMargin="1.5" VerticalMargin="1.5" />
 		<SymbolFrame Name="Frame1" CircleRadius="1" HorizontalMargin="2" VerticalMargin="2" />	
 		<SymbolFrame Name="Frame2" CircleRadius="3" HorizontalMargin="1" VerticalMargin="1" Transparency="50" />
@@ -891,20 +893,10 @@ T S C = Tangent - Spiral - Curve
 		<SymbolFrame Name="Frame4" CircleRadius="0.8" HorizontalMargin="0" VerticalMargin="0" Color="252" LineWidth="0.1" Transparency="200" />	
 		<SymbolFrame Name="Frame5" CircleRadius="1.5" HorizontalMargin="0" VerticalMargin="0" Color="252" LineWidth="0.5" Transparency="200" />	
 		
-		<SymbolFrame Name="Unfinished" CircleRadius="0" HorizontalMargin="1" VerticalMargin="1" Color="140" Layer="RCFE$SYMBOLRAMMER_UNFINISHED" />
-
-		<SymbolFrame Name="Historic" CircleRadius="4" HorizontalMargin="1" VerticalMargin="1" Color="4" LineWidth="1" Transparency="200" LineType="RC-POINTILLÉ" Layer="RCFE$SYMBOLRAMMER_HISTORIC" />
-		<SymbolFrame Name="Historic_2_1" CircleRadius="4" HorizontalMargin="1" VerticalMargin="1" Color="4" LineWidth="0.5" Transparency="200" LineType="RC-POINTILLÉ" Layer="RCFE$SYMBOLRAMMER_HISTORIC" />
-		<SymbolFrame Name="Historic_4_1" CircleRadius="4" HorizontalMargin="1" VerticalMargin="1" Color="4" LineWidth="0.25" Transparency="200" LineType="RC-POINTILLÉ" Layer="RCFE$SYMBOLRAMMER_HISTORIC" />
-
-		<SymbolFrame Name="Error" CircleRadius="3" HorizontalMargin="1" VerticalMargin="1" Color="1" LineWidth="1" Transparency="150" Layer="RCFE$SYMBOLRAMMER_ERROR" />	
-		<SymbolFrame Name="Error_2_1" CircleRadius="3" HorizontalMargin="1" VerticalMargin="1" Color="1" LineWidth="0.5" Transparency="150" Layer="RCFE$SYMBOLRAMMER_ERROR" />	
-		<SymbolFrame Name="Error_4_1" CircleRadius="3" HorizontalMargin="1" VerticalMargin="1" Color="1" LineWidth="0.25" Transparency="150" Layer="RCFE$SYMBOLRAMMER_ERROR" />	
-
-		<SymbolFrame Name="Warning" CircleRadius="2" HorizontalMargin="1" VerticalMargin="1" Color="255,165,0" LineWidth="0.4" Transparency="200" LineType="RC-DASHED" Layer="RCFE$SYMBOLRAMMER_WARNING" />	
-		<SymbolFrame Name="Warning_2_1" CircleRadius="2" HorizontalMargin="1" VerticalMargin="1" Color="255,165,0" LineWidth="0.2" Transparency="200" LineType="RC-DASHED" Layer="RCFE$SYMBOLRAMMER_WARNING" />	
-		<SymbolFrame Name="Warning_4_1" CircleRadius="2" HorizontalMargin="1" VerticalMargin="1" Color="255,165,0" LineWidth="0.1" Transparency="200" LineType="RC-DASHED" Layer="RCFE$SYMBOLRAMMER_WARNING" />	
-
+		<SymbolFrame Name="Historic"       CircleRadius="2"   HorizontalMargin="1"   VerticalMargin="1" Color="5"         LineWidth="4"    Transparency="150" LineType="Continuous"   Layer="RCCO$CADRES_SYMBOLES_HISTORIQUE" />
+		<SymbolFrame Name="Unfinished"     CircleRadius="2"   HorizontalMargin="1"   VerticalMargin="1" Color="140"       LineWidth="4"    Transparency="150"                         Layer="RCCO$CADRES_SYMBOLES_INCOMPLET" />
+		<SymbolFrame Name="Error"          CircleRadius="2"   HorizontalMargin="1"   VerticalMargin="1" Color="1"         LineWidth="4"    Transparency="150"                         Layer="RCCO$CADRES_SYMBOLES_ERREUR" />
+		<SymbolFrame Name="Warning"        CircleRadius="3"   HorizontalMargin="1"   VerticalMargin="1" Color="255,165,0" LineWidth="1"    Transparency="150" LineType="RC-POINTILLÉ" Layer="RCCO$CADRES_SYMBOLES_AVERTISSEMENT" />
 	</SymbolFrames>	
 	
 </StyleDefinitions>
