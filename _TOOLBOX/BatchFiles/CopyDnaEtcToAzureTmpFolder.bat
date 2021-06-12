@@ -62,7 +62,7 @@ goto TheEnd
 	echo - AutoCAD stuff (color table, fonts etc):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "..\TMP\%ADM%\AutoCAD"
 
-	echo - DNA, style definitions and switches:
+	echo - DNA, style definitions, switch geometries, DNA mappings:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA    "..\TMP\%ADM%\DNA"
 
 	echo - FAQ:
@@ -77,7 +77,7 @@ goto TheEnd
 
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
-	set TARGETFOLDER="..\TMP\%ADM%\Tutorials
+	set TARGETFOLDER=..\TMP\%ADM%\Tutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
 	echo .
