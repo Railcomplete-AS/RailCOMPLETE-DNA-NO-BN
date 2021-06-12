@@ -1,6 +1,6 @@
 echo off
 echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
-echo        Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
+echo        Settings Adm=%ADM% 
 rem			*********************************************************************************
 rem			.
 rem			In the following, 'XX-YY' denotes any administration. This batch file is identical for all.
@@ -56,11 +56,9 @@ goto TheEnd
 	echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D    "..\TMP\%ADM%\2D"
 
-if "%COPY3D%" neq "yes" goto Continue2
 	echo - 3D object models:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D    "..\TMP\%ADM%\3D"
 
-:Continue2
 	echo - AutoCAD stuff (color table, fonts etc):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "..\TMP\%ADM%\AutoCAD"
 
@@ -73,12 +71,10 @@ if "%COPY3D%" neq "yes" goto Continue2
 	echo - Lua snippets and Tooltips (Lua and XAML code):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua    "..\TMP\%ADM%\Lua"
 
-	@echo.
 	@echo - Release notes:
 	@echo.
 	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "..\TMP\%ADM%\ReleaseNotes"
 
-if "%TUTORIALS%" neq "yes" goto Continue3
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
 	set TARGETFOLDER=%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
@@ -94,7 +90,6 @@ if "%TUTORIALS%" neq "yes" goto Continue3
 	echo Run: for /f "tokens=*" %G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%G"
 	for /f "tokens=*" %%G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%%G"
 	echo .
-:Continue3
 
 	echo - Vector images (administration's logo etc):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "..\TMP\%ADM%\VectorImages"
