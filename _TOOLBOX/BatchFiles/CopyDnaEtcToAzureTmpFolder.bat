@@ -3,49 +3,51 @@ echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
 echo        Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 rem			*********************************************************************************
 rem			.
-rem			Batch file to transfer DNA and related files from these folders with subfolders:
+rem			In the following, 'XX-YY' denotes any administration. This batch file is identical for all.
+rem
+rem			Batch file to transfer DNA and related files from folder/subfolders:
+rem
 rem			...\Github\RailCOMPLETE-XX-YY
-rem			where 'RailCOMPLETE-XX-YY' is the name of the Github clone for this adm's DNA stuff.
-rem			The embedded DNA for XX-GL resides in ...github\RailCOMPLETE\Customization.
-rem			
-rem			to the folder/subfolders used by your local AutoCAD installation to run tests:
-rem			%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\XX-YY
+rem
+rem			to folder/subfolders used by the Azure cloud build service used to create ADM install file:
+rem
+rem			..\TMP
+rem
+rem			Read more about batch file processing here: https://ss64.com/nt.
 rem			.
-rem			This batch file must be called from this folder ('XX-YY' is NO-BN etc given by ADM):
-rem			...\Github\RailCOMPLETE-XX-YY
-rem			.
-rem			Please read about batch file processing here: https://ss64.com/nt
-rem			.
-rem			Please note that general folders and paths, which RC must know before a RC-START'ed 
+rem			Note that general folders and paths, which RC must know before a RC-START'ed 
 rem			document has been opened, must be specified in the RC.bundle\startup.xml file.
 rem			The administration-specific folders and paths, which RC must know when using RC-START'ed 
 rem			document, must be specified in the RC.bundle\Adm\%ADM%\DNA folder's DNA file.
 rem			.
 rem			*********************************************************************************
-rem ECHO syntax:
+rem
+rem Note on ECHO syntax:
+rem
 rem Use caret '^' as escape character for pipe ^|, caret ^^, angles ^> and ^< etc. An '@'
 rem in front of a command name suppresses echoing for that command only: @MyCommand
 rem 'echo.' (a period right after the command name) prints an empty line.
 rem 'echo d | MyCommand' sets up a file system pipe, the output of 'echo d' becomes the input of 'MyCommand'. The 'd' means ???????????
 rem
-rem XCOPY syntax:
+rem Note on XCOPY syntax:
+rem
 rem Usage:     echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt
 rem /exclude:..\xcopyignore.txt : The 'ignore' file contains snippets of folder names or file names that, if encountered, shall be ignored by XCOPY.
 rem /Y = Suppress prompt to confirm overwriting a file. Can be preset in the echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txtCMD env
 rem /E = Create folder if non-existent
 rem /I = If in doubt always assume the destination is a folder e.g. when the destination does not exist.
 
-if "%ADM%" neq "" goto Continue
+if "%ADM%" neq "" goto Continue1
 	echo          *
 	echo          *********************************************************************************
 	echo          The ADM argument cannot be undefined - should be one of the
 	echo          administration abbrevs such as NO-BN.
-	echo          Set ADM environment variable in calling batch file.
+	echo          Set ADM environment variable in calling Azure YAML script.
 	echo          *********************************************************************************
 	echo          *
 goto TheEnd
  
-:Continue
+:Continue1
 	echo          *********************************************************************************
 	echo          Transfering customization files for %ADM% to a new folder called TMP used by installer script...
 	echo          *********************************************************************************
@@ -54,11 +56,11 @@ goto TheEnd
 	echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D    "..\TMP\%ADM%\2D"
 
-if "%COPY3D%" neq "yes" goto Noecho
+if "%COPY3D%" neq "yes" goto Continue2
 	echo - 3D object models:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D    "..\TMP\%ADM%\3D"
-:Noecho
 
+:Continue2
 	echo - AutoCAD stuff (color table, fonts etc):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "..\TMP\%ADM%\AutoCAD"
 
@@ -76,7 +78,7 @@ if "%COPY3D%" neq "yes" goto Noecho
 	@echo.
 	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "..\TMP\%ADM%\ReleaseNotes"
 
-if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
+if "%TUTORIALS%" neq "yes" goto Continue3
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
 	set TARGETFOLDER=%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
@@ -92,7 +94,7 @@ if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
 	echo Run: for /f "tokens=*" %G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%G"
 	for /f "tokens=*" %%G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%%G"
 	echo .
-:Noxcopy /Y /E /ITutorials
+:Continue3
 
 	echo - Vector images (administration's logo etc):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "..\TMP\%ADM%\VectorImages"
