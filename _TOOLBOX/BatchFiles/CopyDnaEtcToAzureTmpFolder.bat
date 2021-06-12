@@ -77,13 +77,10 @@ goto TheEnd
 
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
-	set TARGETFOLDER=%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
+	set TARGETFOLDER="..\TMP\%ADM%\Tutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
 	echo .
-	rem echo d | xcopy /Y /E /I: /Y Suppress prompt to confirm overwriting a file. Can be preset in the echo d | xcopy /Y /E /ICMD env
-	rem echo d | xcopy /Y /E /I: /E echo d | xcopy /Y /E /I folders and subfolders, including Empty folders. Can be used to modify /T.
-	rem echo d | xcopy /Y /E /I: /I If in doubt always assume the destination is a folder e.g. when the destination does not exist.
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"
 	echo .
 	rem Remove excess target folders (folder name starts with an underscore) - and its files, including subfolders:
