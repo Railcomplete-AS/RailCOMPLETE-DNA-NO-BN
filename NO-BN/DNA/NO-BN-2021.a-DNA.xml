@@ -474,13 +474,14 @@
  <ShowLayer Name="COM_ShowDescription" DisplayName="Symboler/Beskrivelse">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$$SYMBOLBESKRIVELSE</LayerSelection>
  </ShowLayer>
+ <ShowLayer Name="COM_ShowSymbolFramesHistoric" DisplayName="Symbolrammer/Historisk">
+  <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_HISTORIC</LayerSelection>
+ </ShowLayer>
  <ShowLayer Name="COM_ShowSymbolFramesAll" DisplayName="Symbolrammer/Alle">
+  <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_HISTORIC</LayerSelection>
   <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_UNFINISHED</LayerSelection>
   <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_ERROR</LayerSelection>
   <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_WARNING</LayerSelection>
- </ShowLayer>
- <ShowLayer Name="COM_ShowSymbolFramesHistoric" DisplayName="Symbolrammer/Historisk">
-  <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_HISTORIC</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="COM_ShowSymbolFramesUnfinished" DisplayName="Symbolrammer/Uferdig">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">RCFE$SYMBOLRAMMER_UNFINISHED</LayerSelection>
@@ -1742,12 +1743,12 @@
  <PropertyOverride Name="name" DisplayName="Name" Category="General" Description="The 'name' built-in railML property typically holds a more ornamented version of the object's code, making it suitable for human reading but not for further parsing. Example: 'Drv.501_3' ('point drive machine 501.3'). Most objects will show their 'name' property as a text element in the CAD drawing, along with the symbol's 2D graphics. Hide/unhide text in the drawing using the ShowLayer tool."/>
  <PropertyOverride Name="lang" DisplayName="Language" Suppressed="true" Description="The embedded 'lang' (language) shall not be available to this railway administration."/>
  <PropertyOverride Name="Stage" DisplayName="Stage" Category="General" Description="The 'Stage' built-in property holds a free-format string encoding the object's placement in the succession of construction stages for your project. Hint: Append '_stage2000-6000' etc to your object layer names and assign a formula: Stage = layer:sub(-9), then use the ManageStagesUsinglayerNames tool to select the active stage."/>
- <PropertyOverride Name="dir" DisplayName="Retning" Category="Aligned object" Description="The 'dir' built-in railML enum property [up, down, both, none, unknown] holds the basic orientation of a point object. "/>
- <PropertyOverride Name="Alignment" DisplayName="Egen akse" Category="Aligned object" Description="The 'Alignment' built-in property [TrackRef] refers to the alignment that the object belongs to, also referred to as its 'own alignment'. The point object's mileage property is the mileage  found perpendicularly to this own alignment."/>
- <PropertyOverride Name="ReferenceAlignment" DisplayName="Referanselinje" Category="Aligned object" Description="The 'ReferenceAlignment' built-in property [TrackRef] refers to the alignment that the object's own alignment has appointed as it's 'parent' (reference) (at the point object's current location). See the Alignment Manager tools's tab named 'Reference'. The point object's referenceMileage property is the mileage found perpendicularly to this reference alignment."/>
- <PropertyOverride Name="TargetAlignment" DisplayName="Mål-linje" Category="Aligned object" Description="The 'Target Alignment' built-in property [TrackRef] refers to the other alignment that the object connects to, designating a continuation, a branch or a crossing."/>
+ <PropertyOverride Name="dir" DisplayName="Direction" Category="Aligned object" Description="The 'dir' built-in railML enum property [up, down, both, none, unknown] holds the basic orientation of a point object. "/>
+ <PropertyOverride Name="Alignment" DisplayName="Own Alignment" Category="Aligned object" Description="The 'Alignment' built-in property [TrackRef] refers to the alignment that the object belongs to, also referred to as its 'own alignment'. The point object's mileage property is the mileage  found perpendicularly to this own alignment."/>
+ <PropertyOverride Name="ReferenceAlignment" DisplayName="Referance Alignment" Category="Aligned object" Description="The 'ReferenceAlignment' built-in property [TrackRef] refers to the alignment that the object's own alignment has appointed as it's 'parent' (reference) (at the point object's current location). See the Alignment Manager tools's tab named 'Reference'. The point object's referenceMileage property is the mileage found perpendicularly to this reference alignment."/>
+ <PropertyOverride Name="TargetAlignment" DisplayName="Target Aligment" Category="Aligned object" Description="The 'Target Alignment' built-in property [TrackRef] refers to the other alignment that the object connects to, designating a continuation, a branch or a crossing."/>
  <PropertyOverride Name="geoCoord" Category="3D" Description="The 'geoCoord' built-in railML property [Triplet {X,Y,Z}] holds the 'real' position, expressed in World coordinates. This triplet is the basis for all geometrical computations involving the point object."/>
- <PropertyOverride Name="Seq" DisplayName="Sequence number" Category="Local variables" Description="The 'Seq' built-in property [Integer] is a freely usable integer. It is typically used as a running number when it is convenient to put a formula to the code property, e.g.: code = 'Xyzzy-'..seq*2. Hint: Use the Object Manager's 'Fill series' to generate a Seq sequence n, n+1, n+2n...."/>
+ <PropertyOverride Name="Seq" DisplayName="Sequence Number" Category="Local variables" Description="The 'Seq' built-in property [Integer] is a freely usable integer. It is typically used as a running number when it is convenient to put a formula to the code property, e.g.: code = 'Xyzzy-'..seq*2. Hint: Use the Object Manager's 'Fill series' to generate a Seq sequence n, n+1, n+2n...."/>
  <PropertyOverride Name="LuaExpressions" DisplayName="Lua expressions" Category="Formulas"/>
  <PropertyOverride Name="Description" DisplayName="Beskrivelsestekst" Category="Metadata"/>
  <PropertyOverride Name="SymbolFrame" Category="Presentation"/>
@@ -2418,24 +2419,6 @@
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="NOBN_com_assignEarthingLabelColor" ReturnType="String" Description="Assigns the color for the permanent marking tag attached to earthing connector, deduced from the object's discipline.">
-  <Constructor>String NOBN_com_assignEarthingLabelColor([ObjRef obj])</Constructor>
-  <Formula>
-function NOBN_com_assignEarthingLabelColor(obj)
-	if obj == nil then obj = this end
-	if obj.Discipline == "Felles" then return "Hvit" 
-	elseif obj.Discipline == "Underbygning" then return "Hvit"
-	elseif obj.Discipline == "Overbygning" then return "Hvit"
-	elseif obj.Discipline == "Kontaktledning" then return "Rød"
-	elseif obj.Discipline == "Signal" then return "Grønn"
-	elseif obj.Discipline == "Tele" then return "Gul"
-	elseif obj.Discipline == "Lavspent" then return "Blå"
-	elseif obj.Discipline == "Skilt" then return "Hvit"
-	else return "Bad Discipline ["..Discipline.."]."
-	end
-end
-		</Formula>
- </LuaFunction>
  <LuaFunction Name="NOBN_com_assistAssignEarthingAlignment()" ReturnType="AlignmentRef" Description="Suggests an earthing alignment reference for an object, based on its RcType, its Variant and its surroundings. The function assumes that rails of RcType 'KO-SKI Kjørekant' are present and have been divided already into insulated and non-insulated sections.">
   <Constructor>AlignmentRef NOBN_com_assistAssignEarthingAlignment([ObjRef obj])</Constructor>
   <Formula>
@@ -2560,32 +2543,28 @@ function NOBN_com_assistAssignEarthingLabelText(obj)
 end
         </Formula>
  </LuaFunction>
- <LuaFunction Name="NOBN_com_assistAssignEarthingLabelColor()" ReturnType="String" Description="Suggests an earthing alignment label color for an object, based on its discipline.">
-  <Constructor>String NOBN_com_assistAssignEarthingLabelColor([ObjRef obj])</Constructor>
+ <LuaFunction Name="NOBN_com_assignEarthingLabelColor" ReturnType="String" Description="Assigns the color for the permanent marking tag attached to earthing connector, deduced from the object's discipline.">
+  <Constructor>String NOBN_com_assignEarthingLabelColor([ObjRef obj])</Constructor>
   <Formula>
 function NOBN_com_assistAssignEarthingLabelColor(obj)
-	if obj == nil then obj = this end
-	if obj.Discipline == "Felles" then 
-		return "Hvit"
-	elseif obj.Discipline == "Underbygning" then
-		return "Hvit"
-	elseif obj.Discipline == "Overbygning" then
-		return "Hvit"
-	elseif obj.Discipline == "Kontaktledning" then
-		return "Rød"
-	elseif obj.Discipline == "Signal" then
-		return "Grønn"
-	elseif obj.Discipline == "Tele" then
-		return "Gul"
-	elseif obj.Discipline == "Lavspent" then
-		return "Blå"
-	elseif obj.Discipline == "Skilt" then
-		return "Hvit"
+	obj = obj or this
+	if obj.Discipline == "Felles" then return 7 --"Hvit"
+	elseif obj.Discipline == "Underbygning" then return 7 --"Hvit"
+	elseif obj.Discipline == "Overbygning" then return 7 --"Hvit"
+	elseif obj.Discipline == "Kontaktledning" then return 1 --"Rød"
+	elseif obj.Discipline == "Signal" then return 3 --"Grønn"
+	elseif obj.Discipline == "Tele" then return 2 --"Gul"
+	elseif obj.Discipline == "Lavspent" then return 5 --"Blå"
+	elseif obj.Discipline == "Skilt" then return 7 --"Hvit"
 	else 
 		return _error,"*** ERROR - Uncrecognized discipline ["..obj.Discipline.."]."
 	end
 end
-        </Formula>
+		</Formula>
+ </LuaFunction>
+ <LuaFunction Name="NOBN_com_assistAssignEarthingLabelColor()" ReturnType="String" Description="Suggests an earthing alignment label color for an object, based on its discipline.">
+  <Constructor>String NOBN_com_assistAssignEarthingLabelColor([ObjRef obj])</Constructor>
+  <Formula/>
  </LuaFunction>
  <LuaFunction Name="NOBN_com_assistAssignEarthingPosBias()" ReturnType="Double" Description="Suggests an earthing alignment pos bias for an object, based on its earthing method and its surroundings. A non-zero bias moves the 'earthing landing point' along the earthing alignment.">
   <Constructor>Double NOBN_com_assistAssignEarthingPosBias([ObjRef obj])</Constructor>
@@ -3267,9 +3246,8 @@ end
   <Formula>
 function NOBN_trk_chkConnectionAlignmentCompatibility()
 	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	if Alignment.RcType ~= "KO-SPO Spor" then return Alignment.RcType..": ERROR - Own alignment type must be 'KO-SPO Spor'.",_error end
 	if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-	if TargetAlignment.RcType ~= "KO-SPO Spor" then return TargetAlignment.RcType..": ERROR - Target alignment type must be 'KO-SPO Spor'.",_error end
+	if TargetAlignment.RcType ~= Alignment.RcType then return TargetAlignment.RcType..": ERROR - Target alignment type must be same as own alignment type '"..Alignment.RcType.."'.",_error end
 	if Alignment.id == TargetAlignment.id then return TargetAlignment.id..": ERROR - Target alignment is same as own alignment.",_error end
 	return Alignment.RcType.."/"..TargetAlignment.RcType..": OK - Alignment types are compatible.",_ok
 end
@@ -11974,7 +11952,7 @@ end
 					{% else %}GENERELL
 					{% endif %}					
 					{{quadrant}}-Metric
-				{% elsif SymbolMode == 'Schematic' %}GENERELL-{{quadrant}}-Schematic
+				{% else %}GENERELL-{{quadrant}}-Schematic
 				{% endif %}
 			</BlockNameFormat>
   </SymbolDefinition>
@@ -14197,7 +14175,7 @@ end
    <Constructor>String _EH_KTL_Color()</Constructor>
    <Formula>
 				function _EH_KTL_Color()
-					if Variant:lower():match("sort") then return "White"
+					if Variant:lower():match("sort") then return 7 --White
 					elseif Variant:lower():match("blå") then return "30,144,255"
 					elseif Variant:lower():match("lilla") then return "148,0,211"
 					elseif Variant:lower():match("rød") then return "252,10,28"
@@ -14215,7 +14193,7 @@ end
    <Constructor>Double _EH_KTL_Lineweight()</Constructor>
    <Formula>
 				--AutoCAD needs lineweights to be of the form "LineWeight035" for "0.35 mm" (only predefined values according to AutoCAD enum):
-				function _TFTE_FDC_Lineweight()
+				function _EH_KTL_Lineweight()
 					if Variant:lower():match("sort") then
 						return "LineWeight035"
 					else
@@ -15800,7 +15778,7 @@ end
 														{% else %}45.0
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTEH-MAST
+				NO-BN-2D-JBTEH_MAS
 				{%    if Variant == 'Bjelkemast' %}BJELKEMAST
 				{% elsif Variant == 'GMB-mast' %}GMBMAST
 				{% elsif Variant == 'B-mast' %}GITTERMAST-B
@@ -17172,7 +17150,7 @@ end
 														{% else %}45.0
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTEH-AAK
+				NO-BN-2D-JBTEH_AAK
 				{% if Variant == 'Utliggeråk' %}UTLIGGERAAK-6000
 				{% elsif Length == '10m' %}10000
 				{% elsif Length == '11m' %}11000
@@ -17312,7 +17290,7 @@ end
    </SnapPoints>
   </DockPointDefinitions>
  </ObjectType>
- <LuaFunction Name="_EH_UTL_StandardValues()" ReturnType="Table[6*Double]" Description="Returns standard cantilever values table: [cwh]=contact wire height, [sh]=system height, [shmin]=min. sh, [shmax]=max. sh, [lco]=lower console offset from upper console.">
+ <LuaFunction Name="_EH_UTL_StandardValues()" ReturnType="Table[6*Double]" Description="Returns standard cantilever values table: [cwh]=contact wire height, [sh]=system height, [shmin]=min. sh, [shmax]=max. sh, [lco]=lower console offset from upper console, [wco]=contact wire clamp offset from upper console.">
   <Constructor>Table[6*Double] _EH_UTL_StandardValues(String Variant)</Constructor>
   <Formula>
 			function _EH_UTL_StandardValues(v)
@@ -17322,7 +17300,7 @@ end
 					return 0,_warning,_info("Bad cantilever Variant ["..v.."]. ")
 				end
 				t = {
-					--Note: Siemens' catenary wire clamp is aobut 12 high (117mm), above the upper tube
+					--Note: Siemens' catenary wire clamp is about 12 high (117mm), above the upper tube
 					["System 20A"] = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
 					["System 20B"] = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
 					["System 20C"] = {cwh=5.30, sh=0.75, shmin=0.75, shmax=1.60, lco=-0.95, wco=-0.65},
@@ -17699,12 +17677,12 @@ end
   <CustomAttribute DataType="Double" Name="StitchWireLength" DisplayName="Y-line lengde" DefaultValue="0.00" Description="The stitch wire length (swl) [m] denotes the length, measured as a difference in mileage, from start to end (where it attaches to the catenary wire). Zero length means 'no stitch wire'."/>
   <CustomAttribute DataType="Double" Name="Stagger" DisplayName="Sikk-sakk" DefaultValue="0.000" Description="Stagger [m] (zigzag) denotes the distance from contact wire clamp to centre track, measured co-linearly with the top-of-rail plane. A positive stagger means pushing away from mast, negative means pulling towards mast."/>
   <CustomAttribute DataType="String" Name="StaggerDisplay" DisplayName="Sikk-sakk visning" DefaultValue="" Description="The stagger value, as shown next to the cantilever [cm]."/>
-  <TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-1" Layer="JBTKL@SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="5.5" Layer="JBTKL@SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <LuaExpression Name="StaggerDisplay">
    <Formula>string.format("%.f",Stagger*100) --Centimeters</Formula>
   </LuaExpression>
   <CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" Description="The cantilever's associated OCS wire."/>
-  <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="1.5" Layer="JBTKL@UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="6" Layer="JBTKL@UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <LuaExpression Name="OcsWireNameDisplay">
    <Formula>_EH_UTL_OcsWireNameDisplay()</Formula>
   </LuaExpression>
@@ -17794,7 +17772,7 @@ end
    <Formula>_EH_UTL_DistanceToAlignment()</Formula>
   </LuaExpression>
   <LuaExpression Name="RelativeElevation">
-   <Formula>ContactWireHeight + _EH_UTL_StandardValues(Variant)["lco"]</Formula>
+   <Formula>ContactWireHeight - _EH_UTL_StandardValues(Variant)["wco"]</Formula>
   </LuaExpression>
   <CustomAttribute DataType="Double" Name="AddVisual2dAngularOffset" DisplayName="2D vinkeltillegg" DefaultValue="0" Description="The 'AddVisual2dAngularOffset' [Double] adds 16.7 decimal degrees to the 2D symbol's angle. Cantilevers mounted in a yoke or galley will not be visible unless the 2D symbol is given an extra angle."/>
   <LuaExpression Name="AddVisual2dAngularOffset">
@@ -20068,12 +20046,12 @@ end
    <Formula>return "Sp."..code</Formula>
   </LuaExpression>
   <LuaExpression Name="DistanceToAlignment">
-   <Formula>_JBTSA_SSP_DistanceToAlignment()</Formula>
+   <Formula>_SA_SSP_DistanceToAlignment()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_SSP_DistanceToAlignment()" ReturnType="Double" Description="Returns the XY plane distance to alignment for a derailer or catch points (cant taken into consideration).">
-   <Constructor>Double _JBTSA_SSP_DistanceToAlignment()</Constructor>
+  <LuaFunction Name="_SA_SSP_DistanceToAlignment()" ReturnType="Double" Description="Returns the XY plane distance to alignment for a derailer or catch points (cant taken into consideration).">
+   <Constructor>Double _SA_SSP_DistanceToAlignment()</Constructor>
    <Formula>
-				function _JBTSA_SSP_DistanceToAlignment()
+				function _SA_SSP_DistanceToAlignment()
 					return NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 0.75 or -0.75)
 				end
 			</Formula>
@@ -20085,23 +20063,23 @@ end
    </Values>
   </CustomAttribute>
   <LuaExpression Name="derailSide">
-   <Formula>_JBTSA_SSP_derailSide()</Formula>
+   <Formula>_SA_SSP_derailSide()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_SSP_derailSide()" ReturnType="String" Description="Returns the derail side ('Avsporingsretning') for a derailer, deduced from its dir and mounting side (left/right rail).">
-   <Constructor>String _JBTSA_SSP_derailSide()</Constructor>
+  <LuaFunction Name="_SA_SSP_derailSide()" ReturnType="String" Description="Returns the derail side ('Avsporingsretning') for a derailer, deduced from its dir and mounting side (left/right rail).">
+   <Constructor>String _SA_SSP_derailSide()</Constructor>
    <Formula>
-				function _JBTSA_SSP_derailSide()
+				function _SA_SSP_derailSide()
 					return ((dir == 'up' and LeftSided) or (dir == 'down' and RightSided)) and "left" or "right"
 				end
 			</Formula>
   </LuaFunction>
   <LuaExpression Name="Model3DName">
-   <Formula>_JBTSA_SSP_Model3DName()</Formula>
+   <Formula>_SA_SSP_Model3DName()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_SSP_Model3DName()" ReturnType="String" Description="Returns the 3D model name for a derailer object (we have no catch points in 3D yet).">
-   <Constructor>String _JBTSA_SSP_Model3DName()</Constructor>
+  <LuaFunction Name="_SA_SSP_Model3DName()" ReturnType="String" Description="Returns the 3D model name for a derailer object (we have no catch points in 3D yet).">
+   <Constructor>String _SA_SSP_Model3DName()</Constructor>
    <Formula>
-				function _JBTSA_SSP_Model3DName()
+				function _SA_SSP_Model3DName()
 					--Ignore the DerailerState property - always draw the derailer in its derailing state.
 					local t = "NO-BN-3D-SA-SSP-SPORSPERRE"
 					if Variant:lower():match("enkel") then t = t.."-ENKEL" 
@@ -20674,12 +20652,12 @@ end
   </Variants>
   <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AxleCountersToBeModelchecked" DisplayName="Axle counters to be refreshed" Description="When this section object is refreshed, then the nearest limiting object on each side is refreshed as well."/>
   <LuaExpression Name="mc_AxleCountersToBeModelchecked" IsModelCheck="true">
-   <Formula>_JBTSA_TEA_chkTriggerNeighbourAxleCounters()</Formula>
+   <Formula>_SA_TEA_chkTriggerNeighbourAxleCounters()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_TEA_chkTriggerNeighbourAxleCounters()" ReturnType="String" Description="Triggers modelchecking in neighbour axle counters.">
-   <Constructor>_JBTSA_TEA_chkTriggerNeighbourAxleCounters()</Constructor>
+  <LuaFunction Name="_SA_TEA_chkTriggerNeighbourAxleCounters()" ReturnType="String" Description="Triggers modelchecking in neighbour axle counters.">
+   <Constructor>_SA_TEA_chkTriggerNeighbourAxleCounters()</Constructor>
    <Formula>
-				function _JBTSA_TEA_chkTriggerNeighbourAxleCounters()
+				function _SA_TEA_chkTriggerNeighbourAxleCounters()
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 					local n = 0
 					local t = {}
@@ -20800,12 +20778,12 @@ end
    </Variant>
   </Variants>
   <LuaExpression Name="DistanceToAlignment">
-   <Formula>_JBTSA_TEL_DistanceToAlignment()</Formula>
+   <Formula>_SA_TEL_DistanceToAlignment()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_TEL_DistanceToAlignment()" ReturnType="String" Description="Returns the distance to alignment for an axle counter sensor, either +/- 1.5 in schematic drawings or  otherwise +/-0.75.">
-   <Constructor>Double _JBTSA_TEL_DistanceToAlignment()</Constructor>
+  <LuaFunction Name="_SA_TEL_DistanceToAlignment()" ReturnType="String" Description="Returns the distance to alignment for an axle counter sensor, either +/- 1.5 in schematic drawings or  otherwise +/-0.75.">
+   <Constructor>Double _SA_TEL_DistanceToAlignment()</Constructor>
    <Formula>
-				function _JBTSA_TEL_DistanceToAlignment()
+				function _SA_TEL_DistanceToAlignment()
 					if Scale == "S" then 
 						return RightSided and 1.5 or -0.75
 					else 
@@ -20815,12 +20793,12 @@ end
 			</Formula>
   </LuaFunction>
   <LuaExpression Name="code">
-   <Formula>_JBTSA_TEL_code()</Formula>
+   <Formula>_SA_TEL_code()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_TEL_code()" ReturnType="String" Description="Returns a text string 'DownSection/UpSection' for an axle counter sensor.">
-   <Constructor>_JBTSA_TEL_code()</Constructor>
+  <LuaFunction Name="_SA_TEL_code()" ReturnType="String" Description="Returns a text string 'DownSection/UpSection' for an axle counter sensor.">
+   <Constructor>_SA_TEL_code()</Constructor>
    <Formula>
-				function _JBTSA_TEL_code()
+				function _SA_TEL_code()
 					first = "-"
 					shortestDistanceSoFar = math.huge
 					for i = 0, DownSections.count-1 do
@@ -20860,10 +20838,10 @@ end
   <LuaExpression Name="dir">
    <Formula>"both"</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()" ReturnType="String" Description="Checks distance to previous axle counter. Error if below 21 m, warning if below 23 m.">
-   <Constructor>String _JBTSA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()</Constructor>
+  <LuaFunction Name="_SA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()" ReturnType="String" Description="Checks distance to previous axle counter. Error if below 21 m, warning if below 23 m.">
+   <Constructor>String _SA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()</Constructor>
    <Formula>
-				function _JBTSA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()
+				function _SA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()
 					searchDir = "down"
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 					r,n = RC__getCollectionOfRelatedObjects("Har akseltellersopp")
@@ -20884,10 +20862,10 @@ end
 				end
 			</Formula>
   </LuaFunction>
-  <LuaFunction Name="_JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()" ReturnType="String" Description="Checks distance to next axle counter. Error if below 21 m, warning if below 23 m.">
-   <Constructor>String _JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()()</Constructor>
+  <LuaFunction Name="_SA_TEL_chkAxleCounterDistanceToNextAxleCounter()" ReturnType="String" Description="Checks distance to next axle counter. Error if below 21 m, warning if below 23 m.">
+   <Constructor>String _SA_TEL_chkAxleCounterDistanceToNextAxleCounter()()</Constructor>
    <Formula>
-				function _JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()
+				function _SA_TEL_chkAxleCounterDistanceToNextAxleCounter()
 					searchDir = "up"
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 					r,n = RC__getCollectionOfRelatedObjects("Har akseltellersopp")
@@ -20917,10 +20895,10 @@ end
    <Formula>NOBN__setSymbolFrame()</Formula>
   </LuaExpression>
   <LuaExpression Name="mc_DistanceToPreviousAxleCounter" IsModelCheck="true">
-   <Formula>_JBTSA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()</Formula>
+   <Formula>_SA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()</Formula>
   </LuaExpression>
   <LuaExpression Name="mc_DistanceToNextAxleCounter" IsModelCheck="true">
-   <Formula>_JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()</Formula>
+   <Formula>_SA_TEL_chkAxleCounterDistanceToNextAxleCounter()</Formula>
   </LuaExpression>
   <InsertPointObject VariantName="Tellepunkt" DisplayBlockName="NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -21023,12 +21001,12 @@ end
   </LuaExpression>
   <CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromMushroomToAxleCounter" DisplayName="Kabelavstand fra sopp til tellepunkt" Description="Axle counters send very weak signals to the nearby tuning box, using impedance-matched coaxial cables of predefined lengths, typically from 3 to 7 meters."/>
   <LuaExpression Name="mc_CableDistanceFromMushroomToAxleCounter" IsModelCheck="true">
-   <Formula>_JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()</Formula>
+   <Formula>_SA_TET_chkCableDistanceFromTunerToAxleCounter()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()" ReturnType="String" Description="Checks 'grid distance' (perp to track + along track), from axle counter tuner (mushroom) to its axle counter. Error if outside (1.0 - 7.5), warning if outside (3.0 - 3.4) meter.">
-   <Constructor>String _JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()</Constructor>
+  <LuaFunction Name="_SA_TET_chkCableDistanceFromTunerToAxleCounter()" ReturnType="String" Description="Checks 'grid distance' (perp to track + along track), from axle counter tuner (mushroom) to its axle counter. Error if outside (1.0 - 7.5), warning if outside (3.0 - 3.4) meter.">
+   <Constructor>String _SA_TET_chkCableDistanceFromTunerToAxleCounter()</Constructor>
    <Formula>
-				function _JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()
+				function _SA_TET_chkCableDistanceFromTunerToAxleCounter()
 					--Assume mushroom has same own alignment and approximate position as the axle counter it belongs to:
 					s = "Er akseltellersopp for tellepunkt"
 					r,n = RC__getCollectionOfRelatedObjects(s)
@@ -21056,12 +21034,12 @@ end
    <Formula>"both"</Formula>
   </LuaExpression>
   <LuaExpression Name="code">
-   <Formula>_JBTSA_TET_code()</Formula>
+   <Formula>_SA_TET_code()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_TET_code()" ReturnType="String" Description="Obtains the 'code' for axle counter tuning unit (mushroom). Uses relation 'Er akseltellersopp for tellepunkt' to , the related object's data.">
-   <Constructor>String _JBTSA_TET_code()</Constructor>
+  <LuaFunction Name="_SA_TET_code()" ReturnType="String" Description="Obtains the 'code' for axle counter tuning unit (mushroom). Uses relation 'Er akseltellersopp for tellepunkt' to , the related object's data.">
+   <Constructor>String _SA_TET_code()</Constructor>
    <Formula>
-				function _JBTSA_TET_code()
+				function _SA_TET_code()
 					s = "Er akseltellersopp for tellepunkt"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
@@ -21388,12 +21366,12 @@ end
    <Variant Name="Siemens ELS 710"/>
   </Variants>
   <LuaExpression Name="code">
-   <Formula>_JBTSA_DRV_code()</Formula>
+   <Formula>_SA_DRV_code()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_DRV_code()" ReturnType="String" Description="Obtains the code for a point machine, derived from the switch it is related to with 'Driver sporveksel'.">
-   <Constructor>String _JBTSA_DRV_code()</Constructor>
+  <LuaFunction Name="_SA_DRV_code()" ReturnType="String" Description="Obtains the code for a point machine, derived from the switch it is related to with 'Driver sporveksel'.">
+   <Constructor>String _SA_DRV_code()</Constructor>
    <Formula>
-				function _JBTSA_DRV_code()
+				function _SA_DRV_code()
 					local s,i,r,n,d,j
 					s = "Driver sporveksel"
 					r,n = RC__getCollectionOfRelatedObjects(s)
@@ -21418,12 +21396,12 @@ end
    <Formula>"Drv."..code</Formula>
   </LuaExpression>
   <LuaExpression Name="dir">
-   <Formula>_JBTSA_DRV_dir()</Formula>
+   <Formula>_SA_DRV_dir()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_DRV_dir()" ReturnType="String" Description="Obtains the direction (dir) for a point machine, derived from the switch it is related to with 'Driver sporveksel'.">
-   <Constructor>String _JBTSA_DRV_dir()</Constructor>
+  <LuaFunction Name="_SA_DRV_dir()" ReturnType="String" Description="Obtains the direction (dir) for a point machine, derived from the switch it is related to with 'Driver sporveksel'.">
+   <Constructor>String _SA_DRV_dir()</Constructor>
    <Formula>
-				function _JBTSA_DRV_dir()
+				function _SA_DRV_dir()
 					local s,sw,n
 					s = "Driver sporveksel"
 					sw,n = RC__getCollectionOfRelatedObjects(s)
@@ -21436,12 +21414,12 @@ end
 			</Formula>
   </LuaFunction>
   <LuaExpression Name="Model3DName">
-   <Formula>_JBTSA_DRV_Model3DName()</Formula>
+   <Formula>_SA_DRV_Model3DName()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_DRV_Model3DName()" ReturnType="String" Description="Obtains the 3D model name (Model3DName) for a point machine, derived from its Variant, direction (dir) and side of alignment (distanceToAlignment).">
-   <Constructor>String _JBTSA_DRV_Model3DName()</Constructor>
+  <LuaFunction Name="_SA_DRV_Model3DName()" ReturnType="String" Description="Obtains the 3D model name (Model3DName) for a point machine, derived from its Variant, direction (dir) and side of alignment (distanceToAlignment).">
+   <Constructor>String _SA_DRV_Model3DName()</Constructor>
    <Formula>
-				function _JBTSA_DRV_Model3DName()
+				function _SA_DRV_Model3DName()
 					local t = ""
 					if Variant == "Uspesifisert" then
 						return "NO-BN-3D-FE-DIV-UKJENT"
@@ -21561,12 +21539,12 @@ end
    <Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
   </LuaExpression>
   <LuaExpression Name="code">
-   <Formula>_JBTSA_SPD_code()</Formula>
+   <Formula>_SA_SPD_code()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_SPD_code()" ReturnType="String" Description="Obtains the code for a derailer machine, derived from the derailer it is related to with 'Driver sporsperre'.">
-   <Constructor>String _JBTSA_SPD_code()</Constructor>
+  <LuaFunction Name="_SA_SPD_code()" ReturnType="String" Description="Obtains the code for a derailer machine, derived from the derailer it is related to with 'Driver sporsperre'.">
+   <Constructor>String _SA_SPD_code()</Constructor>
    <Formula>
-				function _JBTSA_SPD_code()
+				function _SA_SPD_code()
 					s = "Driver sporsperre"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
@@ -21696,12 +21674,12 @@ end
    </Variant>
   </Variants>
   <LuaExpression Name="code">
-   <Formula>_JBTSA_SPD_code()</Formula>
+   <Formula>_SA_SPD_code()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_SPD_code()" ReturnType="String" Description="Obtains the code for a local control panel, derived from the switch or derailer it is related to with 'Omstiller sporveksel' or 'Omstiller sporsperre'.">
-   <Constructor>String _JBTSA_SPD_code()</Constructor>
+  <LuaFunction Name="_SA_SPD_code()" ReturnType="String" Description="Obtains the code for a local control panel, derived from the switch or derailer it is related to with 'Omstiller sporveksel' or 'Omstiller sporsperre'.">
+   <Constructor>String _SA_SPD_code()</Constructor>
    <Formula>
-				function _JBTSA_SPD_code()
+				function _SA_SPD_code()
 					local s = "Omstiller sporveksel/sporsperre"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
@@ -21730,12 +21708,12 @@ end
    <Formula>"Lok."..code</Formula>
   </LuaExpression>
   <LuaExpression Name="dir">
-   <Formula>_JBTSA_LOK_dir()</Formula>
+   <Formula>_SA_LOK_dir()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTSA_LOK_dir()" ReturnType="String" Description="Obtains the dir (direction) for a local control panel, derived from the switch or derailer it is related to with 'Omstiller sporveksel/sporsperre'.">
-   <Constructor>String _JBTSA_LOK_dir()</Constructor>
+  <LuaFunction Name="_SA_LOK_dir()" ReturnType="String" Description="Obtains the dir (direction) for a local control panel, derived from the switch or derailer it is related to with 'Omstiller sporveksel/sporsperre'.">
+   <Constructor>String _SA_LOK_dir()</Constructor>
    <Formula>
-				function _JBTSA_SPD_code()
+				function _SA_SPD_code()
 					s = "Omstiller sporveksel/sporsperre"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
