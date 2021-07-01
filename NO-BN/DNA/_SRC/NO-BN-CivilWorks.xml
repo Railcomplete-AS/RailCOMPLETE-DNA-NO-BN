@@ -14,14 +14,14 @@
 <!--========================================================================================================
 	UNDERBYGNING
 	KABELFØRINGER
-	KU-KFØ Kabelkanal
+	JBTKU_KFØ Kabelkanal
 	Cable ducts are made from concrete or plastic, where cables may enter or exit at any time through the use of a 
 	duct connection element. 
 	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
 	TODO: Add duct connection elements.
 	TODO: Automatic routing of cables in cable ducts. Modelchecking of duct fill percentage.
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Kabelkanal"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Kabelkanal"
 				Layer="JBTKU_KFØ_KABELKANAL" Color="ByLayer" 
 				Group="Underbygning/Føringsveier"
 				>
@@ -53,13 +53,13 @@
 		<SetValue Key="Sweep3D" Value="True" />
 		<SetValue Key="QuickMode3D" Value="True" />
 
-		<LuaFunction Name="_KU_KFOE_Duct_getStartEndAndJump" 
+		<LuaFunction Name="_JBTKU_KFOE_Duct_getStartEndAndJump" 
 				ReturnType="AlignmentInfo,AlignmentInfo,Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns alignmentInfo structs for one duct element's start and end, plus the jump length from start to end along the duct's alignment. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>AlignmentInfo,AlignmentInfo,Double _KU_KFOE_Duct_getStartEndAndJump(_position)</Constructor>
+			<Constructor>AlignmentInfo,AlignmentInfo,Double _JBTKU_KFOE_Duct_getStartEndAndJump(_position)</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_getStartEndAndJump(_position)
+				function _JBTKU_KFOE_Duct_getStartEndAndJump(_position)
 					--Interpret 'Cant' stored in duct's alignment as extra offset (usually the lift of the closest rail) [mm]:
 					local id,pos,len2d,offset,s,e,a,b
 					id = _position.ref.id
@@ -85,15 +85,15 @@
 
 		<!-- Trick: If QuickMode3D is False, then use possible Cant in the duct alignment as the height to add in 3D: -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Offset3D.X" ><Formula>sweep3D and 0 or _KU_KFOE_Duct_Offset3dX(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_Offset3dX" ReturnType="Double"
+		<LuaExpression Name="Offset3D.X" ><Formula>sweep3D and 0 or _JBTKU_KFOE_Duct_Offset3dX(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_Offset3dX" ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns sideways offset for cable duct element (midway betwen end points on alignment). Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_Duct_Offset3dX(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Duct_Offset3dX(_position)</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_Offset3dX(_position)
+				function _JBTKU_KFOE_Duct_Offset3dX(_position)
 					local s,e,m
-					s,e = _KU_KFOE_Duct_getStartEndAndJump(_position)
+					s,e = _JBTKU_KFOE_Duct_getStartEndAndJump(_position)
 					m = getAlignmentInfo(_position.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
 					return m.DistanceToAlignment
 				end	
@@ -101,12 +101,12 @@
 		</LuaFunction>
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Offset3D.Z" ><Formula>_KU_KFOE_Duct_Offset3dZ(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_Offset3dZ" 
+		<LuaExpression Name="Offset3D.Z" ><Formula>_JBTKU_KFOE_Duct_Offset3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_Offset3dZ" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns an extra elevation for the cable duct element, as stored in millimeter as Cant data. Copy cant data from closest track's relevant cant using Alignment Manager datagrid/Cant. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_Duct_Offset3dZ(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Duct_Offset3dZ(_position)</Constructor>
 			<Formula>
 				function _TFGC_CCC_Offset3dZ(_position)
 					startAi,endAi,jumpDist = _TFGC_CCC_getStartEndAndJump(_position)
@@ -123,17 +123,17 @@
 		
 		<!-- Cant gradient is stored as per mille - using possible Cant information in the alignment (measured in millimeter, just copy from neighbor track's Cant) -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Rotation3D.X" ><Formula>_KU_KFOE_Duct_Rotation3dX(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_Rotation3dX" 
+		<LuaExpression Name="Rotation3D.X" ><Formula>_JBTKU_KFOE_Duct_Rotation3dX(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_Rotation3dX" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns the pitch [Decimal Degrees] for the cable duct element, adding the effects of general vertical profile and the additional duct elevation stored as alignment 'cant'. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_Duct_Rotation3dX(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Duct_Rotation3dX(_position)</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_Rotation3dX(_position)
+				function _JBTKU_KFOE_Duct_Rotation3dX(_position)
 					local s,e,m
 					local jump
-					s,e,jump = _KU_KFOE_Duct_getStartEndAndJump(_position)
+					s,e,jump = _JBTKU_KFOE_Duct_getStartEndAndJump(_position)
 					sc = RC__isNan(s.Cant) and 0 or s.Cant
 					ec = RC__isNan(e.Cant) and 0 or e.Cant
 					return math.deg( math.atan((e.Elevation-s.Elevation) + (ec/1000-sc/1000), jump) )
@@ -142,30 +142,30 @@
 		</LuaFunction>
 		
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Rotation3D.Z" ><Formula>_KU_KFOE_Duct_Rotation3dZ(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_Rotation3dZ" 
+		<LuaExpression Name="Rotation3D.Z" ><Formula>_JBTKU_KFOE_Duct_Rotation3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_Rotation3dZ" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns the yaw [Decimal Degrees] for the cable duct element. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_Duct_Rotation3dZ(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Duct_Rotation3dZ(_position)</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_Rotation3dZ(_position)
+				function _JBTKU_KFOE_Duct_Rotation3dZ(_position)
 					local s,e,m
-					s,e = _KU_KFOE_Duct_getStartEndAndJump(_position)
+					s,e = _JBTKU_KFOE_Duct_getStartEndAndJump(_position)
 					m = getAlignmentInfo(_position)
 					return math.deg( (math.atan(e.Point.Y-s.Point.Y,e.Point.X-s.Point.X) - math.atan(m.Tangent.Y,m.Tangent.X)) )
 				end	
 			</Formula>
 		</LuaFunction>
 		
-		<LuaExpression Name="Linetype" ><Formula>_KU_KFOE_Duct_Linetype()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_Linetype" 
+		<LuaExpression Name="Linetype" ><Formula>_JBTKU_KFOE_Duct_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_Linetype" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the CAD system 2D presentation line type for the cable duct, based on its Variant." >
-			<Constructor>String _KU_KFOE_Duct_Linetype()</Constructor>
+			<Constructor>String _JBTKU_KFOE_Duct_Linetype()</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_Linetype()
+				function _JBTKU_KFOE_Duct_Linetype()
 					if Variant:lower():match("1%-løps") then return "RC-DASHED-01"
 					elseif Variant:lower():match("2%-løps") then return "RC-DASHED-02"
 					elseif Variant:lower():match("3%-løps") then return "RC-DASHED-03"
@@ -175,14 +175,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="GlobalWidth" ><Formula>_KU_KFOE_Duct_GlobalWidth()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_GlobalWidth" 
+		<LuaExpression Name="GlobalWidth" ><Formula>_JBTKU_KFOE_Duct_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_GlobalWidth" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the global width of the cable duct's 2D representation as a wide polyline." >
-			<Constructor>Double _KU_KFOE_Duct_GlobalWidth()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Duct_GlobalWidth()</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_GlobalWidth()
+				function _JBTKU_KFOE_Duct_GlobalWidth()
 					if Variant:lower():match("1%-løps, 30 cm") then return 0.30
 					elseif Variant:lower():match("1%-løps, 40 cm") then return 0.40
 					elseif Variant:lower():match("2%-løps, 60 cm") then return 0.62
@@ -193,14 +193,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DName" ><Formula>_KU_KFOE_Duct_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Duct_Model3DName()" 
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKU_KFOE_Duct_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Duct_Model3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the cable duct default 3D object model name." >
-			<Constructor>String _KU_KFOE_Duct_Model3DName()</Constructor>
+			<Constructor>String _JBTKU_KFOE_Duct_Model3DName()</Constructor>
 			<Formula>
-				function _KU_KFOE_Duct_Model3DName()
+				function _JBTKU_KFOE_Duct_Model3DName()
 					t = Sweep3D and "NO-BN-SWEEP-KU-KFØ-KABELKANAL-" or "NO-BN-3D-KU-KFØ-KABELKANAL-"
 					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS-MED-50-50-LOKK"
 					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS-MED-50-50-LOKK"
@@ -214,14 +214,14 @@
 		</LuaFunction>
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Model3DSeparation" ><Formula>Sweep3D and RC__getNearest3DStep(1.0) or _KU_KFOE_duct_Model3DSeparation(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_duct_Model3DSeparation()" 
+		<LuaExpression Name="Model3DSeparation" ><Formula>Sweep3D and RC__getNearest3DStep(1.0) or _JBTKU_KFOE_duct_Model3DSeparation(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_duct_Model3DSeparation()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the distance to the next 3D model insertion point along the alignment axis during 3D Preview or 3D Export. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_duct_Model3DSeparation(Double _position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_duct_Model3DSeparation(Double _position)</Constructor>
 			<Formula>
-				function _KU_KFOE_duct_Model3DSeparation(pos)
+				function _JBTKU_KFOE_duct_Model3DSeparation(pos)
 					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
 					-- This simple formula assumes that the Model3D is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
 					-- TODO: Implement 'SweepMode3D' which interprets the given 3D Model Name as a 2D section to be sweeped (or twisted, if Cant info is provided).
@@ -253,23 +253,23 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DOffset" ><Formula>Sweep3D and 0 or RC__round(_KU_KFOE_duct_Model3DSeparation()/2, 1)</Formula></LuaExpression>
+		<LuaExpression Name="Model3DOffset" ><Formula>Sweep3D and 0 or RC__round(_JBTKU_KFOE_duct_Model3DSeparation()/2, 1)</Formula></LuaExpression>
 
 		<PropertyPrompt Key="code" DefaultValue="Kabelkanal" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 30 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-CABLE-DUCT-1-CHAMBER-300-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 30 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-KABELKANAL-1-LOEPS-300-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 40 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-CABLE-DUCT-1-CHAMBER-400-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 40 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-KABELKANAL-1-LOEPS-400-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Kabelkanal, betong, 2-løps, 60 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-CABLE-DUCT-2-CHAMBER-620-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kabelkanal, betong, 2-løps, 60 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-KABELKANAL-2-LOEPS-620-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Kabelkanal, betong, 3-løps, 60 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-CABLE-DUCT-3-CHAMBER-620-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kabelkanal, betong, 3-løps, 60 cm" SubGroup="Kabelkanaler" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-KABELKANAL-3-LOEPS-620-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
@@ -284,7 +284,7 @@
 	Tube packages made from plastic or steel, most often with concrete encasing, where cables may NOT 
 	enter or exit except at the ends. 
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Rørpakke"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Rørpakke"
 				Layer="JBTKU_KFØ_RØRPAKKE" Color="ByLayer" 
 				Group="Underbygning/Føringsveier"
 				>
@@ -332,27 +332,27 @@
 
 		<LuaExpression Name="name" ><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
-		<LuaExpression Name="Linetype" ><Formula>_KU_KFOE_Package_Linetype()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Package_Linetype" 
+		<LuaExpression Name="Linetype" ><Formula>_JBTKU_KFOE_Package_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Package_Linetype" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the CAD system 2D presentation line type for the cable tube package, based on its Variant." >
-			<Constructor>String _KU_KFOE_Package_Linetype()</Constructor>
+			<Constructor>String _JBTKU_KFOE_Package_Linetype()</Constructor>
 			<Formula>
-				function _KU_KFOE_Package_Linetype()
+				function _JBTKU_KFOE_Package_Linetype()
 					return "Continuous"
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="GlobalWidth" ><Formula>_KU_KFOE_Package_GlobalWidth()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Package_GlobalWidth" 
+		<LuaExpression Name="GlobalWidth" ><Formula>_JBTKU_KFOE_Package_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Package_GlobalWidth" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the global width of the cable tube package's 2D representation as a wide polyline." >
-			<Constructor>Double _KU_KFOE_Package_GlobalWidth()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Package_GlobalWidth()</Constructor>
 			<Formula>
-				function _KU_KFOE_Package_GlobalWidth()
+				function _JBTKU_KFOE_Package_GlobalWidth()
 					    if Variant == "Rørpakke, omstøpt, 1x2xØ110" then return 0.310
 					elseif Variant == "Rørpakke, omstøpt, 2x2xØ110" then return 0.310
 					elseif Variant == "Rørpakke, omstøpt, 3x2xØ110" then return 0.310
@@ -367,20 +367,20 @@
 					elseif Variant == "Rørpakke, omstøpt, 4x4xØ110" then return 0.590
 					elseif Variant == "Rørpakke, omstøpt, 3x(3xØ110-Ø160),(3xØ110)" then return 0.640
 					else 
-						return 0,"Bad variant ["..Variant.."]."
+						return 0,"Unrecognized variant ["..Variant.."]."
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DName" ><Formula>_KU_KFOE_Package_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Package_Model3DName()" 
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKU_KFOE_Package_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Package_Model3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the tube package default 3D object model name." >
-			<Constructor>Double _KU_KFOE_Package_Model3DName()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Package_Model3DName()</Constructor>
 			<Formula>
-				function _KU_KFOE_Package_Model3DName()
+				function _JBTKU_KFOE_Package_Model3DName()
 					    if Variant == "Rørpakke, omstøpt, 1x2xØ110" then return "NO-BN-SWEEP-KU-KFØ-OMSTØPT-RØRPAKKE-(1x(G110-G110))"
 					elseif Variant == "Rørpakke, omstøpt, 2x2xØ110" then return "NO-BN-SWEEP-KU-KFØ-OMSTØPT-RØRPAKKE-(2x(G110-G110))"
 					elseif Variant == "Rørpakke, omstøpt, 3x2xØ110" then return "NO-BN-SWEEP-KU-KFØ-OMSTØPT-RØRPAKKE-(3x(G110-G110))"
@@ -396,7 +396,7 @@
 					elseif Variant == "Rørpakke, omstøpt, 3x(3xØ110-Ø160),(3xØ110)" then 
 						return "NO-BN-SWEEP-KU-KFØ-OMSTØPT-RØRPAKKE-(3x(B110-Y110-R110-G160)-(B110-Y110-R110))"
 					else 
-						return "???","Bad variant ["..Variant.."]."
+						return "???","Unrecognized variant ["..Variant.."]."
 					end
 				end
 			</Formula>
@@ -406,18 +406,18 @@
 		<LuaExpression Name="Model3DSeparation" ><Formula>RC__getNearest3DStep(0.25)</Formula></LuaExpression>
 		<LuaExpression Name="Model3DOffset" ><Formula>0</Formula></LuaExpression>
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Offset3D.Z" ><Formula>_KU_KFOE_Package_Offset3dZ(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_Package_Offset3dZ()" ReturnType="String" HideFromUser="false"
+		<LuaExpression Name="Offset3D.Z" ><Formula>_JBTKU_KFOE_Package_Offset3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_Package_Offset3dZ()" ReturnType="String" HideFromUser="false"
 				Description="Returns the tube package default elevation, interpolated linearly from the nearest manhole (or track) close to each end. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_Package_Offset3dZ(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_Package_Offset3dZ(_position)</Constructor>
 			<Formula>
-				function _KU_KFOE_Package_Offset3dZ(_position)
+				function _JBTKU_KFOE_Package_Offset3dZ(_position)
 					--Draw concrete encased tubes in a straight line from one end to the other
 					zOffsetFromManhole = 0.900 --[m]
 					p1 = RcAlignment.StartPoint
 					p2 = RcAlignment.EndPoint
-					m1 = getNearbyPointObjects2D(p1, 2.5, "KU-KFØ Trekkekum")
-					m2 = getNearbyPointObjects2D(p2, 2.5, "KU-KFØ Trekkekum")
+					m1 = getNearbyPointObjects2D(p1, 2.5, "JBTKU_KFØ Trekkekum")
+					m2 = getNearbyPointObjects2D(p2, 2.5, "JBTKU_KFØ Trekkekum")
 					n1 = getCollectionLength(m1)
 					n2 = getCollectionLength(m2) 
 					if n1 + n2 == 0 then
@@ -442,55 +442,55 @@
 
 		<PropertyPrompt Key="code" DefaultValue="Omstøpt rørpakke" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x2xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x2xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x2xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x2xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x2xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x2xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x2xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x2xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x3xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x3xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x3xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x3xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x3xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x3xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x3xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x3xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x4xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 1x4xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x4xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 2x4xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x4xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x4xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x4xØ110" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 4x4xØ110" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x(3xØ110-Ø160),(3xØ110)" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Rørpakke, omstøpt, 3x(3xØ110-Ø160),(3xØ110)" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-OMSTOEPTE-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
@@ -502,11 +502,11 @@
 <!--========================================================================================================
 	UNDERBYGNING
 	KABELFØRINGER
-	KU-KFØ Pressrør
+	JBTKU_KFØ Pressrør
 	Tube packages made from hard polymere or steel, where cables may NOT enter or exit except at the ends. 
 	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Pressrør"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Pressrør"
 				Layer="JBTKU_KFØ_PRESSRØR" Color="ByLayer" 
 				Group="Underbygning/Føringsveier"
 				>
@@ -536,27 +536,27 @@
 		<SetValue Key="Sweep3D" Value="True" />
 		<SetValue Key="QuickMode3D" Value="True" />
 
-		<LuaExpression Name="Linetype" ><Formula>_KU_KFOE_StiffTube_Linetype()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_StiffTube_Linetype" 
+		<LuaExpression Name="Linetype" ><Formula>_JBTKU_KFOE_StiffTube_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_StiffTube_Linetype" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the CAD system 2D presentation line type for the stiff tube package, based on its Variant." >
-			<Constructor>String _KU_KFOE_StiffTube_Linetype()</Constructor>
+			<Constructor>String _JBTKU_KFOE_StiffTube_Linetype()</Constructor>
 			<Formula>
-				function _KU_KFOE_StiffTube_Linetype()
+				function _JBTKU_KFOE_StiffTube_Linetype()
 					return "Continuous" --(same enum for alle language packs)
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="GlobalWidth" ><Formula>_KU_KFOE__KU_KFOE_StiffTube_GlobalWidth()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE__KU_KFOE_StiffTube_GlobalWidth" 
+		<LuaExpression Name="GlobalWidth" ><Formula>_JBTKU_KFOE__JBTKU_KFOE_StiffTube_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE__JBTKU_KFOE_StiffTube_GlobalWidth" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the global width of the stiff  tube package's 2D representation as a wide polyline." >
-			<Constructor>Double _KU_KFOE__KU_KFOE_StiffTube_GlobalWidth()</Constructor>
+			<Constructor>Double _JBTKU_KFOE__JBTKU_KFOE_StiffTube_GlobalWidth()</Constructor>
 			<Formula>
-				function _KU_KFOE__KU_KFOE_StiffTube_GlobalWidth()
+				function _JBTKU_KFOE__JBTKU_KFOE_StiffTube_GlobalWidth()
 					if Variant:match("Pressrør Ø160") then return 0.160
 					elseif Variant:match("Pressrør Ø400") then return 0.400
 					else
@@ -566,14 +566,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DName" ><Formula>_KU_KFOE_StiffTube_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_StiffTube_Model3DName()" 
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKU_KFOE_StiffTube_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_StiffTube_Model3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the tube package default 3D object model name." >
-			<Constructor>Double _KU_KFOE_StiffTube_Model3DName()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_StiffTube_Model3DName()</Constructor>
 			<Formula>
-				function _KU_KFOE_StiffTube_Model3DName()
+				function _JBTKU_KFOE_StiffTube_Model3DName()
 					t = "NO-BN-SWEEP-KU-KFØ-PRESSRØR-DIAMETER-"
 					if Variant:match("Pressrør Ø160") then return t.."144-160-TOMT"
 					elseif Variant:match("Pressrør Ø400") then return t.."360-400-TOMT"
@@ -590,11 +590,11 @@
 		<PropertyPrompt Key="code" DefaultValue="Pressrør" AcceptEmptyValue="false" />
 
 		<!-- Only straight segments (tangents) allowed - steel tubes don't bend... -->
-		<InsertAlignment VariantName="Pressrør Ø160 uten subrør" SubGroup="Pressrør" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Pressrør Ø160 uten subrør" SubGroup="Pressrør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-PRESSROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Pressrør Ø400 uten subrør" SubGroup="Pressrør" DisplayBlockName="NO-BN-2D-JBTKU-CLOSED-CABLE-CONDUIT-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Pressrør Ø400 uten subrør" SubGroup="Pressrør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-PRESSROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
@@ -612,7 +612,7 @@
 	the track or nearby a railway track.
 	TODO: Avklare med Bane NOR om TAG-koden kan benyttes,
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="KU-KFØ Trekkerør"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Trekkerør"
 				Layer="JBTKU_KFØ_TREKKERØR" Color="ByLayer" 
 				Group="Underbygning/Føringsveier"
 				>
@@ -638,27 +638,27 @@
 		<SetValue Key="Sweep3D" Value="True" />
 		<SetValue Key="QuickMode3D" Value="False" />
 
-		<LuaExpression Name="Linetype" ><Formula>_KU_KFOE_tube_Linetype()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_tube_Linetype" 
+		<LuaExpression Name="Linetype" ><Formula>_JBTKU_KFOE_tube_Linetype()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_tube_Linetype" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the CAD system 2D presentation line type for the flexible tube, based on its Variant." >
-			<Constructor>String _KU_KFOE_tube_Linetype()</Constructor>
+			<Constructor>String _JBTKU_KFOE_tube_Linetype()</Constructor>
 			<!-- TODO 2021-05-16 CLFEY Implement ZIGZAG line for flexible tubes -->
 			<Formula>
-				function _KU_KFOE_tube_Linetype()
+				function _JBTKU_KFOE_tube_Linetype()
 					return "Continuous" --(same enum for alle language packs)
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="GlobalWidth" ><Formula>_KU_KFOE_tube_GlobalWidth()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_tube_GlobalWidth" ReturnType="Double"
+		<LuaExpression Name="GlobalWidth" ><Formula>_JBTKU_KFOE_tube_GlobalWidth()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_tube_GlobalWidth" ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the global width of the flexible tube's 2D representation as a wide polyline." >
-			<Constructor>Double _KU_KFOE_tube_GlobalWidth()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_tube_GlobalWidth()</Constructor>
 			<Formula>
-				function _KU_KFOE_tube_GlobalWidth()
+				function _JBTKU_KFOE_tube_GlobalWidth()
 					if Variant:match("Ø50") then return 0.050
 					elseif Variant:match("Ø75") then return 0.075
 					elseif Variant:match("Ø110") then return 0.110
@@ -671,14 +671,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DName" ><Formula>_KU_KFOE_tube_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_tube_Model3DName()" 
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKU_KFOE_tube_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_tube_Model3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the flexible tube default 3D object model name." >
-			<Constructor>String _KU_KFOE_tube_Model3DName()</Constructor>
+			<Constructor>String _JBTKU_KFOE_tube_Model3DName()</Constructor>
 			<Formula>
-				function _KU_KFOE_tube_Model3DName()
+				function _JBTKU_KFOE_tube_Model3DName()
 					local t = "NO-BN-SWEEP-KU-KFØ-TREKKERØR-RØD-DIAMETER-"
 					if Variant:match("Ø50") then return t.."042-050"
 					elseif Variant:match("Ø75") then return t.."063-075"
@@ -694,16 +694,16 @@
 
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="Offset3D.Z" ><Formula>_KU_KFOE_tube_Offset3dZ(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_tube_Offset3dZ()" 
+		<LuaExpression Name="Offset3D.Z" ><Formula>_JBTKU_KFOE_tube_Offset3dZ(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_tube_Offset3dZ()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the flexible tube Z offset along the geometry, relative to the duct bottom located at the start of the tube's alignment geometry. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _KU_KFOE_tube_Offset3dZ(SampledPosition _position)</Constructor>
+			<Constructor>Double _JBTKU_KFOE_tube_Offset3dZ(SampledPosition _position)</Constructor>
 			<Formula>
-				function _KU_KFOE_tube_Offset3dZ(cursor)
+				function _JBTKU_KFOE_tube_Offset3dZ(cursor)
 					local P1 = RcAlignment.StartPoint
-					local ducts = getClosestAlignments("KU-KFØ Kabelkanal",P1.X,P1.Y)
+					local ducts = getClosestAlignments("JBTKU_KFØ Kabelkanal",P1.X,P1.Y)
 					if getCollectionLength(ducts) == 0 then
 						return 0,_info("UNFINISHED - No cable duct found at flexible tube's geometry start point.")
 					end
@@ -759,23 +759,23 @@
 
 		<PropertyPrompt Key="code" DefaultValue="Trekkerør" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Trekkerør, Ø50" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-FLEXIBLE-TUBE-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Trekkerør, Ø50" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Trekkerør, Ø75" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-FLEXIBLE-TUBE-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Trekkerør, Ø75" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Trekkerør, Ø110" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-FLEXIBLE-TUBE-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Trekkerør, Ø110" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Trekkerør, Ø125" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-FLEXIBLE-TUBE-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Trekkerør, Ø125" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
-		<InsertAlignment VariantName="Trekkerør, Ø160" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-JBTKU-THUMBNAIL-FLEXIBLE-TUBE-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Trekkerør, Ø160" SubGroup="Trekkerør" DisplayBlockName="NO-BN-2D-##RC_THUMBNAIL-KABELFOERING-TREKKEROER-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
@@ -787,10 +787,10 @@
 <!--========================================================================================================
 	UNDERBYGNING
 	KABELFØRINGER
-	KU-KFØ Trekkekum
+	JBTKU_KFØ Trekkekum
 	Manhole - generally made out of concrete, may be made out of hard polynmere or steel.
  =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KU-KFØ Trekkekum"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTKU_KFØ Trekkekum"
 				Layer="JBTKU_KFØ_TREKKEKUM" Color="ByLayer" 
 				Group="Underbygning/Føringsveier"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -897,12 +897,12 @@
 			</Values>
 		</CustomAttribute>
 
-		<LuaExpression Name="code" ><Formula>_KU_KFOE_manhole_code()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_manhole_code()" ReturnType="String"
+		<LuaExpression Name="code" ><Formula>_JBTKU_KFOE_manhole_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_manhole_code()" ReturnType="String"
 			Description="Obtains the code for the manhole, as a concatenation of the manhole's reference mileage km-value and the current 'seq' local variable." >
-			<Constructor>String _KU_KFOE_manhole_code()</Constructor>
+			<Constructor>String _JBTKU_KFOE_manhole_code()</Constructor>
 			<Formula>
-				function _KU_KFOE_manhole_code()
+				function _JBTKU_KFOE_manhole_code()
 					entireKm = math.floor(ReferenceMileage/1000)
 					return string.format("TK-%d-%02d",entireKm,seq),_info("Manhole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable seq ("..seq..").")
 				end
@@ -911,20 +911,20 @@
 
 		<LuaExpression Name="name" ><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
-		<LuaExpression Name="DistanceToAlignment" ><Formula>_KU_KFOE_manhole_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_manhole_DistanceToAlignment()" 
+		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTKU_KFOE_manhole_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_manhole_DistanceToAlignment()" 
 				ReturnType="Double"
 				Description="Returns manhole's default 3D object model name." >
-			<Constructor>Double _KU_KFOE_manhole_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_manhole_DistanceToAlignment()</Constructor>
 			<Formula>
-				function _KU_KFOE_manhole_DistanceToAlignment() 
+				function _JBTKU_KFOE_manhole_DistanceToAlignment() 
 					local diameter = Variant:match("Ø(%d+)")
 					local length = Variant:match("(%d+)X%d+")
 					local depth = Variant:match("%d+X(%d+)")
 					local MinFreeProfile = 2.30 --Bane NOR TRV value
 					local StdFreeProfile = 2.52 --Bane NOR TRV value
 					local d
-					a = getClosestAlignments("KU-KFØ Kabelkanal")
+					a = getClosestAlignments("JBTKU_KFØ Kabelkanal")
 					if diameter then
 						--Should "touch" MinFreeProfile, insertion point = center manhole at Top-of-rail
 						d = MinFreeProfile + diameter/2000
@@ -944,13 +944,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DName" ><Formula>_KU_KFOE_manhole_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_KU_KFOE_manhole_Model3DName()" 
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKU_KFOE_manhole_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_manhole_Model3DName()" 
 				ReturnType="String"
 				Description="Returns manhole's default 3D object model name." >
-			<Constructor>String _KU_KFOE_manhole_Model3DName()</Constructor>
+			<Constructor>String _JBTKU_KFOE_manhole_Model3DName()</Constructor>
 			<Formula>
-				function _KU_KFOE_manhole_Model3DName()
+				function _JBTKU_KFOE_manhole_Model3DName()
 					local diameter = Variant:match("Ø(%d+)")
 					local length = Variant:match("(%d+)X%d+")
 					local depth = Variant:match("%d+X(%d+)")
@@ -1611,7 +1611,7 @@
 						return "NO-BN-3D-EH-FUN-GITTERMAST-H3-1600x"..bw.."x500-"..bo.."-1100x1100-830x830xM36-"..sh
 					
 					else
-						return _error,"Bad variant ["..Variant.."]."
+						return _error,"Unrecognized variant ["..Variant.."]."
 					end
 				end
 			</Formula>
