@@ -1301,7 +1301,8 @@
 	; else just create first-time block:
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
-	(setq nSchematicBlocks (+ 1 nSchematicBlocks)) ; Global counter, increment.
+	(setq nSchematicBlocks (+ nSchematicBlocks 1)) ; Global counter, increment.
+	(setq nBlocksTotal (+ nBlocksTotal 1))
 	(SetLayer layDef_Zero)
 	(SetDefaultObjectPropertiesToByBlock)
 )
@@ -1333,7 +1334,8 @@
 	; else just create first-time block:
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
-	(setq nAnnotativeBlocks (+ 1 nAnnotativeBlocks)) ; Global counter, increment.
+	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1)) ; Global counter, increment.
+	(setq nBlocksTotal (+ nBlocksTotal 1))
 	(SetLayer layDef_Zero)
 	(SetDefaultObjectPropertiesToByBlock)
 )
@@ -1351,7 +1353,8 @@
 	; else just create first-time block:
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsNotAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
-	(setq nMetricBlocks (+ 1 nMetricBlocks)) ; Global counter, increment.
+	(setq nMetricBlocks (+ nMetricBlocks 1)) ; Global counter, increment.
+	(setq nBlocksTotal (+ nBlocksTotal 1))
 	(SetLayer layDef_Zero)
 	(SetDefaultObjectPropertiesToByBlock)
 )
@@ -1398,6 +1401,7 @@
 		(command _BLOCK_ blockName                 _blockAnnotativity_ _blockIsAnnotative_ _keepOrientation_ _origo_ _selectAll_ _ENTER_)
 	)
 	(setq nAnnotativeBlocks (+ nAnnotativeBlocks 1))
+	(setq nBlocksTotal (+ nBlocksTotal 1))
 	(SetLayer layDef_Zero)
 	(SetDefaultObjectPropertiesToByBlock)
 )
@@ -1416,5 +1420,6 @@
 	(command _PURGE_ _purgeBlocks_ blockNames _purgeWithoutVerification_) ; Erase specified block(s) from block table
 	(SetLayer layDef_Zero)
 	(setq nSchematicBlocks (- nSchematicBlocks 1)) ; One block removed...
+	(setq nBlocksTotal (- nBlocksTotal 1))
 	(SetDefaultObjectPropertiesToByBlock)
 )

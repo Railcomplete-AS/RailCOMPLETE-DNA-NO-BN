@@ -78,7 +78,6 @@ if "%ADM%" equ "" (
 		rem A copy of xppq.exe, xppq.xcfg and xppq.xlcl can be found in the \Github\RailCOMPLETE\Customization\_TOOLBOX\XPPq folder.
 		rem These three files must be present in the folder from which xppq is run:
 		xppq.exe "%ADM%-RootFile.xml" > ..\%ADM%-%RELEASE%-DNA.xml
-		echo f | xcopy /Y /I /E %ADM%-%RELEASE%-StyleDefinitions.xml ..\%ADM%-%RELEASE%-StyleDefinitions.xml
 		cd ..
 		dir %ADM%-%RELEASE%-*.xml
 	pause
