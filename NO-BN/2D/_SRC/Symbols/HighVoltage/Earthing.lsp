@@ -54,7 +54,7 @@
 
 
 (defun JORDINGSSKINNE ( / blockName description x y d r p1 p2 p3 p4 )
-	; For montasje under datagulv i bygninger, på vegg, i trekkekum med mer. 
+	; For montasje under datagulv i bygninger, på vegg, i MANHOLE med mer. 
 	; Benyttes hos Bane NOR i 50x10x290 (9xØ13 pluss et Ø5 hull for merking) eller 50x10x530 (17xØ13 pluss 1xØ5). Galvanisert (GMB utførelse) eller ren kobber (mest vanlig).
 	; Monteres 40mm fra underlaget.
 	; Se også "magebelte" rundt HEB-master, ref ECT tegning / JEMTLAND (Gjøvik) tegning for HEB260 mast (i RC_3D-katalog for EH-JSK).

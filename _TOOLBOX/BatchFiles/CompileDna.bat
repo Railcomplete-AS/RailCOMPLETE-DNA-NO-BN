@@ -46,9 +46,20 @@ if "%ADM%" equ "" (
 	echo         *
 
 	REM *** Check that relaseName found in Windows environment variable matches IRI info in DNA RootFile.xml:
+
+	REM Use bangs (!) instead of percent (%) around variables to delay their assignment.
+	REM Read about "Delayed Expansion" -  this is curcial to how this batch file works.
 	REM In order to delay variable expansion inside for loops, we must enable delayed expansion.
-	REM Use bangs (!) instead of percents (%) around variables to delay their assignment.
 	SETLOCAL ENABLEDELAYEDEXPANSION
+
+	REM The FIND batch command is a basic MS-DOS command, so the PATH environment var must contain "C:\Windows\System32;".
+	REM Deprecated code - can't use FINDSTR because it also need C:\Windows\System32;...
+	REM Usage:     FINDSTR /I pattern filespec      where /I means "ignore uppercase/lowercase". Returns the full source or nothing.
+	REM findstr /I "C:\Windows\System32" __tmp.txt 
+	REM if NOT ERRORLEVEL 0 set PATH=C:\Windows\System32;!PATH!
+	REM Brute force approach: Just add to path:
+	set path=C:\Windows\System32;!path!
+
 	rem Note: Use double %%a when in batch file. Use single percent sign %a when directly in command shell.
 	for /f "tokens=3 delims=><  " %%a in ('type .\_SRC\%ADM%-RootFile.xml ^| FIND "<VersionNumber>"') do set versionNumber=%%a
 	set fileNameForReleaseCandidate=%ADM%-!versionNumber!-DNA

@@ -50,6 +50,7 @@
 (vl-load-com) ; Load AutoCAD's Visual LISP environment (if not already loaded)
 
 ; Print a trace when running under VLIDE:
+(setq nBlocksTotal 0)
 (setq majorStep 0)
 (setq minorStep 0)
 (setq microStep 0)
@@ -58,16 +59,16 @@
 	(setq majorStep (1+ majorStep))
 	(setq minorStep 0)
 	(setq microStep 0)
-	(princ (strcat "--- Step " (itoa majorStep) " - " msg "\n")) (princ)
+	(princ (strcat nBlocksTotal " --- Step " (itoa majorStep) " - " msg "\n")) (princ)
 )
 (defun TraceLevel2 ( msg / )
 	(setq minorStep (1+ minorStep))
 	(setq microStep 0)
-	(princ (strcat "--- Step " (itoa majorStep) "." (itoa minorStep) " - " msg "\n")) (princ)
+	(princ (strcat nBlocksTotal "--- Step " (itoa majorStep) "." (itoa minorStep) " - " msg "\n")) (princ)
 )
 (defun TraceLevel3 ( msg / )
 	(setq microStep (1+ microStep))
-	(princ (strcat "--- Step " (itoa majorStep) "." (itoa minorStep) "." (itoa microStep) " - " msg "\n")) (princ)
+	(princ (strcat nBlocksTotal "--- Step " (itoa majorStep) "." (itoa minorStep) "." (itoa microStep) " - " msg "\n")) (princ)
 )
 
 
