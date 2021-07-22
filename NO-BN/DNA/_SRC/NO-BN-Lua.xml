@@ -48,15 +48,15 @@
 				-- More symbol frame types may be available - see the appropriate Style Definitions file.
 				_language = 1 -- 1:English, 2:Norwegian, 3:French, 4:German
 				_frames = { 
-					UNFINISHED	= { "Unfinished",	"Uferdig",		"Incomplet",		"Inkomplett"		},
-					HISTORIC	= { "Historic",		"Historisk",	"Historique",		"Historisch"		},
-					ERROR		= { "Error",		"Feil",			"Erreur",			"Fehlerhaft"		},
-					WARNING		= { "Warning",		"Advarsel",		"Avertissement",	"Warnung"			},
-					SECTION_TAG	= { "section",		"avsnitt",		"zone",				"Abschnitt"			},
-					SECTION		= { "Section-2.75",	"Section-2.75",	"Section-2.75",		"Abschnitt-2.75"	}
+					UNFINISHED	= { "Unfinished",			"Uferdig",				"Incomplet",			"Inkomplett"			},
+					HISTORIC	= { "Historic",				"Historisk",			"Historique",			"Historisch"			},
+					ERROR		= { "Error",				"Feil",					"Erreur",				"Fehler"				},
+					WARNING		= { "Warning",				"Advarsel",				"Avertissement",		"Warnung"				},
+					SECTION_TAG	= { "section",				"avsnitt",				"zone",					"Abschnitt"				},
+					SECTION		= { "SymbolFrame-R2.75",	"Symbolramme-R2.75",	"CadreSymbole-R2.75",	"Symbolrahmen-R2.75"	}
 				}
 			
-				--Priority: Show HISTORIC then INCOMPLETE then ERROR then WARNING then OTHER or NO_FRAME
+				--Priority: Show HISTORIC then UNFINISHED then ERROR then WARNING then OTHER or NO_FRAME
 
 				-- By convention, historic layers have names starting with the 'at' character '@':
 				if (layer:sub(1,1) == '@') then
@@ -560,94 +560,84 @@ end
 	Signaling
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_sig_getSignalSightingRequirement()" ReturnType="String"
-		Description="Returns the sighting requirement according to TRV regulations for signals. Speed is extracted from the object's own alignment using getAlignmentInfo().Speed." >
+		Description="Returns the sighting requirement according to TRV regulations for signals. Speed is extracted from the object's own alignment using 'getAlignmentInfo().Speed'. If no design speed is found in the object's own alignment, then 130 km/h will be assumed." >
 		<Constructor>Double NOBN_sig_getSignalSightingRequirement()</Constructor>
 		<Formula>
 function NOBN_sig_getSignalSightingRequirement()
 	local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
 
 	if RcType == "JBTSA_SIG ERTMS" then
-		-- ERTMS marker board - Fixed 150m requirement?
+		-- ERTMS marker board - Fixed 150 m requirement?
 		if MarkerBoard == "-" then
-			return 150,_info(DesignSpeed.." km/h: 150m fixed sighting requirement for ERTMS boards.")
+			return 150,_info(DesignSpeed.." km/h: 150 m fixed sighting requirement for ERTMS boards.")
 		elseif DwarfSignal == "Ja" and MarkerBoard == "-" then
-			return 50,_info("50m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
+			return 50,_info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
 		end
 	
 	elseif RcType == "JBTSA_SIG Signal" then
 		if (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") and not MainSignal:match("^Hs") then
-			return 50,_info("50m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
+			return 50,_info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
 	
 		elseif MainSignal:match("^Hs") and DistantSignal == "-" then
 			-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
 			--NB! If through-signaling is in use, the sighting requirements are reduced to 80 km/h requirements - see TRV change ca 2019.
 			if DesignSpeed &gt; 210 then
-				return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+				return 250,_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 			else 
 				v = math.max(135,math.min(210,DesignSpeed))
-				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 			end
 
 		elseif MainSignal:match("^Hs") and DistantSignal == "-" then 
 			-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 			v = math.max(40,math.min(130,DesignSpeed))
-			return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250m above 130 km/h.")
+			return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 
 		elseif EndOfTrainRoute ~= "-" then
 			-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
 			if DesignSpeed &gt; 210 then
-				return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+				return 250,_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 			else 
 				v = math.max(135,math.min(210,DesignSpeed))
-				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 			end
 	
 		elseif HighShuntingSignal ~= "-" then
-			return 50,_info("50m fixed sighting requirement during shunting movements.")
+			return 50,_info("50 m fixed sighting requirement during shunting movements.")
 	
 		else
 			return 0,_info(DesignSpeed.." km/h: Bad JBTSA_SIG Signal type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
 		end
 
 	
-	elseif RcType == "JBTSA_SIG Brusignal/Frostportsignal" or RcType == "JBTSA_SIG Rasvarslingssignal" then
-		--TODO: Check requirements with Bane NOR
-		if DesignSpeed &gt; 210 then
-			return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
-		else 
-			v = math.max(135,math.min(210,DesignSpeed))
-			return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
-		end
-
-	
-	elseif RcType == "SA-SIG PLO-signal" then
+	elseif RcType == "JBTSA_SIG PLO-signal" then
 		-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
 		if DesignSpeed &gt; 210 then
-			return 250,_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250m above 210 km/h.")
+			return 250,_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 		else 
 			v = math.max(135,math.min(210,DesignSpeed))
-			return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250m above 210 km/h.")
+			return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 		end
 
 	elseif RcType == "SA-SIG PLO-forsignal" then
 		-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 		v = math.max(40,math.min(130,DesignSpeed))
-		return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250m above 130 km/h.")
+		return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 
 	elseif RcType == "JBTSA_SIG Veisignal" then
 		--Signal mot vei
-		return 30,_info("30m fixed sighting requirement for road traffic towards level crossing signal (To be verified!).")
+		return 30,_info("30 m fixed sighting requirement for road traffic towards level crossing signal (To be verified!).")
 
 	elseif RcType == "JBTSA_SIG Brusignal/Frostportsignal" then 
 		--Samme byggeteknikk som for 3-lys Hs (2 røde blink / 1 hvit blink)
-		return 150,_info("150m fixed sighting requirement for bridge / frost gate signal (To be verified!).")
+		return 150,_info("150 m fixed sighting requirement for bridge / frost gate signal (To be verified!).")
 
 	elseif RcType == "JBTSA_SIG Togsporsignal" then
 		--Ingen spesielle krav, plasseres når lokfører eller ombordansvarlig ikke ser hovedsignal (ikke tillatt i nye anlegg)
-		return 50,_info("50m fixed sighting requirement for Togsporsignal (old type RepHs repeater signal) (To be verified!).")
+		return 50,_info("50 m fixed sighting requirement for Togsporsignal (old type RepHs repeater signal) (To be verified!).")
 
 	else
-		return 0,_info(DesignSpeed.." km/h: Bad signal type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
+		return 0,_info(DesignSpeed.." km/h: Bad signal type [RcType="..RcType..", Variant="..(Variant or "(void)").."].")
 	end
 end
 		</Formula>
@@ -800,7 +790,7 @@ function NOBN_bnp_getBoardSightingRequirement()
 		or Variant:find("54") --54: Sporsperresignal, "sporet fritt"
 		or Variant:find("64E") --64E: Dvergsignalstolpe
 	then
-		return 50,_info("50m fixed sighting requirement during shunting movements.")
+		return 50,_info("50 m fixed sighting requirement during shunting movements.")
 
 	else
 		return 0,_info(DesignSpeed.." km/h: Bad board type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
