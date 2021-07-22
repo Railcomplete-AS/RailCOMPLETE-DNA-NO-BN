@@ -9,16 +9,60 @@
 =========================================================================================================-->
 <xpp:bloc>
 
+<!-- TODO: Consider changing the name of element "CustomAttribute" into "CustomProperty". Our tool is called "RC-ManagePROPERTIES". Try to approach IFC terminology. -->
 
 <!--========================================================================================================
-	PropertyOverrides
-	Declare DisplayName, Descriptions and category grouping (in English or other language) for core 
-	attributes. This has the effect that RC-ManageProperties will present the attribute in a customized 
-	way for a specific administration.
+	PropertyCategory
+	================
 	
+	The principal naming source for the RC-ManageProperties tool is the ResX language system:
+	
+	Category names in RC-ManageProperties			==> Resources\PropertiesResources\PropertyCategoriesResources
+	Property names in RC-ManageProperties			==> Resources\PropertiesResources\PropertyDisplayNameResources
+	Property descriptions in RC-ManageProperties	==> Resources\PropertiesResources\PropertyDescriptionResources
+	
+	The individual intrinsic property categories such as 'Basic', 'General', '3D' etc have display names 
+	already stated in the ResX language system for each language (selected by installing an AutoCAD language pack).
+	
+	-----------------------------------------------------------------------------------------------------------------
+	To reduce confusion, only the neutral language category names are stated in ResX, identical to the ResX keys.
+	But the properties' locale names have been subject to translation in ResX.
+	-----------------------------------------------------------------------------------------------------------------
+	
+	Each intrinsic attribute has a key in RC source code to its corresponding ResX language system text. Each
+	property has a display name in ResX and a description. The display name will be shown in the RC-ManageProperties
+	tool, but the real underlying name (to be used with Lua code) will be shown as a tooltip text together
+	with the descritption from ResX. 
+	
+	Since AutoCAD doesn't come with language packs for every possible language in the world, the DNA allows 
+	the RC agent to override the ResX displayname and description.
+	
+	The language system of RC states a display name for each property category (the 'tabs' in 
+	RC-ManageProperties). However, if a DisplayName is declared inside a PropertyCategory element, then 
+	this display name will override the language system's word. Collapsed="true"/"false" decides whether the
+	category's tab in Property Manager is closed or open at startup. 
+	
+	Note: The order of appearance of the PropertyCategory elements in DNA dictates the categories' order of appearance 
+	in the Manage Properties tool
+
+	Property[Attribute]Override
+	===========================
+	The individual intrinsic properties such as 'dir', 'name', 'poleRouting' etc have display names already stated
+	in the ResX language system for each language (selected by installing an AutoCAD language pack).
+	
+	In ResX, declare display name and description for intrinsic attributes in all available languages. The display name
+	will be the preferred name to display in RC-ManageProperties. The underlying 'real' name must be used in Lua.
+	The tooltip in RC-ManageProperties will show the underlying 'real' name as well as the description.
+	
+	The language system of RC states an alternative name for each property (the 'rows' in RC-ManageProperties 
+	inside a category). However, if a DisplayName is declared inside a PropertyOverride element, then 
+	this display name will override the language system's word.
+	The order of appearance of the PropertyOverride elements dictate their order of appearance in the Manage Properties tool,
+	within the category. The category's ordering is controlled by the ordering of the PropertyCategory elements in DNA.
+
 	Note: In order to change name for a built-in property's category, you must first declare the 
 	core category as collapsed, and then declare the property as a built-in property with the
-	new category nam mentioned.
+	new category name mentioned.
 	
 	Example: 
 	Move the 'geoCoord triplet from the core category 'Geographical data' to '3D':
@@ -27,149 +71,197 @@
 	<PropertyOverride Name="geoCoord" Category="3D" 
 		Description="The 'geoCoord' built-in property [Triplet {X,Y,Z}] holds the 'real' position." />
 	
+
+	
+	railML wiki
+	===========
+	XML-file-wide unique, machine-interpretable identity, required for later referencing that element 
+	internally. For a detailed explanation see https://wiki.railml.org/index.php?title=Dev:identities.
+	The general railML® description states the following contraints:
+	
+	id: xs:ID, required, a string, starting with a letter (a..zA..Z) or an underscore (_), followed by a non-colonized and 
+	non-spaced string consisting of letters, digits, points (.), dashes (-) or underscores (_).
+	
+	(Please note: a Nil UUID shall not be used; UUID's Version 4 is commonly used. Due to the limitations of the ID type by 
+	www.w3.org in railML® 2 the ID shall begin with a letter!). 
+
+	Nil UUID link: https://en.wikipedia.org/wiki/Universally_unique_identifier#Nil_UUID 
+	Version 4 UUID link: https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_(random)
 	
 =========================================================================================================-->
-<!-- Tab sorting and default open/closed status for tabs in RC-ManageProperties -->
 
-<!-- Shown when no object is selected: -->
-<PropertyCategory Name="Document" Collapsed="false" />
-<PropertyCategory Name="External data files" Collapsed="false" />
-<PropertyCategory Name="File" Collapsed="false" />
-<PropertyCategory Name="Patch" Collapsed="false" />
-
-<!-- Shown when one ore more objects are selected: -->
-<PropertyCategory Name="Basic" Collapsed="true" />
-<PropertyCategory Name="General" Collapsed="false" />
-<PropertyCategory Name="Aligned object" Collapsed="true" /> 
-<PropertyCategory Name="3D" Collapsed="true" />
-<PropertyCategory Name="Model check" Collapsed="false" />
-<PropertyCategory Name="Custom properties" Collapsed="false" />
-<PropertyCategory Name="Local variables" Collapsed="true" />
-<PropertyCategory Name="Earthing" Collapsed="true" />
-<PropertyCategory Name="Metadata" Collapsed="true" />
-<PropertyCategory Name="ISY Beskrivelse" Collapsed="true" />
-<PropertyCategory Name="Presentation" Collapsed="true" />
-<PropertyCategory Name="CAD" Collapsed="true" />
-<PropertyCategory Name="Attachment" Collapsed="true" />
-<PropertyCategory Name="Relations" Collapsed="true" />
-<PropertyCategory Name="Sections" Collapsed="true" />
-<PropertyCategory Name="Formulas" Collapsed="true" />
-<PropertyCategory Name="Main signal" Collapsed="true" />
-<PropertyCategory Name="Misc" Collapsed="true" />
-<PropertyCategory Name="Geographical data" Collapsed="true" />
-<PropertyCategory Name="Object general data" Collapsed="true" />
-<PropertyCategory Name="Interlocking" Collapsed="true" />
-<PropertyCategory Name="Switch attributes" Collapsed="true" />
-<PropertyCategory Name="CAD" Collapsed="true" />
-<PropertyCategory Name="Alignment" Collapsed="true" />
-
-
-
-<!-- TODO: Vurder å omdøpe alle "CustomAttribute" til "CustomProperty"? Verktøyet vårt heter jo "RC-ManageProperties" -->
-<!-- BASIC -->
-<PropertyOverride Name="id" DisplayName="ID" Category="Basic"
-	Description="The 'id' built-in railML property [readonly String] holds a globally unique identifier. It is generated at object creation and never changed. Making object copies with ordinary CAD system commands or with RailCOMPLETE commands (such as RC-CopySelectionAlongPath) will assign a new globally unique id to each copy." /> 
-<!-- railML wiki: XML-file-wide unique, machine-interpretable identity, required for later referencing that element internally. For a detailed explanation see https://wiki.railml.org/index.php?title=Dev:identities. -->
-<!-- The general railML® description states the following contraints. id: xs:ID, required, a string, starting with a letter (a..zA..Z) or an underscore (_), followed by a non-colonized and non-spaced string consisting of letters, digits, points (.), dashes (-) or underscores (_) -->
-<!-- (Please note: a Nil UUID shall not be used; UUID's Version 4 is commonly used. Due to the limitations of the ID type by www.w3.org in railML® 2 the ID shall begin with a letter!) -->
-<!-- Nil UUID link: https://en.wikipedia.org/wiki/Universally_unique_identifier#Nil_UUID  -->
-<!-- Version 4 UUID link: https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_(random) -->
-
-<PropertyOverride Name="TimeStamp" DisplayName="Timestamp" Category="Basic"
-	Description="The 'TimeStamp' built-in property [readonly ComplexType] holds version history for the object, such as creation time, number of times modified, who modified it etc. The minimum time lapse between registered timestamps is defined in the DNA." />
-
-<PropertyOverride Name="RcType" DisplayName="RcType" Category="Basic"
-	Description="The 'RcType' built-in property [readonly Enum] holds the object type name as defined in the current Definition of Network Assets (DNA). Additional info may be given as DisplayName for each object." />
-
-
-<!-- GENERAL -->
-<PropertyOverride Name="Variant" DisplayName="Variant" Category="General"
-	Description="The 'Variant' built-in property [Enum] holds the currently selected Variant for the object. If the DNA object type declaration does not define any Variants, then the Variant property is void." />
-
-<PropertyOverride Name="code" DisplayName="Code" Category="General"
-	Description="The 'code' built-in railML property typically holds an alphanumerical string which is suitable for machine interpretation, identfying the object in a limited context. E.g., a point machine could derive its code (e.g.: '501_3') from its position within a switch ('3') and the switch's own code ('501'). The same code may appear several times within one model, but in different contexts (e.g.: different stations)." /> 
-<!-- railML wiki: Machine-interpretable string (e.g. an abbreviation) used for identification of the object across exchange partners, usecase specific uniqueness constraints may apply. -->
-
-<PropertyOverride Name="name" DisplayName="Name" Category="General"
-	Description="The 'name' built-in railML property typically holds a more ornamented version of the object's code, making it suitable for human reading but not for further parsing. Example: 'Drv.501_3' ('point drive machine 501.3'). Most objects will show their 'name' property as a text element in the CAD drawing, along with the symbol's 2D graphics. Hide/unhide text in the drawing using the ShowLayer tool." />
-<!-- railML wiki: Established, human-readable short string, giving the object a name. Not intended for machine interpretation, please see our notice on human interpretable data fields. -->
-
-<PropertyOverride Name="lang" DisplayName="Language" Suppressed="true"
-	Description="The embedded 'lang' (language) shall not be available to this railway administration." />
-
-<PropertyOverride Name="Stage" DisplayName="Stage" Category="General"
-	Description="The 'Stage' built-in property holds a free-format string encoding the object's placement in the succession of construction stages for your project. Hint: Append '_stage2000-6000' etc to your object layer names and assign a formula: Stage = layer:sub(-9), then use the ManageStagesUsinglayerNames tool to select the active stage." />
-
-
-<!-- ALIGNED OBJECT -->
-<PropertyOverride Name="dir" DisplayName="Direction" Category="Aligned object"
-	Description="The 'dir' built-in railML enum property [up, down, both, none, unknown] holds the basic orientation of a point object. " />
-
-<PropertyOverride Name="Alignment" DisplayName="Own Alignment" Category="Aligned object"
-	Description="The 'Alignment' built-in property [TrackRef] refers to the alignment that the object belongs to, also referred to as its 'own alignment'. The point object's mileage property is the mileage  found perpendicularly to this own alignment." />
-
-<PropertyOverride Name="ReferenceAlignment" DisplayName="Referance Alignment" Category="Aligned object"
-	Description="The 'ReferenceAlignment' built-in property [TrackRef] refers to the alignment that the object's own alignment has appointed as it's 'parent' (reference) (at the point object's current location). See the Alignment Manager tools's tab named 'Reference'. The point object's referenceMileage property is the mileage found perpendicularly to this reference alignment." />
-
-
-<PropertyOverride Name="TargetAlignment" DisplayName="Target Aligment" Category="Aligned object"
-	Description="The 'Target Alignment' built-in property [TrackRef] refers to the other alignment that the object connects to, designating a continuation, a branch or a crossing." />
-
-
-<!-- 3D -->
-<PropertyOverride Name="geoCoord" Category="3D"
-	Description="The 'geoCoord' built-in railML property [Triplet {X,Y,Z}] holds the 'real' position, expressed in World coordinates. This triplet is the basis for all geometrical computations involving the point object." />
-
-
-<!-- Model check -->
-
-
-<!-- LOCAL VARIABLES -->
-<PropertyOverride Name="Seq" DisplayName="Sequence Number" Category="Local variables"
-	Description="The 'Seq' built-in property [Integer] is a freely usable integer. It is typically used as a running number when it is convenient to put a formula to the code property, e.g.: code = 'Xyzzy-'..seq*2. Hint: Use the Object Manager's 'Fill series' to generate a Seq sequence n, n+1, n+2n...." />
-
-
-<!-- Earthing -->
-
-
-<!-- Formulas -->
-<PropertyOverride Name="LuaExpressions" DisplayName="Lua expressions" Category="Formulas" />
-
-
-<!-- Metadata -->
-<PropertyOverride Name="Description" DisplayName="Beskrivelsestekst" Category="Metadata" />
-
-<!-- Presentation -->
-<PropertyOverride Name="SymbolFrame" Category="Presentation" />
-
-<!-- CAD -->
-<PropertyOverride Name="Color" Category="CAD" />
-<PropertyOverride Name="Layer" Category="CAD" />
-<PropertyOverride Name="Linetype" Category="CAD" />
-<PropertyOverride Name="Lineweight" Category="CAD" />
-<PropertyOverride Name="GlobalWidth" Category="CAD" />
-
-
-<!-- Attachment -->
-<!-- Relations -->
-<!-- Sections -->
-<!-- Interlocking -->
-<!-- Switch Attributes -->
-<PropertyOverride Name="TargetAlignment" Category="Connections"
-	Description="The 'TargetAlignment' built-in property [Reference] holds an object reference to the alignment that branches out from a continued track at a stock rail joint." />
-<PropertyOverride Name="SwitchGeometry" Category="Connections" />
-<PropertyOverride Name="ConnectionCourse" Category="Connections" />
-<PropertyOverride Name="ContinuingWithBegin" Category="Connections" />
-<PropertyOverride Name="ExtendingFromEnd" Category="Connections" />
+<!--
+	Use these declarations to manage the naming, order of appearence and on-file-opening open/collaspsed 
+	state in RC-ManageProperties. You may also suppress a particular property from appearing in RC-M.P.
 	
+	Category names and display names are case sensitive.
+	'True' / 'true' and 'False' / 'false' may be used interchangeably.
 
-<!-- ISY beskrivelse -->
+	'Intrinsic' means that the category is known in C#, and its display name is given by the ResX language system.
+	'Custom' means that the category has been declared in at least one CustomProperty DNA declaration somewhere.
 
+	The property declarations' order of appearance in the assembled DNA file decides their order of appearance 
+	in the Manage Properties tool.
+	
+	NOTE : Property overrides for properties may contain a displayname, but we presume that all intrinsic properties have already been translated in ResX.
+	Any custom property is assumed to have been assigned a sensible locale name, so it does not need a (different) display name.
 
-<!-- Misc (railML inherited category) -->
-<PropertyOverride Name="model" />
-<PropertyOverride Name="kind" />
-<PropertyOverride Name="derailSide" DisplayName="Avsporingsretning"  />
+	Note: Identifiers that stem from railML are camelCased, such as 'name' and 'additionalNames'.
+-->
+
+<!--
+	PropertyCategory		Element					Element under RailwayObjectTypeDefinitions. 
+		|											Ordering and naming and collapsed/open state for Property Manager tabs.
+		|
+		Name				Attribute	Intrinsic 	The category's key in the ResX language system.
+		|								Custom 	 	The name that the DNA assigns to this category.
+		|
+		DisplayName			Attribute	Intrinsic	Overrides the ResX key, assigns a name to display in Property Manager tabs.
+		|								Custom 		Overrides the assigned name (which is rather pointless to do).
+		|
+		Collapsed			Attribute	True		The tab is open whenever the DNA is read (file Start, change active document, update DNA in drawing)
+										False 		The tab is closed whenever the DNA is read
+	
+	PropertyOverride		Element					Element under RailwayObjectTypeDefinitions.
+		|											Ordering and naming of intrinsic and custom properties.
+		|
+		Name				Attribute	Intrinsic	To find the correct name to use, hover over its left column in Manage Properties. 
+		|											Alternatively, search the property's key entry (left column) in ResX, 
+		|											Resources\PropertiesResources\PropertyDisplayNameResources. Pick the second part of the ResX key, change 
+		|											underscore '_' into dot '.'. 
+		|											Example: 'AdditionalPointObject3DModel_Rotation3D_X' has property name 'Rotation3D.X'.
+		|								Custom		The name that the property's DNA declaration assigns to the property (not the display name). Use this one.
+		|
+		DisplayName			Attribute	Intrinsic	Overrides the display name given in the ResX language system for this language pack. This is useful in 
+		|											cases where the CAD system does not support the language of the DNA's administration.
+		|								Custom 		Overrides the assigned name (which is rather pointless to do).
+		|											Example: 'SwitchControlAndLocking' is the name, 'Basculer / Contrôler' is the CustomProperty's declaration's display name.
+		|
+		Category			Attribute				The name of the category that this property shall appear under in the Manage Properties tool.
+		|
+		Suppressed			Attribute				Default 'false.
+													If 'true' the property will not be shown in its category's tab in the Manage Properties tool. If 'Suppressed' 
+													and 'Category' used in the same PropertyOverride moves the property to its new category, but doesn't show it
+													- so this is rather pointless.
+													If 'false', the property will appear in its original catetory, or in its new category if 'Category' is non-empty.
+
+	CustomProperty			Element					Element under RailwayObjectTypeDefinitions.
+		|											Instantiates a custom property.
+		|
+		Name				Attibute				The assigned name, often in English. Use this name in all Lua and DotLiquid contexts.
+		|											The assigned name can be overriden in a PropertyOverride declaration, but is rather pointless and confusing.
+		|
+		DisplayName			Attibute				A display name, in the DNA administration's langugage.
+		|
+		Category			Attibute				The key name of a category (before category name overrides).
+		|
+		+++ etc
+		
+-->												
+
+<!-- SHOWN WHEN NO OBJECTS ARE SELECTED IN MODELSPACE -->
+<PropertyCategory Name="Document"							                        Collapsed="false" />	<!-- Intrinsic -->
+<PropertyCategory Name="File" 							                    	    Collapsed="false" />	<!-- Intrinsic -->
+<PropertyCategory Name="External Data Files" 									    Collapsed="false" />	<!-- Intrinsic -->
+<PropertyCategory Name="Patch" 									                    Collapsed="true"  />	<!-- Intrinsic -->
+<PropertyCategory Name="2D Alignment Display Elevation"								Collapsed="false" />	<!-- Intrinsic -->
+
+<!-- SHOWN WHEN ONE OR MORE OBJECTS ARE SELECTED IN MODELSPACE -->
+<PropertyCategory Name="CAD"														Collapsed="true"  />	<!-- Intrinsic -->
+	<PropertyOverride Name="Color"														Category="CAD" />
+	<PropertyOverride Name="Layer"														Category="CAD" />
+	<PropertyOverride Name="Linetype"													Category="CAD" />
+	<PropertyOverride Name="Lineweight"													Category="CAD" />
+	<PropertyOverride Name="GlobalWidth"												Category="CAD" />
+
+<PropertyCategory Name="Basic" 														Collapsed="true"  />	<!-- Intrinsic -->
+	<PropertyOverride Name="id"															Category="Basic" />
+	<PropertyOverride Name="RcType"														Category="Basic" />
+	<PropertyOverride Name="TimeStamp"													Category="Basic" />
+	<PropertyOverride Name="additionalName"												Category="Basic" />
+	<PropertyOverride Name="lang"														Category="Basic" />
+
+<PropertyCategory Name="General" 													Collapsed="false" />	<!-- Intrinsic (Note: Intrinsic cat. 'General' will be deprecated) -->
+	<PropertyOverride Name="Variant"													Category="General" />
+	<PropertyOverride Name="code"														Category="General" /> 
+	<PropertyOverride Name="name"														Category="General" /> 
+	<PropertyOverride Name="Stage"														Category="General" /> 
+	<PropertyOverride Name="Discipline" 												Category="General" /> 
+
+<PropertyCategory Name="Aligned object"												Collapsed="false" />	<!-- Intrinsic (Linear Placement) -->
+	<PropertyOverride Name="Alignment"													Category="Aligned object" /> 
+	<PropertyOverride Name="Mileage"													Category="Aligned object" /> 
+	<PropertyOverride Name="ReferenceAlignment"											Category="Aligned object" /> 
+	<PropertyOverride Name="ReferenceMileage"											Category="Aligned object" /> 
+	<PropertyOverride Name="SideOfAlignment"											Category="Aligned object" /> 
+	<PropertyOverride Name="dir"														Category="Aligned object" /> 
+	<PropertyOverride Name="pos" 														Category="Aligned object" /> 
+	<PropertyOverride Name="DistanceToAlignment"										Category="Aligned object" /> 
+	<PropertyOverride Name="RelativeElevation"											Category="Aligned object" /> 
+
+<PropertyCategory Name="Presentation"												Collapsed="true"  />	<!-- Intrinsic -->
+	<PropertyOverride Name="SymbolMode"													Category="Presentation" />
+	<PropertyOverride Name="DrawTail"													Category="Presentation" />
+	<PropertyOverride Name="SymbolFrame"												Category="Presentation" />
+	<PropertyOverride Name="MileageIncreasesTowardsLeft"								Category="Presentation" />
+
+<PropertyCategory Name="3D" 														Collapsed="true"  />	<!-- Intrinsic -->
+	<PropertyOverride Name="geoCoord"													Category="3D" />	<!-- Intrinsic property which didn't have a category -->		
+
+<PropertyCategory Name="Local variables"											Collapsed="true" />		<!-- Custom -->
+	<PropertyOverride Name="Seq"														Category="Local variables" />
+	<PropertyOverride Name="Var0"														Category="Local variables" />
+	<PropertyOverride Name="Var1"														Category="Local variables" />
+	<PropertyOverride Name="Var2"														Category="Local variables" />
+	<PropertyOverride Name="Var3"														Category="Local variables" />
+	<PropertyOverride Name="Var4"														Category="Local variables" />
+	<PropertyOverride Name="Var5"														Category="Local variables" />
+	<PropertyOverride Name="Var6"														Category="Local variables" />
+	<PropertyOverride Name="Var7"														Category="Local variables" />
+	<PropertyOverride Name="Var8"														Category="Local variables" />
+	<PropertyOverride Name="Var9"														Category="Local variables" />
+
+<PropertyCategory Name="Model check"												Collapsed="false" />	<!-- Custom -->
+
+<PropertyCategory Name="Earthing"													Collapsed="true"  />	<!-- Intrinsic -->
+
+<PropertyCategory Name="Custom properties" 											Collapsed="false" />	<!-- Intrinsic -->
+																			
+<PropertyCategory Name="Metadata"													Collapsed="true"  />	<!-- Intrinsic -->
+	<PropertyOverride Name="description"												Category="Metadata" />
+
+<PropertyCategory Name="Watch text"													Collapsed="true"  />	<!-- Intrinsic -->
+
+<PropertyCategory Name="Relations"													Collapsed="true"  />	<!-- Intrinsic -->
+
+<PropertyCategory Name="Attachment"													Collapsed="true"  />	<!-- Intrinsic -->
+
+<PropertyCategory Name="Sections"													Collapsed="true"  />	<!-- Intrinsic -->
+
+<PropertyCategory Name="Formulas"													Collapsed="true"  />	<!-- Intrinsic -->
+	<PropertyOverride Name="LuaExpressions"												Category="Formulas" />
+		
+<PropertyCategory Name="Misc"														Collapsed="true"  />   	<!-- Intrinsic -->
+	<PropertyOverride Name="model"									 					Category="Misc" />
+	<PropertyOverride Name="kind"									 					Category="Misc" />
+	<PropertyOverride Name="derailSide" DisplayName="Avsporingsside" 					Category="Misc" />
+
+<PropertyCategory Name="Interlocking"												Collapsed="true"  />	<!-- Intrinsic -->
+
+	<PropertyCategory Name="Alignment"												Collapsed="true"  />	<!-- Intrinsic -->		<!-- Linear Element info (alignment system) -->
+
+<PropertyCategory Name="Main signal"												Collapsed="true"  />   	<!-- Intrinsic -->
+
+<PropertyCategory Name="Switch"														Collapsed="true"  />	<!-- Custom -->
+
+<PropertyCategory Name="Connections"												Collapsed="true"  />   	<!-- Intrinsic --> 	<!-- Collapse, then move properties to Category 'Switch' -->
+	<PropertyOverride Name="TargetAlignment"											Category="Connections" />
+	<PropertyOverride Name="SwitchGeometry"												Category="Connections" />
+	<PropertyOverride Name="ConnectionCourse"											Category="Connections" />
+	<PropertyOverride Name="ContinuingWithBegin"										Category="Connections" />
+	<PropertyOverride Name="ExtendingFromEnd"											Category="Connections" />
+
+<PropertyCategory Name="ISY Beskrivelse"											Collapsed="true"  />	<!-- Custom -->
 
 
 
@@ -223,7 +315,7 @@
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTSI" >
+<xpp:define name="NOBN_com_DISCIPLINE_JBTSA" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Signal" />
@@ -626,7 +718,7 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TAG" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TAG" >
 	<xpp:bloc>
-		<LuaExpression Name="Tag" ><Formula>RC__sub(RcType,1,6).."-nnnnnn"</Formula></LuaExpression>
+		<LuaExpression Name="Tag" ><Formula>string.match(RcType,"%w+_%w+").."-nnnnnn"</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -680,7 +772,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___JBTKL" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___JBTKL" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -715,7 +807,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -749,7 +841,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___JBTKL" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___JBTKL" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -777,7 +869,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -812,7 +904,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -846,7 +938,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTFE" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTFE" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -875,7 +967,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -904,7 +996,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -933,7 +1025,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTKL" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTKL" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -959,10 +1051,10 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSA" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -991,7 +1083,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTEL" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTEL" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -1020,7 +1112,7 @@
 		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTTE" /> -->
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTTE" >
 	<xpp:bloc>
-		<!-- 'name' is a core attribute. -->
+		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
 			BindingProperty="name" 
 			CadAttributeTag="OBJEKTNAVN" 
@@ -1081,8 +1173,8 @@
 
 
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTSA" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="14" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1112,8 +1204,8 @@
 	</xpp:bloc>
 </xpp:define>
 	
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSA" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="20" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1130,8 +1222,8 @@
 <!--========================================================================================================
     Horizontal ObjectInfo-Name-Tag, far from object (24)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSA" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="24" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1200,8 +1292,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTSA" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1297,8 +1389,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSA" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1370,8 +1462,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_NAME_TA7G_OBJECTINFO___VERTICAL_AND_STACKED___JBTSI" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTSI" >
+		<!-- <xpp:expand select="NOBN_com_NAME_TA7G_OBJECTINFO___VERTICAL_AND_STACKED___JBTSA" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTSA" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />

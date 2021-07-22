@@ -1,0 +1,161 @@
+<!--========================================================================================================
+
+    NO-BN-Relations.xaml
+	
+	XAML / Lua for custom tooltip in RailCOMPLETE(r)
+
+	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	
+=========================================================================================================-->
+<UserControl 
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:local="clr-namespace:RailCOMPLETE.Model.ObjectBrowser;assembly=RailCOMPLETE.Model"
+xmlns:system="clr-namespace:System;assembly=mscorlib"
+>
+<UserControl.Background>
+    <SolidColorBrush Color="black" Opacity=".5" />
+</UserControl.Background>
+ <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/RailCOMPLETE.Common;component/WPFStyles/StylesResources.xaml"/>
+                <ResourceDictionary Source="/RailCOMPLETE.Common;component/WPFStyles/PathScaling.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+			<local:LuaConverter x:Key="LuaConverter"/>
+			<local:NullVisibilityConverter x:Key="NullVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+<Border>
+	<Grid>
+        <DockPanel>
+			<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+				<StackPanel Orientation="Vertical">
+					<TextBlock FontSize="20" FontWeight="Bold" Foreground="{StaticResource RcWhite}" Margin="10,10,10,5">
+						<TextBlock.Text>
+							<Binding Path="SelectedObject" Converter="{StaticResource LuaConverter}">
+								<Binding.ConverterParameter>
+									<system:String xml:space="preserve">
+										function nameOrId()
+											if name == nil or name == '' then
+												return id
+											else
+												return name
+											end
+										end
+
+										return "Relations\n"..nameOrId()
+									</system:String>
+								</Binding.ConverterParameter>
+							</Binding>
+						</TextBlock.Text>
+					</TextBlock>
+					<ListBox Style="{x:Null}" Name="RelationConnectionList" Padding="5" Visibility="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ItemsSource, Converter ={StaticResource NullVisibilityConverter} }">
+						<ListBox.ItemsSource>
+							<Binding Path="SelectedObject"
+									 Converter="{StaticResource LuaConverter}">
+								<Binding.ConverterParameter>
+									<system:String>relations.objectrelations</system:String>
+								</Binding.ConverterParameter>
+							</Binding>
+						</ListBox.ItemsSource>
+					   <ListBox.Template>
+							<ControlTemplate>
+								<ItemsPresenter></ItemsPresenter>
+							</ControlTemplate>
+						</ListBox.Template>
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Vertical"/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Orientation="Vertical" Margin="10" Visibility="{Binding IsEmpty, Converter ={StaticResource BooleanToVisibilityConverter}}">
+									<StackPanel Orientation="Vertical">
+										<TextBlock Foreground="White" FontSize="18" Text="{Binding RelationPromptText}" Visibility="{Binding Path=Relations, Converter ={StaticResource NullVisibilityConverter} }"/>
+										<ListBox Style="{x:Null}" Padding="5" ItemsSource="{Binding Relations}" Visibility="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ItemsSource, Converter ={StaticResource NullVisibilityConverter} }">
+											   <ListBox.Template>
+													<ControlTemplate>
+														<ItemsPresenter></ItemsPresenter>
+													</ControlTemplate>
+												</ListBox.Template>
+												<ListBox.ItemsPanel>
+													<ItemsPanelTemplate>
+														<StackPanel Orientation="Vertical"/>
+													</ItemsPanelTemplate>
+												</ListBox.ItemsPanel>
+												<ListBox.ItemTemplate>
+													<DataTemplate >
+													  <TextBlock Text="{Binding .}" Foreground="White" FontSize="15" Margin="20,0,0,0"/>        
+													</DataTemplate>
+												</ListBox.ItemTemplate>
+											<ListBox.ItemContainerStyle>
+												<Style TargetType="{x:Type ListBoxItem}">
+													<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+													<Setter Property="Template">
+													<Setter.Value>
+														<ControlTemplate TargetType="ListBoxItem">
+															<ContentPresenter/>
+														</ControlTemplate>
+													</Setter.Value>
+												</Setter>
+												</Style>
+											</ListBox.ItemContainerStyle>
+										</ListBox> 
+									</StackPanel>
+									<StackPanel Orientation="Vertical">
+										<TextBlock Foreground="White" FontSize="18" Text="{Binding ReverseRelationPromptText}" Visibility="{Binding Path=ReverseRelations, Converter ={StaticResource NullVisibilityConverter} }"/>
+										<ListBox Style="{x:Null}" Padding="5" ItemsSource="{Binding ReverseRelations}" Visibility="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ItemsSource, Converter ={StaticResource NullVisibilityConverter} }">
+											   <ListBox.Template>
+													<ControlTemplate>
+														<ItemsPresenter></ItemsPresenter>
+													</ControlTemplate>
+												</ListBox.Template>
+												<ListBox.ItemsPanel>
+													<ItemsPanelTemplate>
+														<StackPanel Orientation="Vertical"/>
+													</ItemsPanelTemplate>
+												</ListBox.ItemsPanel>
+												<ListBox.ItemTemplate>
+													<DataTemplate >
+													  <TextBlock Text="{Binding .}" Foreground="White" FontSize="15" Margin="20,0,0,0"/>        
+													</DataTemplate>
+												</ListBox.ItemTemplate>
+											<ListBox.ItemContainerStyle>
+												<Style TargetType="{x:Type ListBoxItem}">
+													<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+													<Setter Property="Template">
+													<Setter.Value>
+														<ControlTemplate TargetType="ListBoxItem">
+															<ContentPresenter/>
+														</ControlTemplate>
+													</Setter.Value>
+												</Setter>
+												</Style>
+											</ListBox.ItemContainerStyle>
+										</ListBox> 
+									</StackPanel>
+								</StackPanel>									
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+							<ListBox.ItemContainerStyle>
+								<Style TargetType="{x:Type ListBoxItem}">
+									<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+									<Setter Property="Template">
+										<Setter.Value>
+											<ControlTemplate TargetType="ListBoxItem">
+												<ContentPresenter/>
+											</ControlTemplate>
+										</Setter.Value>
+									</Setter>
+								</Style>
+						</ListBox.ItemContainerStyle>
+					</ListBox>
+				</StackPanel>
+			</StackPanel>
+		</DockPanel>
+	</Grid>
+</Border>
+</UserControl>
