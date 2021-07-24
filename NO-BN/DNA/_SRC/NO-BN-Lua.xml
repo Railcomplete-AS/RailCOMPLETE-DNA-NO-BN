@@ -48,7 +48,7 @@
 				-- More symbol frame types may be available - see the appropriate Style Definitions file.
 				_language = 1 -- 1:English, 2:Norwegian, 3:French, 4:German
 				_frames = { 
-					UNFINISHED	= { "Unfinished",			"Uferdig",				"Incomplet",			"Inkomplett"			},
+					UNFINISHED	= { "Unfinished",			"Uferdig",				"Incomplet",			"Unvollständig"			},
 					HISTORIC	= { "Historic",				"Historisk",			"Historique",			"Historisch"			},
 					ERROR		= { "Error",				"Feil",					"Erreur",				"Fehler"				},
 					WARNING		= { "Warning",				"Advarsel",				"Avertissement",		"Warnung"				},
@@ -59,12 +59,12 @@
 				--Priority: Show HISTORIC then UNFINISHED then ERROR then WARNING then OTHER or NO_FRAME
 
 				-- By convention, historic layers have names starting with the 'at' character '@':
-				if (layer:sub(1,1) == '@') then
+				if (layer:sub(1,2) == '@@') then
 					return _frames.HISTORIC[_language]
 				end
 				
 				t = _frames.UNFINISHED[_language]
-				if code:upper():match(t:upper()) or name:upper():match(t:upper()) then 
+				if tostring(code):upper():match(t:upper()) or tostring(name):upper():match(t:upper()) then 
 					return t
 				end
 				
@@ -288,7 +288,7 @@ end
 	See also the lua source files for track objects and track connections.
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_trk_getLiftFromCant()" ReturnType="Double"
-		Description="Returns a track-bound object's Z-coordinate offset above TopOfRail [m], consistent with own alignment's local cant. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
+		Description="Returns a track-bound object's Z-coordinate offset above the gradient curve [m], consistent with own alignment's local cant. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
 		<Constructor>Double NOBN_trk_getLiftFromCant([_position])</Constructor>
 		<Formula>
 function NOBN_trk_getLiftFromCant(where)
@@ -353,8 +353,7 @@ end
 	
 	
 	<LuaFunction Name="NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance()" ReturnType="Double"
-		Description="Returns a track-bound object's 2D distance to the alignment axis as a function of its track plane distance to own model insertion axis (track axis). 'TrackPlaneDistance' is by default set to half of the rail separation. If called from an alignment object, the reserved identifier '_position' holding a {Pos, Ref} must be provided as an input argument." >
-		<Constructor>Double NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance([Double TrackPlaneDistance [,_position]])</Constructor>
+		Description="Returns a track-bound object's 2D distance to the alignment axis (IFC:gradient curve) as a function of its track plane distance to own model insertion axis. 'TrackPlaneDistance' is by default set to half of the rail separation (track gauge). If called from an alignment object, the reserved identifier '_position' holding a {Pos, Ref} must be provided as an input argument." >
 		<Formula>
 function NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(TrackPlaneDistance,where)
 	local cg
@@ -575,10 +574,10 @@ function NOBN_sig_getSignalSightingRequirement()
 		end
 	
 	elseif RcType == "JBTSA_SIG Signal" then
-		if (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") and not MainSignal:match("^Hs") then
+		if not (MainSignal:match("^Hs") or  DistantSignal:match("Ja")) and (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") then
 			return 50,_info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
 	
-		elseif MainSignal:match("^Hs") and DistantSignal == "-" then
+		elseif (MainSignal:match("^Hs") or EndOfTrainRoute == "Ja") and (DistantSignal == "-") then
 			-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
 			--NB! If through-signaling is in use, the sighting requirements are reduced to 80 km/h requirements - see TRV change ca 2019.
 			if DesignSpeed &gt; 210 then
@@ -588,20 +587,11 @@ function NOBN_sig_getSignalSightingRequirement()
 				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 			end
 
-		elseif MainSignal:match("^Hs") and DistantSignal == "-" then 
+		elseif DistantSignal == "Ja" then 
 			-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 			v = math.max(40,math.min(130,DesignSpeed))
 			return RC__round(v/3.6 * 7, 0),_info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 
-		elseif EndOfTrainRoute ~= "-" then
-			-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
-			if DesignSpeed &gt; 210 then
-				return 250,_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
-			else 
-				v = math.max(135,math.min(210,DesignSpeed))
-				return RC__round(v/3.6 * 4, 0),_info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
-			end
-	
 		elseif HighShuntingSignal ~= "-" then
 			return 50,_info("50 m fixed sighting requirement during shunting movements.")
 	
