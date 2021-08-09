@@ -44,30 +44,29 @@
 		Description="Checks object model check attributes for warnings and errors, turns on the corresponding symbol frame (_error/_warning/[no frame])." >
 		<Constructor>String NOBN__setSymbolFrame()</Constructor>
 		<Formula>
-			function NOBN__setSymbolFrame()
+			function DEDB__setSymbolFrame()
 				-- More symbol frame types may be available - see the appropriate Style Definitions file.
-				_language = 1 -- 1:English, 2:Norwegian, 3:French, 4:German
+				_language = 2 -- 1:English, 2:Norwegian, 3:French, 4:German
 				_frames = { 
 					UNFINISHED	= { "Unfinished",			"Uferdig",				"Incomplet",			"Unvollständig"			},
 					HISTORIC	= { "Historic",				"Historisk",			"Historique",			"Historisch"			},
 					ERROR		= { "Error",				"Feil",					"Erreur",				"Fehler"				},
 					WARNING		= { "Warning",				"Advarsel",				"Avertissement",		"Warnung"				},
 					SECTION_TAG	= { "section",				"avsnitt",				"zone",					"Abschnitt"				},
+					SEGMENT_TAG = { "Segment",				"Segment",				"Segment",				"Segment"				},
 					SECTION		= { "SymbolFrame-R2.75",	"Symbolramme-R2.75",	"CadreSymbole-R2.75",	"Symbolrahmen-R2.75"	}
 				}
-			
-				--Priority: Show HISTORIC then UNFINISHED then ERROR then WARNING then OTHER or NO_FRAME
-
+				--Priority: Show HISTORIC then UNFINISHED then ERROR then WARNING then OTHERs then NO_FRAME
 				-- By convention, historic layers have names starting with the 'at' character '@':
 				if (layer:sub(1,2) == '@@') then
 					return _frames.HISTORIC[_language]
 				end
-				
-				t = _frames.UNFINISHED[_language]
+			
+				t = _frames["UNFINISHED"][_language]
 				if tostring(code):upper():match(t:upper()) or tostring(name):upper():match(t:upper()) then 
 					return t
 				end
-				
+			
 				--Check for errors or warnings:
 				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
 				if (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then 
@@ -80,7 +79,13 @@
 				if RcType:upper():match(_frames.SECTION_TAG[_language]:upper()) then 
 					return _frames.SECTION[_language]
 				end
+			
+				--Deal with axle counter special section objects (the layer name will depend on the DNA in use):
+				if RcType:upper():match(_frames.SEGMENT_TAG[_language]:upper()) then 
+					return _frames.SECTION[_language]
+				end
 				
+				--Nothing recognised:
 				return "" --no frame
 			end
 		</Formula>
