@@ -135,7 +135,8 @@
 		DisplayName			Attribute	Intrinsic	Overrides the display name given in the ResX language system for this language pack. This is useful in 
 		|											cases where the CAD system does not support the language of the DNA's administration.
 		|								Custom 		Overrides the assigned name (which is rather pointless to do).
-		|											Example: 'SwitchControlAndLocking' is the name, 'Basculer / Contrôler' is the CustomProperty's declaration's display name.
+		|											Example: 'SwitchControlAndLocking' is the name, 'Basculer / Contrôler' is the CustomProperty's declaration's
+		|											display name.
 		|
 		Category			Attribute				The name of the category that this property shall appear under in the Manage Properties tool.
 		|
@@ -143,7 +144,18 @@
 													If 'true' the property will not be shown in its category's tab in the Manage Properties tool. If 'Suppressed' 
 													and 'Category' used in the same PropertyOverride moves the property to its new category, but doesn't show it
 													- so this is rather pointless.
-													If 'false', the property will appear in its original catetory, or in its new category if 'Category' is non-empty.
+													If 'false', the property will appear in its original category, or in its new category if 'Category' is non-empty. 
+													
+													Note 1: The attribute is still available in the Lua interpreter, but auto-fill will not suggest it.
+													
+													Note 2: Rather use the <CustomAttribute> element's attribute 'HideFromUser="true"' if you want to hide a property
+													from the Lua editor's auto-fill and to not show it in the property manager. This is recommended over declaring it
+													as visible with HideFromUser="false" in the CustomAttribute declaration, and subsequently suppressing it with a 
+													PropertyOverride element. 
+													
+													Note 3: If either suppressed or declared as HideFromUser="true", all three ways of addressing the attribute in a
+													Lua snippet using either 'MyPropName' or 'getPropertyValue("MyPropName")' or 'fromDisplayName("MyPropDisplayName")'
+													will work, but the Lua editor auto-fill function will just not suggest them.
 
 	CustomProperty			Element					Element under RailwayObjectTypeDefinitions.
 		|											Instantiates a custom property.
@@ -266,6 +278,33 @@
 
 
 <!--========================================================================================================
+	XPPq macro - general entry, make copy to use.
+	Objects include these to start with, to allow mass-update of macro names once they have been given 
+	useful contents.
+=========================================================================================================-->
+		<!-- <xpp:expand select="NOBN_com_SYMBOLFRAME" /> -->
+<xpp:define name="NOBN_com_SYMBOLFRAME" >
+	<xpp:bloc>
+		<LuaExpression Name="SymbolFrame" ><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+<xpp:define name="NOBN_com_AVAILABLE___2" >
+	<xpp:bloc>
+		<!-- Nothing yet -->
+	</xpp:bloc>
+</xpp:define>
+
+<xpp:define name="NOBN_com_AVAILABLE___3" >
+	<xpp:bloc>
+		<!-- Nothing yet -->
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<!--========================================================================================================
 	Create discipline-holding custom attribute, for use in ObjectType declarations.
 	Value to be set with <SetValue Key="Fag" Value="Tele" /> statement immediately after creation.
 	TODO: Ask Claude Simon (XPPq creator) to introduce better argument handling for XPPq macros.
@@ -287,56 +326,56 @@
 </xpp:define>
 
 		<!-- <xpp:expand select="NOBN_com_DISCIPLINE_JBTxx" /> erstatt xx med en av FE,UB,OB,KL,SI,TE,EL og SKILT-->
-<xpp:define name="NOBN_com_DISCIPLINE_JBTFE" >
+<xpp:define name="NOBN_com_DISCIPLINE___COM" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Felles" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTUB" >
+<xpp:define name="NOBN_com_DISCIPLINE___SUB" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Underbygning" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTOB" >
+<xpp:define name="NOBN_com_DISCIPLINE___TRK" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Overbygning" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTKL" >
+<xpp:define name="NOBN_com_DISCIPLINE___OCS" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Kontaktledning" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTSA" >
+<xpp:define name="NOBN_com_DISCIPLINE___SIG" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Signal" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTTE" >
+<xpp:define name="NOBN_com_DISCIPLINE___TEL" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Tele" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_JBTEL" >
+<xpp:define name="NOBN_com_DISCIPLINE___POW" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Lavspent" />
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_DISCIPLINE_SKILT" >
+<xpp:define name="NOBN_com_DISCIPLINE___BNP" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_DISCIPLINE" />
 		<SetValue Key="Discipline" Value="Skilt" />
@@ -584,6 +623,16 @@
 <!--========================================================================================================
 	Standard Lua expressions for attributes of various kinds.
 =========================================================================================================-->
+	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" /> -->
+<xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___STAGE" >
+	<xpp:bloc>
+		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<!--WHEN DEBUGGING: <LuaExpression Name="Stage" ><Formula>getBlockName():sub(10)</Formula></LuaExpression> -->
+	</xpp:bloc>
+</xpp:define>
+
+
+
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___BOARD_NAME_POSITION_AND_ORIENTATION" /> -->
 	<!-- Assume font Height 0.5 and that a short board type name is contained in the name property (OBJEKTNAVN), place 'name'==OBJEKTNAVN relative to display point: -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___BOARD_NAME_POSITION_AND_ORIENTATION" >
@@ -598,8 +647,31 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment" ><Formula>RC__snap(getPropertyValue("DistanceToAlignment"),3)</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
+		<LuaExpression Name="DistanceToAlignment" >
+			<Formula>
+--[[
+				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				if RcType:upper():match("SEGMENT") then
+					d = getPropertyValue("DistanceToAlignment")
+					if d == 0 then 
+						return -6/sc
+					else
+						return RC__snap(d*sc,3)/sc
+					end
+				else 
+					return RightSided and 4e-4 or -4e-4 
+				end
+--]]
+				d = getPropertyValue("DistanceToAlignment")
+				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				if d == 0 then 
+					return -6/sc
+				else
+					return RC__snap(d*sc,3)/sc
+				end
+			</Formula>
+		</LuaExpression>
 		<LuaExpression Name="RelativeElevation" ><Formula>0</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
@@ -609,7 +681,7 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
 		<LuaExpression Name="name" ><Formula>Variant .. " - " .. RC__getUrlFilename()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
@@ -619,7 +691,7 @@
 	<!-- <xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" /> -->
 <xpp:define name="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
 		<LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation" ><Formula>0</Formula></LuaExpression>
 		<!-- OCS uses "Swiss cant method", i..e rotating but not lifting the alignment axis with cant -->
@@ -635,7 +707,7 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
 		<LuaExpression Name="RelativeElevation" ><Formula>NOBN_trk_getLiftFromCant()</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient()</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_trk_getRollFromCant()</Formula></LuaExpression>
@@ -649,7 +721,7 @@
 	<!-- NOTE: Use this macro for objects such as reflective markers, i.e which have special needs concerning Offset3d.Z, name or other issues. -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
 		<LuaExpression Name="Rotation3D.Z" ><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
@@ -659,7 +731,7 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_BOARD_OBJECT" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_BOARD_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
 		<LuaExpression Name="RelativeElevation" >
 			<Formula>
 				if Yokemounted then
@@ -688,7 +760,7 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" >
 	<xpp:bloc>
-		<LuaExpression Name="Stage" ><Formula>layer:match(".+(%d%d%d%d%-%d%d%d%d)$") or "?"</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
 		<LuaExpression Name="RelativeElevation" ><Formula>if Yokemounted == nil then return 0 else return Yokemounted and 8.0 or 0 end</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Z" ><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 		<LuaExpression Name="name" ><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression>
@@ -753,8 +825,8 @@
 <!--========================================================================================================
     Horizontal  ObjectInfo-Name-Tag, to the right of object (0)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___OCS" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -788,8 +860,8 @@
     Horizontal ObjectInfo-Name-Tag, almost centered on the object's insertion point (1) - and small font
 	for 'name'. Used to annotate crossings and continuations.
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___JBTOB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___TRK" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___TRK" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -822,8 +894,8 @@
     Horizontal ObjectInfo-Name-Tag, very far from object (40)
 	Used e.g. for text items to annotate objects.
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___OCS" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -850,8 +922,8 @@
     Horizontal ObjectInfo-Name-Tag, very close to object (3), and small font for 'name'.
 	Used to annotate switch tongues.
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTOB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___TRK" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___TRK" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -885,8 +957,8 @@
 <!--========================================================================================================
     Horizontal  ObjectInfo-Name-Tag, very close to object (0), normal fonts
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -919,8 +991,8 @@
 <!--========================================================================================================
     Horizontal  ObjectInfo-Name-Tag, close to object (8)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTFE" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTFE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___COM" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___COM" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -948,8 +1020,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTUB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SUB" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SUB" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -977,8 +1049,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTOB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TRK" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TRK" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -1006,8 +1078,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -1035,8 +1107,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SIG" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -1064,8 +1136,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTEL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTEL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___POW" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___POW" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -1093,8 +1165,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTTE" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___JBTTE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TEL" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TEL" >
 	<xpp:bloc>
 		<!-- 'name' is an intrinsic attribute. -->
 		<TextAttribute Annotative="true" 
@@ -1127,8 +1199,8 @@
 <!--========================================================================================================
     Horizontal  ObjectInfo-Name-Tag, medium close to object (14)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTFE" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTFE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___COM" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___COM" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="14" Layer="JBTFE@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1142,8 +1214,8 @@
 
 
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="18" Layer="JBTEH@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1157,8 +1229,8 @@
 
 
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___SIG" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="14" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1175,8 +1247,8 @@
 <!--========================================================================================================
     Horizontal ObjectInfo-Name-Tag, medium far from object (20)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___OCS" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="20" Layer="JBTEH@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1188,8 +1260,8 @@
 	</xpp:bloc>
 </xpp:define>
 	
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___SIG" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="20" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1206,8 +1278,8 @@
 <!--========================================================================================================
     Horizontal ObjectInfo-Name-Tag, far from object (24)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___SIG" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="24" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" />
@@ -1224,8 +1296,8 @@
 <!--========================================================================================================
     Vertical Name-Tag-ObjectInfo, very far from object (40)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTFE" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTFE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___COM" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___COM" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTFE@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1237,8 +1309,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTUB" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTUB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___SUB" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___SUB" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="40" Layer="JBTKU@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1250,8 +1322,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTOB" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTOB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___TRK" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___TRK" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="40" Layer="JBTKO@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1263,8 +1335,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___OCS" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTEH@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1276,8 +1348,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___SIG" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1289,8 +1361,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTEL" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTEL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___POW" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___POW" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTEL@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1302,8 +1374,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTTE" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___JBTTE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___TEL" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___TEL" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTTE@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1321,8 +1393,8 @@
 <!--========================================================================================================
     Vertical Name-Tag-ObjectInfo, far from object (30)
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTFE" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTFE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___COM" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___COM" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTFE@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1334,8 +1406,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTUB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SUB" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SUB" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="30" Layer="JBTKU@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1347,8 +1419,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTOB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___TRK" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___TRK" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="30" Layer="JBTKO@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1360,8 +1432,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTEH@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1373,8 +1445,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SIG" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1386,8 +1458,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTEL" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTEL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___POW" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___POW" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTEL@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1399,8 +1471,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTTE" /> -->
-<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___JBTTE" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___TEL" /> -->
+<xpp:define name="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___TEL" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTTE@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1420,8 +1492,8 @@
 	a medium distance from object, and the name is closer to the object (15/7). This one is useful for 
 	similar objects which are close to each other in mileage, such as boards, balises and point machines
 =========================================================================================================-->
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTOB" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTOB" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___TRK" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___TRK" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="10" Layer="JBTKO@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1433,8 +1505,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTKL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTKL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___OCS" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___OCS" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTEH@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1446,8 +1518,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_NAME_TA7G_OBJECTINFO___VERTICAL_AND_STACKED___JBTSA" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTSA" >
+		<!-- <xpp:expand select="NOBN_com_NAME_TA7G_OBJECTINFO___VERTICAL_AND_STACKED___SIG" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___SIG" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
@@ -1459,8 +1531,8 @@
 	</xpp:bloc>
 </xpp:define>
 
-		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTEL" /> -->
-<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___JBTEL" >
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___POW" /> -->
+<xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___POW" >
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTEL@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15" />
