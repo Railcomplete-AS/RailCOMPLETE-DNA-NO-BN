@@ -935,8 +935,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<CustomAttribute DataType="Enumeration" Name="DerailerState" DisplayName="SporsperreStilling" DefaultValue="derailing" 
 			Description="The 'DerailingState' custom attribute [open | closed] reflects the activation state of the derailer." >
 			<Values>
-				<Value DisplayName="Avlagt" >passive</Value>
-				<Value DisplayName="Pålagt" >derailing</Value>
+				<Value DisplayName="Inaktiv" >passive</Value>
+				<Value DisplayName="Avsporende" >derailing</Value>
 			</Values>
 		</CustomAttribute>
 
@@ -993,14 +993,14 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Variant>
 		</Variants>
 		
-		<InsertPointObject VariantName="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-SINGLE-ACTIVE-1-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true" />
 			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOUBLE-ACTIVE-1-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOBBEL-INAKTIV-1-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true" />
@@ -1008,14 +1008,14 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</InsertPointObject>
 		
 		<!-- TODO Mangler 2D-symbol for avsporingstunger enkel og dobbel (EAT, DAT) -->
-		<InsertPointObject VariantName="Enkel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-SINGLE-ACTIVE-1-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Enkel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true" />
 			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Dobbel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-DOUBLE-ACTIVE-1-{{SymbolMode}}"
+		<InsertPointObject VariantName="Dobbel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-DOBBEL-INAKTIV-1-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true" />
@@ -1026,13 +1026,13 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="0" />
 			<BlockNameFormat JoinBy="-" >
 			NO-BN-2D-JBTSA_SSP
-			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-SINGLE
-			{% elsif Variant == 'Dobbel sporsperre' %}SPORSPERRE-DOUBLE
-			{% elsif Variant == 'Enkel avsporingstunge' %}AVSPORINGSTUNGE-SINGLE
-			{% elsif Variant == 'Dobbel avsporingstunge' %}AVSPORINGSTUNGE-DOUBLE
+			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-ENKEL
+			{% elsif Variant == 'Dobbel sporsperre' %}SPORSPERRE-DOBBEL
+			{% elsif Variant == 'Enkel avsporingstunge' %}AVSPORINGSTUNGE-ENKEL
+			{% elsif Variant == 'Dobbel avsporingstunge' %}AVSPORINGSTUNGE-DOBBEL
 			{% else %}BAD_Variant
 			{% endif %}
-			{% if DerailerState == 'passive' %}INACTIVE{% else %}ACTIVE{% endif %}
+			{% if DerailerState == 'passive' %}PASSIV{% else %}AVSPORENDE{% endif %}
 			{{quadrant}}
 			{{SymbolMode}}
 			</BlockNameFormat>
@@ -2080,7 +2080,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 								j = j + 1 
 							end
 						end
-						return string.format("%d.%d",r[0].code,j)
+						return tonumber(r[0].code) and string.format("%d.%d",r[0].code,j) or string.format("DRV.%d",j)
 					end
 				end	
 			</Formula>
@@ -2940,8 +2940,8 @@ elseif RcType == "JBTSA_SIG ERTMS" then
 	return NOBN_sig_getSignalShortName()
 end</TrainRoutesStartPointFilter>
 		<TrainRoutesEndPointFilter>if ((RcType == "JBTSA_SIG Signal" and (Hovedsignal == 'Hs1'or Hovedsignal == 'Hs2' or Hovedsignal == 'Hs3'))
-	or (RcType == "JBTSA_SIG Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
-	or (RcType == "SA-SIG Togvei slutt"))
+	or (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
+	or (RcType == "JBTSA_SIG Togvei slutt"))
 then
 	return NOBN_sig_getSignalShortName()
 elseif RcType == "JBTSA_SIG ERTMS" then
@@ -2950,11 +2950,11 @@ end</TrainRoutesEndPointFilter>
 		<ShuntingRoutesStartPointFilter>if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then return NOBN_sig_getSignalNumber() end</ShuntingRoutesStartPointFilter>
 		<ShuntingRoutesEndPointFilter>if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then 
 	return NOBN_sig_getSignalNumber()
-elseif ((RcType == "JBTSA_SIG Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "SA-SIG Togvei slutt")) then
+elseif ((RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "JBTSA_SIG Togvei slutt")) then
 
 	return code
 end</ShuntingRoutesEndPointFilter>
-		<ViaPointFilter>if (RcType == "JBTSA_SIG Fiktivt punkt" and Variant == "Viapunkt for betjeningsanlegg") then
+		<ViaPointFilter>if (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Viapunkt for betjeningsanlegg") then
     return "(v"..code..")"
 end</ViaPointFilter>
 		<ExtendedTrainRoutesExcludedStartPointFilter>Function == "blocking"</ExtendedTrainRoutesExcludedStartPointFilter>
