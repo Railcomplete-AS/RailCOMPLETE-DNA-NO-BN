@@ -350,6 +350,7 @@
   <Layer Name="JBTSA_TET" Color="2" Description="Tuningenhet 'sopp' for akseltellere"/>
   <Layer Name="JBTSA_SIG" Color="2" Description="Signal"/>
   <Layer Name="JBTSA_ERT" Color="2" Description="ERTMS markerboard"/>
+  <Layer Name="TFES_FIK" Color="2" Description="Fiktivt signal (vipunkt, fiktivt sluttpunkt for tog- og/eller -skiftevei)"/>
   <Layer Name="JBTSA_SIK" Color="2" Description="Sikringsanlegg"/>
   <Layer Name="JBTSA_FUN" Color="2" Description="Stolpe for S-lås, Lok. og mindre signaler"/>
   <Layer Name="JBTSA_AVS" Color="2" Description="Avstander"/>
@@ -495,7 +496,7 @@
  <ShowLayer Name="COM_ShowInsertionPoint" DisplayName="Felles/Innsettingspunkt">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTRC$$INNSETTINGSPUNKT</LayerSelection>
  </ShowLayer>
- <ShowLayer Name="COM_ShowDescription" DisplayName="Felles/Beskrivelse">
+ <ShowLayer Name="COM_ShowDescription" DisplayName="Felles/Symbolbeskrivelse">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTRC$$SYMBOLBESKRIVELSE</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="COM_ShowSymbolFramesAll" DisplayName="Felles/Symbolrammer, alle typer">
@@ -546,12 +547,12 @@
  <ShowLayer Name="COM_ShowAlignmentNames" DisplayName="Felles/Linjenavn">
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE#ANNOTATIONS_ALIGNMENTNAME</LayerSelection>
  </ShowLayer>
- <ShowLayer Name="TRK_ShowAnnotationObjectsForGeometryAndVerticalProfile" DisplayName="Felles/Geometri, overhøyde og vertikalprofil">
+ <ShowLayer Name="COM_ShowAnnotationObjectsForGeometryAndVerticalProfile" DisplayName="Felles/Geometri, overhøyde og vertikalprofil">
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE#ANNOTATIONS_GEOMETRY</LayerSelection>
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE#ANNOTATIONS_VERTICALPROFILE</LayerSelection>
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE#ANNOTATIONS_SECTION</LayerSelection>
  </ShowLayer>
- <ShowLayer Name="TRK_ShowFoulingPoints" DisplayName="Felles/Spormiddel">
+ <ShowLayer Name="TRK_ShowFoulingPoints" DisplayName="Signal/Spormiddel">
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE#ANNOTATIONS_FOULINGPOINT</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="TRK_ShowChainage" DisplayName="Felles/Kilometriereung">
@@ -587,6 +588,9 @@
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTEH_BKT</LayerSelection>
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTKO_SKT</LayerSelection>
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTSA_MSS</LayerSelection>
+ </ShowLayer>
+ <ShowLayer Name="TRK_ShowReferenceAuxiliaryLineAlignments" DisplayName="Felles/Hjelpelinje">
+  <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE_HLP</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="COM_ShowWipeoutForBoards" DisplayName="Skilt/Wipeout under alle skilt" DefaultOff="true">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTSK$$WIPEOUT_SKILT</LayerSelection>
@@ -652,6 +656,9 @@
  </ShowLayer>
  <ShowLayer Name="TRK_ShowSwitchAndCrossingType" DisplayName="Sporforbindelser/Sporveksel og sporkryss type">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTKO@SPV_TYPE</LayerSelection>
+ </ShowLayer>
+ <ShowLayer Name="TRK_ShowAlignmentProlongation" DisplayName="Sporforbindelser/Sporfortsettelses-symbol" DefaultOff="false">
+  <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTKO$SPF</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="TRK_ShowSwitchAndCrossingGraphicsForTrack" DisplayName="Sporforbindelser/Overbygnings-symbol for sporveksel og sporkryss">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTKO$SPV</LayerSelection>
@@ -742,7 +749,7 @@
  <ShowLayer Name="SIG_ShowInfo" DisplayName="Signal/Objektinfo">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTSA@INFO</LayerSelection>
  </ShowLayer>
- <ShowLayer Name="SIG_ShowAxleCounterSnapLine" DisplayName="Études signalisation/Ligne d'accrochage au compteur d'essieux" DefaultOff="true">
+ <ShowLayer Name="SIG_ShowAxleCounterSnapLine" DisplayName="Signal/Snappelinje for akselteller" DefaultOff="true">
   <LayerSelection Type="ExactMatch" CaseSensitive="true">JBTSA$$AKSELTELLER_SNAPPELINJE</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="SIG_ShowAxleCcounterMinimumLateralSeparationBelow120kmh" DisplayName="Signal/Akselteller sensor minsteavstand til neste skinne inntil 120 km/h" DefaultOff="true">
@@ -2485,7 +2492,7 @@
 					return _frames.SECTION[_language]
 				end
 			
-				--Deal with axle counter special section objects (the layer name will depend on the DNA in use):
+				--Deal with characteristic point special section objects (the layer name will depend on the DNA in use):
 				if RcType:upper():match(_frames.SEGMENT_TAG[_language]:upper()) then 
 					return _frames.SECTION[_language]
 				end
@@ -9430,18 +9437,19 @@ end
    <Constructor>String _JBTFE_DIV_marker_name([RailwayPlacedObject obj])</Constructor>
    <Formula>
 				function _JBTFE_DIV_marker_name(obj)
-					if obj == nil then obj = this end
-					local RelationName = "Er markør for anything"
-					local r,n = RC__getCollectionOfRelatedObjects(RelationName)
+					obj = obj or this
+					local st = "Er markør for anything"
+					r,n = RC__getCollectionOfRelatedObjects(s,obj)
 					if n == 0 then 
-						return "UNFINISHED - Relate with '"..RelationName.."'."
+						return "UNFINISHED - Relate with '"..st.."'."
 					else
-						local s,i
-						s = "("..r[0].code
+						local t,i
+						function CodeOrId(x) return x.code ~= "" and x.code or x.id end
+						t = "("..CodeOrId(r[0])
 						for i = 1, n-1 do
-							s = s..", "..r[i].code
+							t = t..", "..CodeOrId(r[i])
 						end
-						return s..")"
+						return t..")"
 					end
 				end
 			</Formula>
@@ -21138,8 +21146,8 @@ end
   </LuaFunction>
   <CustomAttribute DataType="Enumeration" Name="DerailerState" DisplayName="SporsperreStilling" DefaultValue="derailing" Description="The 'DerailingState' custom attribute [open | closed] reflects the activation state of the derailer.">
    <Values>
-    <Value DisplayName="Avlagt">passive</Value>
-    <Value DisplayName="Pålagt">derailing</Value>
+    <Value DisplayName="Inaktiv">passive</Value>
+    <Value DisplayName="Avsporende">derailing</Value>
    </Values>
   </CustomAttribute>
   <LuaExpression Name="derailSide">
@@ -21192,19 +21200,19 @@ end
     <SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT"/>
    </Variant>
   </Variants>
-  <InsertPointObject VariantName="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-SINGLE-ACTIVE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+  <InsertPointObject VariantName="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOUBLE-ACTIVE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+  <InsertPointObject VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOBBEL-INAKTIV-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Enkel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-SINGLE-ACTIVE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+  <InsertPointObject VariantName="Enkel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Dobbel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-DOUBLE-ACTIVE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+  <InsertPointObject VariantName="Dobbel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-DOBBEL-INAKTIV-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
@@ -21212,13 +21220,13 @@ end
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="0"/>
    <BlockNameFormat JoinBy="-">
 			NO-BN-2D-JBTSA_SSP
-			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-SINGLE
-			{% elsif Variant == 'Dobbel sporsperre' %}SPORSPERRE-DOUBLE
-			{% elsif Variant == 'Enkel avsporingstunge' %}AVSPORINGSTUNGE-SINGLE
-			{% elsif Variant == 'Dobbel avsporingstunge' %}AVSPORINGSTUNGE-DOUBLE
+			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-ENKEL
+			{% elsif Variant == 'Dobbel sporsperre' %}SPORSPERRE-DOBBEL
+			{% elsif Variant == 'Enkel avsporingstunge' %}AVSPORINGSTUNGE-ENKEL
+			{% elsif Variant == 'Dobbel avsporingstunge' %}AVSPORINGSTUNGE-DOBBEL
 			{% else %}BAD_Variant
 			{% endif %}
-			{% if DerailerState == 'passive' %}INACTIVE{% else %}ACTIVE{% endif %}
+			{% if DerailerState == 'passive' %}PASSIV{% else %}AVSPORENDE{% endif %}
 			{{quadrant}}
 			{{SymbolMode}}
 			</BlockNameFormat>
@@ -22509,7 +22517,7 @@ end
 								j = j + 1 
 							end
 						end
-						return string.format("%d.%d",r[0].code,j)
+						return tonumber(r[0].code) and string.format("%d.%d",r[0].code,j) or string.format("DRV.%d",j)
 					end
 				end	
 			</Formula>
@@ -23416,8 +23424,8 @@ elseif RcType == "JBTSA_SIG ERTMS" then
 	return NOBN_sig_getSignalShortName()
 end</TrainRoutesStartPointFilter>
   <TrainRoutesEndPointFilter>if ((RcType == "JBTSA_SIG Signal" and (Hovedsignal == 'Hs1'or Hovedsignal == 'Hs2' or Hovedsignal == 'Hs3'))
-	or (RcType == "JBTSA_SIG Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
-	or (RcType == "SA-SIG Togvei slutt"))
+	or (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
+	or (RcType == "JBTSA_SIG Togvei slutt"))
 then
 	return NOBN_sig_getSignalShortName()
 elseif RcType == "JBTSA_SIG ERTMS" then
@@ -23426,11 +23434,11 @@ end</TrainRoutesEndPointFilter>
   <ShuntingRoutesStartPointFilter>if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then return NOBN_sig_getSignalNumber() end</ShuntingRoutesStartPointFilter>
   <ShuntingRoutesEndPointFilter>if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then 
 	return NOBN_sig_getSignalNumber()
-elseif ((RcType == "JBTSA_SIG Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "SA-SIG Togvei slutt")) then
+elseif ((RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "JBTSA_SIG Togvei slutt")) then
 
 	return code
 end</ShuntingRoutesEndPointFilter>
-  <ViaPointFilter>if (RcType == "JBTSA_SIG Fiktivt punkt" and Variant == "Viapunkt for betjeningsanlegg") then
+  <ViaPointFilter>if (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Viapunkt for betjeningsanlegg") then
     return "(v"..code..")"
 end</ViaPointFilter>
   <ExtendedTrainRoutesExcludedStartPointFilter>Function == "blocking"</ExtendedTrainRoutesExcludedStartPointFilter>
@@ -23536,7 +23544,7 @@ function NOBN_sig_getSignalFullName()
 			t = "Sig." --Covers all the remaining - MKs, FKs, Ls, LHs, AVs, BPs
 		end
 	
-	elseif RcType == "JBTSA_SIG Fiktivt punkt" then
+	elseif RcType == "JBTSA_FIK Fiktivt punkt" then
 		t = "Fik."
 		if Variant == "Viapunkt for betjeningsanlegg" then return t..code
 		elseif Variant == "Fiktivt sluttpunkt for togvei" then return t..NOBN_sig_getSignalShortName().." (HTv)"
@@ -23599,7 +23607,7 @@ function NOBN_sig_getSignalPartNames()
 		s = "Veisignal"   
 	elseif RcType == "JBTSA_SIG Planovergangssignal" then
 		s = "Planovergangssignal"
-	elseif RcType == "JBTSA_SIG Fiktivt punkt" then
+	elseif RcType == "JBTSA_FIK Fiktivt punkt" then
 		s = "Fiktivt punkt"
 	else
 		s = "Bad signal type ["..RcType.."].",_warning
@@ -23609,7 +23617,7 @@ function NOBN_sig_getSignalPartNames()
 end	 
 		</Formula>
  </LuaFunction>
- <ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_SIG Fiktivt punkt" Layer="JBTSA_SIG" Color="ByLayer" Group="Signal/Fiktive punkter" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+ <ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_FIK Fiktivt punkt" Layer="JBTSA_FIK" Color="ByLayer" Group="Signal/Fiktive punkter" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>signal</RelationSpace>
   <CustomAttribute DataType="Double" Name="AngularOffset" DisplayName="3D Angular offset" DefaultValue="0.0" Category="3D" Description="The 'AngularOffset' custom property [DD] is added to the object's basic 3D orientation. The basic orientation is defined by the current 'dir' property's up/down/none/both/unknown value. If property dir is 'unknown' then the orientation will be 45 degrees as a visual reminder that dir is unknown. For some objects types (e.g. yokes) the 2D symbol orientation will also be affected."/>
   <CustomAttribute DataType="String" Name="Tag" DisplayName="Tag" DefaultValue="" Category="Metadata" Description="The 'Tag' custom property holds a unique identifier, within an administration's context, such as a unique key for the administration's asset management database. Hide/unhide using the ShowLayer tool."/>
@@ -23678,26 +23686,26 @@ end
    <Variant Name="Fiktivt sluttpunkt for skiftevei"/>
    <Variant Name="Fiktivt sluttpunkt for togvei og skiftevei"/>
   </Variants>
-  <InsertPointObject VariantName="Viapunkt for betjeningsanlegg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-VIAPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Viapunkt for betjeningsanlegg" DisplayBlockName="NO-BN-2D-JBTSA_FIK-VIAPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Fiktivt sluttpunkt for togvei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Fiktivt sluttpunkt for togvei" DisplayBlockName="NO-BN-2D-JBTSA_FIK-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Fiktivt sluttpunkt for skiftevei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Fiktivt sluttpunkt for skiftevei" DisplayBlockName="NO-BN-2D-JBTSA_FIK-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Fiktivt sluttpunkt for togvei og skiftevei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Fiktivt sluttpunkt for togvei og skiftevei" DisplayBlockName="NO-BN-2D-JBTSA_FIK-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_FIK-FIKTIVT-SLUTTPUNKT-{{SymbolMode}}" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="true"/>
    <BlockNameFormat JoinBy="-">
-			NO-BN-2D-JBTSA_SIG-SIGNAL
+			NO-BN-2D-JBTSA_FIK
 			{% if Variant == 'Viapunkt for betjeningsanlegg' %}VIAPUNKT
 			{% else %}FIKTIVT-SLUTTPUNKT
 			{% endif %}
