@@ -72,7 +72,7 @@
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_ETI-ETIKETT-D-1-2-HRB-025-018" AllowSymbolMove="true" >
-			<Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTFE_ETI-ETIKETT
 				{% if Variant == 'D-1-2-HLB-025-018-SPV' %}D-1-2-HLB-025-018
@@ -297,7 +297,7 @@
 
 		<PropertyPrompt Key="code" DefaultValue="Spor" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Enkle skinner og sviller" DisplayBlockName="NO-BN-2D-JBTKO-THUMBNAIL-RAILWAY-TRACK-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Enkle skinner og sviller" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JERNBANESPOR-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
@@ -308,7 +308,7 @@
 			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="JBTKO_VES Vertikalprofilsegment" />
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Enkle skinner og sviller med enkle ledeskinner" DisplayBlockName="NO-BN-2D-JBTKO-THUMBNAIL-RAILWAY-TRACK-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Enkle skinner og sviller med enkle ledeskinner" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JERNBANESPOR-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
@@ -319,7 +319,7 @@
 			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="JBTKO_VES Vertikalprofilsegment" />
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Kjørekanter 1435 mm" DisplayBlockName="NO-BN-2D-JBTKO-THUMBNAIL-RAILWAY-TRACK-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Kjørekanter 1435 mm" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JERNBANESPOR-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
@@ -330,7 +330,7 @@
 			<SetValue Key="VerticalGeometrySectionObjectTypeRef" Value="JBTKO_VES Vertikalprofilsegment" />
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="60E1 1:20 skinner og enkle sviller" DisplayBlockName="NO-BN-2D-JBTKO-THUMBNAIL-RAILWAY-TRACK-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="60E1 1:20 skinner og enkle sviller" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JERNBANESPOR-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
@@ -467,7 +467,7 @@
 		<!-- Not really needed - will be superseded by the code formula anyway: -->
 		<PropertyPrompt Key="code" DefaultValue="Kjørekant og isolasjon" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Kjørekant og isolasjon" DisplayBlockName="NO-BN-2D-JBTKO-THUMBNAIL-SKINNE-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Kjørekant og isolasjon" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-SKINNEPROFIL-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
@@ -498,7 +498,6 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<Variants>
@@ -514,6 +513,8 @@
 			<Variant Name="REB" />
 		</Variants>
 		
+		<LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression>
+
 		<LuaExpression Name="Variant" ><Formula>_JBTKO_HOT_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_HOT_Variant()" ReturnType="String"
 				Description="Analyzes local alignment geometry and cant and returns nearest vertex' Variant, i.e. type of geometric vertex/cant." >
@@ -588,11 +589,12 @@
 				DisplayBlockName="NO-BN-2D-JBTKO_DIV-KARAKTERISTISK-PUNKT-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKO_DIV-KARAKTERISTISK-PUNKT-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}" />
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
@@ -621,7 +623,6 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 	
 		<Variants>
@@ -631,6 +632,8 @@
 			<Variant Name="(Linje start/slutt)" />
 		</Variants>
 		
+		<LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression>
+
 		<LuaExpression Name="Variant" ><Formula>_JBTKO_VET_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_Variant()" ReturnType="String"
 				Description="Analyzes local alignment profile and returns nearest vertex' 'Variant', i.e. type of geometric vertex/cant." >
@@ -704,11 +707,12 @@
 				DisplayBlockName="NO-BN-2D-JBTKO_DIV-KARAKTERISTISK-PUNKT-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKO_DIV-KARAKTERISTISK-PUNKT-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}" />
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
@@ -736,7 +740,7 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 
 		<!-- NOTE!: Only multiline text / AttDef objects will interpret AutoCAD formatting characters such as newline or superscript. But due to an AutoCAD BUG, such entities do not scale correctly with annotative scales. -->
@@ -806,16 +810,17 @@
 
 		<!-- Just one InsertPointObject is needed, the formula on Variant will change to the correct Variant for us -->
 		<InsertPointObject VariantName="Horisontalgeometrisegment"
-				DisplayBlockName="NO-BN-2D-JBTRC_WATCH-INNSETTING-SYMBOL-{{SymbolMode}}" 
+				DisplayBlockName="NO-BN-2D-JBTRC_WATCH-INNSETTING-SYMBOL-Schematic" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
 			<SetValue Key="DelimiterType" Value="JBTKO_HOT Horisontalgeometripunkt" />
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 		
 		<!-- <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" > -->
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_WCH-WATCH-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}" />
 			<SymbolAttribute Tag="W" ><Value>{{code}}</Value></SymbolAttribute>
 		</SymbolDefinition>
 	</ObjectType>
@@ -840,7 +845,7 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<!-- NOTE!: Only multiline text / AttDef objects will interpret AutoCAD formatting characters such as newline or superscript. But due to an AutoCAD BUG, such entities do not scale correctly with annotative scales. -->
@@ -884,17 +889,17 @@
 
 <!-- TODO: temp fix, use Watch symbol (which is multiline but does not behave correctly with scales). Section objects have temporarily been made into single-line text, whence they scale correctly with annotative scales. -->
 
-		<InsertPointObject VariantName="Vertikalprofilsegment" DisplayBlockName="NO-BN-2D-JBTRC_WATCH-INNSETTING-SYMBOL-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Vertikalprofilsegment" DisplayBlockName="NO-BN-2D-JBTRC_WATCH-INNSETTING-SYMBOL-Schematic" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
-			<!-- DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic"  -->
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
 			<SetValue Key="DelimiterType" Value="JBTKO_VET Vertikalprofilpunkt" />
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 		
 		<!-- <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" > -->
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_WCH-WATCH-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}" />
 			<SymbolAttribute Tag="W" ><Value>{{code}}</Value></SymbolAttribute>
 		</SymbolDefinition>
 	</ObjectType>
@@ -950,14 +955,14 @@
 		<PropertyPrompt Key="code" DefaultValue="Plattformkant" AcceptEmptyValue="false" />
 		
 		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" 
-				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-UNSPECIFIED-Schematic"
+				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic"
 				DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
 		
 		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, venstre side" 
-				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-UNSPECIFIED-Schematic"
+				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic"
 				DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
