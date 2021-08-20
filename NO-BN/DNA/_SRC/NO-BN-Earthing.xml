@@ -44,19 +44,36 @@
    <!-- <Variant Name="Tverrforbinder" Description="Forbinder skinnestrenger i samme spor, f.eks. trekke returstrøm over til andre skinnen ifbm dobbelisolert skjøt. Kabelforlegning i sporet (dvs TXXI kappe)." /> -->
    <!-- <Variant Name="Utjevningsforbinder" Description="Forbinder jordskinnen i ett spor med jordskinnen i et annet spor i nærheten. Kabelforlegning er typisk i føringsvei (dvs IX kappe)." /> -->
 			<Variant Name="Isolert jordleder" >
+				<SetValue Key="WireType" Value="Cu95" />
+				<SetValue Key="Sheath" Value="IX" />
 			</Variant>
 			<Variant Name="Blank jordleder" >
+				<SetValue Key="WireType" Value="Cu95" />
+				<SetValue Key="Sheath" Value="KHF" />
 			</Variant>
 			<Variant Name="Tverrforbinder" >
+				<SetValue Key="WireType" Value="Cu70" />
+				<SetValue Key="Sheath" Value="TXXI" />
 			</Variant>
 			<Variant Name="Utjevningsforbinder" >
+				<SetValue Key="WireType" Value="Cu95" />
+				<SetValue Key="Sheath" Value="IX" />
 			</Variant>
 		</Variants>
 		
+		<SetValue Key="Sweep3D" Value="true" />
+		<SetValue Key="QuickMode3D" Value="true" />
+		
 		<!-- Tverrsnitt og materialer iht oversikt gitt av Norconsult v/ Magnus Brevik, juli 2018 -->
+		<!-- Ref katalog C:\Users\Claus Feyling\Google Drive\RC_3D\NO-BN\04 EH - Elektro høyspent (KL)\_BAHRA earthing products -->
+		<!-- Fil: BahraEarthingCatalogue_Ver1_LowRes.pdf page 36 of 88 stranded bare copper cable cross-section and weight -->
 		<CustomAttribute DataType="Enumeration" Name="WireType" DisplayName="Ledertype" DefaultValue="Cu95"
 			Description="The earthing wire type (ewt) [6/16/25/35/50/70/95/120/150 mm2 Cu], or aluminum corresponding to the copper conductivities." >
 			<Values>
+				<Value>Cu400</Value>
+				<Value>Cu300</Value>
+				<Value>Cu240</Value>
+				<Value>Cu185</Value>
 				<Value>Cu150</Value>
 				<Value>Cu120</Value>
 				<Value>Cu95</Value>
@@ -87,7 +104,42 @@
 		</CustomAttribute>
 		
 		<LuaExpression Name="name" ><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
-		<LuaExpression Name="Linetype" ><Formula>"RC-EARTHING-"..WireType"</Formula></LuaExpression>
+		<LuaExpression Name="Linetype" ><Formula>"RC-EARTHING-"..WireType</Formula></LuaExpression>
+	
+		<LuaExpression Name="Model3DName" ><Formula>_JBTEH_JOR_Model3dName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_JOR_Model3dName()" ReturnType="String"
+		Description="Returns a 3D model name corresponding to the current earthing wire variant and custom properties.">
+			<Constructor>Double _JBTEH_JOR_Model3dName()</Constructor>
+			<Formula>
+				function _JBTEH_JOR_Model3dName()
+					--Cross-section area / outer diameter for bare copper multistranded wire (ref Bahra catalogue p.36):
+					BareCopperCable = {{"Cu400",26},{"Cu300",23},{"Cu240",20},{"Cu185",18},{"Cu150",16},{"Cu120",14},{"Cu95",13},{"Cu70",11},{"Cu50",9},{"Cu35",8},{"Cu25",6},{"Cu16",5},{"Cu6",3}}
+					if Sheath == "KHF" then 
+						--if true then return WireType:match("(Cu%d+)") end --DEBUG
+						indx = 0
+						for i = 1,#BareCopperCable do
+							if WireType:match("(Cu%d+)") == BareCopperCable[i][1] then
+								indx = i
+							end
+						end
+						--if true then return WireType,indx,BareCopperCable[3][2] end
+						if indx == 0 then
+							return "No cross-section area found in WireType name ["..WireType.."]."
+						else
+							if BareCopperCable[indx][1]:match("Cu") then
+								return string.format("NO-BN-SWEEP-FE-WIR-WIRE-BLANK-KOBBER-%d-MM2-DIAMETER-%03d",
+									BareCopperCable[indx][1]:match("Cu(%d+)"), BareCopperCable[indx][2])
+							else
+								return "Only copper wire types have been anticipated, sorry about that :-("
+							end
+						end
+					else
+						return "Only KHF wire types (bare stranded wire) have been anticipated, sorry about that :-("
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
 	
 		<PropertyPrompt Key="code" DefaultValue="JL-" AcceptEmptyValue="false" />
 			
@@ -95,8 +147,6 @@
 		<InsertAlignment VariantName="Isolert jordleder" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JORDLEDER-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
-			<SetValue Key="WireType" Value="Cu95" />
-			<SetValue Key="Sheath" Value="IX" />
 		</InsertAlignment>
 
 		<!-- Jording som føres fra KL-mast til KL-mast, eller opphengt i tunneltak eller ført langs tunnelvegg. -->
@@ -104,24 +154,18 @@
 		<InsertAlignment VariantName="Blank jordleder" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JORDLEDER-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
-			<SetValue Key="WireType" Value="Cu95" />
-			<SetValue Key="Sheath" Value="KHF" />
 		</InsertAlignment>
 
 		<!-- Forbinder skinnestrenger i samme spor, f.eks. trekke returstrøm over til andre skinnen ifbm dobbelisolert skjøt. Kabelforlegning i sporet (dvs TXXI kappe). -->
 		<InsertAlignment VariantName="Tverrforbinder" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JORDLEDER-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
-			<SetValue Key="WireType" Value="Cu70" />
-			<SetValue Key="Sheath" Value="TXXI" />
 		</InsertAlignment>
 
 		<!-- Forbinder jordskinnen i ett spor med jordskinnen i et annet spor i nærheten. Kabelforlegning er typisk i føringsvei (dvs IX kappe). -->
 		<InsertAlignment VariantName="Utjevningsforbinder" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-JORDLEDER-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
-			<SetValue Key="WireType" Value="Cu95" />
-			<SetValue Key="Sheath" Value="IX" />
 		</InsertAlignment>
 	</ObjectType>
 	
