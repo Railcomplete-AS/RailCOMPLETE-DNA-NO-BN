@@ -203,10 +203,11 @@
 	<PropertyOverride Name="pos" 														Category="Aligned object" /> 
 	<PropertyOverride Name="DistanceToAlignment"										Category="Aligned object" /> 
 	<PropertyOverride Name="RelativeElevation"											Category="Aligned object" /> 
+	<PropertyOverride Name="TargetAlignment"											Category="Aligned object" />
 
 <PropertyCategory Name="Model check"												Collapsed="false" />	<!-- Custom -->
 
-<PropertyCategory Name="Presentation"												Collapsed="true"  />	<!-- Intrinsic -->
+<PropertyCategory Name="Presentation" DisplayName="2D Presentation"					Collapsed="true"  />	<!-- Intrinsic -->
 	<PropertyOverride Name="SymbolMode"													Category="Presentation" />
 	<PropertyOverride Name="DrawTail"													Category="Presentation" />
 	<PropertyOverride Name="DrawTailExtension"											Category="Presentation" />
@@ -243,6 +244,8 @@
 <PropertyCategory Name="Metadata"													Collapsed="true"  />	<!-- Intrinsic -->
 	<PropertyOverride Name="description"												Category="Metadata" />
 
+<PropertyCategory Name="PSET_01 Quantités" DisplayName="PSET_01 Mengen"				Collapsed="true"  />	<!-- Custom -->
+
 <PropertyCategory Name="Watch text"													Collapsed="true"  />	<!-- Intrinsic -->
 
 <PropertyCategory Name="Relations"													Collapsed="true"  />	<!-- Intrinsic -->
@@ -268,11 +271,12 @@
 <PropertyCategory Name="Switch"														Collapsed="true"  />	<!-- Custom -->
 
 <PropertyCategory Name="Connections"												Collapsed="true"  />   	<!-- Intrinsic --> 	<!-- Collapse, then move properties to Category 'Switch' -->
-	<PropertyOverride Name="TargetAlignment"											Category="Connections" />
+	<!-- NB: "TargetAlignment" has been moved to category "Aligned object" (= linear positioning) -->
 	<PropertyOverride Name="SwitchGeometry"												Category="Connections" />
 	<PropertyOverride Name="ConnectionCourse"											Category="Connections" />
 	<PropertyOverride Name="ContinuingWithBegin"										Category="Connections" />
 	<PropertyOverride Name="ExtendingFromEnd"											Category="Connections" />
+
 
 <PropertyCategory Name="ISY Beskrivelse"											Collapsed="true"  />	<!-- Custom -->
 
@@ -645,6 +649,27 @@
 
 
 
+	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" /> -->
+<xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" >
+	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
+		<LuaExpression Name="DistanceToAlignment" >
+			<Formula>
+				d = getPropertyValue("DistanceToAlignment")
+				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				if d == 0 then 
+					return (LeftSided and -6/sc or 6/sc)
+				else
+					return RC__snap(d*sc,3)/sc
+				end
+			</Formula>
+		</LuaExpression>
+		<LuaExpression Name="RelativeElevation" ><Formula>0</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" /> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" >
 	<xpp:bloc>
@@ -667,7 +692,7 @@
 				d = getPropertyValue("DistanceToAlignment")
 				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if d == 0 then 
-					return -6/sc
+					return (LeftSided and -1 or 1) * 6/sc
 				else
 					return RC__snap(d*sc,3)/sc
 				end
@@ -1274,7 +1299,18 @@
 	</xpp:bloc>
 </xpp:define>
 	
-
+<TextAttribute 
+	Annotative="{% if SymbolMode == 'Geographic' %}true{% else %}false{% endif %}" 
+	BindingProperty="name" 
+	CadAttributeTag="OBJEKTNAVN"
+    X="0" Y="20" 
+	Layer="JBTSA@NAVN" 
+	Color="ByBlock" 
+	Justify="MiddleCenter" 
+	Height="1.25"
+	Rotation="0"
+	ObliqueAngle="15"
+/>
 
 <!--========================================================================================================
     Horizontal ObjectInfo-Name-Tag, far from object (24)

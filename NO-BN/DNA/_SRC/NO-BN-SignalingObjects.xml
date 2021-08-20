@@ -1022,7 +1022,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}" /> -->
 		</InsertPointObject>
 
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_THUMBNAIL-UNSPECIFIED-SCHEMATIC" AllowSymbolMove="true" >
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic" AllowSymbolMove="true" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="0" />
 			<BlockNameFormat JoinBy="-" >
 			NO-BN-2D-JBTSA_SSP
@@ -1446,7 +1446,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	<!-- TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for akseltellere = tellepunktavsnitt -->
 	<!-- Dette er et fiktivt objekt, ringen med avsnitt-nummeret i. Akseltellerne søker etter dem for å tilegne seg nr. -->
 	<!-- TODO: Avklare med Bane NOR om vi kan benytte SA-SPF (eller SA-TVD?) for "tellepunktavsnitt" som ny objekt-type for Banedata. -->
-	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="JBTSA_TEA Tellepunktavsnitt"
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="JBTSA_TEA Togdeteksjonsavsnitt for akseltellere"
 				Layer="JBTSA_TEA" Color="ByLayer"
 				Group="Signal/Togdeteksjon"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1458,15 +1458,17 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 
 		<!-- Ikke ISY beskrivelse - fiktivt objekt -->
 
 		<Variants>
-			<Variant Name="Tellepunktavsnitt" >
+			<Variant Name="Togdeteksjonsavsnitt for akseltellere" >
 			</Variant>
 		</Variants>
+
+		<SetValue Key="code" Value="OOO" />
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AxleCountersToBeModelchecked" 
 			DisplayName="Axle counters to be refreshed" 
@@ -1499,8 +1501,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="name" ><Formula>"Ta("..code..")"</Formula></LuaExpression>	
 
 		<!-- Snap-distance 1.6 means that the snap-function with argument '3' snaps it to dist 3 from track, snapping to the correct track. -->
-		<InsertPointObject VariantName="Togdeteksjonsavsnitt for akseltellere" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
-				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="6" >
+		<InsertPointObject VariantName="Togdeteksjonsavsnitt for akseltellere" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" />
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
@@ -1508,7 +1510,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</InsertPointObject>
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 			<SymbolAttribute Tag="X" >
 				<Value>{{code}}</Value>
 			</SymbolAttribute>
@@ -1590,7 +1592,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					shortestDistanceSoFar = math.huge
 					for i = 0, DownSections.count-1 do
 						obj = DownSections[i]
-						if obj:isVisible() then
+						if obj and obj:isVisible() then
 							dist = RC__getDistance2D(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
@@ -1602,7 +1604,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					shortestDistanceSoFar = math.huge
 					for i = 0, UpSections.count-1 do
 						obj = UpSections[i]
-						if obj:isVisible() then 
+						if obj and obj:isVisible() then 
 							dist = RC__getDistance2D(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
@@ -1610,7 +1612,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 							end
 						end
 					end
-					if (MileageIncreasesTowardsLeft == 'True') then first,second = second,first end
+					if MileageIncreasesTowardsLeft then first,second = second,first end
 					if first == "-" and second == "-" then
 						return first.."/"..second,_info("UNFINISHED - Create axle counter Section object(s) to obtain the section numbers 'a/b' for the sensor.")
 					else
@@ -1706,6 +1708,18 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat>NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-{{SymbolMode}}</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="true" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-Metric{% endif %}</BlockNameFormat>
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
@@ -1879,9 +1893,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="DistanceToAlignment" >		   
-			<Formula>0</Formula>
-		</LuaExpression>
+		<LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression>
 		
 		<CustomAttribute DataType="Boolean" Name="UpSectionLeftRailDetection" DisplayName="Deteksjon venstreskinne i stigende kilometerretning" DefaultValue="False" />
 		<CustomAttribute DataType="Boolean" Name="UpSectionRightRailDetection" DisplayName="Deteksjon høyreskinne i stigende kilometerretning" DefaultValue="False" />
@@ -1958,31 +1970,19 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 
 		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
-		
-		<!-- 2020-04-29 CLFEY Deprecated properties - can't assign a definite rail as insulated or not, this varies over the track circuit: -->
-		<!-- <CustomAttribute DataType="Enumeration" Name="LeftRailDetection" DisplayName="Deteksjon venstreskinne" DefaultValue="False" > -->
-			<!-- <Values> -->
-				<!-- <Value>true</Value> -->
-				<!-- <Value>false</Value> -->
-			<!-- </Values> -->
-		<!-- </CustomAttribute> -->
-		<!-- <CustomAttribute DataType="Enumeration" Name="RightRailDetection" DisplayName="Deteksjon høyreskinne" DefaultValue="False" > -->
-			<!-- <Values> -->
-				<!-- <Value>true</Value> -->
-				<!-- <Value>false</Value> -->
-			<!-- </Values> -->
-		<!-- </CustomAttribute> -->
 		
 		<Variants>
 			<Variant Name="Sporfelt" >
 			</Variant>
 		</Variants>
+		
+		<SetValue Key="code" Value="OOO" />
 
-		<InsertPointObject VariantName="Sporfelt" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
+		<InsertPointObject VariantName="Sporfelt" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
@@ -1991,7 +1991,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</InsertPointObject>
 	
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 			<SymbolAttribute Tag="X" >
 				<Value>{{code}}</Value>
 			</SymbolAttribute>
@@ -2328,7 +2328,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 						return "UNFINISHED - Missing relation '"..s.."' to switch object or derailer object.",_warning,
 						_info("A local control panel derives its code property from the switch or derailer which it is related to.")
 					elseif n == 1 then
-						if r[0].RcType == "KO-SPV Sporveksel" then 
+						if r[0].RcType == "JBTKO_SPV Sporveksel" then 
 							local coupledSwitch,ncsw = RC__getCollectionOfRelatedObjects("Er koblet med sporveksel",r[0])
 							if ncsw == 0 then
 								return r[0].code
@@ -2484,7 +2484,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
@@ -2528,7 +2528,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_ETC-BALISEGRUPPE-ETCS-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
@@ -2569,7 +2569,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		
 		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
@@ -2702,7 +2702,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_ATC-BALISEGRUPPE-NSS-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
@@ -2881,7 +2881,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_ATB-BALISE-TOM-FAST-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTSA_ATB-BALISE
 				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
@@ -2903,7 +2903,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<!-- Metric info -->
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_ATB-BALISE-TOM-FAST-Metric" AllowSymbolMove="false" >
 			<!--Note: cosisnegative (RC built-in filter for DotLiquid) returns 'True' with an uppercase T-->
-			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft == 'True'%}180{% else %}0{% endif %}" />
+			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}" />
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTSA_ATB-BALISE
 				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
