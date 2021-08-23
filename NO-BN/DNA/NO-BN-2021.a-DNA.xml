@@ -2015,11 +2015,12 @@
   <Formula>
 			function RC__identify(obj)
 				obj = obj or this
-				local t = obj:getPropertyValue("name")
-				if t and t ~= "" then return t end
-				t = obj:getPropertyValue("code")
-				if t and t ~= "" then return t
-				else return tostring(obj:getPropertyValue("id"))
+				objName = obj:getPropertyValue("name")
+				objCode = obj:getPropertyValue("code")
+				objId = obj:getPropertyValue("id")
+				if objName ~= nil and objName ~= "" then return objName
+				elseif objCode ~= nil and objCode  ~= "" then return objCode
+				else return tostring(objId)
 				end
 			end
 		</Formula>
@@ -9447,7 +9448,8 @@ end
   </LuaExpression>
   <Variants DefaultValue="Knappenål">
    <Variant Name="Knappenål"/>
-   <Variant Name="Posisjonsmarkering">
+   <Variant Name="Ref.spor posisjon / avstand"/>
+   <Variant Name="Posisjonsmarkering i sporet">
     <SetValue Key="Annotations3D" Value='
 					&lt;?xml version="1.0" encoding="utf-8"?&gt;
 					&lt;ArrayOfPlacedElementCadAnnotation 
@@ -9487,6 +9489,9 @@ end
     <Value>Grønn</Value>
     <Value>Blå</Value>
    </Values>
+   <Values Variant="Ref.spor posisjon / avstand">
+    <Value>Blå</Value>
+   </Values>
    <Values Variant="Posisjonsmarkering">
     <Value>Gul</Value>
    </Values>
@@ -9498,10 +9503,12 @@ end
    <Constructor>String _JBTFE_DIV_marker_Model3DName()</Constructor>
    <Formula>
 				function _JBTFE_DIV_marker_Model3DName()
-					if (Variant == "Posisjonsmarkering") then
-						return "NO-BN-3D-FE-DIV-POSISJONSMARKERING" 
-					elseif (Variant == "Knappenål") then
+					if (Variant == "Knappenål") then
 						return "NO-BN-3D-FE-DIV-MARKØR-KNAPPENÅL-"..markerColor:upper()
+					elseif (Variant == "Ref.spor posisjon / avstand") then
+						return "NO-BN-3D-FE-DIV-MARKØR-KNAPPENÅL-"..markerColor:upper()
+					elseif (Variant == "Posisjonsmarkering i sporet") then
+						return "NO-BN-3D-FE-DIV-POSISJONSMARKERING" 
 					end
 				end
 			</Formula>
@@ -9515,17 +9522,52 @@ end
 				function _JBTFE_DIV_marker_name(obj)
 					obj = obj or this
 					local st = "Er markør for anything"
-					r,n = RC__getCollectionOfRelatedObjects(s,obj)
-					if n == 0 then 
-						return "UNFINISHED - Relate with '"..st.."'."
-					else
-						local t,i
-						function CodeOrId(x) return x.code ~= "" and x.code or x.id end
-						t = "("..CodeOrId(r[0])
-						for i = 1, n-1 do
-							t = t..", "..CodeOrId(r[i])
+					r,n = RC__getCollectionOfRelatedObjects(st,obj)
+					if Variant == "Ref.spor posisjon / avstand" then
+						if n == 0 then
+							return RC__identify(Alignment)..".("..RcType..") : Km."..RC__toKm(ReferenceMileage)
+						
+						elseif n == 1 then
+							if r[0].ReferenceMileage == nil then 
+								return "ERROR - Cannot deduce reference mileage for first target object "..
+									"("..r[0].RcType.."):"..RC__identify(r[0])
+							else
+								return RC__identify(r[0].Alignment)..".("..r[0].RcType..") : Km."..RC__toKm(r[0].ReferenceMileage)
+							end
+						
+						else
+							if r[0].ReferenceMileage == nil then 
+								return "ERROR - Cannot deduce reference mileage for first target object "..
+									"("..r[0].RcType.."):"..RC__identify(r[0])
+							elseif r[1].ReferenceMileage == nil then 
+								return "ERROR - Cannot deduce reference mileage for second target object "..
+									"("..r[1].RcType.."):"..RC__identify(r[1])
+							end
+							if RC__isNan(distance(r[0],r[1])) then 
+								return "ERROR - No path found between objects: "..
+									RC__identify(r[0].Alignment)..".("..r[0].RcType.."):"..RC__identify(r[0])..
+									" and "..
+									RC__identify(r[1].Alignment)..".("..r[1].RcType.."):"..RC__identify(r[1]).."." 
+							else
+								if r[0].ReferenceMileage &lt; r[1].ReferenceMileage then
+									return RC__identify(r[0]).." til "..RC__identify(r[1]).." = "..RC__round(distance(r[0],r[1]),1).." m"    
+								else
+									return RC__identify(r[1]).." til "..RC__identify(r[0]).." = "..RC__round(distance(r[0],r[1]),1).." m"
+								end
+							end
 						end
-						return t..")"
+					else
+						if n == 0 then 
+							return "UNFINISHED - Relate with '"..st.."'."
+						else
+							local t,i
+							function CodeOrId(x) return x.code ~= "" and x.code or x.id end
+							t = "("..CodeOrId(r[0])
+							for i = 1, n-1 do
+								t = t..", "..CodeOrId(r[i])
+							end
+							return t..")"
+						end
 					end
 				end
 			</Formula>
@@ -9533,7 +9575,10 @@ end
   <InsertPointObject VariantName="Knappenål" DisplayBlockName="NO-BN-2D-JBTFE_MRK-MARKOER-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Posisjonsmarkering" DisplayBlockName="NO-BN-2D-JBTFE_MRK-MARKOER-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
+  <InsertPointObject VariantName="Ref.spor posisjon / avstand" DisplayBlockName="NO-BN-2D-JBTFE_MRK-MARKOER-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
+   <JigSymbolAppearance EnableDirectionSetting="true"/>
+  </InsertPointObject>
+  <InsertPointObject VariantName="Posisjonsmarkering i sporet" DisplayBlockName="NO-BN-2D-JBTFE_MRK-MARKOER-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
    <JigSymbolAppearance EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_MRK-MARKOER-{{SymbolMode}}" AllowSymbolMove="true">
@@ -11434,7 +11479,7 @@ end
 				end
 			</Formula>
   </LuaFunction>
-  <InsertPointObject VariantName="Betong KL-fundament, bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-BJELKEMAST-1600x1800-000-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Betong KL-fundament, bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-BJELKEMAST-1600x1800-000-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
@@ -11442,47 +11487,39 @@ end
    <SetValue Key="OcsFoundationBaseOffset" Value="000"/>
    <SetValue Key="OcsFoundationShaftHeight" Value="2700"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Boret KL-fundament, Ø355-Ø232xDD27xM36" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-BORET-Ø355-Ø232xDD27xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Boret KL-fundament, Ø355-Ø232xDD27xM36" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-BORET-Ø355-Ø232xDD27xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
    <SetValue Key="OcsFoundationShaftHeight" Value="5000"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Boret KL-fundament, Ø555-191x374xM36" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-BORET-Ø555-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Boret KL-fundament, Ø555-191x374xM36" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-BORET-Ø555-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
    <SetValue Key="OcsFoundationShaftHeight" Value="4500"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Fjellbolter for KL-mast i tunnel" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-FJELLBOLTER-FOR-BRU-OG-TUNNEL-350x350xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Fjellbolter for KL-mast i tunnel" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-FJELLBOLTER-FOR-BRU-OG-TUNNEL-350x350xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Fjellbolter for KL-mast på veggkonsoll" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-FJELLBOLTER-FOR-VEGGKONSOLL-600x700xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Fjellbolter for KL-mast på veggkonsoll" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-FJELLBOLTER-FOR-VEGGKONSOLL-600x700xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Veggkonsoll for KL-mast" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-KONSOLL-VEGGFESTE-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Veggkonsoll for KL-mast" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-VEGGKONSOLL-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Spesial KL-fundament" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-SPESIAL-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Spesial KL-fundament" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-SPESIAL-191x374xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong KL-fundament, lav B3 og B6, 240x800xM36, 6000-9500" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-B3-B6-LAV-1600x1800-000-240x800xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
-   <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-   <SetValue Key="dir" Value="both"/>
-   <SetValue Key="OcsFoundationBaseWidth" Value="1800"/>
-   <SetValue Key="OcsFoundationBaseOffset" Value="000"/>
-   <SetValue Key="OcsFoundationShaftHeight" Value="3200"/>
-  </InsertPointObject>
-  <InsertPointObject VariantName="Betong KL-fundament, høy B6, 260x940xM36, 10000-13000" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-B6-HOEY-1600x1800-000-260x940xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Betong KL-fundament, lav B3 og B6, 240x800xM36, 6000-9500" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-B3-B6-LAV-1600x1800-000-240x800xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
@@ -11490,7 +11527,15 @@ end
    <SetValue Key="OcsFoundationBaseOffset" Value="000"/>
    <SetValue Key="OcsFoundationShaftHeight" Value="3200"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong KL-fundament, H3, 700x700xM36, 6000-9500" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-H3-1600x1800-000-700x700xM36-6000-9500-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Betong KL-fundament, høy B6, 260x940xM36, 10000-13000" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-B6-HOEY-1600x1800-000-260x940xM36-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+   <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
+   <SetValue Key="dir" Value="both"/>
+   <SetValue Key="OcsFoundationBaseWidth" Value="1800"/>
+   <SetValue Key="OcsFoundationBaseOffset" Value="000"/>
+   <SetValue Key="OcsFoundationShaftHeight" Value="3200"/>
+  </InsertPointObject>
+  <InsertPointObject VariantName="Betong KL-fundament, H3, 700x700xM36, 6000-9500" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-H3-1600x1800-000-700x700xM36-6000-9500-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
@@ -11498,7 +11543,7 @@ end
    <SetValue Key="OcsFoundationBaseOffset" Value="000"/>
    <SetValue Key="OcsFoundationShaftHeight" Value="2700"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong KL-fundament, H3, 790x790xM36, 10000-12000" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-H3-1600x1800-000-790x790xM36-10000-12000-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Betong KL-fundament, H3, 790x790xM36, 10000-12000" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-H3-1600x1800-000-790x790xM36-10000-12000-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
@@ -11506,7 +11551,7 @@ end
    <SetValue Key="OcsFoundationBaseOffset" Value="000"/>
    <SetValue Key="OcsFoundationShaftHeight" Value="2700"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong KL-fundament, H3, 830x830xM36, 12500-13000" DisplayBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-H3-1600x1800-000-830x830xM36-12500-13000-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
+  <InsertPointObject VariantName="Betong KL-fundament, H3, 830x830xM36, 12500-13000" DisplayBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-H3-1600x1800-000-830x830xM36-12500-13000-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="OcsFoundationBaseWidth" Value="1800"/>
@@ -11514,7 +11559,7 @@ end
    <SetValue Key="OcsFoundationShaftHeight" Value="2700"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTEH_FUN-FUNDAMENT-BETONG-BJELKEMAST-1600x1800-000-191x374xM36-{{SymbolMode}}" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT-BETONG-BJELKEMAST-1600x1800-000-191x374xM36-{{SymbolMode}}" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -11524,13 +11569,13 @@ end
 														{% else %}45.0
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTEH_FUN-FUNDAMENT
+				NO-BN-2D-JBTEH_FUN-KL-FUNDAMENT
 				{% if    Variant == 'Betong KL-fundament, bjelkemast' %}BETONG-BJELKEMAST-1600x{{OcsFoundationBaseWidth}}-{{OcsFoundationBaseOffset}}-191x374xM36
 				{% elsif Variant == 'Boret KL-fundament, Ø555-191x374xM36' %}BETONG-BORET-Ø555-191x374xM36
 				{% elsif Variant == 'Boret KL-fundament, Ø355-Ø232xDD27xM36' %}BETONG-BORET-Ø355-Ø232xDD27xM36
 				{% elsif Variant == 'Fjellbolter for KL-mast i tunnel' %}FJELLBOLTER-FOR-BRU-OG-TUNNEL-350x350xM24
 				{% elsif Variant == 'Fjellbolter for KL-mast på veggkonsoll' %}FJELLBOLTER-FOR-VEGGKONSOLL-600x700xM24
-				{% elsif Variant == 'Veggkonsoll for KL-mast' %}KONSOLL-VEGGFESTE-191x374xM36
+				{% elsif Variant == 'Veggkonsoll for KL-mast' %}VEGGKONSOLL-191x374xM36
 				{% elsif Variant == 'Spesial KL-fundament' %}SPESIAL-191x374xM36
 				{% elsif Variant == 'Betong KL-fundament, lav B3 og B6, 240x800xM36, 6000-9500' %}BETONG-B3-B6-LAV-1600x1800-000-240x800xM36
 				{% elsif Variant == 'Betong KL-fundament, høy B6, 260x940xM36, 10000-13000' %}BETONG-B6-HOEY-1600x1800-{{OcsFoundationBaseOffset}}-260x940xM36
@@ -11611,9 +11656,9 @@ end
     <SetValue Key="RelativeElevation" Value="0.76"/>
     <SetValue Key="SignalFoundationShaftHeight" Value="1000"/>
    </Variant>
-   <Variant Name="Betong Hs fundament, Ø680">
+   <Variant Name="Betong Hs fundament, Ø300/Ø680">
     <SetValue Key="name" Value="Rundt Hs-fund, Ø680"/>
-    <SetValue Key="SignalFoundationShaftHeight" Value="1600"/>
+    <SetValue Key="SignalFoundationShaftHeight" Value="1800"/>
    </Variant>
    <Variant Name="Betong Ds fundament, Ø76, konisk">
     <SetValue Key="name" Value="Ds-fund."/>
@@ -11623,9 +11668,11 @@ end
    </Variant>
    <Variant Name="Boret Hs fundament, Ø555">
     <SetValue Key="name" Value="Boret Hs-fund."/>
+    <SetValue Key="SignalFoundationShaftHeight" Value="4500"/>
    </Variant>
-   <Variant Name="Betong veibomdrivmaskin fundament, Ø680">
-    <SetValue Key="name" Value="Rundt Hs-fund, Ø680"/>
+   <Variant Name="Betong veibomdrivmaskin fundament, Ø210/Ø680">
+    <SetValue Key="name" Value="Rundt Veibommaskin-fund, Ø680"/>
+    <SetValue Key="SignalFoundationShaftHeight" Value="1600"/>
    </Variant>
   </Variants>
   <CustomAttribute DataType="Enumeration" Name="SignalFoundationShaftHeight" DisplayName="Fundament søylehøyde" Description="The signal foundation shaft height resp. total bored height.">
@@ -11635,7 +11682,7 @@ end
    <Values Variant="Betong Hs fundament på plattform">
     <Value>1000</Value>
    </Values>
-   <Values Variant="Betong Hs fundament, Ø680">
+   <Values Variant="Betong Hs fundament, Ø300/Ø680">
     <Value>1800</Value>
     <Value>1600</Value>
    </Values>
@@ -11645,38 +11692,54 @@ end
    <Values Variant="Betong Ds fundament, Ø76, rettsidet">
     <Value>400</Value>
    </Values>
+   <Values Variant="Boret Hs fundament, Ø555">
+    <Value>7500</Value>
+    <Value>7000</Value>
+    <Value>6500</Value>
+    <Value>6000</Value>
+    <Value>5500</Value>
+    <Value>5000</Value>
+    <Value>4500</Value>
+    <Value>4000</Value>
+    <Value>3500</Value>
+    <Value>3000</Value>
+    <Value>2500</Value>
+   </Values>
+   <Values Variant="Betong veibomdrivmaskin fundament, Ø210/Ø680">
+    <Value>1600</Value>
+   </Values>
   </CustomAttribute>
-  <InsertPointObject VariantName="Betong Hs fundament på fri linje" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-HS-FRI-LINJE-300x300xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betong Hs fundament på fri linje" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-HS-PAA-FRI-LINJE-300x300xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong Hs fundament på plattform" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-HS-PLATTFORM-300x300xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betong Hs fundament på plattform" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-HS-PAA-PLATTFORM-300x300xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong Hs fundament, Ø680" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-HS-Ø680-300x300xM24-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betong Hs fundament, Ø300/Ø680" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-HS-Ø300-Ø680-300x300xM24-H1800-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong Ds fundament, Ø76, konisk" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-DS-Ø76-KONISK-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betong Ds fundament, Ø76, konisk" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-DS-KONISK-Ø76-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong Ds fundament, Ø76, rettsidet" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-DS-Ø76-RETTSIDET-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betong Ds fundament, Ø76, rettsidet" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-DS-RETTVEGGET-Ø76-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
-  <InsertPointObject VariantName="Boret Hs fundament, Ø555" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-BORET-Ø555-164x164xM32-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Boret Hs fundament, Ø555" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-BORET-Ø555-164x164xM32-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betong veibomdrivmaskin fundament, Ø680" DisplayBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-VEIBOMDRIVMASKIN-Ø680-210x210xM20-1600-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betong veibomdrivmaskin fundament, Ø210/Ø680" DisplayBlockName="NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG-VEIBOMDRIVMASKIN-Ø210-Ø680-210x210xM20-H1600-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKU_FUN-FUNDAMENT-BETONG-HS-FRI-LINJE-300x300xM24-{{SymbolMode}}" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -11686,14 +11749,14 @@ end
 														{% else %}45.0
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTKU_FUN-FUNDAMENT
-				{% if Variant == 'Betong Hs fundament på fri linje' %}BETONG-HS-FRI-LINJE-300x300xM24
-				{% elsif Variant == 'Betong Hs fundament på plattform' %}BETONG-HS-PLATTFORM-300x300xM24
-				{% elsif Variant == 'Betong Hs fundament, Ø680' %}BETONG-HS-Ø680-300x300xM24-{{SignalFoundationShaftHeight}}
-				{% elsif Variant == 'Betong Ds fundament, Ø76, konisk' %}BETONG-DS-Ø76-KONISK
-				{% elsif Variant == 'Betong Ds fundament, Ø76, rettsidet' %}BETONG-DS-Ø76-RETTSIDET
-				{% elsif Variant == 'Boret Hs fundament, Ø555' %}BETONG-BORET-Ø555-164x164xM32
-				{% elsif Variant == 'Betong veibomdrivmaskin fundament, Ø680' %}BETONG-VEIBOMDRIVMASKIN-Ø680-210x210xM20-{{SignalFoundationShaftHeight}}
+				NO-BN-2D-JBTKU_FUN-SIGNALFUNDAMENT-BETONG
+				{% if Variant == 'Betong Hs fundament på fri linje' %}HS-PAA-FRI-LINJE-300x300xM24
+				{% elsif Variant == 'Betong Hs fundament på plattform' %}HS-PAA-PLATTFORM-300x300xM24
+				{% elsif Variant == 'Betong Hs fundament, Ø300/Ø680' %}HS-Ø300-Ø680-300x300xM24-H1800
+				{% elsif Variant == 'Betong Ds fundament, Ø76, konisk' %}DS-KONISK-Ø76
+				{% elsif Variant == 'Betong Ds fundament, Ø76, rettsidet' %}DS-RETTVEGGET-Ø76
+				{% elsif Variant == 'Boret Hs fundament, Ø555' %}BORET-Ø555-164x164xM32
+				{% elsif Variant == 'Betong veibomdrivmaskin fundament, Ø210/Ø680' %}VEIBOMDRIVMASKIN-Ø210-Ø680-210x210xM20-H1600
 				{% else %}BAD_Variant
 				{% endif %}
 				{{SymbolMode}}
@@ -11707,10 +11770,7 @@ end
    <SnapPoints Variant="Betong Hs fundament på plattform">
     <SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
    </SnapPoints>
-   <SnapPoints Variant="Betong Hs fundament, Ø680, h=1600">
-    <SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
-   </SnapPoints>
-   <SnapPoints Variant="Betong Hs fundament, Ø680, h=1800">
+   <SnapPoints Variant="Betong Hs fundament, Ø300/Ø680">
     <SnapPoint X="0.0" Y="0.0" TargetSpace="signal"/>
    </SnapPoints>
    <SnapPoints Variant="Betong Ds fundament, Ø76, konisk">
@@ -11820,12 +11880,12 @@ end
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Betongfundament, tele- og fordelingsskap" DisplayBlockName="NO-BN-2D-JBTKU_FUN-TELEFUNDAMENT-BETONG-TELE-OG-FORDELINGSSKAP-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject VariantName="Betongfundament, tele- og fordelingsskap" DisplayBlockName="NO-BN-2D-JBTKU_FUN-TELEFUNDAMENT-BETONG-TELESKAP-OG-FORDELINGSSKAP-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-3D-KU-FUN-ANVISERSYØYLE-1500x1500x1000-Ø600-{{SymbolMode}}" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -11839,7 +11899,7 @@ end
 				{% if Variant == 'Betongfundament, anvisersøyle' %}BETONG-ANVISERSOEYLE
 				{% elsif Variant == 'Betongfundament, monitor' %}BETONG-MONITOR
 				{% elsif Variant == 'Betongfundament, validator' %}BETONG-VALIDATOR
-				{% elsif Variant == 'Betongfundament, tele- og fordelingsskap' %}BETONG-TELE-OG-FORDELINGSSKAP
+				{% elsif Variant == 'Betongfundament, tele- og fordelingsskap' %}BETONG-TELESKAP-OG-FORDELINGSSKAP
 				{% else %}BAD_Variant
 				{% endif %}
 				{{SymbolMode}}
@@ -12211,10 +12271,11 @@ end
 						if first.id == second.id then
 							return _error,"Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
 						end
-						if MileageIncreasesTowardsLeft then
-							first,second = second,first 
-						end
-						return "["..first.Code.."] --- ["..second.Code.."]"
+						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
+						--if MileageIncreasesTowardsLeft then
+						--	first,second = second,first 
+						--end
+						return "["..first.Code.."] ==> ["..second.Code.."]"
 					end
 				end
 			</Formula>
@@ -12236,7 +12297,7 @@ end
   <LuaExpression Name="Mileage">
    <Formula>_KO_SPF_mileage()</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Sporfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO-CONNECTOR-SPLICE-0-0-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Sporfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
@@ -12765,92 +12826,92 @@ end
     <SetValue Key="Thumbnail3DModel" Value="NO-BN-3D-KO-SPV-60E1-1-26.1-R2500-H-BX"/>
    </Variant>
   </Variants>
-  <InsertPointObject VariantName="Generell sporveksel" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Generell sporveksel" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:7 R190 FX 54E3 (KO-800157)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-07-R190-54E3-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:7 R190 FX 54E3 (KO-800157)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-07-R190-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R190 FX 54E3 (KO-701334)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R190-54E3-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R190 FX 54E3 (KO-701334)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R190-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R300 FX 54E3 (KO-701287)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-54E3-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R300 FX 54E3 (KO-701287)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:12 R500 FX 54E3 (KO-701306)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-54E3-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:12 R500 FX 54E3 (KO-701306)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:14 R760 FX 54E3 (KO-701319)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-54E3-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:14 R760 FX 54E3 (KO-701319)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R300 FX 60E1 (KO-701409)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-60E1-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R300 FX 60E1 (KO-701409)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:11,66 R500 FX 60E1 (KO-800068)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-11.66-R500-60E1-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:11,66 R500 FX 60E1 (KO-800068)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-11.66-R500-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:12 R500 FX 60E1 (KO-800068)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-60E1-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:12 R500 FX 60E1 (KO-800068)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:14 R760 FX 60E1 (KO-701372)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-60E1-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:14 R760 FX 60E1 (KO-701372)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:15 R760 FX 60E1 (KO-701382)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-15-R760-60E1-FX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:15 R760 FX 60E1 (KO-701382)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-15-R760-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:9 R300 BX 60E1 (KO-800099)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:9 R300 BX 60E1 (KO-800099)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:8.21 R300 BX 60E1 (KO-065306)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-08.21-R300-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:8.21 R300 BX 60E1 (KO-065306)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-08.21-R300-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:12 R500 BX 60E1 (KO-800090)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:12 R500 BX 60E1 (KO-800090)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:14 R760 BX 60E1 (KO-800108)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:14 R760 BX 60E1 (KO-800108)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:15 R760 BX 60E1 (KO-800164)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-15-R760-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:15 R760 BX 60E1 (KO-800164)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-15-R760-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:18.4 R1200 BX 60E1 (KO-800081)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-18.4-R1200-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:18.4 R1200 BX 60E1 (KO-800081)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-18.4-R1200-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="1:26.1 R2500 BX 60E1 (KO-701399)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-26.1-R2500-60E1-BX-{{quadrant}}-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="1:26.1 R2500 BX 60E1 (KO-701399)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-26.1-R2500-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
    <SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
@@ -14470,19 +14531,19 @@ end
   <LuaExpression Name="name">
    <Formula>"Sst."..Variant:sub(1,4).."."..code</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Fast" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSTOPPER-FAST-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Fast" DisplayBlockName="NO-BN-2D-JBTKO_SST-SPORSTOPPER-FAST-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Glidbar" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSTOPPER-GLIDBAR-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Glidbar" DisplayBlockName="NO-BN-2D-JBTKO_SST-SPORSTOPPER-GLIDBAR-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Hydraulisk" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSTOPPER-HYDRAULISK-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Hydraulisk" DisplayBlockName="NO-BN-2D-JBTKO_SST-SPORSTOPPER-HYDRAULISK-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_SSP-SPORSTOPPER-FAST" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKO_SST-SPORSTOPPER-FAST" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -14492,7 +14553,7 @@ end
 														{% else %}45.0
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
-			NO-BN-2D-JBTSA_SSP-SPORSTOPPER
+			NO-BN-2D-JBTKO_SST-SPORSTOPPER
 			{% if variant == 'Fast' %}FAST
 			{% elsif variant == 'Glidbar' %}GLIDBAR
 			{% elsif variant == 'Hydraulisk' %}HYDRAULISK
