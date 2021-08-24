@@ -1,0 +1,164 @@
+<!--========================================================================================================
+
+    NO-BN-PositionToolSettings.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
+
+	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--========================================================================================================
+	Settings and Lua functions for linear referencing methods (LRM).
+=========================================================================================================-->
+
+<!-- Position tool interface function names - suggested naming conventions:
+	
+	Name part							Example									Comment
+	=================================	=====================================	==============================================
+	<4-letter administration code>		NOBN									XXGL, NOBN, FRSR, DEDB etc
+	Separator							_										
+	Discipline							com										Since alignments are common to many disciplines, not only track)
+	Separator							_										
+	Corresponding ResX element's key	PositionTransient_Set_Alignment_Own		RC looks up the ResX alias for the key and inserts this textobject
+-->
+
+<PositionToolSettings Name="NOBN-PositionToolSettings">
+  	<PositionToolTextLines>
+ 		<OwnAlignmentNameOrCodeOrId OrderPriority="6" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Alignment_Own"/>
+		<OwnAlignmentElevation OrderPriority="4" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Elevation_Own"/>
+		<OwnAlignmentDistanceToAlignment OrderPriority="3" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Distance_Own"/>
+  		<OwnAlignmentMileage OrderPriority="2" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Mileage_Own"/>
+  		<OwnAlignmentPos OrderPriority="1" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Pos_Own"/>
+		<ReferenceAlignmentNameOrCodeOrId OrderPriority="5" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Alignment_Ref"/>
+  		<ReferenceAlignmentElevation OrderPriority="4" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Elevation_Ref"/>
+  		<ReferenceAlignmentDistanceToAlignment OrderPriority="3" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Distance_Ref"/>
+  		<ReferenceAlignmentMileage OrderPriority="2" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Mileage_Ref"/>
+  		<ReferenceAlignmentPos OrderPriority="1" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Pos_Ref"/>
+  	</PositionToolTextLines>
+</PositionToolSettings>
+
+
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Alignment_Own()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current own alignment and the mileage increase direction, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'oa' [String] which is the current Own Alignment's name (or code, or id) picked up by the CAD cursor, plus 'mitl' [Boolean] which tells whether the own alignment's Mileage Increases Towards Left as viewed on the user's computer screen. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Alignment_Own'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Alignment_Own(String oa, Boolean mitl)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Alignment_Own(oa,mitl)
+			if mitl then 
+				return "&lt;&lt;&lt; Own: "..oa --prefix own alignment with left angle bracket
+			else
+				return "Own: "..oa.." &gt;&gt;&gt;" --postfix own alignment with right angle brackets
+			end
+		end
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Alignment_Ref()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current reference alignment and the mileage increase direction, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'ra' [String] which is the current Reference Alignment's name (or code, or id) picked up by the CAD cursor, plus 'mitl' [Boolean] which tells whether the reference alignment's Mileage Increases Towards Left as viewed on the user's computer screen. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Alignment_Ref'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Alignment_Ref(String ra, Boolean mitl)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Alignment_Ref(ra,mitl)
+			if mitl then 
+				return "&lt;&lt;&lt; Ref: ".._identify(ra) --prefix reference alignment with left angle bracket
+			else
+				return "Ref: "..ra.." &gt;&gt;&gt;" --postfix reference alignment with right angle brackets
+			end
+		end
+	</Formula>
+</LuaFunction>
+
+
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Distance_Own()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's distance to own alignment, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'd' [Double] [m] which is the horizontal Distance (lateral offset) from the CAD cursor to the current Own alignment. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Distance_Own'.">
+ 	<Constructor>String NOBN_trk_PositionTransient_Set_Distance_Own(Double od)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Distance_Own(od)
+			return string.format("Own dist. %.3f",od)
+		end 
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Distance_Ref()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's distance to the current reference alignment, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'rd' [Double] [m] which is the horizontal Distance (lateral offset) from the CAD cursor to the current Reference alignment. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Distance_Own'.">
+ 	<Constructor>String NOBN_trk_PositionTransient_Set_Distance_Ref(Double rd)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Distance_Ref(rd)
+			return string.format("Ref dist. %.3f",rd)
+		end 
+	</Formula>
+</LuaFunction>
+
+
+
+
+<!-- TODO: CLFEY skal lage beskrivelser for resten her, rakk det ikke før jeg må i møte med NO nå... -->
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Elevation_Own()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's elevation as measured in own alignment, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'oe' [Double] [m] which is the Elevation (vertical profile Z value) measured in Own alignment where the CAD cursor's projection is. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Elevation_Own'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Elevation_Own(Double oe)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Elevation_Own(oe)
+			return string.format("Own elev. %.3f",oe)
+		end
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Elevation_Ref()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's elevation as measured in the current reference alignment, to be displayed by the position tool. When RC uses the function, then RC provides the required input 're' [Double] which is the Elevation (vertical profile Z value) measured in Reference alignment where the CAD cursor's projection is. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Elevation_Ref'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Elevation_Ref(Double re)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Elevation_Ref(re)
+			return string.format("Ref elev %.3f",re)
+		end
+	</Formula>
+</LuaFunction>
+  
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Mileage_Own()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's chainage (mileage, kilometrage) as measured along own alignment, to be displayed by the position tool. The own mileage is the result of an initial start mileage plus the distance along measured from start of alignmment up to the cursor's projection onto it, adjusted by possible chain breaks along the own alignment. Mileage information can be inspected and adjusted from the Alignment Manager tool. When RC uses the function, then RC provides the required input 'om' [Double] [m] which is the mileage measured along the Own alignment where the CAD cursor's projection is. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Mileage_Own'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Mileage_Own(Double om)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Mileage_Own(om)
+			return string.format("Own Km %.6f",om/1000)
+		end
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Mileage_Ref()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's chainage (mileage, kilometrage) as measured along the current reference alignment, to be displayed by the position tool. The reference mileage is the result of an initial start mileage plus the distance along measured from start of the reference alignmment up to the cursor's projection onto it, adjusted by possible chain breaks along the reference alignment. Mileage information can be inspected and adjusted from the Alignment Manager tool. When RC uses the function, then RC provides the required input 'rm' [Double] [m] which is the mileage measured along the Reference alignment where the CAD cursor's projection is. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Mileage_Ref'.">
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Mileage_Ref(rm)
+			return string.format("Ref Km %.3f",rm/1000)
+		end
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Pos_Own()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's Own Pos (IFC Rail: DistanceAlong) as measured along the own alignment, to be displayed by the position tool. The own Pos is the distance along the centreline of the own alignment's horizontal geometry, measured from startPos=0 of the own alignmment up to the cursor's projection onto it, unaffected by possible chain breaks. Position information can be inspected and adjusted from the Alignment Manager tool. When RC uses the function, then RC provides the required input 'op' [Double] [m] which is the Pos measured along the Own alignment where the CAD cursor's projection is. Note: Vertical profile does not necessarily start or end where the horizontal geometry starts or ends. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Pos_Own'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Pos_Own(Double op)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Pos_Own(op)
+			return string.format("Own pos %.3f",op)
+		end
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="NOBN_trk_PositionTransient_Set_Pos_Ref()" ReturnType="String" HideFromUser="false" 
+	Description="Returns a formatted string containing the current CAD cursor's Reference Pos as measured along the current reference alignment, to be displayed by the position tool. The Reference Pos is the distance along the centreline of the reference alignment's horizontal geometry, measured from startPos=0 of the reference alignmment up to the cursor's projection onto it, unaffected by possible chain breaks. Position information can be inspected and adjusted from the Alignment Manager tool. When RC uses the function, then RC provides the required input 'rp' [Double] [m] which is the Pos measured along the Reference alignment where the CAD cursor's projection is. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Pos_Ref'.">
+	<Constructor>String NOBN_trk_PositionTransient_Set_Pos_Ref(Double rp)</Constructor>
+ 	<Formula>
+		function NOBN_trk_PositionTransient_Set_Pos_Ref(rp)
+			return string.format("Ref pos %.3f",rp)
+		end
+	</Formula>
+</LuaFunction>
+		
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
