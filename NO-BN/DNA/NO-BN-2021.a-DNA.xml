@@ -17,6 +17,7 @@
   <AgentName>Railcomplete AS</AgentName>
  </DnaIdentification>
  <DistanceAcrossScreenAtDocumentStart>420</DistanceAcrossScreenAtDocumentStart>
+ <DrawWidthRelativeToScreenSize>0.005</DrawWidthRelativeToScreenSize>
  <ShowPositionQuantizeRounding>1.0</ShowPositionQuantizeRounding>
  <DefaultStagePattern>
   <Prefix/>
@@ -306,7 +307,7 @@
   <Layer Name="JBTEH_FUN" Color="2" Description="Fundamenter for KL-master"/>
   <Layer Name="JBTEH_JOR" Color="3" LineType="RC-DASHED" Description="Langsgående jordleder (tilhører KL-faget)"/>
   <Layer Name="JBTEH_JOF" Color="2" Description="KL skinnetilkobling for jord"/>
-  <Layer Name="JBTEH_JSK" Color="2" Description="KL jordingsskinne"/>
+  <Layer Name="JBTEH_JSK" Color="2" Description="KL jordskinne (eng: 'earthing busbar')"/>
   <Layer Name="JBTEH_JEL" Color="2" Description="KL jordelektrode"/>
   <Layer Name="JBTEH_XBE" Color="3" Description="Beskyttelse mot høyspentanlegg"/>
   <Layer Name="JBTEH_ANNOTERING" Color="2" Description="KL-annotering"/>
@@ -589,7 +590,7 @@
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTKO_SKT</LayerSelection>
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTSA_MSS</LayerSelection>
  </ShowLayer>
- <ShowLayer Name="TRK_ShowReferenceAuxiliaryLineAlignments" DisplayName="Felles/Hjelpelinje">
+ <ShowLayer Name="COM_ShowAuxiliaryLineAlignments" DisplayName="Felles/Hjelpelinje">
   <LayerSelection Type="PartialMatch" CaseSensitive="true">JBTFE_HJL</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="COM_ShowWipeoutForBoards" DisplayName="Skilt/Wipeout under alle skilt" DefaultOff="true">
@@ -1498,7 +1499,7 @@
   <SourceSpace>kl-annotering</SourceSpace>
   <Relation Name="KL-annotering" AskForRelation="true" Color="4">
    <TargetSpace>kontaktledning</TargetSpace>
-   <RelatesTo Prompt="Er KL-annotering for" Min="0" Max="inf"/>
+   <RelatesTo Prompt="Er KL-annotering for" Min="0" Max="inf" NumberOfPromptsDuringInsertion="2"/>
    <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
   </Relation>
  </Relations>
@@ -1787,7 +1788,7 @@
  <PropertyOverride Name="Linetype" Category="CAD"/>
  <PropertyOverride Name="Lineweight" Category="CAD"/>
  <PropertyOverride Name="GlobalWidth" Category="CAD"/>
- <PropertyCategory Name="3D" Collapsed="true"/>
+ <PropertyCategory Name="3D" DisplayName="2D Geometry" Collapsed="true"/>
  <PropertyOverride Name="geoCoord" Category="3D"/>
  <PropertyCategory Name="Local variables" Collapsed="true"/>
  <PropertyOverride Name="Seq" Category="Local variables"/>
@@ -1826,7 +1827,6 @@
  <PropertyOverride Name="ContinuingWithBegin" Category="Connections"/>
  <PropertyOverride Name="ExtendingFromEnd" Category="Connections"/>
  <PropertyCategory Name="ISY Beskrivelse" Collapsed="true"/>
- <TextAttribute Annotative="{% if SymbolMode == 'Geographic' %}true{% else %}false{% endif %}" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" X="0" Y="20" Layer="JBTSA@NAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
  <LuaFunction Name="RC__toint()" ReturnType="Collection,Int" Description="Returns a collection of objects connected through the specified relation, and the number of related objects found. Source object and visibility are optional arguments.">
   <Constructor>int RC__toint(double x)</Constructor>
   <Formula>function RC__toint(x) return string.format("%.0f",x) end</Formula>
@@ -2463,12 +2463,12 @@
 				_language = 2 -- 1:English, 2:Norwegian, 3:French, 4:German
 				_frames = { 
 					UNFINISHED	= { "Unfinished",			"Uferdig",				"Incomplet",			"Unvollständig"			},
-					HISTORIC	= { "Historic",				"Historisk",			"Historique",			"Historisch"			},
-					ERROR		= { "Error",				"Feil",					"Erreur",				"Fehler"				},
-					WARNING		= { "Warning",				"Advarsel",				"Avertissement",		"Warnung"				},
+					HISTORIC	= { "Historic",				"Historic",				"Historique",			"Historisch"			},
+					ERROR		= { "Error",				"Error",				"Erreur",				"Fehler"				},
+					WARNING		= { "Warning",				"Warning",				"Avertissement",		"Warnung"				},
 					SECTION_TAG	= { "section",				"avsnitt",				"zone",					"Abschnitt"				},
 					SEGMENT_TAG = { "Segment",				"Segment",				"Segment",				"Segment"				},
-					SECTION		= { "SymbolFrame-R2.75",	"Symbolramme-R2.75",	"CadreSymbole-R2.75",	"Symbolrahmen-R2.75"	}
+					SECTION		= { "SymbolFrame-R2.75",	"Symbolramme-R2.75",	"",						""						}
 				}
 				--Priority: Show HISTORIC then UNFINISHED then ERROR then WARNING then OTHERs then NO_FRAME
 				-- By convention, historic layers have names starting with a double 'at' character '@@':
@@ -3267,7 +3267,7 @@ end
 			end
 		</Formula>
  </LuaFunction>
- <PositionToolSettings Name="NOBN-PositionToolSettings">
+ <PositionToolSettings Name="NOBN_PositionToolSettings_Standard">
   <PositionToolTextLines>
    <OwnAlignmentNameOrCodeOrId OrderPriority="6" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Alignment_Own"/>
    <OwnAlignmentElevation OrderPriority="4" LuaFormattingFunctionName="NOBN_trk_PositionTransient_Set_Elevation_Own"/>
@@ -3282,23 +3282,9 @@ end
   </PositionToolTextLines>
  </PositionToolSettings>
  <LuaFunction Name="NOBN_trk_PositionTransient_Set_Alignment_Own()" ReturnType="String" HideFromUser="false" Description="Returns a formatted string containing the current own alignment and the mileage increase direction, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'oa' [String] which is the current Own Alignment's name (or code, or id) picked up by the CAD cursor, plus 'mitl' [Boolean] which tells whether the own alignment's Mileage Increases Towards Left as viewed on the user's computer screen. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Alignment_Own'.">
-  <Constructor>String NOBN_trk_PositionTransient_Set_Alignment_Own(AlignmentReference oa, Boolean mitl)</Constructor>
+  <Constructor>String NOBN_trk_PositionTransient_Set_Alignment_Own(String oa, Boolean mitl)</Constructor>
   <Formula>
 		function NOBN_trk_PositionTransient_Set_Alignment_Own(oa,mitl)
---[[		local function _identify(a)
-				if a == nil then
-					return "(Bad reference alignment reference)"
-				else
-					if a.name ~= "" then 
-						return a.name
-					elseif a.code ~= "" then
-						return a.code
-					else
-						return a.id
-					end
-				end
-			end
---]]
 			if mitl then 
 				return "&lt;&lt;&lt; Own: "..oa --prefix own alignment with left angle bracket
 			else
@@ -3308,25 +3294,11 @@ end
 	</Formula>
  </LuaFunction>
  <LuaFunction Name="NOBN_trk_PositionTransient_Set_Alignment_Ref()" ReturnType="String" HideFromUser="false" Description="Returns a formatted string containing the current reference alignment and the mileage increase direction, to be displayed by the position tool. When RC uses the function, then RC provides the required input 'ra' [String] which is the current Reference Alignment's name (or code, or id) picked up by the CAD cursor, plus 'mitl' [Boolean] which tells whether the reference alignment's Mileage Increases Towards Left as viewed on the user's computer screen. Note: If this function is not provided to the position tool, then RC will format a suitable default text using the current translation found in the  built-in language pack system (ResX) for key 'PositionTransient_Set_Alignment_Ref'.">
-  <Constructor>String NOBN_trk_PositionTransient_Set_Alignment_Ref(AlignmentReference ra, Boolean mitl)</Constructor>
+  <Constructor>String NOBN_trk_PositionTransient_Set_Alignment_Ref(String ra, Boolean mitl)</Constructor>
   <Formula>
 		function NOBN_trk_PositionTransient_Set_Alignment_Ref(ra,mitl)
---[[		local function _identify(a)
-				if a == nil then
-					return "(Bad reference alignment reference)"
-				else
-					if a.name ~= "" then 
-						return a.name
-					elseif a.code ~= "" then
-						return a.code
-					else
-						return a.id
-					end
-				end
-			end
---]]
 			if mitl then 
-				return "&lt;&lt;&lt; Ref: ".._identify(ra) --prefix reference alignment with left angle bracket
+				return "&lt;&lt;&lt; Ref: "..ra --prefix reference alignment with left angle bracket
 			else
 				return "Ref: "..ra.." &gt;&gt;&gt;" --postfix reference alignment with right angle brackets
 			end
@@ -10895,7 +10867,7 @@ end
   </Model3DDefinition>
   <DockPointDefinitions>
    <SnapPoints>
-    <SnapPoint X="0.0" Y="0.0" TargetSpace="jordingsskinne"/>
+    <SnapPoint X="0.0" Y="0.0" TargetSpace="jordskinne"/>
    </SnapPoints>
   </DockPointDefinitions>
  </ObjectType>
@@ -12579,7 +12551,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -14665,11 +14637,11 @@ end
    <Formula>"up"</Formula>
   </LuaExpression>
   <SetValue Key="name" Value="Oppkjørsbjelke"/>
-  <InsertPointObject VariantName="Oppkjørsbjelke, kort" DisplayBlockName="NO-BN-2D-JBTSA_SSP-OPPKJOERSBJELKE-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
+  <InsertPointObject VariantName="Oppkjørsbjelke, kort" DisplayBlockName="NO-BN-2D-JBTKO_MVS-OPPKJOERSBJELKE-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="false"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_SSP-OPPKJOERSBJELKE" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKO_MVS-OPPKJOERSBJELKE" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -14679,7 +14651,7 @@ end
 														{% else %}45.0
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTSA_SSP-OPPKJOERSBJELKE-{{SymbolMode}}
+				NO-BN-2D-JBTKO_MVS-OPPKJOERSBJELKE-{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
   <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic"/>
@@ -15021,8 +14993,8 @@ end
   </SymbolDefinition>
   <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic"/>
  </ObjectType>
- <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_JSK Jordingsskinne" Layer="JBTEH_JSK" Color="ByLayer" Group="Kontaktledning/Jording" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
-  <RelationSpace>jordingsskinne</RelationSpace>
+ <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_JSK Jordskinne" Layer="JBTEH_JSK" Color="ByLayer" Group="Kontaktledning/Jording" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+  <RelationSpace>jordskinne</RelationSpace>
   <CustomAttribute DataType="Double" Name="AngularOffset" DisplayName="3D Angular offset" DefaultValue="0.0" Category="3D" Description="The 'AngularOffset' custom property [DD] is added to the object's basic 3D orientation. The basic orientation is defined by the current 'dir' property's up/down/none/both/unknown value. If property dir is 'unknown' then the orientation will be 45 degrees as a visual reminder that dir is unknown. For some objects types (e.g. yokes) the 2D symbol orientation will also be affected."/>
   <CustomAttribute DataType="String" Name="Tag" DisplayName="Tag" DefaultValue="" Category="Metadata" Description="The 'Tag' custom property holds a unique identifier, within an administration's context, such as a unique key for the administration's asset management database. Hide/unhide using the ShowLayer tool."/>
   <CustomAttribute DataType="String" Name="ObjectInfo" DisplayName="Objektinfo" DefaultValue="" Category="Metadata" Description="The 'ObjectInfo' custom property holds user-defined information which needs to be shown in drawings. Hide/unhide using the ShowLayer tool. Extra information, e.g. for the building process, should be stored in the Description property."/>
@@ -15072,32 +15044,35 @@ end
   <LuaExpression Name="EarthingLabelColor">
    <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
   </LuaExpression>
-  <Variants DefaultValue="Jordingsskinne 10x50x290 (9xØ13)">
-   <Variant Name="Jordingsskinne 10x50x290 (9xØ13)"/>
-   <Variant Name="Jordingsskinne 10x50x530 (17xØ13)"/>
+  <Variants DefaultValue="Jordskinne 10x50x290 (9xØ13)">
+   <Variant Name="Jordskinne 10x50x290 (9xØ13)"/>
+   <Variant Name="Jordskinne 10x50x530 (17xØ13)"/>
   </Variants>
+  <SetValue Key="dir" Value="both"/>
   <LuaExpression Name="name">
    <Formula>
-				if string.match(Variant, "Jordingsskinne") == "Jordingsskinne" then return "Jordingsskinne"
+				if Variant:lower():match("jordskinne") then return "Jordskinne "..code
 				else return "Unknown earthing bus bar variant ["..Variant.."].",_warning
 				end
 			</Formula>
   </LuaExpression>
   <LuaExpression Name="Model3DName">
    <Formula>
-				if Variant == "Jordingsskinne 10x50x290 (9xØ13)" then return "NO-BN-3D-EH-JORDING-JORDINGSSKINNE-10x50x290"
-				elseif Variant == "Jordingsskinne 10x50x530 (17xØ13)" then return "NO-BN-3D-EH-JORDING-JORDINGSSKINNE-10x50x530"
+				if Variant == "Jordskinne 10x50x290 (9xØ13)" then return "NO-BN-3D-EH-JORDING-JORDSKINNE-10x50x290"
+				elseif Variant == "Jordskinne 10x50x530 (17xØ13)" then return "NO-BN-3D-EH-JORDING-JORDSKINNE-10x50x530"
 				else return "Unknown earthing connection device variant ["..Variant.."].",_warning
 				end
 			</Formula>
   </LuaExpression>
-  <InsertPointObject VariantName="Jordingsskinne 10x50x290 (9xØ13)" DisplayBlockName="NO-BN-2D-JBTEH_JSK-JORDING-JORDINGSSKINNE-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="0.75">
+  <InsertPointObject VariantName="Jordskinne 10x50x290 (9xØ13)" DisplayBlockName="NO-BN-2D-JBTEH_JSK-JORDING-JORDSKINNE-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Jordingsskinne 10x50x530 (17xØ13)" DisplayBlockName="NO-BN-2D-JBTEH_JSK-JORDING-JORDINGSSKINNE-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="0.75">
+  <InsertPointObject VariantName="Jordskinne 10x50x530 (17xØ13)" DisplayBlockName="NO-BN-2D-JBTEH_JSK-JORDING-JORDSKINNE-{{SymbolMode}}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_JSK-JORDING-JORDINGSSKINNE-{{SymbolMode}}">
+  <SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_JSK-JORDING-JORDSKINNE-{{SymbolMode}}">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -15108,7 +15083,7 @@ end
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_JSK
-				JORDING-JORDINGSSKINNE
+				JORDING-JORDSKINNE
 				{{SymbolMode}}
 			</BlockNameFormat>
   </SymbolDefinition>
@@ -15178,13 +15153,13 @@ end
    <Variant Name="Fritekst annotering"/>
   </Variants>
   <LuaExpression Name="name">
-   <Formula>_JBTFE_DIV_ocs_annotation_name()</Formula>
+   <Formula>_JBTEH_DIV_ocs_annotation_name()</Formula>
   </LuaExpression>
-  <LuaFunction Name="_JBTFE_DIV_ocs_annotation_name()" ReturnType="String" Description="Obtains the 'name' for a OCS annotation item.">
-   <Constructor>String _JBTFE_DIV_ocs_annotation_name()</Constructor>
+  <LuaFunction Name="_JBTEH_DIV_ocs_annotation_name()" ReturnType="String" Description="Obtains the 'name' for a OCS annotation item.">
+   <Constructor>String _JBTEH_DIV_ocs_annotation_name()</Constructor>
    <Formula>
-				function _JBTFE_DIV_ocs_annotation_name()
-					local RelationName = "Er KL-annotering for anything"
+				function _JBTEH_DIV_ocs_annotation_name()
+					local RelationName = "Er KL-annotering for kontaktledning"
 					local r,n = RC__getCollectionOfRelatedObjects(RelationName)
 					if Variant:match("felt") then 
 						if n == 0 then 
@@ -15230,18 +15205,19 @@ end
 				end
 			</Formula>
   </LuaFunction>
-  <InsertPointObject VariantName="Vekslingsfelt annotering" DisplayBlockName="JBTRC_INNSETTINGSPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
+  <InsertPointObject VariantName="Vekslingsfelt annotering" DisplayBlockName="NO-BN-2D-JBTFE_TXT-ANNOTERINGSTEKST-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
-  <InsertPointObject VariantName="Seksjonsfelt annotering" DisplayBlockName="JBTRC_INNSETTINGSPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
+  <InsertPointObject VariantName="Seksjonsfelt annotering" DisplayBlockName="NO-BN-2D-JBTFE_TXT-ANNOTERINGSTEKST-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
-  <InsertPointObject VariantName="Sugefelt annotering" DisplayBlockName="JBTRC_INNSETTINGSPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
+  <InsertPointObject VariantName="Sugefelt annotering" DisplayBlockName="NO-BN-2D-JBTFE_TXT-ANNOTERINGSTEKST-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
-  <InsertPointObject VariantName="Fritekst annotering" DisplayBlockName="JBTRC_INNSETTINGSPUNKT-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
+  <InsertPointObject VariantName="Fritekst annotering" DisplayBlockName="NO-BN-2D-JBTFE_TXT-ANNOTERINGSTEKST-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0" SnapSensitivityDistance="3">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
   </InsertPointObject>
+  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_TXT-ANNOTERINGSTEKST-{{SymbolMode}}"/>
   <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic"/>
  </ObjectType>
  <ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KTL Kontaktledning" Layer="JBTEH_KTL_Kontaktledning_Kjørbar" Color="ByLayer" Group="Kontaktledning/Kontaktledninger">
@@ -20836,7 +20812,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -20941,7 +20917,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -21138,7 +21114,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -21228,7 +21204,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -21290,26 +21266,22 @@ end
   <Variants DefaultValue="Enkel sporsperre">
    <Variant Name="Enkel sporsperre" Description="Single-sided derailer">
     <SetValue Key="kind" Value="blockDerail"/>
-    <SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT"/>
    </Variant>
    <Variant Name="Dobbel sporsperre" Description="Double-sided derailer">
     <SetValue Key="kind" Value="blockDerail"/>
-    <SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT"/>
    </Variant>
    <Variant Name="Enkel avsporingstunge" Description="Single catch points">
     <SetValue Key="kind" Value="singleCatchPoints"/>
-    <SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT"/>
    </Variant>
    <Variant Name="Dobbel avsporingstunge" Description="Double catch points">
     <SetValue Key="kind" Value="doubleCatchPoints"/>
-    <SetValue Key="Model3DName" Value="NO-BN-3D-FE-DIV-UKJENT"/>
    </Variant>
   </Variants>
   <InsertPointObject VariantName="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOBBEL-INAKTIV-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
+  <InsertPointObject VariantName="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOBBEL-AVSPORENDE-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
   </InsertPointObject>
@@ -21405,7 +21377,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -21532,7 +21504,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -21540,7 +21512,7 @@ end
    <Formula>name</Formula>
   </LuaExpression>
   <LuaExpression Name="Offset3D.Z">
-   <Formula>(Variant:find("Nøkkelskap") or Variant:find("Sveivskap")) and 1.50 or 1.20</Formula>
+   <Formula>(Variant:lower():find("nøkkelskap") or Variant:lower():find("sveivskap")) and 1.50 or 1.20</Formula>
   </LuaExpression>
   <LuaExpression Name="PoleRouting3D">
    <Formula>"Vertical"</Formula>
@@ -21758,7 +21730,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -21961,7 +21933,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -22195,7 +22167,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -22359,7 +22331,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -22565,7 +22537,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -22750,7 +22722,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -22856,7 +22828,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -23330,7 +23302,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -23982,7 +23954,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25023,7 +24995,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25238,7 +25210,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25452,7 +25424,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25599,7 +25571,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25718,7 +25690,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25838,7 +25810,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -25977,7 +25949,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
@@ -31942,7 +31914,7 @@ end
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Prosessnavn " Name="IsyProsessnavn" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Prosessnavn"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="UInt32" DisplayName="ISY Mengde" Name="IsyMengde" DefaultValue="1" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Mengde"/>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Enhet" Name="IsyEnhet" DefaultValue="stk" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Enhet"/>
-  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and  parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
+  <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Sted" Name="IsySted" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" Description="The IsySted [Enum] is a string from an from external file, referenced as a path+filename and parsed with suitable Lua code, declared in global property 'ExternalFileObjectReferences'." ExtendedDataPropertyDefinition="ISY Sted" StandardValuesFromLuaFormula="true" StandardValuesExclusive="true">
    <StandardValuesLuaFormula>DocumentData.ExternalFileObjects.ISY_Steder</StandardValuesLuaFormula>
   </CustomAttribute>
   <CustomAttribute Category="ISY Beskrivelse" DataType="String" DisplayName="ISY Postnotat" Name="IsyPostnotat" DefaultValue="" ExtendedDataPropertySet="ISY Beskrivelse" ExtendedDataPropertyDefinition="ISY Postnotat"/>
