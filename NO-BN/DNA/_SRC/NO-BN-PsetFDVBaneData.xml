@@ -70,14 +70,30 @@
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Km(fra)" />
 		<LuaExpression Name="FDVBaneDataKmFra" >
 			<Formula>
-				if (Alignment~=nil and Alignment.RcType == "JBTKO_SPO Spor") then 
-					return Mileage
-				else
-					local tracks = getClosestTracks()
-					if tracks.Count > 0 then
-						return getAlignmentInfo(getClosestTracks()[0].id, geoCoord.x, geoCoord.y).Mileage
+				local tracktype = "JBTKO_SPO Spor"
+				if(this.RcAlignment == nil) then 
+					if (Alignment~=nil and Alignment.RcType == tracktype) then 
+						return Mileage
+					else
+						local tracks = getClosestTracks()
+						if tracks.Count > 0 then
+							return getAlignmentInfo(tracks[0].id, geoCoord.x, geoCoord.y).Mileage
+						else
+							return 0, _info("Could not find track")
+						end
 					end
-					return 0, _info("Could not find track")
+				else
+					if RcType == tracktype then
+						return this.RcAlignment.StartMileage
+					else
+						local startpoint = this.RcAlignment.StartPoint
+						local tracks = getClosestTracks(startpoint.X, startpoint.Y)
+						if tracks.Count > 0 then
+							return getAlignmentInfo(tracks[0].id, startpoint.X, startpoint.Y).Mileage
+						else
+							return 0, _info("Could not find track")
+						end
+					end
 				end
 			</Formula>
 		</LuaExpression>						
@@ -87,16 +103,65 @@
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Sportype(fra)" />
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Spornr.(fra)" Name="FDVBaneDataSporNrFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Spornr.(fra)" />	
+		<LuaExpression Name="FDVBaneDataSporNrFra" >
+			<Formula>
+				local tracktype = "JBTKO_SPO Spor"
+				if(this.RcAlignment == nil) then 
+					if (Alignment~=nil and Alignment.RcType == tracktype) then 
+						return Alignment.code
+					else
+						local tracks = getClosestTracks()
+						if tracks.Count > 0 then
+							return tracks[0].code
+						else
+							return 0, _info("Could not find track")
+						end
+					end
+				else
+					if RcType == tracktype then
+						return code
+					else
+						local startpoint = this.RcAlignment.StartPoint
+						local tracks = getClosestTracks(startpoint.X, startpoint.Y)
+						if tracks.Count > 0 then
+							return tracks[0].code
+						else
+							return 0, _info("Could not find track")
+						end
+					end
+				end
+			</Formula>
+		</LuaExpression>						
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Avst/Spormidt(fra)" Name="FDVBaneDataAvstSpormidtFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Avst/Spormidt(fra)" />
+		<LuaExpression Name="FDVBaneDataSporNrFra" >
+			<Formula>
+
+			</Formula>
+		</LuaExpression>	
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Eier" Name="FDVBaneDataEier" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Eier" />
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Nord(fra)" Name="FDVBaneDataNordFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Nord(fra)" />
+		<LuaExpression Name="FDVBaneDataNordFra" >
+			<Formula>
+				string.format("%.3f", geoCoord.X)
+			</Formula>
+		</LuaExpression>	
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Øst(fra)" Name="FDVBaneDataØstFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Øst(fra)" />
+		<LuaExpression Name="FDVBaneDataØstFra" >
+			<Formula>
+				string.format("%.3f", geoCoord.Y)
+			</Formula>
+		</LuaExpression>	
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Høyde(fra)" Name="FDVBaneDataHøydeFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Høyde(fra)" />
+		<LuaExpression Name="FDVBaneDataHøydeFra" >
+			<Formula>
+				string.format("%.3f", geoCoord.Z)
+			</Formula>
+		</LuaExpression>	
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Dokument referanse" Name="FDVBaneDataDokumentReferanse" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Dokument referanse" />
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Serienr." Name="FDVBaneDataSerienr" DefaultValue="" 
