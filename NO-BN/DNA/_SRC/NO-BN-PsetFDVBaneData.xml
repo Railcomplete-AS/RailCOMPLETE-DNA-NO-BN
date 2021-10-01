@@ -166,10 +166,83 @@
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Dokument referanse" />
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Serienr." Name="FDVBaneDataSerienr" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Serienr." />
-				
 
+		<!-- Pset automation expressions (declared inside each instantiated object) -->
+		<LuaExpression Name="FDVBaneDataObjektID" ><Formula>BaneNORBaneDataID()</Formula></LuaExpression>
+		<!-- FDVBaneDataBeskrivelse -->
+		<!-- FDVBaneDataTilhorerObjekt -->
+		<!-- FDVBaneDataTilhorerLokasjon -->
+		<!-- FDVBaneDataIdriftssattDato -->
+		<LuaExpression Name="FDVBaneDataKmFra" ><Formula>NOBN_com_Pset_FDVBaneDataKmFra()</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneDataSideFra" ><Formula>NOBN_com_Pset_FDVBaneDataSideFra()</Formula></LuaExpression>
+		<!-- FDVBaneDataSportypeFra -->
+		<!-- FDVBaneDataSporNrFra -->
+		<!-- FDVBaneDataAvstSpormidtFra -->
+		<!-- FDVBaneDataEier -->
+		<!-- FDVBaneDataNordFra -->
+		<!-- FDVBaneDataØstFra -->
+		<!-- FDVBaneDataHøydeFra -->
+		<!-- FDVBaneDataDokumentReferanse -->
+		<!-- FDVBaneDataSerienr -->
+		<!-- Nice but nonexistent properties in the Pset...: -->
+		<LuaExpression Name="FDVBaneDataKmTil" ><Formula>NOBN_com_Pset_FDVBaneDataKmTil()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
+
+
+
+	<!-- Pset global automation functions (kept in DNA, called from object instances) -->
+    <LuaFunction Name="NOBN_com_Pset_FDVBaneDataKmFra()" ReturnType="String"
+		Description="Returnerer Km [Km] (ReferenceMileage) for punktobjekt, eller start-Km for linjeobjekt." >
+        <Constructor>String NOBN_com_Pset_FDVBaneDataKmFra()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_FDVBaneDataKmFra()
+				if RcAlignment then
+					--Alignment: find ref.mileage at start point:
+					aPos = getAlignmentPos(id,0)
+					refId = getAlignmentInfo(aPos).ReferenceAlignmentId
+					p1 = RcAlignment.StartPoint
+					return RC__round(getAlignmentInfo(refId,p1.X,p1.Y).mileage,0)
+				else
+					--Assume placed object (fails if object is RcArea)
+					return RC__round(ReferenceMileage,0)
+				end
+			end
+        </Formula>
+    </LuaFunction> 
+
+    <LuaFunction Name="NOBN_com_Pset_FDVBaneDataSideFra()" ReturnType="String"
+		Description="Returnerer side av eget spor [Venstre|Høyre] for punktobjekt, eller start-Km for linjeobjekt." >
+        <Constructor>String NOBN_com_Pset_FDVBaneDataSideFra()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_FDVBaneDataSideFra()
+				return RcAlignment and "-" or SideOfAlignment
+			end
+        </Formula>
+    </LuaFunction> 
+
+    <LuaFunction Name="NOBN_com_Pset_FDVBaneDataKmFra()" ReturnType="String"
+		Description="Returnerer Km [Km] (ReferenceMileage) for punktobjekt, eller start-Km for linjeobjekt." >
+        <Constructor>String NOBN_com_Pset_FDVBaneDataKmTil()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_FDVBaneDataKmTil()
+				if RcAlignment then
+					--Alignment: find ref.mileage at end point:
+					L = RcAlignment.HorizontalGeometry.Length
+					aPos = getAlignmentPos(id,L)
+					refId = getAlignmentInfo(aPos).ReferenceAlignmentId
+					p1 = RcAlignment.StartPoint
+					return RC__round(getAlignmentInfo(refId,p1.X,p1.Y).mileage,0)
+				else
+					--Assume placed object (fails if object is RcArea)
+					return RC__round(ReferenceMileage,0)
+				end
+			end
+        </Formula>
+    </LuaFunction> 
+
+
+
 <!--========================================================================================================
     End of file 
 =========================================================================================================-->
