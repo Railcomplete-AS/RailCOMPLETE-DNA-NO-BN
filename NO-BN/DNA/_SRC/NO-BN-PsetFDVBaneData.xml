@@ -73,7 +73,7 @@
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Sportype(fra)" Name="FDVBaneDataSportypeFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Sportype(fra)" />
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Spornr.(fra)" Name="FDVBaneDataSporNrFra" DefaultValue="" 
-				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Spornr.(fra)" />	
+				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Spornr.(fra)" />					
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Avst/Spormidt(fra)" Name="FDVBaneDataAvstSpormidtFra" DefaultValue="" 
 				ExtendedDataPropertySet="FDV BaneData" ExtendedDataPropertyDefinition="Avst/Spormidt(fra)" />
 		<CustomAttribute Category="Pset FDV BaneData" DataType="String" DisplayName="Eier" Name="FDVBaneDataEier" DefaultValue="" 
@@ -98,12 +98,12 @@
 		<LuaExpression Name="FDVBaneDataKmFra" ><Formula>NOBN_com_Pset_FDVBaneDataKmFra()</Formula></LuaExpression>
 		<LuaExpression Name="FDVBaneDataSideFra" ><Formula>NOBN_com_Pset_FDVBaneDataSideFra()</Formula></LuaExpression>
 		<!-- FDVBaneDataSportypeFra -->
-		<!-- FDVBaneDataSporNrFra -->
+		<LuaExpression Name="FDVBaneDataSporNrFra" ><Formula>NOBN_com_Pset_FDVBaneDataSporNrFra()</Formula></LuaExpression>
 		<!-- FDVBaneDataAvstSpormidtFra -->
 		<!-- FDVBaneDataEier -->
-		<!-- FDVBaneDataNordFra -->
-		<!-- FDVBaneDataØstFra -->
-		<!-- FDVBaneDataHøydeFra -->
+		<LuaExpression Name="FDVBaneDataNordFra" ><Formula>string.format("%.3f", geoCoord.X)</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneDataØstFra" ><Formula>string.format("%.3f", geoCoord.Y)</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneDataHøydeFra" ><Formula>string.format("%.3f", geoCoord.Z)</Formula></LuaExpression>
 		<!-- FDVBaneDataDokumentReferanse -->
 		<!-- FDVBaneDataSerienr -->
 		<!-- Nice but nonexistent properties in the Pset...: -->
@@ -143,7 +143,7 @@
         </Formula>
     </LuaFunction> 
 
-    <LuaFunction Name="NOBN_com_Pset_FDVBaneDataKmFra()" ReturnType="String"
+    <LuaFunction Name="NOBN_com_Pset_FDVBaneDataKmTil()" ReturnType="String"
 		Description="Returnerer Km [Km] (ReferenceMileage) for punktobjekt, eller start-Km for linjeobjekt." >
         <Constructor>String NOBN_com_Pset_FDVBaneDataKmTil()</Constructor>
         <Formula>
@@ -158,6 +158,40 @@
 				else
 					--Assume placed object (fails if object is RcArea)
 					return RC__round(ReferenceMileage,0)
+				end
+			end
+        </Formula>
+    </LuaFunction> 
+	
+	<LuaFunction Name="NOBN_com_Pset_FDVBaneDataSporNrFra()" ReturnType="String"
+		Description="Returnerer code for spor, tilhørende spor eller nærmeste spor." >
+        <Constructor>String NOBN_com_Pset_FDVBaneDataSporNrFra()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_FDVBaneDataSporNrFra()
+				local tracktype = "JBTKO_SPO Spor"
+				if(this.RcAlignment == nil) then 
+					if (Alignment~=nil and Alignment.RcType == tracktype) then 
+						return Alignment.code
+					else
+						local tracks = getClosestTracks()
+						if tracks.Count > 0 then
+							return tracks[0].code
+						else
+							return 0, _info("Could not find track")
+						end
+					end
+				else
+					if RcType == tracktype then
+						return code
+					else
+						local startpoint = this.RcAlignment.StartPoint
+						local tracks = getClosestTracks(startpoint.X, startpoint.Y)
+						if tracks.Count > 0 then
+							return tracks[0].code
+						else
+							return 0, _info("Could not find track")
+						end
+					end
 				end
 			end
         </Formula>
