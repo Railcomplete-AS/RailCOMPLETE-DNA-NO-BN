@@ -19,7 +19,103 @@
 	1020		End Of File
 =========================================================================================================-->
 
+<!--========================================================================================================
+	HIGH VOLTAGE
+	OVERHEAD CATENARY SYSTEM
+	_
+   | |                                               <--Catenary mast : Support caténaire : KL-mast
+   | |
+   | |
+   | |                               (*)             <--Catenary wire clamp : ??? : Bæretrådklemme
+   | *=||=================[=]========[=]=====        <--Upper console / insulator / upper tube
+   | |                  //                             : Console supérieur / isolateur / hauban
+   | |               //                                : Øvre konsoll / isolator / strekkstag
+   | |            //                                 <-- Cantilever tube : Console : Trykkstag
+   | |         //
+   | |      //===============================[=]==   <--Registration arm : Antibalançant : Direksjonsstag
+   | |   //                                  //       
+   | |//  <--Lower console           [-]-----/       <--Steady arm : Bras de rappel : Lett direksjonsstag
+   | |     : Console inférieur  neg__(*)__pos        <--Contact wire clamp : ??? : Kontakttrådklemme
+   | |     : Nedre konsoll       ^         ^          & Contact wire height : Hauteur du fil de contact : Kontakttrådhøyde
+   | |                            \         \------  <--Positive stagger (zigsag) : Désaxement : Sikksakk towards opposite-mast-side
+   | |                             \---------------  <--Negative stagger (zigsag) : Désaxement : Sikksakk towards same-as-mast side
+   | |
+   | |                                ^ vertical axis
+   | |                                |
+  ==*==    .  .  .  .  .  . ( ) .  .  O-- > . ( ) .   <--Top-of-rail = rolling plane = Normal mast insertion point
+   |*|                       |    horiz. axis  |      <--Foundation insertion point & bolt group
+  +---+                 ============================  <--Sleeper : Traverse : Sville    
+  |   |                               
++-+   +-+      Origo (marked as 'O') is defined by the XY and Z of the associated railway track, the 'gradient curve'.
+|       |      The rolling plane is lifted and rotated with cant. If e.g. 150 mm clockwise cant is applied, then the
++-------+      rolling plane is rotated (lifting the left rail, lowering the right rail) by an angle asin(150/1500)
+               and then lifted 150/2 mm along the vertical axis.
+ 
+The contact wire clamp is held by the steady arm or held directly by the registration arm. The coordinates of the contact
+cire clamp coincide with the center of the sweep of the contact wire profile (which is about 1 cm in diameter).
 
+The contact wire clamp is placed in the "rail plane system", ie with height above the track plane (by headroom) and sideways
+transfer according to the stagger (zigzag). The clamp is placed in the longitudinal direction of the track on the same 
+mileage as the cantilever. The contact wire clamp connects to the cantilever through a suitable relation.
+ 
+The cantilever's insertion point is the upper console's contact point with the track side of the mast. The mast may be
+inclined, or narrowing towards the top, which makes the calculation of the upper console point tricky.
+
+The cantilever holds the value for the intended contact wire height. This contact wire height is measured perp to the 
+rolling plane. The cantilever also holds the stagger (zigzag). The stagger is measured colinearly to the rolling plane.
+
+The stagger is negative if the contact wire is held at a position resulting in contact with the pantograph's half side 
+towards the catenary mast, otherwise it is positive. Note that a negative stagger is possible both with pull-on and with
+push-off cantilevers, since the direction force on the wire is also a function of the preceding and the following wire
+clamps in relation to the track's geometry and cant.
+
+Formulas are provided to compute the XYZ position of the contact wire clamp and the catenary wire clamp from the track's
+gradient curve and cant plus the selected contact wire height and the stagger. The two clamps (or just the wires) are
+then connected to each cantilever using a suitable Lua script, the cantilevers being already chained together using the
+"next/previous cantilever" relation.
+ 
+The cantilever can suggest to place itself at the correct elevation (Z coordinate) using the position of the contact wire
+clamp and the selected cantilever type's standard system height. The catenary wire clamp will usually hold the catenary 
+wire at about 10 cm above the upper tube's centre. Assuming that a horizontal upper tube is desirable, this gives us the
+Z coodinate of the cantilever's upper console.
+
+At places where the contact wire is sectioned, the incoming and the outgoing contact+catenary wires must be lifted 
+gradually up and the led out to their tensioning devices. Two cantilevers are then placed side-by-side (ca 1 meter apart)
+on the same cantilever support mast using an upper and a lower bracket. This forces the cantilevers' upper consoles to
+be placed at the same Z coordinate, so the lifted upper tube will usually be built at an angle up fro the horizontal.
+
+RailCOMPLETE provides two model checks for cantilevers: The first one is simply to check the selected system height
+against a table of standard values. An alarm may be triggered when the system height is lowered under a bridge etc.
+
+The second model check is the upper tube's angle with the horizontal. If the user overrides RailCOMPLETE's suggested
+Z coordinate for the cantilever (the upper console centre) then the angle will not be zero.
+
+TODO: Other model checks that will be sensible to introduce for cantilevers: 
+
+1 Minimum distance sideways to another cantilever on the same mast (and same side of mast) (they swing with temperature).
+
+2 Maximum allowed distance from nearest anchor (midpoint anchor or untensioned end) taking wire material and temperatures
+ (tunnels, outside) into consideration.
+
+3 Stagger within allowed limits, taking the actual track geometry into consideration from the previous to the next 
+  cantilever.
+
+4 Stagger is consistent with the rules for stagger on double track (zigzagging the 'same way').
+
+5 Stagger is consistent with the rules for stagger in changeover sections where the two wires are close.
+
+6 The distance to the next wire clamp is within the limits of applicable wind forces
+
+7 The absolute gradient of the contact wire compared to the track's own gradient, is within allowable limits, taking 
+  maximum train speeds into consideration.
+
+8 The gradient change from the preceding section to this section and to the next section is within allowable limits,
+  taking maximum train speeds into consideration.
+  
+9 More "mundane" checks, that the cantilever and the related wire clamps (if any) belong to the same track. This would
+  also be automated in the wire clamp object (using a Lua formula on the 'Alignment' property).
+
+=========================================================================================================-->
 
 
 
