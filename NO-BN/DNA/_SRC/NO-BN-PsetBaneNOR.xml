@@ -50,6 +50,8 @@
  <!-- Data som ligger som Extended Data i et AutoCAD-objekt vil "bli med på lasset" over til IFC dersom du har Civil 3D installert -->
  <!-- og benytter kommandoen for eksport til IFC, EXPORTIFC. -->
 
+	
+
 	<!-- <xpp:expand select="NOBN_com_PSET_BANE_NOR" /> -->
 <xpp:define name="NOBN_com_PSET_BANE_NOR" >
 	<xpp:bloc>
@@ -57,8 +59,15 @@
 				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="Modelltype" />
 	    <CustomAttribute Category="Pset Bane NOR" DataType="String" DisplayName="BaneData ID" Name="BaneNORBaneDataID" DefaultValue="" 
 				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="BaneData ID" />				
-	    <CustomAttribute Category="Pset Bane NOR" DataType="String" DisplayName="Rives" Name="BaneNORRives" DefaultValue="" 
-				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="Rives" />
+	    <CustomAttribute Category="Pset Bane NOR" DataType="Enumeration" DisplayName="Rives" Name="BaneNORRives" DefaultValue="Ukjent"
+				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="Rives" >
+			<Values>
+				<Value>Ukjent</Value>
+				<Value>Ja</Value>
+				<Value>Nei</Value>
+			</Values>
+		</CustomAttribute>
+		
 	    <CustomAttribute Category="Pset Bane NOR" DataType="String" DisplayName="Rives fase" Name="BaneNORRivesfase" DefaultValue="" 
 				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="Rives fase" />
 	    <CustomAttribute Category="Pset Bane NOR" DataType="String" DisplayName="Bygges fase" Name="BaneNORByggesfase" DefaultValue="" 
@@ -77,8 +86,74 @@
 				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="Type og dimensjon" />
 	    <CustomAttribute Category="Pset Bane NOR" DataType="String" DisplayName="MMI" Name="BaneNORMMI" DefaultValue="" 
 				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="MMI" />
+
+		<!-- Pset automation formulas -->
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE" />
+		<LuaExpression Name="BaneNORRives" ><Formula>NOBN_com_Pset_BaneNORRives()</Formula></LuaExpression>						
+		<LuaExpression Name="BaneNORRivesFase" ><Formula>NOBN_com_Pset_BaneNORRivesFase()</Formula></LuaExpression>						
+		<LuaExpression Name="BaneNORByggesFase" ><Formula>NOBN_com_Pset_BaneNORByggesFase()</Formula></LuaExpression>						
+		<LuaExpression Name="BaneNORFag" ><Formula>discipline</Formula></LuaExpression>						
+
 	</xpp:bloc>
 </xpp:define>
+
+
+
+	<!-- Pset global automation functions (kept in DNA, called from object instances) -->
+    <LuaFunction Name="NOBN_com_Pset_BaneNORRives()" ReturnType="String"
+		Description="Returnerer 'Ukjent' dersom egenskap 'layer' inneholder et gyldig fasemønster på  formen 'XXxx-YYyy' (inn-i-fase XX.xx, ut-i-fase YY-yy). 
+			\nReturnerer 'Ja' dersom fasemønsteret har ut-fase '9999'.
+			\nReturnerer 'Nei' dersom fasemønsteret har en ut-fase lavere enn '9999'." >
+        <Constructor>Enum[Ukjent|Ja|Nei] NOBN_com_Pset_BaneNORRives()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_BaneNORRives()
+				exitStage = layer:match(".*%d%d%d%d%-(%d%d%d%d).*")
+				if exitStage == nil then 
+					return 'Ukjent'
+				else
+					return exitStage == '9999' and 'Nei' or 'Ja'
+				end
+			end
+        </Formula>
+    </LuaFunction> 
+
+
+
+
+    <LuaFunction Name="NOBN_com_Pset_BaneNORRivesFase()" ReturnType="String"
+		Description="Returnerer fasemønster 'YYyy' fra egenskap 'layer', der YYyy er fasen som objektet første gang er utgått i, eller blank dersom objektet ikke rives eller dersom faseinformasjon 'XXxx-YYyy' ikke er angitt i 'layer'." >
+        <Constructor>String NOBN_com_Pset_BaneNORRivesFase()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_BaneNORRivesFase()
+				exitStage = layer:match(".*%d%d%d%d%-(%d%d%d%d).*")
+				if exitStage == nil or exitStage == '9999' then 
+					return ''
+				else
+					return exitStage
+				end
+			end
+        </Formula>
+    </LuaFunction> 
+
+
+
+    <LuaFunction Name="NOBN_com_Pset_BaneNORByggesFase()" ReturnType="String"
+		Description="Returnerer fasemønster 'XXxx' fra egenskap 'layer', der XXxx er fasen som objektet første gang eksisterer i, eller blank dersom faseinformasjon 'XXxx-YYyy' ikke er angitt i 'layer'." >
+        <Constructor>String NOBN_com_Pset_BaneNORByggesFase()</Constructor>
+        <Formula>
+			function NOBN_com_Pset_BaneNORByggesFase()
+				entryStage = layer:match(".*(%d%d%d%d)%-%d%d%d%d.*")
+				if entryStage == nil then 
+					return ''
+				else
+					return entryStage
+				end
+			end
+        </Formula>
+    </LuaFunction> 
+
+
+
 <!--========================================================================================================
     End of file 
 =========================================================================================================-->
