@@ -674,12 +674,39 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 		
+<!--
+				ow.Z = Vertical offset from gradient curve to contact wire clamp
+				ow.X = Lateral offset from gradient curve to contact wire clamp
+				 _
+				| |                (c)            c=CatenaryWireClamp
+				| |U||=====*========*===          U=UpperConsoleTowardsMastSide
+				| |	      /         :
+				| |      /--__      :             Situation: CW cant (usually a right curve)
+				| |     /     --__  :            
+				| |    /*===*=======*=====        wc=SystemHeight
+				| |L||/      \_____ :             L=LowerConsoleTowardsMastSide
+				| |                \:
+				| |             :  (w)            w=ContactWireClamp
+				| |             :         b       b=ZeroStaggerNeutralContactWire
+				| |             :        /        
+				| |             :       /         bw=Stagger (negative as shown, left of b)
+				| |             :      /          ab=ContactWireHeight (measured perp to rolling plane)
+				| |             :     /           
+				| |       Theta :-- >/            Theta=Rotation due to cant (clockwise as shown, negative Theta)
+				| |             :   /             h=cant
+				| |             :  /              LR to RR = cant gauge
+				| |             : /               LR=LeftRail top-of-rail
+				| |     LR      :/                RR=RightRail top-of-rail
+				| |    h:       a                 oa=Rolling plane lift due to cant
+			  ===d===---:-------o-------RR------  o=The track's gradient curve
+                                                  od=OCS mast lateral offset (negative as shown)
+-->	
 		<CustomAttribute DataType="Double" Name="WireClampLateralOffset" DisplayName="Kontakttråd sideavsett" DefaultValue="0.00" 
-			Description="The contact wire clamp's lateral offset (wclo) [m] denotes the horizontal distance from the track's gradient curve (XYZ before cant effects) to the contact wire clamp (center of contact wire). It depends on contact wire height, stagger (zigzag), cant and the cantilever being LeftSided or RightSided." />
+			Description="The contact wire clamp's lateral offset (wclo) [m] denotes the horizontal distance from the track's gradient curve (XYZ before cant effects) to the contact wire clamp (center of contact wire). It depends on contact wire height, stagger (zigzag) and track cant." />
 		<LuaExpression Name="WireClampLateralOffset" ><Formula>_JBTEH_UTL_WireClampLateralOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_WireClampLateralOffset()" 
 			ReturnType="String"
-			Description="Returns the horizontal offset from the track's gradient curve (before cant) to the cantilever's associated OCS wire, taking contact wire height, stagger, track cant and cantilever side-of-track into consideration." >
+			Description="Returns the horizontal offset from the track's gradient curve (before cant) to the cantilever's associated OCS wire, taking contact wire height, stagger and track cant into consideration." >
 			<Constructor>String _JBTEH_UTL_WireClampLateralOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_WireClampLateralOffset()
@@ -702,12 +729,23 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_WireClampVerticalOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_WireClampVerticalOffset()
+					--TODO: Adapt function to dual cant.
 					ai = getAlignmentInfo()
-					h = ai.Cant/1000.0
-					cr = ai.CantRotation
-					ss = (h / Alignment.AlignmentSystem.CantGauge) * (cr == "CW" and 1 or -1) --sine
-					cc = math.sqrt(1 - ss^2)  --cosine
-					return (h/2) + (ContactWireHeight*cc) + (LeftSided and -Stagger*ss or Stagger*ss)
+					c = ai.Cant
+					h = RC__isNan(c) and 0 or c/1000.0
+					if h == 0 then 
+						return ContactWireHeight
+					else
+						ss = h/Alignment.AlignmentSystem.CantGauge
+						cc = math.sqrt(1 - ss^2)
+						if ai.CantRotation == "CW" then 
+							return ss*ContactWireHeight + cc*Stagger
+						elseif ai.CantRotation == "CCW" then
+							return -ss*ContactWireHeight + cc*Stagger
+						else
+							return _error,0.999
+						end
+					end
 				end
 			</Formula>
 		</LuaFunction>
