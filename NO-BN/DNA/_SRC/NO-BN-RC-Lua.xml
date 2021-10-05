@@ -32,12 +32,12 @@
 				Source = Source or this
 				--Is source a real object reference with an id?
 				if Source.id == nil then
-					return {},0,_warning,_info("*** RC__getCollectionOfRelatedObjects: Bad source object reference '"..tostring(Source).."'.")
+					return {},0,_warning, _info("*** RC__getCollectionOfRelatedObjects: Bad source object reference '"..tostring(Source).."'.")
 				end
 				if RelationName == nil then
-					return {},0,_warning,_info("Missing relation name in function call.")
+					return {},0,_warning, _info("Missing relation name in function call.")
 				elseif Source.Relations == nil then
-					return {},0,_warning,_info("*** RC__getCollectionOfRelatedObjects: No such relation '"..RelationName.."' for object type '"..Source.RcType.."'.")
+					return {},0,_warning, _info("*** RC__getCollectionOfRelatedObjects: No such relation '"..RelationName.."' for object type '"..Source.RcType.."'.")
 				end
 				local r = Source.Relations[RelationName]
 				if r == nil then
@@ -70,7 +70,7 @@
 				elseif dir == 'both' then return rs and -90 or 90
 				elseif dir == 'none' then return rs and 90 or -90 
 				elseif dir == 'unknown' then return 45 
-				else return 45,_info("Bad direction '"..d.."'.")
+				else return 45, _info("Bad direction '"..d.."'.")
 				end
 			end
 		</Formula>
@@ -85,11 +85,11 @@
 			function RC__getMileageFromRelatedObject(RelationName,Source)
 				Source = Source or this
 				if RelationName == nil then 
-					return getPropertyValue("Mileage"),_warning,_info("Missing relation name in function call.")
+					return getPropertyValue("Mileage"),_warning, _info("Missing relation name in function call.")
 				end
 				local r,n = RC__getCollectionOfRelatedObjects(RelationName,Source)
 				if n == 0 then 
-					return getPropertyValue("Mileage"),_info("Object has no visible relation of type '"..RelationName.."'.")
+					return getPropertyValue("Mileage"), _info("Object has no visible relation of type '"..RelationName.."'.")
 				elseif n == 1 then 
 					return getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).Mileage,
 						_info("Mileage deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
@@ -112,11 +112,11 @@
 				local r,n
 				Source = Source or this
 				if RelationName == nil then 
-					return getPropertyValue("DistanceToAlignment"),_warning,_info("Missing relation name in function call.")
+					return getPropertyValue("DistanceToAlignment"),_warning, _info("Missing relation name in function call.")
 				end
 				r,n = RC__getCollectionOfRelatedObjects(RelationName,Source)
 				if n == 0 then 
-					return getPropertyValue("DistanceToAlignment"),_info("Object has no visible relation of type '"..RelationName.."'.")
+					return getPropertyValue("DistanceToAlignment"), _info("Object has no visible relation of type '"..RelationName.."'.")
 				elseif n == 1 then 
 					return getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).DistanceToAlignment,
 						_info("DistanceToAlignment deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
@@ -139,11 +139,11 @@
 				local r,n
 				Source = Source or this
 				if RelationName == nil then 
-					return getPropertyValue("RelativeElevation"),_warning,_info("Missing relation name in function call.")
+					return getPropertyValue("RelativeElevation"),_warning, _info("Missing relation name in function call.")
 				end
 				r,n = RC__getCollectionOfRelatedObjects(RelationName,Source)
 				if n == 0 then 
-					return getPropertyValue("RelativeElevation"),_info("Object has no visible relation of type '"..RelationName.."'.")
+					return getPropertyValue("RelativeElevation"), _info("Object has no visible relation of type '"..RelationName.."'.")
 				elseif n == 1 then 
 					return r[0].geoCoord.Z - getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).Elevation,
 						_info("RelativeElevation deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
@@ -166,11 +166,11 @@
 				local r,n
 				Source = Source or this
 				if RelationName == nil then 
-					return getPropertyValue("AngularOffset"),_warning,_info("Missing relation name in function call.")
+					return getPropertyValue("AngularOffset"),_warning, _info("Missing relation name in function call.")
 				end
 				r,n = RC__getCollectionOfRelatedObjects(RelationName,Source)
 				if n == 0 then 
-					return getPropertyValue("AngularOffset"),_info("Object has no visible relation of type '"..RelationName.."'.")
+					return getPropertyValue("AngularOffset"), _info("Object has no visible relation of type '"..RelationName.."'.")
 				elseif n == 1 then
 					return r[0].AngularOffset + (r[0].AlignmentTangent - Source.AlignmentTangent) * 180.0/math.pi,
 						_info("AngularOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
@@ -193,13 +193,13 @@
 				local r,n
 				Source = Source or this
 				if RelationName == nil then 
-					return getPropertyValue("Dir"),_warning,_info("Missing relation name in function call.")
+					return getPropertyValue("Dir"),_warning, _info("Missing relation name in function call.")
 				end
 				r,n = RC__getCollectionOfRelatedObjects(RelationName,Source)
 				if n == 0 then 
-					return getPropertyValue("Dir"),_info("Object has no visible relation of type '"..RelationName.."'.")
+					return getPropertyValue("Dir"), _info("Object has no visible relation of type '"..RelationName.."'.")
 				elseif n == 1 then
-					return r[0].Dir,_info("Direction (Dir) deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return r[0].Dir, _info("Direction (Dir) deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
 				else
 					return _warning,
 						r[0].AngularOffset + (r[0].AlignmentTangent - Source.AlignmentTangent) * 180.0/math.pi,
@@ -255,6 +255,9 @@
 		<Formula>
 			function RC__identify(obj)
 				obj = obj or this
+				if type(obj) ~= "table" then
+					return "*** ERROR: RC__identify() called with a bad argument type '"..type(obj).."', an objRef was expected ***"
+				end
 				objName = obj:getPropertyValue("name")
 				objCode = obj:getPropertyValue("code")
 				objId = obj:getPropertyValue("id")
@@ -579,7 +582,7 @@
 					x1 = p1.X
 					y1 = p1.Y
 				else
-					return 0,_warning,_info("First point has no X coordinate.")
+					return 0,_warning, _info("First point has no X coordinate.")
 				end
 				if p2.geoCoord then 
 					-- Ordinary RailwayPlacedObject
@@ -589,7 +592,7 @@
 					x2 = p2.X
 					y2 = p2.Y
 				else
-					return 0,_warning,_info("Second point has no X coordinate.")
+					return 0,_warning, _info("Second point has no X coordinate.")
 				end
 				return math.sqrt(math.pow(x2-x1,2) + math.pow(y2-y1,2))
 			end
@@ -619,7 +622,7 @@
 					y1 = p1.Y
 					z1 = p1.Z == nil and 0 or p1.Z
 				else
-					return 0,_warning,_info("First point has no X coordinate.")
+					return 0,_warning, _info("First point has no X coordinate.")
 				end
 				if p2.geoCoord then 
 					x2 = p2.geoCoord.X
@@ -630,7 +633,7 @@
 					y2 = p2.Y
 					z2 = p2.Z == nil and 0 or p2.Z
 				else
-					return 0,_warning,_info("Second point has no X coordinate.")
+					return 0,_warning, _info("Second point has no X coordinate.")
 				end
 				return math.sqrt(math.pow(x2-x1,2) + math.pow(y2-y1,2) + math.pow(z2-z1,2))
 			end
