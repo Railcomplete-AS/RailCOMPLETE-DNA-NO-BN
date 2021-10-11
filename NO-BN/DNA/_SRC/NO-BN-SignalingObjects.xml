@@ -1518,15 +1518,15 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 					local n = 0
 					local t = {}
-					prevAc = getDownObject("JBTSA_TEL Akselteller sensor") --Axle counter
-					if prevAc then 
+					prev = getDownObject("JBTSA_TEL Akselteller sensor") --Axle counter
+					if prev then 
 						n = n + 1
-						table.insert(t,prevAc)
+						table.insert(t,prev)
 					end
-					nextAc = getUpObject("JBTSA_TEL Akselteller sensor") --Axle counter
-					if nextAc then 
+					next = getUpObject("JBTSA_TEL Akselteller sensor") --Axle counter
+					if next then 
 						n = n + 1
-						table.insert(t,nextAc)
+						table.insert(t,next)
 					end
 					return n,t, _info(n.." axle counters have been refreshed.")
 				end
@@ -1906,12 +1906,108 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	
 
 <!--========================================================================================================
-    SIGNALING (and TRACK AND EMBANKMENT as well)
-	RAIL JOINT
+    SIGNALING
+	TRACK VACANTY DETECTION
+	TRACK CIRCUIT SECTION
+=========================================================================================================-->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="JBTSA_SPF Sporfelt"
+				Layer="JBTSA_SPF" Color="ByLayer"
+				Group="Signal/Togdeteksjon"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+	>
+				
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SIG" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_SPF" />
+
+		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
+		
+		<Variants>
+			<Variant Name="Sporfelt" >
+			</Variant>
+		</Variants>
+		
+		<SetValue Key="code" Value="OOO" />
+
+		<LuaExpression Name="DistanceToAlignment" ><Formula>RC__snap(getPropertyValue("DistanceToAlignment"),3)</Formula></LuaExpression>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_IsolatedJointsToBeModelchecked"
+			Description="When this section object is refreshed, then the nearest limiting object on each side is refreshed as well." />
+		<LuaExpression Name="mc_IsolatedJointsToBeModelchecked" IsModelCheck="true" ><Formula>NOBN_sig_chkTriggerNeighbourIsolatedJoints()</Formula></LuaExpression>
+		<LuaFunction Name="NOBN_sig_chkTriggerNeighbourIsolatedJoints()" ReturnType="String"
+			Description="Triggers modelchecking in neighbour isolated joints." >
+			<Constructor>NOBN_sig_chkTriggerNeighbourIsolatedJoints()</Constructor>
+			<Formula>
+				function NOBN_sig_chkTriggerNeighbourIsolatedJoints()
+					if Alignment == nil then return "INCOMPLET - Aucun axe propre trouvé.",_error end
+					--if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+					local n = 0
+					local t = {}
+					prev = getDownObject("TFVA_JOI Joint isolé")
+					if prev then 
+						n = n + 1
+						table.insert(t,prev)
+					end
+					next = getUpObject("TFVA_JOI Joint isolé")
+					if next then 
+						n = n + 1
+						table.insert(t,next)
+					end
+					return n,t,_info(n.." isolated joints have been modelchecked.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject VariantName="Sporfelt" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<SetValue Key="KmStigerMotVenstre" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<SetValue Key="SymbolFrame" Value="Symbolramme-R2.75" />
+			<SetValue Key="DelimiterType" Value="JBTKO_SKJ Skinneskjøt" />
+		</InsertPointObject>
+	
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
+			<Rotation AddAngle="{% if KmStigerMotVenstre %}180{% else %}0{% endif %}" />
+			<SymbolAttribute Tag="X" >
+				<Value>{{code}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNALING / TRACK AND EMBANKMENT
+	ISOLATED JOINT
 =========================================================================================================-->
 	<!-- JBTKO_SKJ Skinneskjøt -->
 	<!-- Isolert skinneskjøt. Tilhører Overbygningsfaget, som har sporet. Brukes også i returstrømkretsen. -->
-	<!-- TODO: Vurder om den skal bytte Group i CratePointObject innsettingsdialogen og i Object Manager. -->
+	<!-- TODO: Vurder om den skal bytte Group i CreatePointObject innsettingsdialogen og i Object Manager. -->
+
+<!--	
+	Principle for the object's construction:
+	1) The object's DataType is the railML tTrackCircuitBorder, which includes the property insulatedRail with
+	enum values [none | left | right | both].
+	2) Each isolated joint symbol contains several symbol layers in the same 2D symbol block...
+		a) ...showing a thick bar over the track (or similar) in 1-line signaling schematic style drawings.
+		b) ...showing a thin bar with track circuit current directions (4 quadrants) over the track (or similar)
+			in 1-line geographic style drawings
+		c) ...showing a separate icon for each railisolation in a 2-line drawing (schematic or geographic).
+-->
 	<ObjectType DataType="tTrackCircuitBorder" Class="RailwayPlacedObject" Name="JBTKO_SKJ Skinneskjøt"
 				Layer="JBTKO_SKJ" Color="ByLayer"
 				Group="Signal/Togdeteksjon"
@@ -1941,6 +2037,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<Variants>
 			<Variant Name="Skinneskjøt" Description="The object represents an insulated joint plus the isolation of left/right or both rails from here an onwards.">
+				<!-- Set railML properties: -->
+				<!-- Force schematic plan's isolation symbol to appear when inserting object: -->
+				<SetValue Key="insulatedRail" Value="both" />
 			</Variant>
 		</Variants>
 
@@ -2003,67 +2102,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 
 <!--========================================================================================================
-    SIGNAL
-	TOGDETEKSJON
-	JBTSA_SPF Sporfelt
-	TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for isolerte skinneskjøter
-=========================================================================================================-->
-	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="JBTSA_SPF Sporfelt"
-				Layer="JBTSA_SPF" Color="ByLayer"
-				Group="Signal/Togdeteksjon"
-				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
-	>
-				
-		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SIG" />
-		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
-		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
-		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
-		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_SPF" />
-
-		<!-- Fiktivt objekt - ikke ISY beskrivelse -->
-		
-		<Variants>
-			<Variant Name="Sporfelt" >
-			</Variant>
-		</Variants>
-		
-		<SetValue Key="code" Value="OOO" />
-
-		<InsertPointObject VariantName="Sporfelt" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<SetValue Key="KmStigerMotVenstre" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
-			<SetValue Key="SymbolFrame" Value="Symbolramme-R2.75" />
-			<SetValue Key="DelimiterType" Value="JBTKO_SKJ Skinneskjøt" />
-		</InsertPointObject>
-	
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
-			<Rotation AddAngle="{% if KmStigerMotVenstre %}180{% else %}0{% endif %}" />
-			<SymbolAttribute Tag="X" >
-				<Value>{{code}}</Value>
-			</SymbolAttribute>
-		</SymbolDefinition>
-
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
-
-	</ObjectType>
-
-
-
-<!--========================================================================================================
-    SIGNAL
-	TOGDETEKSJON
-	SA-???
-	TODO: Halemagnet
+    SIGNALING
+	TRACK VACANCY DETECTION
+	TAIL MAGNET
 =========================================================================================================-->
 
 
