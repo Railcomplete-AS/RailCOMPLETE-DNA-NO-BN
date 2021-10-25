@@ -76,61 +76,61 @@
 		Description="Suggests an earthing alignment reference for an object, based on its RcType, its Variant and its surroundings. The function assumes that rails of RcType 'JBTKO_SKI Enkeltskinne kjørekant og isolasjon' are present and have been divided already into insulated and non-insulated sections." >
         <Constructor>AlignmentRef NOBN_com_assistAssignEarthingAlignment([ObjRef obj])</Constructor>
 		<Formula>
-function NOBN_com_assistAssignEarthingAlignment(obj)
-	--TODO: Consider replacing "Red/Green" filter with a downwards search for track insulation with railML property 'left', 'right', 'both', 'none' (in associated track).
-	if obj == nil then obj = this end
-
-	--Gauge tolerance when looking for rails belonging to the same track:
-	gaugeTolerance = 0.030 --[m]
-	--If not too far away, we prefer a dedicated earth rail over double insulated track, where you should consider not earthing to both rails:
-	railDistanceTolerance = 6.000  --[m]
-
-	if EarthingMethod == "None" then 
-		return
-
-	elseif EarthingMethod == "Unknown" then 
-		return _info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingAlignment.")
-		
-	elseif EarthingMethod == "Rail" then
-		r = getClosestAlignments("JBTKO_SKI Enkeltskinne kjørekant og isolasjon",obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
-		if getAlignmentInfo(r[0].id,obj).NormalProjectionExists then
-			--Find distance sideways to closest insulated rail:
-			d = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
-		else
-			--No normal projection exists onto insulated rail, so look for  distance to closest start/end of closest insulated rail:
-			d = math.min(RC__getDistance2D(r[0].RcAlignment.StartPoint,obj),RC__getDistance2D(r[0].RcAlignment.EndPoint,obj))
-		end
-		if math.abs(d) &lt;= railDistanceTolerance then
-			--If distance to insulated rail is reasonably short, then use it now...
-			return r[0]
-		else 
-			--...otherwise, check if the two closest *un*insulated rails belong to the same track, asuuming both are (through use of impedances) carrying return current:
-			--Btw, this proceudre fails if the object is between two tracks where insulated rail distances are just above the tolerance, so that the two closest 
-			--return rails belong to two *different* railway tracks.
-			r = getClosestAlignments("JBTKO_SKI Enkeltskinne kjørekant og isolasjon"):filter(function (x) return getAlignmentInfo(x.id).NormalProjectionExists and x.color:upper() == "GREEN" end)
-			n = getCollectionLength(r)
-			d0 = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
-			d1 = getAlignmentInfo(r[1].id,obj).DistanceToAlignment
-			if math.abs(math.abs(d0-d1) - r[0].AlignmentSystem.AlignmentGauge) &lt; gaugeTolerance then
-				--Pick closest un-insulated rail, although it is 'bad taste' if we thereby end up
-				--with objects earthed to both rails within one double-insulated track circuit:
-				return r[0]
-			else
-				return _info("Search for nearby rails suitable for protective earthing failed (i.e., rails of type 'JBTKO_SKI Enkeltskinne kjørekant og isolasjon', carrying return current).")
+			function NOBN_com_assistAssignEarthingAlignment(obj)
+				--TODO: Consider replacing "Red/Green" filter with a downwards search for track insulation with railML property 'left', 'right', 'both', 'none' (in associated track).
+				if obj == nil then obj = this end
+			
+				--Gauge tolerance when looking for rails belonging to the same track:
+				gaugeTolerance = 0.030 --[m]
+				--If not too far away, we prefer a dedicated earth rail over double insulated track, where you should consider not earthing to both rails:
+				railDistanceTolerance = 6.000  --[m]
+			
+				if EarthingMethod == "None" then 
+					return
+			
+				elseif EarthingMethod == "Unknown" then 
+					return _info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingAlignment.")
+					
+				elseif EarthingMethod == "Rail" then
+					r = getClosestAlignments("JBTKO_SKI Enkeltskinne kjørekant og isolasjon",obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
+					if getAlignmentInfo(r[0].id,obj).NormalProjectionExists then
+						--Find distance sideways to closest insulated rail:
+						d = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
+					else
+						--No normal projection exists onto insulated rail, so look for  distance to closest start/end of closest insulated rail:
+						d = math.min(RC__getDistance2D(r[0].RcAlignment.StartPoint,obj),RC__getDistance2D(r[0].RcAlignment.EndPoint,obj))
+					end
+					if math.abs(d) &lt;= railDistanceTolerance then
+						--If distance to insulated rail is reasonably short, then use it now...
+						return r[0]
+					else 
+						--...otherwise, check if the two closest *un*insulated rails belong to the same track, asuuming both are (through use of impedances) carrying return current:
+						--Btw, this proceudre fails if the object is between two tracks where insulated rail distances are just above the tolerance, so that the two closest 
+						--return rails belong to two *different* railway tracks.
+						r = getClosestAlignments("JBTKO_SKI Enkeltskinne kjørekant og isolasjon"):filter(function (x) return getAlignmentInfo(x.id).NormalProjectionExists and x.color:upper() == "GREEN" end)
+						n = getCollectionLength(r)
+						d0 = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
+						d1 = getAlignmentInfo(r[1].id,obj).DistanceToAlignment
+						if math.abs(math.abs(d0-d1) - r[0].AlignmentSystem.AlignmentGauge) &lt; gaugeTolerance then
+							--Pick closest un-insulated rail, although it is 'bad taste' if we thereby end up
+							--with objects earthed to both rails within one double-insulated track circuit:
+							return r[0]
+						else
+							return _info("Search for nearby rails suitable for protective earthing failed (i.e., rails of type 'JBTKO_SKI Enkeltskinne kjørekant og isolasjon', carrying return current).")
+						end
+					end
+					r = getClosestAlignments("JBTKO_SKI Enkeltskinne kjørekant og isolasjon",obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
+					return r[0]
+			
+				elseif EarthingMethod == "Wire" then 
+					r = getClosestAlignments("JBTEH_JOR Jordleder",obj)
+					return r[0]
+					
+				elseif EarthingMethod == "Object" then 
+					--Just return - and let similar Lua code for the 'EarthingObject' reference property do the job:
+					return
+				end
 			end
-		end
-		r = getClosestAlignments("JBTKO_SKI Enkeltskinne kjørekant og isolasjon",obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
-		return r[0]
-
-	elseif EarthingMethod == "Wire" then 
-		r = getClosestAlignments("JBTEH_JOR Jordleder",obj)
-		return r[0]
-		
-	elseif EarthingMethod == "Object" then 
-		--Just return - and let similar Lua code for the 'EarthingObject' reference property do the job:
-		return
-	end
-end
         </Formula>
     </LuaFunction>
 
@@ -138,44 +138,44 @@ end
 		Description="Suggests an earthing object reference for an object, based on its RcType, its Variant and its surroundings. The function assumes that there is an object nearby that can offer protective earth." >
         <Constructor>AlignmentRef NOBN_com_assistAssignEarthingObject([ObjRef obj])</Constructor>
 		<Formula>
-function NOBN_com_assistAssignEarthingObject(obj)
-	if obj == nil then obj = this end
-	local earthingConnectionMaxLength = 10 --[m]
-
-	if obj.EarthingMethod == "None" then 
-		return _void
-	
-	elseif obj.EarthingMethod == "Unknown" then 
-		return _void, _info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingObject.")
-	
-	elseif obj.EarthingMethod == "Rail" then
-		return _void
-	
-	elseif obj.EarthingMethod == "Wire" then 
-		return _void
-	
-	elseif obj.EarthingMethod == "Object" then 
-		local npo = getNearbyPointObjects2D(earthingConnectionMaxLength,obj):filter
-			(function (x)
-				local em = x:getPropertyValue("EarthingMethod")
-				local ea = x:getPropertyValue("EarthingAlignment")
-				local eo = x:getPropertyValue("EarthingAlignment")
-				return 
-					((em == 'Rail' or em == 'Wire') and (ea and ea ~= obj))
-					or
-					((em == 'Object') and (eo and eo ~= obj))
-			end)
-		if getCollectionLength(npo) &gt; 0 then
-			return npo[0]
-		else 
-			return _void,_error, _info("UNFINISHED - Earthing method is Object, but no suitable earth providing objects found.")
-		end
-		
-	else
-		-- Should not happen
-		return nil, _info("*** ERROR - Bad Earthing Method.")
-	end
-end
+			function NOBN_com_assistAssignEarthingObject(obj)
+				if obj == nil then obj = this end
+				local earthingConnectionMaxLength = 10 --[m]
+			
+				if obj.EarthingMethod == "None" then 
+					return _void
+				
+				elseif obj.EarthingMethod == "Unknown" then 
+					return _void, _info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingObject.")
+				
+				elseif obj.EarthingMethod == "Rail" then
+					return _void
+				
+				elseif obj.EarthingMethod == "Wire" then 
+					return _void
+				
+				elseif obj.EarthingMethod == "Object" then 
+					local npo = getNearbyPointObjects2D(earthingConnectionMaxLength,obj):filter
+						(function (x)
+							local em = x:getPropertyValue("EarthingMethod")
+							local ea = x:getPropertyValue("EarthingAlignment")
+							local eo = x:getPropertyValue("EarthingAlignment")
+							return 
+								((em == 'Rail' or em == 'Wire') and (ea and ea ~= obj))
+								or
+								((em == 'Object') and (eo and eo ~= obj))
+						end)
+					if getCollectionLength(npo) &gt; 0 then
+						return npo[0]
+					else 
+						return _void,_error, _info("UNFINISHED - Earthing method is Object, but no suitable earth providing objects found.")
+					end
+					
+				else
+					-- Should not happen
+					return nil, _info("*** ERROR - Bad Earthing Method.")
+				end
+			end
         </Formula>
     </LuaFunction>
 		
@@ -183,22 +183,22 @@ end
 		Description="Suggests an earthing alignment label text for an object, based on its RcType, its Variant and its surroundings. The function assumes that the object already has a defined EarthingMethod and EarthingAlignment/EarthingObject." >
         <Constructor>String NOBN_com_assistAssignEarthingLabelText([ObjRef obj])</Constructor>
 		<Formula>
-function NOBN_com_assistAssignEarthingLabelText(obj)
-	if obj == nil then obj = this end
-	if obj.EarthingMethod == "None" then 
-		return ""
-	elseif obj.EarthingMethod == "Object" then
-		return RC__identify(obj.EarthingObject).." / "..RC__identify(obj)
-	elseif obj.EarthingMethod == "Wire" then 
-		return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
-	elseif obj.EarthingMethod == "Rail" then 
-		return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
-	elseif obj.EarthingMethod == "Unknown" then 
-		return "(?)".." / "..RC__identify(obj)
-	else
-		return _error, "*** ERROR - Bad Earthing Method ["..obj.EarthingMethod.."]."
-	end
-end
+			function NOBN_com_assistAssignEarthingLabelText(obj)
+				if obj == nil then obj = this end
+				if obj.EarthingMethod == "None" then 
+					return ""
+				elseif obj.EarthingMethod == "Object" then
+					return RC__identify(obj.EarthingObject).." / "..RC__identify(obj)
+				elseif obj.EarthingMethod == "Wire" then 
+					return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
+				elseif obj.EarthingMethod == "Rail" then 
+					return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
+				elseif obj.EarthingMethod == "Unknown" then 
+					return "(?)".." / "..RC__identify(obj)
+				else
+					return _error, "*** ERROR - Bad Earthing Method ["..obj.EarthingMethod.."]."
+				end
+			end
         </Formula>
     </LuaFunction>
 
@@ -206,20 +206,20 @@ end
 		Description="Assigns the color for the permanent marking tag attached to earthing connector, deduced from the object's discipline." >
         <Constructor>String NOBN_com_assignEarthingLabelColor([ObjRef obj])</Constructor>
 		<Formula>
-function NOBN_com_assistAssignEarthingLabelColor(obj)
-	obj = obj or this
-	if obj.Discipline == "Felles" then return 7 --"Hvit"
-	elseif obj.Discipline == "Underbygning" then return 7 --"Hvit"
-	elseif obj.Discipline == "Overbygning" then return 7 --"Hvit"
-	elseif obj.Discipline == "Kontaktledning" then return 1 --"Rød"
-	elseif obj.Discipline == "Signal" then return 3 --"Grønn"
-	elseif obj.Discipline == "Tele" then return 2 --"Gul"
-	elseif obj.Discipline == "Lavspent" then return 5 --"Blå"
-	elseif obj.Discipline == "Skilt" then return 7 --"Hvit"
-	else 
-		return _error, "*** ERROR - Uncrecognized discipline ["..obj.Discipline.."]."
-	end
-end
+			function NOBN_com_assistAssignEarthingLabelColor(obj)
+				obj = obj or this
+				if obj.Discipline == "Felles" then return 7 --"Hvit"
+				elseif obj.Discipline == "Underbygning" then return 7 --"Hvit"
+				elseif obj.Discipline == "Overbygning" then return 7 --"Hvit"
+				elseif obj.Discipline == "Kontaktledning" then return 1 --"Rød"
+				elseif obj.Discipline == "Signal" then return 3 --"Grønn"
+				elseif obj.Discipline == "Tele" then return 2 --"Gul"
+				elseif obj.Discipline == "Lavspent" then return 5 --"Blå"
+				elseif obj.Discipline == "Skilt" then return 7 --"Hvit"
+				else 
+					return _error, "*** ERROR - Uncrecognized discipline ["..obj.Discipline.."]."
+				end
+			end
 		</Formula>
 	</LuaFunction>
 
@@ -235,28 +235,28 @@ end
 		Description="Suggests an earthing alignment pos bias for an object, based on its earthing method and its surroundings. A non-zero bias moves the 'earthing landing point' along the earthing alignment." >
         <Constructor>Double NOBN_com_assistAssignEarthingPosBias([ObjRef obj])</Constructor>
 		<Formula>
-function NOBN_com_assistAssignEarthingPosBias(obj)
-	if obj == nil then obj = this end
-	local offset = 1
-	if obj.EarthingMethod == "Rail" then
-		if getAlignmentInfo(obj.EarthingAlignment.id).NormalProjectionExists then
-			return 0
-		else 
-			--Move earth connection a little past insulation along insulated rail's tangent direction (at start or end of rail): 
-			ps = obj.EarthingAlignment.RcAlignment.StartPoint
-			pe = obj.EarthingAlignment.RcAlignment.EndPoint
-			ds = RC__getDistance2D(ps,obj)
-			de = RC__getDistance2D(pe,obj)
-			if ds &lt; de then
-				u = obj.EarthingAlignment.RcAlignment.StartTangent
-				return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) > 0 and offset or -offset 
-			else
-				u = obj.EarthingAlignment.RcAlignment.EndTangent
-				return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) > 0 and offset or -offset 
+			function NOBN_com_assistAssignEarthingPosBias(obj)
+				if obj == nil then obj = this end
+				local offset = 1
+				if obj.EarthingMethod == "Rail" then
+					if getAlignmentInfo(obj.EarthingAlignment.id).NormalProjectionExists then
+						return 0
+					else 
+						--Move earth connection a little past insulation along insulated rail's tangent direction (at start or end of rail): 
+						ps = obj.EarthingAlignment.RcAlignment.StartPoint
+						pe = obj.EarthingAlignment.RcAlignment.EndPoint
+						ds = RC__getDistance2D(ps,obj)
+						de = RC__getDistance2D(pe,obj)
+						if ds &lt; de then
+							u = obj.EarthingAlignment.RcAlignment.StartTangent
+							return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) > 0 and offset or -offset 
+						else
+							u = obj.EarthingAlignment.RcAlignment.EndTangent
+							return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) > 0 and offset or -offset 
+						end
+					end
+				end
 			end
-		end
-	end
-end
         </Formula>
     </LuaFunction>
 
@@ -477,7 +477,7 @@ end
 		<Formula>
 function NOBN_trk_getYawFromDir(rotation)
 	d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
-	if RcType == "JBTSA_ATB Balise" then 
+	if RcType == "JBTSA_ATB NSS balise" then 
 		--Special case: Place balise slightly to the right of center track to keep the cable extending to the right
 		--We assume that all balises have cable extending to the right when seen in the 3D object's 'up' direction
 		--(the cable will then be best protected for left-handed normal driving on double track lines).
