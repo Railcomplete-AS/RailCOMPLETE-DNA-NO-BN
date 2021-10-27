@@ -698,7 +698,9 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_OcsWireNameDisplay(cantilever)
 					if cantilever == nil then cantilever = this end
-					if cantilever.RcType ~= "JBTEH_UTL Utligger" then return nil, _info("Bad calling object type ["..cantilever.RcType.."].") end
+					if cantilever.RcType ~= "JBTEH_UTL Utligger" then
+						return nil, _info("Unrecognised calling object type ["..cantilever.RcType.."].")
+					end
 					local s = "Utligger for kontaktledning"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 1 then return 
@@ -719,12 +721,23 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_WireClampLateralOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_WireClampLateralOffset()
+					--TODO: Adapt function to dual cant.
 					ai = getAlignmentInfo()
-					h = ai.Cant/1000.0
-					cr = ai.CantRotation
-					ss = (h / Alignment.AlignmentSystem.CantGauge) * (cr == "CW" and 1 or -1) --sine
-					cc = math.sqrt(1 - ss^2)  --cosine
-					return (ContactWireHeight*ss) + (LeftSided and Stagger*cc or -Stagger*cc)
+					c = ai.Cant
+					h = RC__isNan(c) and 0 or c/1000.0
+					if h == 0 then 
+						return Stagger
+					else
+						ss = h/Alignment.AlignmentSystem.CantGauge
+						cc = math.sqrt(1 - ss^2)
+						if ai.CantRotation == "CW" then 
+							return ss*ContactWireHeight + cc*Stagger
+						elseif ai.CantRotation == "CCW" then
+							return -ss*ContactWireHeight + cc*Stagger
+						else
+							return _error,0.999
+						end
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -748,9 +761,9 @@ positive feeder in AT system				positiv leder i AT-system
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return ss*ContactWireHeight + cc*Stagger
+							return h/2 + cc*ContactWireHeight - ss*Stagger
 						elseif ai.CantRotation == "CCW" then
-							return -ss*ContactWireHeight + cc*Stagger
+							return h/2 + cc*ContactWireHeight + ss*Stagger
 						else
 							return _error,0.999
 						end
