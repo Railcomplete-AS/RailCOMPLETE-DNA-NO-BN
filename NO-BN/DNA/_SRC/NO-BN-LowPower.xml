@@ -143,7 +143,6 @@
 				<SetValue Key="dir" Value="both" />
 				<SetValue Key="EL_LYS_MastHeight" Value="4000" />
 				<SetValue Key="EL_LYS_Arm" Value="500" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYS-LYSMAST-{{SubVariant}}-U{{EL_LYS_Arm}}-H{EL_LYS_MastHeight}}-{{EL_LYS_Foundation}}" />
 			</Variant>
 			<Variant Name="Armatur i åk" >
 				<SetValue Key="SubVariant" Value="1-lys" />
@@ -157,14 +156,12 @@
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="dir" Value="up" />
 				<SetValue Key="EarthingMethod" Value="Object" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2" />
 			</Variant>
 			<Variant Name="Belysning adkomst/gangvei, på gulv" >
 				<SetValue Key="SubVariant" Value="Punkt" />
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="dir" Value="up" />
 				<SetValue Key="EarthingMethod" Value="Object" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2" />
 				<SetValue Key="Rotation3D.Y" Value="180" />
 			</Variant>
 			<Variant Name="Belysning adkomst/gangvei, på vegg" >
@@ -172,7 +169,6 @@
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="dir" Value="up" />
 				<SetValue Key="EarthingMethod" Value="Object" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2" />
 				<SetValue Key="Rotation3D.Y" Value="{% if LeftSided %}90{% else %}-90{% endif %}" />
 			</Variant>
 			<Variant Name="Belysning for vei/parkering" >
@@ -182,14 +178,12 @@
 				<SetValue Key="dir" Value="both" />
 				<SetValue Key="EL_LYS_MastHeight" Value="4000" />
 				<SetValue Key="EL_LYS_Arm" Value="500" />
-				<SetValue Key="Model3dName" Value="=NOBN_EL_LYS_Model3dName()" />
 			</Variant>
 			<Variant Name="Belysning utvendig bygg" >
 				<SetValue Key="SubVariant" Value="Punkt" />
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="EarthingMethod" Value="Object" />
 				<SetValue Key="dir" Value="both" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-UTENDØRS-REKTANGULÆR-Ø76" />
 			</Variant>
 			<!-- TODO: Skille ut markeringslys i plattform som eget linjeobjekt med lys -->
 			<Variant Name="Nedfelt markeringslys på plattform" >
@@ -197,7 +191,6 @@
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="EarthingMethod" Value="Object" />
 				<SetValue Key="dir" Value="up" />
-				<SetValue Key="Model3dName" Value="(har ikke 3D for {{Variant}})" />
 			</Variant>
 			<Variant Name="Nødbelysning" >
 				<SetValue Key="SubVariant" Value="Punkt" />
@@ -535,7 +528,8 @@
 			<Formula>
 				function _JBTEL_LYS_Model3DName()
 					function bin(bins, ball)
-								num = tonumber(ball)
+						num = tonumber(ball)
+						if num == nil then return end
 						if num &lt; bins[1] then return bins[1] end
 						for i=2,#bins do
 							if num &lt; bins[i] then
@@ -548,50 +542,59 @@
 						end
 						return bins[#bins]		
 					end
-					
-					local t = "NO-BN-3D-EL-"
-					local Vbins = {90, 120, 180}
-					local Ubins = {500, 750, 1000, 1500, 2000, 2500, 3000}
-					local Hbins = {4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000}
+
+					local lysror = "NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+
+					local V = bin({90, 120, 180}, EL_LYS_Arm_Angle)
+					local U = bin({500, 750, 1000, 1500, 2000, 2500, 3000}, EL_LYS_Arm_Length)
+					local H = bin({4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000}, EL_LYS_MastHeight)
+
+					function mast3d()
+						if EL_LYS_SubVariant == "Ukjent" then 
+							return "NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U"..U.."-H"..H
+						elseif V == nil then 
+							return "NO-BN-3D-EL-LYS-LYSMAST-"..EL_LYS_SubVariant.."-U"..U.."-H"..H
+						else
+							return "NO-BN-3D-EL-LYS-LYSMAST-"..EL_LYS_SubVariant.."-V"..V.."-U"..U.."-H"..H
+						end
+					end
+
 					if Variant == "Ukjent" then
 						return nil
 					elseif Variant == "Arealbelysning" then
-						local V = bin(Vbins, EL_LYS_Arm_Angle)
-						local U = bin(Ubins, EL_LYS_Arm_Length)
-						local H = bin(Hbins, EL_LYS_MastHeight)
-						return t.."LYS-LYSMAST-"..EL_LYS_SubVariant.."-V"..V.."-U"..U.."-H"..H
+						return mast3d()
 					elseif Variant == "Armatur i åk" then
-						return t..""
+						return nil
 					elseif Variant == "Belysning adkomst/gangvei, i tak" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Belysning adkomst/gangvei, på gulv" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Belysning adkomst/gangvei, på vegg" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Belysning for vei/parkering" then
-						return t..""
+						return "NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U"..U.."-H"..H --Guess? check this with claus
 					elseif Variant == "Belysning utvendig bygg" then
-						return t.."LYA-LYSARMATUR-UTENDØRS-REKTANGULÆR-Ø76"
+						return "NO-BN-3D-EL-LYA-LYSARMATUR-UTENDØRS-REKTANGULÆR-Ø76"
 					elseif Variant == "Nedfelt markeringslys på plattform" then
-						return t..""
+						return nil
 					elseif Variant == "Nødbelysning" then
-						return t..""
+						return nil
 					elseif Variant == "Nødbelysning i/under/ved håndløper" then
-						return t..""
+						return nil
 					elseif Variant == "Plattformbelysning på mast" then
-						return t.."LYS-LYSMAST-"..SubVariant.."-U-H"..EL_LYS_MastHeight.."{% if EL_LYS_Foundation == 'Ja' %}-{{ EL_LYS_Foundation }}{% endif %}"
+						return mast3d()
 					elseif Variant == "Plattformbelysning på vegg" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Plattformbelysning under tak" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Plattformbelysning under tak, opplys" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Sporvekselbelysning" then
-						return t.."LYS-LYSMAST-"..SubVariant.."-U-H"..EL_LYS_MastHeight.."ja?"
+						return mast3d()
 					elseif Variant == "Tunnelbelysning" then
-						return t.."LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+						return lysror
 					elseif Variant == "Øvrige" then
-						return t..""
+						return mast3d()
 					end
 				end				
 			</Formula>
