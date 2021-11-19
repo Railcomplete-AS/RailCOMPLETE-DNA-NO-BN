@@ -91,7 +91,7 @@ end
         <Formula>
 function NOBN_sig_getSignalFullName()
 	local t
-	if RcType == "JBTSA_SIG ERTMS" then
+	if RcType == "JBTSA_ERT ERTMS" then
 		if Variant == "ERTMS dverg" then 
 			return "EDs.R"..NOBN_sig_getSignalNumber() 
 		elseif Variant:match("E35") then
@@ -158,7 +158,7 @@ end
 function NOBN_sig_getSignalPartNames()
 	local s = ""
 	local errMsg = "*** Unrecognized signal configuration ***"
-	if RcType == "JBTSA_SIG ERTMS" then
+	if RcType == "JBTSA_ERT ERTMS" then
 		if Variant:match("E35") then s = "E35" end
 		if Variant:lower():match("dverg") then s = s.."-EDS" end
 	elseif RcType == "JBTSA_SIG Signal" then
@@ -304,7 +304,7 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	local tolerance = 6 --Tolerance in meters
 
 	--Preamble - called from a relevant object type?
-	if      RcType ~= "JBTSA_SIG ERTMS"
+	if      RcType ~= "JBTSA_ERT ERTMS"
 		and RcType ~= "JBTSA_SIG Signal"
 		and RcType ~= "JBTSA_SIG Brusignal/Frostportsignal"
 		and RcType ~= "SA-SIG Planovergang"
@@ -318,7 +318,7 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	if Yokemounted then 
 		omit = false
 
-	elseif RcType == "JBTSA_SIG ERTMS" then
+	elseif RcType == "JBTSA_ERT ERTMS" then
 		return "OK - Low markerboard - Safety distance to OCS mast not relevant.",_ok
 
 	elseif RcType == "JBTSA_SIG Signal" then
@@ -1665,16 +1665,13 @@ end
 <!--========================================================================================================
 	SIGNAL
 	ERTMS SIGNAL
-	JBTSA_SIG ERTMS
-	ERTMS markerboards boards with pole. 2D symbols feature the "mast foot".
-	Note: The other ERTMS boards have been classified as TFES_ERP ERTMS boards.
-
-	2021-01-11 CLFEY TODO Check if Bane NOR decides to use E34 "Location signal" (stedssignal, black arrow on white):
-
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_SIG ERTMS"
-				Layer="JBTSA_SIG" Color="ByLayer"
-				Group="Signal/ERTMS"
+	<!-- ERTMS markerboards boards with pole. 2D symbols feature the "mast foot". -->
+	<!-- Note: The other ERTMS boards have been classified as 'JBTSA_MSS ERTMS skilt' boards. -->
+	<!-- 2021-01-11 CLFEY TODO Check if Bane NOR decides to use E34 "Location signal" (stedssignal, black arrow on white): -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_ERT ERTMS-signal"
+				Layer="JBTSA_ERT" Color="ByLayer"
+				Group="Signal/ERTMS signal"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 		<RelationSpace>markerboard</RelationSpace>
@@ -1705,7 +1702,7 @@ end
 		<LuaExpression Name="PoleRouting3D" ><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
 		<LuaExpression Name="Offset3D.Z" ><Formula>NOBN_bnp_getBoardOffset3dZ()</Formula></LuaExpression>
 
-		<!-- 2020-11-05 CLFEY Deprecated - all ERTMS boards are small, see BN document "NS-EN 16494_2015 ERTMS skilt" -->
+		<!-- 2020-11-05 CLFEY Deprecated - all ERTMS boards are now small, see BN document "NS-EN 16494_2015 ERTMS skilt" -->
 		<!-- <CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large" -->
 				<!-- Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400)." > -->
 			<!-- <Value DisplayName="Lite" >Small</Value> -->
@@ -1724,7 +1721,7 @@ end
 						t = t.."-E35"
 					end
 					if Variant:match("sidestilt") then
-						t = t..(((RightSided and dir == "up") or (LeftSided and dir == "down")) and "-HSIDE" or "-VSIDE")
+						t = t..(((RightSided and dir == "up") or (LeftSided and dir == "down")) and "-VSIDE" or "-VSIDE")
 					elseif Variant:match("over sporet") then
 						t = t.."-OVER"
 					end
@@ -1786,31 +1783,31 @@ end
 			</Variant>
 		</Variants>
 
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-RSIDE-{{SymbolMode}}"
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-VSIDE-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-RSIDE-DS-{{SymbolMode}}"
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-VSIDE-DS-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med lav dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-RSIDE-DS-{{SymbolMode}}"
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med lav dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-VSIDE-DS-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-ABOVE-AAK-{{SymbolMode}}"
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-OVER-AAK-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-ABOVE-DS-AAK-{{SymbolMode}}"
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-OVER-DS-AAK-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -1834,11 +1831,11 @@ end
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTSA_SIG-SIGNAL
 				{% if Variant contains 'sidestilt' %}
-					{% if RightSided and dir == 'up' %}ERTMS-E35-RSIDE
-					{% elsif LeftSided and dir == 'down' %}ERTMS-E35-RSIDE
+					{% if RightSided and dir == 'up' %}ERTMS-E35-VSIDE
+					{% elsif LeftSided and dir == 'down' %}ERTMS-E35-VSIDE
 					{% else %}ERTMS-E35-LSIDE
 					{% endif %}
-				{% elsif Variant contains 'over' %}ERTMS-E35-ABOVE
+				{% elsif Variant contains 'over' %}ERTMS-E35-OVER
 				{% endif %}
 				{% if Variant contains 'dverg' %}DS{% endif %}
 				{% if Yokemounted %}AAK{% endif %}
@@ -1970,7 +1967,7 @@ end
 			<SetValue Key="ruleCode" Value="" />
 		</InsertPointObject>
 
-		<InsertPointObject VariantName="Togsporsignal 1-begrep, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-TOGSPORSIGNAL-3-HSIDE-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Togsporsignal 1-begrep, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-TOGSPORSIGNAL-3-VSIDE-{{SymbolMode}}" 
 				AskForAttachment="true"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -1981,7 +1978,7 @@ end
 			<SetValue Key="ruleCode" Value="" />
 		</InsertPointObject>
 
-		<InsertPointObject VariantName="Togsporsignal 2-begrep, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-TOGSPORSIGNAL-4-HSIDE-{{SymbolMode}}"
+		<InsertPointObject VariantName="Togsporsignal 2-begrep, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-TOGSPORSIGNAL-4-VSIDE-{{SymbolMode}}"
 				AskForAttachment="true"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -2007,22 +2004,22 @@ end
 				{% elsif Variant == 'Togsporsignal 2-begrep' %}2
 				{% elsif Variant == 'Togsporsignal 1-begrep, sidestilt' %}
 					{% if RightSided  %}
-						{% if dir == 'up' %}3-HSIDE
+						{% if dir == 'up' %}3-VSIDE
 						{% else %}3-VSIDE
 						{% endif %}
 					{% else  %}
 						{% if dir == 'up' %}3-VSIDE
-						{% else %}3-HSIDE
+						{% else %}3-VSIDE
 						{% endif %}
 					{% endif %}
 				{% elsif Variant == 'Togsporsignal 2-begrep, sidestilt' %}
 					{% if RightSided  %}
-						{% if dir == 'up' %}4-HSIDE
+						{% if dir == 'up' %}4-VSIDE
 						{% else %}4-VSIDE
 						{% endif %}
 					{% else  %}
 						{% if dir == 'up' %}4-VSIDE
-						{% else %}4-HSIDE
+						{% else %}4-VSIDE
 						{% endif %}
 					{% endif %}
 				{% else %}BAD_Variant
@@ -2539,10 +2536,9 @@ end
 
 <!--========================================================================================================
 	SIGNAL
-	HJELPESIGNALER
-	SA-??? 
-	TODO Definere frittstående bremseprøvesignal, frittstående lysende sporvekselsignal / kryssvekselsignal, frittstående avgangssignal (finnes de??)
+	AUXILIARY SIGNALS
 =========================================================================================================-->
+	<!-- TODO Definere frittstående bremseprøvesignal, frittstående lysende sporvekselsignal / kryssvekselsignal, frittstående avgangssignal (finnes de??) -->
 
 
 
