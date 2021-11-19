@@ -1,0 +1,77 @@
+<!--========================================================================================================
+
+    NO-BN-Interlocking.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
+
+	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+<!--=======================================================================================================
+	SIGNALING
+	INTERLOCKING SYNTHESIS
+========================================================================================================-->
+	<DefaultInterlockingExportOptions>
+		<TrainRoutesStartPointFilter>
+			if (RcType == "JBTSA_SIG Signal" and Hovedsignal == 'Hs2' or Hovedsignal == 'Hs3') then
+				return NOBN_sig_getSignalShortName()
+			elseif RcType == "JBTSA_ERT ERTMS" then
+				return NOBN_sig_getSignalShortName()
+			end
+		</TrainRoutesStartPointFilter>
+		<TrainRoutesEndPointFilter>
+			if ((RcType == "JBTSA_SIG Signal" and (Hovedsignal == 'Hs1'or Hovedsignal == 'Hs2' or Hovedsignal == 'Hs3'))
+				or (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
+				or (RcType == "JBTSA_SIG Togvei slutt"))
+			then
+				return NOBN_sig_getSignalShortName()
+			elseif RcType == "JBTSA_ERT ERTMS" then
+				return NOBN_sig_getSignalShortName()
+			end
+		</TrainRoutesEndPointFilter>
+		<ShuntingRoutesStartPointFilter>
+			if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then
+				return NOBN_sig_getSignalNumber()
+			end
+		</ShuntingRoutesStartPointFilter>
+		<ShuntingRoutesEndPointFilter>
+			if ((RcType == "JBTSA_SIG Signal" or RcType == "JBTSA_ERT ERTMS-signal") and Dvergsignal == "Ja") then 
+				return NOBN_sig_getSignalNumber()
+			elseif ((RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "JBTSA_SIG Togvei slutt")) then
+				return code
+			end
+		</ShuntingRoutesEndPointFilter>
+		<ViaPointFilter>
+			if (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Viapunkt for betjeningsanlegg") then
+				return "(v"..code..")"
+			end
+		</ViaPointFilter>
+		<ExtendedTrainRoutesExcludedStartPointFilter>Function == "blocking"</ExtendedTrainRoutesExcludedStartPointFilter>
+		<ExtendedRoutePartFormatScript>
+			base = StartName .. "-" .. EndName
+			if ViaPoints.Count > 0 then
+				via = ViaPoints[0].Value
+				for i=1, ViaPoints.Count-1 do
+					via = via .. "-" .. ViaPoints[i].Value
+				end
+				return base .. " via " .. via
+			else
+				return base
+			end
+		</ExtendedRoutePartFormatScript>
+		<SwitchNameScript>
+			dir = (position == "left") and "V" or "H"
+			return switchObj.code .. dir
+		</SwitchNameScript>
+	</DefaultInterlockingExportOptions>
+	
+	
+	
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
