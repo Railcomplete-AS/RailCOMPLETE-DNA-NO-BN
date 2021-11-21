@@ -369,7 +369,7 @@
 
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	CATENARY WIRE SYSTEM
+	CATENARY WIRE SYSTEM : MESSENGER WIRE, STITCH WIRE, Z-WIRE, DROPPERS
 	Note: These are all wires other than the contact wire, excluding tensioning stretchers and spanners.
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KLO Kontaktledningsoppheng"
@@ -508,7 +508,7 @@
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_BAR Bardun"
 				Layer="JBTEH_BAR" Color="ByLayer"
-				Group="Kontaktledning/Kraftavlasting"
+				Group="Kontaktledning/Avspenning"
 				>
 		
 		<RelationSpace>kl-bardun</RelationSpace>
@@ -617,7 +617,7 @@
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_STR Strever"
 				Layer="JBTEH_STR" Color="ByLayer"
-				Group="Kontaktledning/Kraftavlasting"
+				Group="Kontaktledning/Avspenning"
 				>
 		
 		<RelationSpace>kl-strever</RelationSpace>
@@ -716,7 +716,8 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	STRECTCHER FORCE CONVEYOR
+	FORCE RELIEF
+	STRECTCHER ANHCORING
 
 	NB! Covers both stretcher attachment and spanner attachment, as well as ready-made spanners for attachment to 
 	tunnel roofs, for Ø120 suspension masts. These are the end points for spanners and strechers, these are Note
@@ -735,11 +736,11 @@
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_BAF Bardunfeste"
 				Layer="JBTEH_BAF" Color="ByLayer"
-				Group="Kontaktledning/Kraftavlasting"
+				Group="Kontaktledning/Avspenning"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>kraftavlasting</RelationSpace>
+		<RelationSpace>forankring</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
@@ -758,9 +759,9 @@
 		<Variants DefaultValue="Bardunfeste fotplate, enkel" >
 			<Variant Name="Bardunfeste fotplate, enkel" >
 			</Variant>
-			<Variant Name="Bardunfeste mot bjelkemast" >
-			</Variant>
 			<Variant Name="Bardunfeste fotplate, dobbel" >
+			</Variant>
+			<Variant Name="Bardunfeste konsoll på bjelkemast" >
 			</Variant>
 		</Variants>
 
@@ -777,19 +778,19 @@
 					if Variant:match("Bardunfeste fotplate, enkel") then 
 						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
 						
-					elseif Variant:match("Bardunfeste mot bjelkemast") then 
+					elseif Variant:match("Bardunfeste fotplate, dobbel") then
+						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
+						
+					elseif Variant:match("Bardunfeste konsoll på bjelkemast") then 
 						local m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast")
 						local n = getCollectionLength(m)
 						if n &gt; 0 then 
 							local a = m[0].OcsMastProfile:match("HEB(%d%d%d)") --'HEB220' etc: Capture three digits.
 							a = a or "240" --Default size if not a HEB mast...
-							t = "NO-BN-3D-EH-STR-STREVERFESTE-KONSOLL-FOR-SEKSJONSUTLIGGER-400x300-FOR-HEB"..a
+							t = "NO-BN-3D-EH-STF-STREVERFESTE-KONSOLL-400x300-FOR-HEB"..a
 						else
 							t = "UNIFINSHED: No OCS mast found near stretcher, cannot deduce stretcher's 3D model name."
 						end
-						
-					elseif Variant:match("Bardunfeste fotplate, dobbel") then
-						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
 						
 					else 
 						return "Bad strecher fastening Variant ["..Variant.."]."
@@ -819,7 +820,7 @@
 					local m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast",Alignment.RcAlignment.StartPoint)
 					local n = getCollectionLength(m)
 					if n == 0 then 
-						return "UNFINISHED - No OCS mast found at start of strecher wire / spanner rod alignment - cannot deduce stretcher / spanner code."
+						return "UNFINISHED - No OCS mast found at start of strecher wire alignment - cannot deduce stretcher's code."
 					elseif n == 1 then 
 						return m[0].code..t
 					else -- Two or more masts were found
@@ -848,6 +849,7 @@
 			<Constructor>Double _JBTEH_BAF_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_Mileage()
+					--Assume it runs from 0 (at mast) to L (at anchorage object)
 					return Alignment.RcAlignment.HorizontalProfile.Length
 				end
 			</Formula>
@@ -881,19 +883,25 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Bardunfeste fotplate, enkel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-KRAFTAVLASTING-FOR-BARDUN-ENKEL-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Bardunfeste fotplate, enkel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Bardunfeste fotplate, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-KRAFTAVLASTING-FOR-BARDUN-DOBBEL-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Bardunfeste fotplate, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_BAF-KRAFTAVLASTING-FOR-BARDUN-ENKEL-Geographic" >
+		<InsertPointObject VariantName="Bardunfeste konsoll på bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-DOBBEL-{{SymbolMode}}" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -903,10 +911,9 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_BAF
-				KRAFTAVLASTING
-				{% if Variant == 'Bardunfeste fotplate, enkel' %}FOR-BARDUN-ENKEL
-				{% elsif Variant == 'Bardunfeste fotplate, dobbel' %}FOR-BARDUN-DOBBEL
+				NO-BN-2D-JBTEH_BAF-BARDUNFESTE
+				{% if Variant == 'Bardunfeste fotplate, enkel' %}FOTPLATE-ENKEL
+				{% elsif Variant == 'Bardunfeste fotplate, dobbel' %}FOTPLATE-DOBBEL
 				{% else %}BAD_Variant
 				{% endif %}
 				{{SymbolMode}}
@@ -929,7 +936,8 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	SPANNER FORCE CONVEYOR
+	FORCE RELIEF
+	SPANNER ANHCORING
 
 	NB! Covers both stretcher attachment and spanner attachment, as well as ready-made spanners for attachment to 
 	tunnel roofs, for Ø120 suspension masts. These are the end points for spanners and strechers, these are Note
@@ -948,11 +956,11 @@
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_STF Streverfeste"
 				Layer="JBTEH_STF" Color="ByLayer"
-				Group="Kontaktledning/Kraftavlasting"
+				Group="Kontaktledning/Avspenning"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>kraftavlasting</RelationSpace>
+		<RelationSpace>forankring</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
@@ -968,12 +976,12 @@
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
-		<Variants DefaultValue="Streverfeste fotplate" >
-			<Variant Name="Streverfeste fotplate" >
+		<Variants DefaultValue="Streverfeste fotplate (uten streveren)" >
+			<Variant Name="Streverfeste fotplate (uten streveren)" >
 			</Variant>
-			<Variant Name="Strever med festeplater, 2.08m fra sidekant KL-mast" >
+			<Variant Name="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast" >
 			</Variant>
-			<Variant Name="Strever med festeplate for Ø120 hengemast for bru og tunnel" >
+			<Variant Name="Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel" >
 			</Variant>
 		</Variants>
 
@@ -987,13 +995,13 @@
 					--Look for mast near start of associated wire alignment.
 					local tol = 0.25 
 					local t
-					if Variant:match("Streverfeste fotplate") then
+					if Variant:match("Streverfeste fotplate (uten streveren)") then
 						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-525x350-191x374xM36"
 						
-					elseif Variant:match("Strever med festeplater, 2.08m fra sidekant KL-mast") then 
-						t = "NO-BN-3D-EH-STF-STREVERFESTE-OG-STREVER-L7000-D2080-H6654"
+					elseif Variant:match("Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast") then 
+						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-MED-STREVER-FOR-BJELKEMAST-L7000-D2080-H6654"
 						
-					elseif Variant:match("Strever med festeplate for Ø120 hengemast for bru og tunnel") then
+					elseif Variant:match("Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel") then
 						local m = getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")
 						local n = getCollectionLength(m)
 						if n &gt; 0 then 
@@ -1002,7 +1010,7 @@
 							local h = (math.floor((250 + (OcsMastHeight/2)) / 500)) * 500
 							h = (h &lt; 500) and 500 or h -- At least 500
 							h = (h &gt; 2500) and 2500 or h -- No more than 2500
-							t = "NO-BN-3D-EH-STF-STREVERFESTE-OG-STREVER-FOR-HENGEMAST-Ø120-H"..string.format("%03d",h)
+							t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-MED-STREVER-FOR-BRU-OG-TUNNEL-Ø120-H"..string.format("%03d",h)
 						else
 							t = "UNIFINSHED: No OCS suspension mast found near spanner, cannot deduce spanner's 3D model name."
 						end
@@ -1027,15 +1035,14 @@
 					--Note that spanner fixtures snap to the low-mileage end of the spanner (at the OCS mast), strecher fixtures snap to the hi-mileage (at the foundation)
 					--Both stretchers and spanners require an OCS mast at the START of the wire / the rod. 
 					local tol = 0.25 
-					local t
+					local t = "-S"
 					if Alignment == nil or Alignment.RcType ~= "JBTEH_STR Strever" then
 						return "UNFINISHED - Attach spanner footplate to an alignment of type 'JBTEH_STR Strever'."
 					end
-					t = "-S"
 					local m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast",Alignment.RcAlignment.StartPoint)
 					local n = getCollectionLength(m)
 					if n == 0 then 
-						return "UNFINISHED - No OCS mast found at start of spanner rod alignment - cannot deduce spanner code."
+						return "UNFINISHED - No OCS mast found at start of spanner rod alignment - cannot deduce spanner's code."
 					elseif n == 1 then 
 						return m[0].code..t
 					else -- Two or more masts were found
@@ -1065,25 +1072,14 @@
 			<Constructor>Double _JBTEH_STF_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_STF_Mileage()
-				if Variant:lower():match("strever") then
-					local ps = Alignment.RcAlignment.StartPoint
-					m = getNearbyPointObjects2D(1,"JBTEH_MAS KL-mast",ps.X,ps.Y)
-					n = getCollectionLength(m)
-					if n &gt; 0 and m[0].Variant:lower():match("bjelke") then 
-						return m[0].OcsMastProfile:match("HEB(%d+)")/2000
-					else 
-						return 0.0
-					end
-				else
-					--bardun enkel/dobbel:
+					--Assume it runs from 0 (at mast) to L (at anchorage object)
 					return Alignment.RcAlignment.HorizontalProfile.Length
 				end
-			end
 			</Formula>
 		</LuaFunction>
 
 		<!-- Strechers' dir = down, spanner's dir = down, assuming the spanner / strecher has been drawn from mast to the force relief's foundation -->
-		<LuaExpression Name="dir" ><Formula>Variant:lower():match("strever") and "down" or "down"</Formula></LuaExpression>
+		<LuaExpression Name="dir" ><Formula>"down"</Formula></LuaExpression>
 		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_STF_RelativeElevation()</Formula></LuaExpression>
@@ -1110,14 +1106,22 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Streverfeste fotplate" DisplayBlockName="NO-BN-2D-JBTEH_STF-KRAFTAVLASTING-FOR-STREVER-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Streverfeste fotplate (uten streveren)"
+				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVERFESTE-FOTPLATE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Strever med festeplate for Ø120 hengemast for bru og tunnel"
-				DisplayBlockName="NO-BN-2D-JBTEH_STF-KRAFTAVLASTING-FOR-STREVER-MED-FESTEPLATE-FOR-BRU-OG-TUNNEL-120-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast"
+				DisplayBlockName="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast-{{SymbolMode}}" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel"
+				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVERFESTE-FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -1133,12 +1137,10 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_STF
-				KRAFTAVLASTING
-				{% if Variant == 'Bardunfeste fotplate, enkel' %}FOR-BARDUN-ENKEL
-				{% elsif Variant == 'Bardunfeste fotplate, dobbel' %}FOR-BARDUN-DOBBEL
-				{% elsif Variant == 'Streverfeste fotplate' %}FOR-STREVER
-				{% elsif Variant == 'Strever med festeplate for Ø120 hengemast for bru og tunnel' %}FOR-STREVER-MED-FESTEPLATE-FOR-BRU-OG-TUNNEL-120
+				NO-BN-2D-JBTEH_STF-STREVERFESTE
+				{% if Variant == 'Streverfeste fotplate (uten streveren)' %}FOTPLATE
+				{% elsif Variant == 'Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast' %}FOTPLATE
+				{% elsif Variant == 'Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel' %}FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120
 				{% else %}BAD_Variant
 				{% endif %}
 				{{SymbolMode}}
@@ -1169,11 +1171,11 @@
 	<!-- inn i fjell eller i en armert betongblokk mot fjell. -->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_TUF Tunnelfeste"
 				Layer="JBTEH_TUF" Color="ByLayer"
-				Group="Kontaktledning/Kraftavlasting"
+				Group="Kontaktledning/Avspenning"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>kraftavlasting</RelationSpace>
+		<RelationSpace>forankring</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
@@ -1191,21 +1193,22 @@
 
 		<Variants DefaultValue="Veggfeste for KL-avspenning i tunnel" >
 			<Variant Name="Veggfeste for KL-avspenning i tunnel" >
-				<SetValue Key="name" Value="KL tunnelfeste" />
-				<!-- TODO Create 3D-object from EH drawing. -->
-				<!-- For now, just use stratcher's footplate: -->
-				<SetValue Key="Model3DName" Value="NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36" />
 			</Variant>
 		</Variants>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation" ><Formula>4.0</Formula></LuaExpression>
+
+		<!-- TODO Create 3D-object from EH drawing. -->
+		<!-- For now, just use stratcher's footplate: -->
+		<SetValue Key="Model3DName" Value="NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36" />
+		<SetValue Key="name" Value="KL tunnelfeste" />
 		
 		<!-- Use footplate for stretcher, turn it to fit against wall and serve the incoming wire: -->
 		<!-- <LuaExpression Name="Rotation3D.Z" ><Formula>dir == 'up' and 0 or 180</Formula></LuaExpression> NOT NEEDED - the footplate is symmetrical -->
 		<LuaExpression Name="Rotation3D.Y" ><Formula>LeftSided and 90 or -90'</Formula></LuaExpression>
 		
-		<InsertPointObject VariantName="Veggfeste for KL-avspenning i tunnel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-KRAFTAVLASTING-TUNNELFESTE-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Veggfeste for KL-avspenning i tunnel" DisplayBlockName="NO-BN-2D-JBTEH_TUF-TUNNELFESTE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true" />
@@ -1222,7 +1225,6 @@
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTEH_TUF
-				KRAFTAVLASTING
 				{% if Variant == 'Veggfeste for KL-avspenning i tunnel' %}TUNNELFESTE
 				{% else %}BAD_Variant
 				{% endif %}
@@ -1288,7 +1290,7 @@
 
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_AEH Avspenning"
 				Layer="JBTEH_AEH" Color="ByLayer"
-				Group="Kontaktledning/Avspenninger"
+				Group="Kontaktledning/Avspenning"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -1524,7 +1526,7 @@
 		<!-- <DockPointDefinitions> -->
 			<!-- <SnapPoints> -->
 				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste" /> -->
-				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="Streverfeste fotplate" /> -->
+				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="Streverfeste fotplate (uten streveren)" /> -->
 			<!-- </SnapPoints> -->
 		<!-- </DockPointDefinitions> -->
 

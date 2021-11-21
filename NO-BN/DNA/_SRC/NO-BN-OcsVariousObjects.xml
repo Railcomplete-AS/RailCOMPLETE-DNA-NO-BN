@@ -224,7 +224,7 @@
 	HIGH VOLTAGE
 	SECTIONING ISOLATOR
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_SIL Seksjonsisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_SIL Seksjonsisolator"
 				Layer="JBTEH_SIL" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -296,7 +296,14 @@
 	HIGH VOLTAGE
 	CATENARY SUPPORT WIRE ISOLATOR (and for contact wires outside the pantograph's reach)
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
+	<!-- <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator" -->
+				<!-- Layer="JBTEH_ISO" Color="ByLayer" -->
+				<!-- Group="Kontaktledning/Isolatorer" -->
+				<!-- AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}" -->
+				<!-- > -->
+
+	<!-- 2021-11-21 CLFEY: Experimenting with lineisolator as continuation object between kl-bardun and kl-oppheng and kontaktledning: -->
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
 				Layer="JBTEH_ISO" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -330,6 +337,58 @@
 			</Formula>
 		</LuaExpression>
 
+		<LuaExpression Name="code" ><Formula>_JBTEH_ISO_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_code()" ReturnType="String"
+			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two stretchers or wires that meet in a OCS wire continuation (a line isolator)." >
+			<Constructor>String _JBTEH_ISO_code()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_code()
+					local first,second
+					local compatibleAlignments = {"JBTEH_KTL Kontaktledning", "JBTEH_KLO Kontaktledningsoppheng", "JBTEH_BAR Bardun"}
+					if RcType ~= "JBTEH_ISO Lineisolator" then
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_ISO Lineisolator' was expected"
+					else
+						first = Alignment
+						if first == nil then
+							return "Bad or missing alignment reference",_warning
+						elseif not RC__isMemberOf(compatibleAlignments,Alignment.RcType) then
+							return "Cannot connect to alignment of type '"..Alignmnent.RcType.."'.",_warning
+						end
+						second = TargetAlignment
+						if second == nil then
+							return "Bad or missing continuing alignment reference",_warning
+						end
+						if first.id == second.id then
+							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
+						elseif not RC__isMemberOf(compatibleAlignments,TargetAlignment.RcType) then
+							return "Cannot connect to targert alignment of type '"..Alignmnent.RcType.."'.",_warning
+						end
+						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
+						--if KmStigerMotVenstre then
+						--	first,second = second,first 
+						--end
+						return "["..first.Code.."] ==> ["..second.Code.."]"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_ISO_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_mileage()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_ISO_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_mileage()
+					ai = getAlignmentInfo()
+					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
+					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
+							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+				end
+			</Formula>
+		</LuaFunction>
+						
 		<LuaExpression Name="Model3DName" >
 			<Formula>
 				if Variant == "Lineisolator" then return "NO-BN-3D-EH-ISO-LINEISOLATOR-600x100"
@@ -525,7 +584,7 @@
 
 	TODO 2020-09-26: Add 3D symbols to the library: Single / double Strømbro
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FOR Strømbro"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FOR Forbindelse, strømbro"
 				Layer="JBTEH_FOR" Color="ByLayer"
 				Group="Kontaktledning/Forbindelser"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
