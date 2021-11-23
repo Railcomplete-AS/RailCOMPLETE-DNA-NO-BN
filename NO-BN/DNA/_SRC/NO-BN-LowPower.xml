@@ -143,7 +143,6 @@
 				<SetValue Key="dir" Value="both" />
 				<SetValue Key="EL_LYS_MastHeight" Value="4000" />
 				<SetValue Key="EL_LYS_Arm" Value="500" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYS-LYSMAST-{{SubVariant}}-U{{EL_LYS_Arm}}-H{EL_LYS_MastHeight}}-{{EL_LYS_Foundation}}" />
 			</Variant>
 			<Variant Name="Armatur i åk" >
 				<SetValue Key="SubVariant" Value="1-lys" />
@@ -157,14 +156,12 @@
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="dir" Value="up" />
 				<SetValue Key="EarthingMethod" Value="Object" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2" />
 			</Variant>
 			<Variant Name="Belysning adkomst/gangvei, på gulv" >
 				<SetValue Key="SubVariant" Value="Punkt" />
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="dir" Value="up" />
 				<SetValue Key="EarthingMethod" Value="Object" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2" />
 				<SetValue Key="Rotation3D.Y" Value="180" />
 			</Variant>
 			<Variant Name="Belysning adkomst/gangvei, på vegg" >
@@ -172,7 +169,6 @@
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="dir" Value="up" />
 				<SetValue Key="EarthingMethod" Value="Object" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2" />
 				<SetValue Key="Rotation3D.Y" Value="{% if LeftSided %}90{% else %}-90{% endif %}" />
 			</Variant>
 			<Variant Name="Belysning for vei/parkering" >
@@ -182,14 +178,12 @@
 				<SetValue Key="dir" Value="both" />
 				<SetValue Key="EL_LYS_MastHeight" Value="4000" />
 				<SetValue Key="EL_LYS_Arm" Value="500" />
-				<SetValue Key="Model3dName" Value="=NOBN_EL_LYS_Model3dName()" />
 			</Variant>
 			<Variant Name="Belysning utvendig bygg" >
 				<SetValue Key="SubVariant" Value="Punkt" />
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="EarthingMethod" Value="Object" />
 				<SetValue Key="dir" Value="both" />
-				<SetValue Key="Model3dName" Value="NO-BN-3D-EL-LYA-LYSARMATUR-UTENDØRS-REKTANGULÆR-Ø76" />
 			</Variant>
 			<!-- TODO: Skille ut markeringslys i plattform som eget linjeobjekt med lys -->
 			<Variant Name="Nedfelt markeringslys på plattform" >
@@ -197,7 +191,6 @@
 				<SetValue Key="PoleRouting" Value="None" />
 				<SetValue Key="EarthingMethod" Value="Object" />
 				<SetValue Key="dir" Value="up" />
-				<SetValue Key="Model3dName" Value="(har ikke 3D for {{Variant}})" />
 			</Variant>
 			<Variant Name="Nødbelysning" >
 				<SetValue Key="SubVariant" Value="Punkt" />
@@ -424,6 +417,19 @@
 				<Value>-</Value>
 			</Values>
 		</CustomAttribute>
+		
+		<!-- Angle between arms -->
+		<CustomAttribute DataType="String" Name="EL_LYS_Arm_Angle" DisplayName="Lys armvinkel" 
+			Description="The angle between the arms of the lighting fixture in degrees.  Note: 3D model name will use no value, 90, 120 or 180 degrees." 
+			StandardValuesFromLuaFormula="true">
+		<StandardValuesLuaFormula>_JBTEL_LYS_Arm_Angle_Standard_Values()</StandardValuesLuaFormula>
+		</CustomAttribute>
+		
+		<CustomAttribute DataType="Double" Name="EL_LYS_Arm_Length" DisplayName="Lys armlengde" 
+			Description="The length of the arms of the lighting fixture in mm.  Note: 3D model name will be deduced in steps of 250 mm from 500 to 1000, thereafter in steps of 500 mm."
+			DefaultValue="1000">
+		</CustomAttribute>
+		
 
 		<!-- BEGIN Banedata custom attributes (specific to this object type) -->
 
@@ -486,10 +492,113 @@
 			DefaultValue="Ukjent"
 			Description="The lighting fixture's RAL color code [ Ukjent (unknown) | &lt;RAL code text string&gt; ]." >
 		</CustomAttribute>
-		
+	
 		<!-- END Banedata custom attributes (specific to this object type) -->
+		
+		<!-- Formula to work out standard values for angle between arms -->
+		<LuaFunction Name="_JBTEL_LYS_Arm_Angle_Standard_Values()" ReturnType="String"
+			Description="Returns the 3D model name for an light." >
+			<Constructor>Collection[Int] _JBTEL_LYS_Arm_Angle_Standard_Values()</Constructor>
+			<Formula>
+				function _JBTEL_LYS_Arm_Angle_Standard_Values()
+					local n = string.match(EL_LYS_SubVariant, "%d+")
+					if n == nil then return end
+					n = tonumber(n)
+					if n&gt;4 then 
+						return {360 // n}
+					elseif n == 1 then 
+						return {} 
+					else
+						local values = {}
+						for i=n,4 do
+							values[i] = 360//i
+						end
+						return values
+					end 
+				end
+			</Formula>
+		</LuaFunction>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
+		
+		<LuaExpression Name="Model3DName" ><Formula>_JBTEL_LYS_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEL_LYS_Model3DName()" ReturnType="String"
+			Description="Returns the 3D model name for an light." >
+			<Constructor>String _JBTEL_LYS_Model3DName()</Constructor>
+			<Formula>
+				function _JBTEL_LYS_Model3DName()
+					function bin(bins, ball)
+						num = tonumber(ball)
+						if num == nil then return end
+						if num &lt; bins[1] then return bins[1] end
+						for i=2,#bins do
+							if num &lt; bins[i] then
+								if num &lt;= (bins[i] + bins[i-1])/2 then
+									return bins[i-1]
+								else
+									return bins[i]
+								end
+							end
+						end
+						return bins[#bins]		
+					end
+
+					local lysror = "NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"
+
+					local V = bin({90, 120, 180}, EL_LYS_Arm_Angle)
+					local U = bin({500, 750, 1000, 1500, 2000, 2500, 3000}, EL_LYS_Arm_Length)
+					local H = bin({4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000}, EL_LYS_MastHeight)
+
+					function mast3d()
+						if EL_LYS_SubVariant == "Ukjent" then 
+							return "NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U"..U.."-H"..H
+						elseif V == nil then 
+							return "NO-BN-3D-EL-LYS-LYSMAST-"..EL_LYS_SubVariant.."-U"..U.."-H"..H
+						else
+							return "NO-BN-3D-EL-LYS-LYSMAST-"..EL_LYS_SubVariant.."-V"..V.."-U"..U.."-H"..H
+						end
+					end
+
+					if Variant == "Ukjent" then
+						return nil
+					elseif Variant == "Arealbelysning" then
+						return mast3d()
+					elseif Variant == "Armatur i åk" then
+						return nil
+					elseif Variant == "Belysning adkomst/gangvei, i tak" then
+						return lysror
+					elseif Variant == "Belysning adkomst/gangvei, på gulv" then
+						return lysror
+					elseif Variant == "Belysning adkomst/gangvei, på vegg" then
+						return lysror
+					elseif Variant == "Belysning for vei/parkering" then
+						return "NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U"..U.."-H"..H --Guess? check this with claus
+					elseif Variant == "Belysning utvendig bygg" then
+						return "NO-BN-3D-EL-LYA-LYSARMATUR-UTENDØRS-REKTANGULÆR-Ø76"
+					elseif Variant == "Nedfelt markeringslys på plattform" then
+						return nil
+					elseif Variant == "Nødbelysning" then
+						return nil
+					elseif Variant == "Nødbelysning i/under/ved håndløper" then
+						return nil
+					elseif Variant == "Plattformbelysning på mast" then
+						return mast3d()
+					elseif Variant == "Plattformbelysning på vegg" then
+						return lysror
+					elseif Variant == "Plattformbelysning under tak" then
+						return lysror
+					elseif Variant == "Plattformbelysning under tak, opplys" then
+						return lysror
+					elseif Variant == "Sporvekselbelysning" then
+						return mast3d()
+					elseif Variant == "Tunnelbelysning" then
+						return lysror
+					elseif Variant == "Øvrige" then
+						return mast3d()
+					end
+				end				
+			</Formula>
+		</LuaFunction>
 
 		<!-- TODO 2020-10-12 Lag InsertPointObject for alle varianter -XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 			<!-- <Values Variant="Ukjent" > -->
