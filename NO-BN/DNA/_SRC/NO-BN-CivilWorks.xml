@@ -12,17 +12,16 @@
 
 
 <!--========================================================================================================
-	UNDERBYGNING
-	KABELFØRINGER
-	JBTKU_KFØ Kabelkanal
+	CIVIL WORKS
+	CABLE DUCTS
 	Cable ducts are made from concrete or plastic, where cables may enter or exit at any time through the use of a 
 	duct connection element. 
-	TODO: Avklare med Bane NOR om OBJEKTID-koden kan benyttes,
-	TODO: Add duct connection elements.
-	TODO: Automatic routing of cables in cable ducts. Modelchecking of duct fill percentage.
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Kabelkanal"
-				Layer="JBTKU_KFØ_KABELKANAL" Color="ByLayer" 
+	<!-- NB! 2021-11-22 CLFEY: We have introduced automatic layer setting to JBTFF_TTT_XXxx-YYyy (phase). -->
+	<!-- NB! Bane NOR kode er KU-KFØ. Vi har skilt denne i KFK=kanal, KFR=rørpakke, KFP=pressrør, KFT=trekkerør. -->
+	<!-- Ved eksport til Banedata skal disse mappes til KU-KFØ. -->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFK Kabelkanal"
+				Layer="JBTKU_KFK" Color="ByLayer" 
 				Group="Underbygning/Føringsveier/Kabelkanal"
 				>
 
@@ -37,12 +36,14 @@
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_KU_KFØ" />
 
-		<!-- TODO Fjerne AlignmentSystem? -->
+		<!-- Use alignment system to figure out how the closest rail will be concerned in track curves with cant. -->
+		<!-- Bane NOR uses QuickMode3DLiftWithCant="true" because the sleepers are rotated with asin(cant/CantGauge) around centre track, then lifted by cant/2. -->
+		<!-- Attribute AlignmentGauge has no specific usage here. -->
 		<AlignmentSystems DefaultSystemName="Kabelføring" >
 			<AlignmentSystem Name="Kabelføring"
-				CantGauge="0.000"
+				CantGauge="1.500"
 				AlignmentGauge="0.000"
-				QuickMode3DLiftWithCant="false"
+				QuickMode3DLiftWithCant="true"
 			 />
 		</AlignmentSystems>
 
@@ -53,10 +54,22 @@
 			<Variant Name="Kabelkanal, betong, 3-løps, 60 cm" />
 		</Variants>
 
+		<CustomAttribute DataType="Enumeration" Name="AddElevationIfCant" DisplayName="Heving hvis overhøyde" DefaultValue="Ingen" 
+			Description="The 'Heving hvis overhøyde' (AddElevationIfCant) property controls how the cable duct shall behave if its alignment contains cant data. The cant data will normally be inherited from the closest track. If the duct is placed on the right side of this track, then select 'Venstrekurve' (CCW): the right rail's superelevation will be added to the cable duct's elevation (Z coordinate). If the duct is placed on the left side of this track, then select 'Høyrekurve' (CW): the left rail's superelevation will be added to the cable duct's elevation. If you need to elevate the duct to a specific height independent of left/right curvature, e.g. to attach it to a tunnel wall or to a bridge's fence, then select 'Alltid' (ALWAYS). To ignore possible cant data, select 'NONE'. Note: This formula will be overriden by RC standard 3D offset/rotation formulas if 3D Quick mode is active (true)."
+		>
+			<Values>
+				<Value Description="Cable duct's cant data will be ignored, duct is placed according to vertical profile data only." DisplayName="Ingen">NONE</Value>
+				<Value Description="Cable duct's elevation is augmented by its cant profile value when in a CCW (left) curve." DisplayName="Venstrekurve">CCW</Value>
+				<Value Description="Cable duct's elevation is augmented by its cant profile value when in a CW (right) curve." DisplayName="Høyrekurve">CW</Value>
+				<Value Description="Cable duct's elevation is augmented by its cant profile everywhere" DisplayName="Alltid">ALWAYS</Value>
+			</Values>
+		</CustomAttribute>
+
 		<LuaExpression Name="name" ><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
 		<SetValue Key="Sweep3D" Value="True" />
-		<SetValue Key="QuickMode3D" Value="True" />
+		<!-- Use a formula for Z which gives an extra lift to the cable duct to follow the Top-Of-Rail of the closest rail: -->
+		<SetValue Key="QuickMode3D" Value="False" />
 
 		<LuaFunction Name="_JBTKU_KFOE_Duct_getStartEndAndJump" 
 				ReturnType="AlignmentInfo,AlignmentInfo,Double"
@@ -92,7 +105,7 @@
 		<LuaExpression Name="Offset3D.X" ><Formula>sweep3D and 0 or _JBTKU_KFOE_Duct_Offset3dX(_position)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFOE_Duct_Offset3dX" ReturnType="Double"
 				HideFromUser="false"
-				Description="Sampled formula. Returns sideways offset for cable duct element (midway betwen end points on alignment). Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
+				Description="Sampled formula. Returns sideways offset for cable duct element (midway between end points on alignment). Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
 			<Constructor>Double _JBTKU_KFOE_Duct_Offset3dX(_position)</Constructor>
 			<Formula>
 				function _JBTKU_KFOE_Duct_Offset3dX(_position)
@@ -110,7 +123,7 @@
 		<LuaFunction Name="_JBTKU_KFOE_Duct_Offset3dZ" 
 				ReturnType="Double"
 				HideFromUser="false"
-				Description="Sampled formula. Returns an extra elevation for the cable duct element, as stored in millimeter as Cant data. Copy cant data from closest track's relevant cant using Alignment Manager datagrid/Cant. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
+				Description="Sampled formula. Returns an extra elevation for the cable duct element in none/CCW/CW/always curve situations according to the current setting of the 'Heving hvis overhøyde' (AddElevationIfCant) parameter. Copy cant data from closest track's relevant cant using the RC-CreateAlignment command or the RC-OffsetProfile command, or RC-AlignmentManager/Cant. This function must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
 			<Constructor>Double _JBTKU_KFOE_Duct_Offset3dZ(_position)</Constructor>
 			<Formula>
 				function _JBTKU_KFOE_Duct_Offset3dZ(_position)
@@ -121,7 +134,15 @@
 					startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
 					endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
 					--if true then return {mid.Point.X, mid.Point.Y,mid.Point.Z}, startAi.Elevation, endElevation, startCant,endCant end --DEBUG
-					return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
+					--if true then return AddElevationIfCant end
+					if AddElevationIfCant == "ALWAYS" then
+						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
+					elseif AddElevationIfCant == mid.CantRotation then
+						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
+					else 
+						--AddElevationIfCant == "NONE", or "CW" or "CCW" but not currently in a curve:
+						return (startElevation + endElevation)/2 - mid.Point.Z
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -266,14 +287,17 @@
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
+
 		<InsertAlignment VariantName="Kabelkanal, betong, 1-løps, 40 cm" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KABELFOERING-KABELKANAL-1-LOEPS-400-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
+
 		<InsertAlignment VariantName="Kabelkanal, betong, 2-løps, 60 cm" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KABELFOERING-KABELKANAL-2-LOEPS-620-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
+
 		<InsertAlignment VariantName="Kabelkanal, betong, 3-løps, 60 cm" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KABELFOERING-KABELKANAL-3-LOEPS-620-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
@@ -289,8 +313,8 @@
 	Tube packages made from plastic or steel, most often with concrete encasing, where cables may NOT 
 	enter or exit except at the ends. 
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Rørpakke"
-				Layer="JBTKU_KFØ_RØRPAKKE" Color="ByLayer" 
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFR Rørpakke"
+				Layer="JBTKU_KFR" Color="ByLayer" 
 				Group="Underbygning/Føringsveier/Omstøpte trekkerør"
 				>
 
@@ -600,12 +624,12 @@
 <!--========================================================================================================
 	UNDERBYGNING
 	KABELFØRINGER
-	JBTKU_KFØ Pressrør
+	JBTKU_KFP Pressrør
 	Tube packages made from hard polymere or steel, where cables may NOT enter or exit except at the ends. 
 	TODO: Avklare med Bane NOR om OBJEKTID-koden kan benyttes,
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Pressrør"
-				Layer="JBTKU_KFØ_PRESSRØR" Color="ByLayer" 
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFP Pressrør"
+				Layer="JBTKU_KFP" Color="ByLayer" 
 				Group="Underbygning/Føringsveier/Pressrør"
 				>
 
@@ -715,8 +739,8 @@
 	the track or nearby a railway track.
 	TODO: Avklare med Bane NOR om OBJEKTID-koden kan benyttes,
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFØ Trekkerør"
-				Layer="JBTKU_KFØ_TREKKERØR" Color="ByLayer" 
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKU_KFT Trekkerør"
+				Layer="JBTKU_KFT" Color="ByLayer" 
 				Group="Underbygning/Føringsveier/Trekkerør"
 				>
 
@@ -811,7 +835,7 @@
 			<Formula>
 				function _JBTKU_KFOE_tube_Offset3dZ(cursor)
 					local P1 = RcAlignment.StartPoint
-					local ducts = getClosestAlignments("JBTKU_KFØ Kabelkanal",P1.X,P1.Y)
+					local ducts = getClosestAlignments("JBTKU_KFK Kabelkanal",P1.X,P1.Y)
 					if getCollectionLength(ducts) == 0 then
 						return 0, _info("UNFINISHED - No cable duct found at flexible tube's geometry start point.")
 					end
@@ -1720,20 +1744,20 @@
 		<LuaExpression Name="code" ><Formula>NOBN_sub_getFoundationCode()</Formula></LuaExpression>
 
 		<LuaExpression Name="name" ><Formula>tostring(code):upper():match("UNFINISHED") and code or ""</Formula></LuaExpression>
-		<LuaExpression Name="Mileage" ><Formula>RC__getMileageFromRelatedObject("Er kl-fundament for kl-mast/kraftavlasting")</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment" ><Formula>RC__getDistanceToAlignmentFromRelatedObject("Er kl-fundament for kl-mast/kraftavlasting")</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation" ><Formula>RC__getRelativeElevationFromRelatedObject("Er kl-fundament for kl-mast/kraftavlasting")</Formula></LuaExpression>
-		<LuaExpression Name="dir" ><Formula>RC__getDirFromRelatedObject("Er kl-fundament for kl-mast/kraftavlasting")</Formula></LuaExpression>
-		<LuaExpression Name="AngularOffset" ><Formula>RC__getAngularOffsetFromRelatedObject("Er kl-fundament for kl-mast/kraftavlasting")</Formula></LuaExpression>
+		<LuaExpression Name="Mileage" ><Formula>RC__getMileageFromRelatedObject("Er kl-fundament for kl-mast/forankring")</Formula></LuaExpression>
+		<LuaExpression Name="DistanceToAlignment" ><Formula>RC__getDistanceToAlignmentFromRelatedObject("Er kl-fundament for kl-mast/forankring")</Formula></LuaExpression>
+		<LuaExpression Name="RelativeElevation" ><Formula>RC__getRelativeElevationFromRelatedObject("Er kl-fundament for kl-mast/forankring")</Formula></LuaExpression>
+		<LuaExpression Name="dir" ><Formula>RC__getDirFromRelatedObject("Er kl-fundament for kl-mast/forankring")</Formula></LuaExpression>
+		<LuaExpression Name="AngularOffset" ><Formula>RC__getAngularOffsetFromRelatedObject("Er kl-fundament for kl-mast/forankring")</Formula></LuaExpression>
 
-		<LuaExpression Name="Model3DName" ><Formula>_EH_FUN_OcsFoundation_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_EH_FUN_OcsFoundation_Model3DName" 
+		<LuaExpression Name="Model3DName" ><Formula>_JBTEH_FUN_OcsFoundation_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FUN_OcsFoundation_Model3DName" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the 3D model name for an OCS foundation." >
-			<Constructor>String _EH_FUN_OcsFoundation_Model3DName()</Constructor>
+			<Constructor>String _JBTEH_FUN_OcsFoundation_Model3DName()</Constructor>
 			<Formula>
-				function _EH_FUN_OcsFoundation_Model3DName()
+				function _JBTEH_FUN_OcsFoundation_Model3DName()
 					local bw = OcsFoundationBaseWidth
 					local bo = OcsFoundationBaseOffset == 0 and "000" or tostring(OcsFoundationBaseOffset)
 					local sh = OcsFoundationShaftHeight
@@ -1910,7 +1934,7 @@
 		<DockPointDefinitions>
 			<SnapPoints>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast" />
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kraftavlasting" />
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="forankring" />
 			</SnapPoints>
 		</DockPointDefinitions>
 

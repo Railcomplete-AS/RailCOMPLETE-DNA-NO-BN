@@ -38,6 +38,7 @@
 		<RelationSpace>beskyttelse</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -224,7 +225,7 @@
 	HIGH VOLTAGE
 	SECTIONING ISOLATOR
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_SIL Seksjonsisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_SIL Seksjonsisolator"
 				Layer="JBTEH_SIL" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -233,6 +234,7 @@
 		<RelationSpace>seksjonsisolator</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -296,7 +298,7 @@
 	HIGH VOLTAGE
 	CATENARY SUPPORT WIRE ISOLATOR (and for contact wires outside the pantograph's reach)
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
 				Layer="JBTEH_ISO" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -305,6 +307,7 @@
 		<RelationSpace>lineisolator</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -342,6 +345,7 @@
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
 			<OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace> 
+			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace> 
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
@@ -361,13 +365,133 @@
 
 	</ObjectType>
 
+	<!-- 2021-11-21 CLFEY: Experimenting with lineisolator as continuation object between kl-bardun and kl-oppheng and kontaktledning: -->
+<!--	
+	
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
+				Layer="JBTEH_ISO" Color="ByLayer"
+				Group="Kontaktledning/Isolatorer"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>lineisolator</RelationSpace>
+
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+
+		<Variants DefaultValue="Lineisolator" >
+			<Variant Name="Lineisolator" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="name" >
+			<Formula>
+				if Variant == "Lineisolator" then return "Isol."
+				else return "Unrecognized variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="code" ><Formula>_JBTEH_ISO_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_code()" ReturnType="String"
+			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two stretchers or wires that meet in a OCS wire continuation (a line isolator)." >
+			<Constructor>String _JBTEH_ISO_code()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_code()
+					local first,second
+					local compatibleAlignments = {"JBTEH_KTL Kontaktledning", "JBTEH_KLO Kontaktledningsoppheng", "JBTEH_BAR Bardun"}
+					if RcType ~= "JBTEH_ISO Lineisolator" then
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_ISO Lineisolator' was expected"
+					else
+						first = Alignment
+						if first == nil then
+							return "Bad or missing alignment reference",_warning
+						elseif not RC__isMemberOf(compatibleAlignments,Alignment.RcType) then
+							return "Cannot connect to alignment of type '"..Alignmnent.RcType.."'.",_warning
+						end
+						second = TargetAlignment
+						if second == nil then
+							return "Bad or missing continuing alignment reference",_warning
+						end
+						if first.id == second.id then
+							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
+						elseif not RC__isMemberOf(compatibleAlignments,TargetAlignment.RcType) then
+							return "Cannot connect to targert alignment of type '"..Alignmnent.RcType.."'.",_warning
+						end
+						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
+						--if KmStigerMotVenstre then
+						--	first,second = second,first 
+						--end
+						return "["..first.Code.."] ==> ["..second.Code.."]"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_ISO_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_mileage()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_ISO_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_mileage()
+					ai = getAlignmentInfo()
+					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
+					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
+							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+				end
+			</Formula>
+		</LuaFunction>
+						
+		<LuaExpression Name="Model3DName" >
+			<Formula>
+				if Variant == "Lineisolator" then return "NO-BN-3D-EH-ISO-LINEISOLATOR-600x100"
+				else return "Unrecognized variant ["..Variant.."].",_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="true" />
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTEH_ISO
+				ISOLATOR
+				{% if Variant == 'Lineisolator' %}LINEISOLATOR
+				{% else %}BAD_Variant
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+	</ObjectType>
+-->
 
 
 <!--========================================================================================================
 	HIGH VOLTAGE
 	CONTACT WIRE ISOLATOR
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_ISS Stavisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISS Stavisolator"
 				Layer="JBTEH_ISS" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -376,6 +500,7 @@
 		<RelationSpace>stavisolator</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -449,6 +574,7 @@
 		<RelationSpace>svevendekryss</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -525,7 +651,7 @@
 
 	TODO 2020-09-26: Add 3D symbols to the library: Single / double Strømbro
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FOR Strømbro"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FOR Forbindelse, strømbro"
 				Layer="JBTEH_FOR" Color="ByLayer"
 				Group="Kontaktledning/Forbindelser"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -534,6 +660,7 @@
 		<RelationSpace>kl-forbindelse</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />

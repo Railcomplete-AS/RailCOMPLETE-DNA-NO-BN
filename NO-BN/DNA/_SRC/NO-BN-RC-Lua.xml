@@ -480,18 +480,24 @@
 
 
 	<LuaFunction Name="RC__isMemberOf()" ReturnType="Boolean" 
-		Description="Returns true if table/collection/dictionary t contains object o. 'o' may be part of a numbered Lua sequence {3,5,7,11} or a value in a key/value pair {x=3,y=5,z=7,u=11}." >
-		<Constructor>Boolean RC__isMemberOf(table t, Object o) </Constructor>
+		Description="Returns true if table/collection/dictionary contains item . The item may be part of a numbered Lua sequence {3,5,7,11} or a value in a key/value pair {x=3,y=5,z=7,u=11}. Advice: When looking for objects, look for its id property item.id (a text string) rather than an object reference, as objects may be relocated in memory for each Lua execution." >
+		<Constructor>Boolean RC__isMemberOf(Table t, Item item)</Constructor>
 		<Formula>
-			function RC__isMemberOf(t,obj) 
+			function RC__isMemberOf(t,item) 
 				local i
 				if getTableValue(t) == nil and type(t) == "table" then
 					-- A genuine Lua table, convert it to RailCOMPLETE/C# collection object (deleting the keys from key/value pairs):
 					t = getCollectionFromTable(t)
 					--Collections respond correctly to the '.count' attribute:
 					for i = 0, t.count-1 do
-						if t[i] == obj then 
-							return true
+						if type(item) == "string" or type(item) == "number" then
+							if t[i] == item then
+								return true
+							end
+						elseif item.id then
+							if t[i] == item.id then
+								return true
+							end
 						end
 					end
 				end
