@@ -19,7 +19,7 @@
 	<Relations>
 		<SourceSpace>skilt</SourceSpace>
 		<Relation Name="Montert på" AskForRelation="false" Color="120" >
-			<TargetSpace>skiltfeste</TargetSpace>
+			<TargetSpace>skiltfeste</TargetSpace>//
 			<TargetSpace>signal</TargetSpace>
 			<TargetSpace>markerboard</TargetSpace>
 			<TargetSpace>skilt</TargetSpace>
@@ -91,7 +91,6 @@
 			<TargetSpace>kontaktledning</TargetSpace>
 			<!-- Annotation when switching from one contact wire to the next - click on both wires: -->
 			<RelatesTo Prompt="Er KL-annotering for" Min="0" Max="2" NumberOfPromptsDuringInsertion="2" />
-			<!-- Max 2 - one at each end of contact wire: -->
 			<ReverseRelatesTo Prompt="Har" Min="0" Max="2" />
 		</Relation>
 	</Relations>
@@ -113,33 +112,46 @@
 		</Relation>
 	</Relations>
 
-	<!-- Fixture for strechers or spanners, which in turn takes up force created by a tensile force installation at the other end of contact/messenger wire. -->
-	<!-- There may possibly be several "hops" in between: console on mast / tensile force stretcher / strecher-to-wire fitting / wire / etc -->
+	<!-- Fixture for stretchers or spanners, which in turn takes up force created by a tensile force installation at the other end of contact/messenger wire. -->
+	<!-- There may possibly be several "hops" in between: console on mast / tensile force stretcher / stretcher-to-wire fitting / wire / etc -->
 	<Relations>
 		<SourceSpace>forankring</SourceSpace>
 		<Relation Name="KL forankring" AskForRelation="true" AskForReverseRelation="true" Color="32" >
 			<TargetSpace>kl-bardun</TargetSpace>
 			<TargetSpace>kl-strever</TargetSpace>
-			<!-- Usually, a footplate can act as anchor for max two strechers (but just one spanner...) -->
+			<!-- TODO: Fix-line burde være egen alignment type? -->
+			<TargetSpace>kl-oppheng</TargetSpace>
+			<!-- Usually, a footplate can act as anchor for max two stretchers (but just one spanner...) -->
 			<RelatesTo Prompt="Er forankring for" Min="1" Max="2" WarnAtSaturation="true"/>
 			<ReverseRelatesTo Prompt="Har" Min="1" Max="1" WarnAtSaturation="true" />
 		</Relation>
 	</Relations>
-
-	<!-- Holding force for strecher or spanner, or console on catenary support mast / to other stretcher or spanner or fix wire / to contact wire or messenger wire -->
-	<!-- A force relay device will usually have an uncompensated force vector, subject to model checking. -->
-	<!-- Consoles and pulleys are found on support masts. They act as connection objects for the wire/strecher network, which is both electrical and mechanical. -->
-	<!-- (Other types of force force relays: wire clamps, tensioning devices, cantilevers, dealing exclusively with the contact and messenger wires.) -->
+	
 	<Relations>
-		<SourceSpace>kraftoverføring</SourceSpace>
-		<SourceSpace>kontakttrådklemme</SourceSpace>
-		<SourceSpace>avspenning</SourceSpace>
-		<Relation Name="KL kraftoverføring" AskForRelation="false" AskForReverseRelation="true" Color="32" >
+		<SourceSpace>kraftoverføringskonsoll</SourceSpace>
+		<Relation Name="Kraftoverføringskonsoll på KL-mast" AskForRelation="true" AskForReverseRelation="false" Color="254" >
+			<TargetSpace>kl-mast</TargetSpace>
+			<RelatesTo Prompt="Er kraftoverføringskonsoll på" Min="1" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
+			<ReverseRelatesTo Prompt="Har" Min="0" Max="inf" WarnAtSaturation="false" />
+		</Relation>
+		<Relation Name="KL kraftoverføring" AskForRelation="true" AskForReverseRelation="false" Color="32" >
 			<TargetSpace>kl-bardun</TargetSpace>
 			<TargetSpace>kl-strever</TargetSpace>
-			<RelatesTo Prompt="Kraftavlaster
-			" Min="0" Max="inf" />
-			<ReverseRelatesTo Prompt="Er kraftavlastet av" WarnAtSaturation="true" Min="1" Max="1" />
+			<TargetSpace>kontaktledning</TargetSpace>
+			<TargetSpace>kl-oppheng</TargetSpace>
+			<!-- Allow for one wire on each side of mast, related to the console: -->
+			<RelatesTo Prompt="Er kraftoverføringskonsoll for" Min="1" Max="2" NumberOfPromptsDuringInsertion="2" />
+			<!-- For now, allow kontaktledning (CW) to relate to a console at each end (max=2): -->
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="2" />
+		</Relation>
+	</Relations>
+
+	<Relations>
+		<SourceSpace>kontakttrådklemme</SourceSpace>
+		<Relation Name="KL kontakttrådklemme" AskForRelation="false" AskForReverseRelation="true" Color="31" >
+			<TargetSpace>kontaktledning</TargetSpace>
+			<RelatesTo Prompt="Er kontakttrådklemme for" Min="1" Max="inf" />
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="inf" />
 		</Relation>
 	</Relations>
 
@@ -171,7 +183,7 @@
 	<!-- Catenary support masts -->
 	<Relations>
 		<SourceSpace>kl-mast</SourceSpace>
-		<SourceSpace>kraftoverføring</SourceSpace>
+		<SourceSpace>forankring</SourceSpace>
 		<Relation Name="KL-fundamenttilhørighet" AskForRelation="false" AskForReverseRelation="true" Color="254" >
 			<TargetSpace>kl-fundament</TargetSpace>
 			<RelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="1" />
@@ -210,20 +222,11 @@
 	<Relations>
 		<SourceSpace>avspenning</SourceSpace>
 		<Relation Name="Avspenning" AskForRelation="true" Color="200" >
-			<TargetSpace>kl-bardun</TargetSpace>
-			<RelatesTo Prompt="Avspenner" WarnAtSaturation="true" Min="1" Max="1" />
-			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="1" />
-		</Relation>
-	</Relations>
-	
-	<!-- Tension relief for catenary support masts -->
-	<Relations>
-		<SourceSpace>kraftoverføring</SourceSpace>
-		<Relation Name="kraftoverføring" AskForRelation="true" Color="200" >
 			<TargetSpace>kontaktledning</TargetSpace>
-			<TargetSpace>kl-oppheng</TargetSpace>
-			<RelatesTo Prompt="Kraftavlaster" WarnAtSaturation="true" Min="1" Max="1" />
-			<ReverseRelatesTo Prompt="Har bardunfeste/streverfeste" WarnAtSaturation="true" Min="0" Max="1" />
+			<!-- For now, treat the messenger wire as included in the contact wire, i.e. relate avspenning to just 1 wire: -->
+			<RelatesTo Prompt="Avspenner" WarnAtSaturation="true" Min="1" Max="1" />
+			<!-- For now, allow kontaktledning (CW) to relate to a console at each end (max=2): -->
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="2" />
 		</Relation>
 	</Relations>
 

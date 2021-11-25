@@ -13,7 +13,7 @@
 	Line(ca)	Contents:
 	  25		ANNOTATION OF CONTACT WIRES
 	 140		OVERHEAD CATENARY SYSTEM - CONTACT WIRE
-	 360		CATENARY WIRE SYSTEM (including strechers and spanners)
+	 360		CATENARY WIRE SYSTEM (including stretchers and spanners)
 	 520		STRECTCHER AND SPANNER FORCE CONVEYOR
 	 785		ANCHORING OF STRETCHERS OR WIRES TO TUNNEL WALL
 	 850		TENSIONING
@@ -158,7 +158,7 @@
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KTL Kontaktledning"
 				Layer="JBTEH_KTL_Kontaktledning_Kjørbar" Color="ByLayer"
-				Group="Kontaktledning/Kontaktledninger"
+				Group="Kontaktledning/Kontaktledning"
 				>
 		
 		<RelationSpace>kontaktledning</RelationSpace>
@@ -180,65 +180,126 @@
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_KTL" />
 
-		<Variants DefaultValue="Kontaktledning, Sort, kjørbar" >
-			<Variant Name="Kontaktledning, Sort, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Sort, ikke kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Blå, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Blå, ikke kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Lilla, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Lilla, ikke kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Rød, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Rød, ikke kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Brun, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Brun, ikke kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Oransje, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Oransje, ikke kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Grønn, kjørbar" > 
-			</Variant>
-			<Variant Name="Kontaktledning, Grønn, ikke kjørbar" > 
-			</Variant>
+		<Variants DefaultValue="Kontaktledning, kjørbar" >
+			<Variant Name="Kontaktledning, kjørbar" /> 
+			<Variant Name="Kontaktledning, ikke kjørbar" /> 
+			<Variant Name="Bæretråd" /> 
 		</Variants>
 
-		<!-- Wire material is set the very first time, i.e. changing color and linetype later will not alter the wire material: -->
-		<SetValue Key="Material" Value="Ri 100" />
-
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
-		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Ri 100"
-			Description="The overhead catenary system (OCS) contact wire material [Ri 100 | RiS 100 | Ri 120 | RiS 120]." >
-			<Value>Ri 100</Value>
-			<Value>RiS 100</Value>
-			<Value>Ri 120</Value>
-			<Value>RiS 120</Value>
-		</CustomAttribute>
-		
-		<!-- Linetype is by default set to ByLayer, and further defined in the style definition XML file. -->
- 
-		<LuaExpression Name="Layer" ><Formula>_JBTEH_KTL_Layer()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KTL_Layer()" ReturnType="String"
+		<LuaExpression Name="Material" ><Formula>_JBTEH_KTL_Material()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_Material()" ReturnType="String"
 			Description="Obtains the CAD system layer name for the catenary wire, based on its Variant." >
-			<Constructor>String _JBTEH_KTL_Layer()</Constructor>
+			<Constructor>String _JBTEH_KTL_Material()</Constructor>
 			<Formula>
-				function _JBTEH_KTL_Layer()
-					if Variant:lower():match("ikke kjørbar") then
-						return "JBTEH_KTL_Kontaktledning_Ikke_kjørbar"
-					else 
-						return "JBTEH_KTL_Kontaktledning_Kjørbar"
+				function _JBTEH_KTL_Material()
+					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
+						return "RiS 100" --Default for System 20
+					elseif Variant:match("Bæretråd") then
+						return "Bz II 50/19 KHF" --Default for System 20
+					else
+						return "Bad Variant ["..Variant.."]."
 					end
 				end
 			</Formula>
 		</LuaFunction>
+		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue=""
+			Description="The overhead catenary system (OCS) contact wire material [Ri 100 | RiS 100 | Ri 120 | RiS 120], or tensioning wire material [Bz 10 |..| Bz 150]." 
+		>
+			<Values Variant="Kontaktledning, kjørbar" >
+				<Value>Ri 100</Value>
+				<Value>RiS 100</Value>
+				<Value>Ri 120</Value>
+				<Value>RiS 120</Value>
+			</Values>
+			<Values Variant="Kontaktledning, ikke kjørbar" >
+				<Value>Ri 100</Value>
+				<Value>RiS 100</Value>
+				<Value>Ri 120</Value>
+				<Value>RiS 120</Value>
+			</Values>
+			<Values Variant="Bæretråd" >
+				<Value>Bz II 10/49 KHF</Value>
+				<Value>Bz II 25/7 KHF</Value>
+				<Value>Bz II 35/7 KHF</Value>
+				<Value>Bz II 50/19 KHF</Value>
+				<Value>Bz II 50/19 KHF isolert HDPE 15kV</Value>
+				<Value>Bz II 70/19 KHF</Value>
+				<Value>Bz II 70/19 KHF isolert HDPE 15kV</Value>
+				<Value>Bz II 95/19 KHF</Value>
+				<Value>Bz II 150/37 KHF</Value>
+			</Values>
+		</CustomAttribute>
+
+		<LuaExpression Name="Wire2dColor" ><Formula>_JBTEH_KTL_Wire2dColor()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_Wire2dColor()" ReturnType="String"
+			Description="Obtains the CAD system layer name for the catenary wire, based on its Variant." >
+			<Constructor>String _JBTEH_KTL_Wire2dColor()</Constructor>
+						<!-- --TODO: Fancy algorithm, picking best color choice based on not re-using nearby colors: -->
+						<!-- w = getClosestAlignments(RcType) -->
+						<!-- wColors = {"Sort", "Blå", "Lilla", "Rød", "Brun", "Oransje", "Grønn"} -->
+						<!-- wUsed = {} -->
+						<!-- for i = 0,w.count do -->
+							<!-- if RC_isw[0].Wire2dColor -->
+							<!-- --etc -->
+						<!-- end -->
+			<Formula>
+				function _JBTEH_KTL_Wire2dColor()
+					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
+						return "Sort"
+					elseif Variant:match("Bæretråd") then
+						return "Gul"
+					else
+						return "Bad Variant ["..Variant.."]."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		<CustomAttribute DataType="Enumeration" Name="Wire2dColor" DisplayName="Ledningsfarge i 2D" DefaultValue=""
+			Description="The overhead catenary system (OCS) wire's color when displayed as a polyline in the CAD program." 
+		>
+			<Values Variant="Kontaktledning, kjørbar" >
+				<Value>Sort</Value>
+				<Value>Blå</Value>
+				<Value>Lilla</Value>
+				<Value>Rød</Value>
+				<Value>Brun</Value>
+				<Value>Oransje</Value>
+				<Value>Grønn</Value>
+			</Values>
+			<Values Variant="Kontaktledning, ikke kjørbar" >
+				<Value>Sort</Value>
+				<Value>Blå</Value>
+				<Value>Lilla</Value>
+				<Value>Rød</Value>
+				<Value>Brun</Value>
+				<Value>Oransje</Value>
+				<Value>Grønn</Value>
+			</Values>
+			<Values Variant="Bæretråd" >
+				<Value>Gul</Value>
+			</Values>
+		</CustomAttribute>
+
+		<!-- Linetype is by default set to ByLayer, and further defined in the style definition XML file. -->
+ 
+		<!-- TODO 2021-11-22 CLFEY: The Layer is now deprecated because we have introduced automatic layer setting to JBTFF_TTT_XXxx-YYyy (phase). -->
+		<!-- <LuaExpression Name="Layer" ><Formula>_JBTEH_KTL_Layer()</Formula></LuaExpression> -->
+		<!-- <LuaFunction Name="_JBTEH_KTL_Layer()" ReturnType="String" -->
+			<!-- Description="Obtains the CAD system layer name for the catenary wire, based on its Variant." > -->
+			<!-- <Constructor>String _JBTEH_KTL_Layer()</Constructor> -->
+			<!-- <Formula> -->
+				<!-- function _JBTEH_KTL_Layer() -->
+					<!-- if Variant:lower():match("bæretråd") then -->
+						<!-- return "JBTEH_KTL_Kontaktledning_Bæretråd" -->
+					<!-- elseif Variant:lower():match("ikke kjørbar") then -->
+						<!-- return "JBTEH_KTL_Kontaktledning_Ikke_kjørbar" -->
+					<!-- else  -->
+						<!-- return "JBTEH_KTL_Kontaktledning_Kjørbar" -->
+					<!-- end -->
+				<!-- end -->
+			<!-- </Formula> -->
+		<!-- </LuaFunction> -->
 
 		<LuaExpression Name="Linetype" ><Formula>_JBTEH_KTL_Linetype()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_Linetype()" ReturnType="String"
@@ -246,10 +307,14 @@
 			<Constructor>String _JBTEH_KTL_Linetype()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_Linetype()
-					if Variant:lower():match("ikke kjørbar") then
-						return "RC-DASHED"
-					else 
+					if Variant == "Kontaktledning, kjørbar" then
 						return "Continuous"
+					elseif Variant == "Kontaktledning, ikke kjørbar" then
+						return "RC-DASHED"
+					elseif Variant == "Bæretråd" then
+						return "RC-DASHED-01"
+					else
+						return "Continuous" --Cannot return text string here
 					end
 				end
 			</Formula>
@@ -257,17 +322,18 @@
 
 		<LuaExpression Name="Color" ><Formula>_JBTEH_KTL_Color()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_Color()" ReturnType="String"
-			Description="Obtains the CAD system color for the catenary wire, based on its Variant." >
+			Description="Obtains the CAD system's polyline color, based on the wire's Wire2dColor." >
 			<Constructor>String _JBTEH_KTL_Color()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_Color()
-					if Variant:lower():match("sort") then return 7 --White
-					elseif Variant:lower():match("blå") then return "30,144,255"
-					elseif Variant:lower():match("lilla") then return "148,0,211"
-					elseif Variant:lower():match("rød") then return "252,10,28"
-					elseif Variant:lower():match("brun") then return "139,69,19"
-					elseif Variant:lower():match("oransje") then return "255,140,0"
-					elseif Variant:lower():match("grønn") then return "50,205,50"
+					if     Wire2dColor:lower():match("sort") then return 7 --Displays as white
+					elseif Wire2dColor:lower():match("blå") then return "30,144,255"
+					elseif Wire2dColor:lower():match("lilla") then return "148,0,211"
+					elseif Wire2dColor:lower():match("rød") then return "252,10,28"
+					elseif Wire2dColor:lower():match("brun") then return "139,69,19"
+					elseif Wire2dColor:lower():match("oransje") then return "255,140,0"
+					elseif Wire2dColor:lower():match("grønn") then return "50,205,50"
+					elseif Wire2dColor:lower():match("gul") then return "2"
 					end
 				end
 			</Formula>
@@ -280,7 +346,7 @@
 			<Formula>
 				--AutoCAD needs lineweights to be of the form "LineWeight035" for "0.35 mm" (only predefined values according to AutoCAD enum):
 				function _JBTEH_KTL_Lineweight()
-					if Variant:lower():match("sort") then
+					if Wire2dColor:lower():match("sort") then
 						return "LineWeight035"
 					else
 						return "LineWeight040"
@@ -298,7 +364,32 @@
 		<LuaExpression Name="Rotation3D.Z" ><Formula>0.0</Formula></LuaExpression>
 		
 		<!-- The 2D Sweep profile: -->
-		<LuaExpression Name="Model3DName" ><Formula>"NO-BN-SWEEP-EH-KTL-KONTAKTTRÅD-"..Material:gsub(" ","-")</Formula></LuaExpression>
+		<LuaExpression Name="Model3DName" ><Formula>_JBTEH_KTL_Model3dName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_Model3dName()" ReturnType="Double"
+			Description="Obtains the wire's 3D model name, based on its Variant and material." >
+			<Constructor>Double _JBTEH_KTL_Model3dName()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_Model3dName()
+					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
+						return "NO-BN-SWEEP-EH-KTL-KONTAKTTRÅD-"..Material:gsub(" ","-")
+					elseif Variant:match("Bæretråd") then
+						t = "NO-BN-SWEEP-FE-WIR-WIRE-BLANK-KOBBER-"
+						if     Material:match("50/19 KHF isolert") then return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-013"
+						elseif Material:match("70/19 KHF isolert") then return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-013"
+						elseif Material:match("10/49") then return t.."10-MM2-DIAMETER-004"
+						elseif Material:match("25/19") then return t.."25-MM2-DIAMETER-006"
+						elseif Material:match("35/19") then return t.."35-MM2-DIAMETER-008"
+						elseif Material:match("50/19") then return t.."50-MM2-DIAMETER-009"
+						elseif Material:match("70/19") then return t.."70-MM2-DIAMETER-011"
+						elseif Material:match("95/19") then return t.."95-MM2-DIAMETER-013"
+						elseif Material:match("150/37") then return t.. "150-MM2-DIAMETER-016"
+						end
+					else 
+						return "Bad Variant ["..Variant.."]."
+					end
+				end
+			</Formula>
+		</LuaFunction>
 		
 		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
 		<LuaExpression Name="Model3DSeparation" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
@@ -307,59 +398,15 @@
 		<LuaExpression Name="name" ><Formula>"L"..code</Formula></LuaExpression>
 		<PropertyPrompt Key="code" DefaultValue="Kontaktledning" AcceptEmptyValue="false" />
 		
-		<InsertAlignment VariantName="Kontaktledning, Sort, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kontaktledning, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Kontaktledning, Sort, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kontaktledning, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Kontaktledning, Blå, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Blå, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Lilla, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Lilla, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Rød, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Rød, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Brun, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Brun, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Oransje, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Oransje, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Grønn, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
-
-		<InsertAlignment VariantName="Kontaktledning, Grønn, ikke kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Bæretråd" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
@@ -367,89 +414,94 @@
 
 
 
+<!-- TODO 2021-11-22 CLFEY: Deprecated object type EH_KLO - we do not anymore model these as objects. -->
+<!-- TODO 2021-11-22 CLFEY: Generate 3D for messenger wire, droppers, stich wire, Z wire based on cantilever info. -->
 <!-- ========================================================================================================
 	HIGH VOLTAGE
 	CATENARY WIRE SYSTEM : MESSENGER WIRE, STITCH WIRE, Z-WIRE, DROPPERS
 	Note: These are all wires other than the contact wire, excluding tensioning stretchers and spanners.
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KLO Kontaktledningsoppheng"
-				Layer="JBTEH_KLO" Color="ByLayer"
-				Group="Kontaktledning/Kontaktledningsoppheng"
-				>
+	<!-- <ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KLO Kontaktledningsoppheng" -->
+				<!-- Layer="JBTEH_KLO" Color="ByLayer" -->
+				<!-- Group="Kontaktledning/Kontaktledningsoppheng" -->
+				<!-- > -->
 		
-		<RelationSpace>kl-oppheng</RelationSpace>
+		<!-- <RelationSpace>kl-oppheng</RelationSpace> -->
 		
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR" />
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS" />
-		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
-		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
-		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
-		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- <xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR" /> -->
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS" /> -->
+		<!-- <xpp:expand select="NOBN_com_DISCIPLINE___OCS" /> -->
+		<!-- <xpp:expand select="NOBN_com_PSET_BANE_NOR" /> -->
+		<!-- <xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" /> -->
+		<!-- <xpp:expand select="NOBN_com_PSET_ISY_STK" /> -->
+		<!-- <xpp:expand select="NOBN_com_PSET_TITTELFELT" /> -->
 
-		<Variants DefaultValue="Bæreline" >
-			<Variant Name="Bæreline" >
-				<SetValue Key="Material" Value="Bz II 50/19" />
-			</Variant>
-			<Variant Name="Hengetråd" >
-				<SetValue Key="Material" Value="Bz II 50/19" />
-			</Variant>
-			<Variant Name="Y-line" >
-				<SetValue Key="Material" Value="Bz II 50/19" />
-			</Variant>
-			<Variant Name="Fixline" >
-				<SetValue Key="Material" Value="Bz II 50/19" />
-			</Variant>
-			<Variant Name="Z-line" >
-				<SetValue Key="Material" Value="Bz II 50/19" />
-			</Variant>
-		</Variants>
+		<!-- This object does not have its own Banedata code: -->
+		<!-- <xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_KTL" /> -->
+
+		<!-- <Variants DefaultValue="Bæreline" > -->
+			<!-- <Variant Name="Bæreline" > -->
+				<!-- <SetValue Key="Material" Value="Bz II 50/19" /> -->
+			<!-- </Variant> -->
+			<!-- <Variant Name="Hengetråd" > -->
+				<!-- <SetValue Key="Material" Value="Bz II 50/19" /> -->
+			<!-- </Variant> -->
+			<!-- <Variant Name="Y-line" > -->
+				<!-- <SetValue Key="Material" Value="Bz II 50/19" /> -->
+			<!-- </Variant> -->
+			<!-- <Variant Name="Fixline" > -->
+				<!-- <SetValue Key="Material" Value="Bz II 50/19" /> -->
+			<!-- </Variant> -->
+			<!-- <Variant Name="Z-line" > -->
+				<!-- <SetValue Key="Material" Value="Bz II 50/19" /> -->
+			<!-- </Variant> -->
+		<!-- </Variants> -->
 
 		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
-		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Bz II 50/19" 
-			Description="The overhead catenary system (OCS) support (catenary/dropper/stich/fix/'Z') wire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
-			<Value>Bz II 50/19</Value>
-			<Value>Bz II 70/19</Value>
-			<Value>Bz II 50/19 isolert</Value>
-		</CustomAttribute>
+		<!-- <CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Bz II 50/19"  -->
+			<!-- Description="The overhead catenary system (OCS) support (catenary/dropper/stich/fix/'Z') wire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." > -->
+			<!-- <Value>Bz II 50/19</Value> -->
+			<!-- <Value>Bz II 70/19</Value> -->
+			<!-- <Value>Bz II 50/19 isolert</Value> -->
+		<!-- </CustomAttribute> -->
 
-		<LuaExpression Name="code" ><Formula>_JBTEH_KLO_code()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KLO_code()" ReturnType="String"
-			Description="Obtains the code for the OCS catenary wire suspension system component, inherited from the associated contact wire, through the 'Er oppheng for kontaktledning' relation." >
-			<Constructor>String _JBTEH_KLO_code()</Constructor>
-			<Formula>
-				function _JBTEH_KLO_code()
-					local s,r,n
-					s = "Er oppheng for kontaktledning"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate OCS suspension wires with '"..s.."' to its contact wire."
-					else
-						return r[0].code
-					end
-				end
-			</Formula>
-		</LuaFunction>
+		<!-- <LuaExpression Name="code" ><Formula>_JBTEH_KLO_code()</Formula></LuaExpression> -->
+		<!-- <LuaFunction Name="_JBTEH_KLO_code()" ReturnType="String" -->
+			<!-- Description="Obtains the code for the OCS catenary wire suspension system component, inherited from the associated contact wire, through the 'Er oppheng for kontaktledning' relation." > -->
+			<!-- <Constructor>String _JBTEH_KLO_code()</Constructor> -->
+			<!-- <Formula> -->
+				<!-- function _JBTEH_KLO_code() -->
+					<!-- local s,r,n -->
+					<!-- s = "Er oppheng for kontaktledning" -->
+					<!-- r,n = RC__getCollectionOfRelatedObjects(s) -->
+					<!-- if n == 0 then -->
+						<!-- return "UNFINISHED - Relate OCS suspension wires with '"..s.."' to its contact wire." -->
+					<!-- else -->
+						<!-- return r[0].code -->
+					<!-- end -->
+				<!-- end -->
+			<!-- </Formula> -->
+		<!-- </LuaFunction> -->
 
-		<LuaExpression Name="name" ><Formula>_JBTEH_KLO_name()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KLO_name()" ReturnType="String"
-				HideFromUser="false"
-				Description="Obtains the name for the OCS catenary wire suspension system component, from its 'code'." >
-			<Constructor>String _JBTEH_KLO_name()</Constructor>
-			<Formula>
-				function _JBTEH_KLO_name()
-					--Assume that each wire part has been related to the contact wire through a relation
-					if Variant == "Bæreline" then return "Bl."..code
-					elseif Variant == "Hengetråd" then return "Ht."..code
-					elseif Variant == "Y-line" then return "Yl."..code
-					elseif Variant == "Fixline" then return "Fl."..code
-					elseif Variant == "Z-line" then return "Zl."..code
-					else return _error, "*** Bad contact wire support Variant ["..Variant.."]."
-					end
-				end
-			</Formula>
-		</LuaFunction>
+		<!-- <LuaExpression Name="name" ><Formula>_JBTEH_KLO_name()</Formula></LuaExpression> -->
+		<!-- <LuaFunction Name="_JBTEH_KLO_name()" ReturnType="String" -->
+				<!-- HideFromUser="false" -->
+				<!-- Description="Obtains the name for the OCS catenary wire suspension system component, from its 'code'." > -->
+			<!-- <Constructor>String _JBTEH_KLO_name()</Constructor> -->
+			<!-- <Formula> -->
+				<!-- function _JBTEH_KLO_name() -->
+					<!-- --Assume that each wire part has been related to the contact wire through a relation -->
+					<!-- if Variant == "Bæreline" then return "Bl."..code -->
+					<!-- elseif Variant == "Hengetråd" then return "Ht."..code -->
+					<!-- elseif Variant == "Y-line" then return "Yl."..code -->
+					<!-- elseif Variant == "Fixline" then return "Fl."..code -->
+					<!-- elseif Variant == "Z-line" then return "Zl."..code -->
+					<!-- else return _error, "*** Bad contact wire support Variant ["..Variant.."]." -->
+					<!-- end -->
+				<!-- end -->
+			<!-- </Formula> -->
+		<!-- </LuaFunction> -->
 
 		<!-- TODO Lage modelchecks. -->
 		<!-- Bardun: Se EH-707162. Vinkel 40-50 grader med vertikalen. Totallengde fra mast til bardunfeste skal være mellom 13 og 18 meter. -->
@@ -457,48 +509,48 @@
 		<!-- Spør etter relasjon til 'sin' kontaktledning, og hente koden derfra -->
 		<!-- <PropertyPrompt Key="code" DefaultValue="Bæreline" AcceptEmptyValue="false" /> 		 -->
 
-		<SetValue Key="Sweep3D" Value="True" />
-		<SetValue Key="QuickMode3D" Value="False" />
+		<!-- <SetValue Key="Sweep3D" Value="True" /> -->
+		<!-- <SetValue Key="QuickMode3D" Value="False" /> -->
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
-		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
-		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
-		<LuaExpression Name="Rotation3D.Z" ><Formula>0</Formula></LuaExpression>
+		<!-- <LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression> -->
+		<!-- <LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression> -->
+		<!-- <LuaExpression Name="Rotation3D.Z" ><Formula>0</Formula></LuaExpression> -->
 		
 		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
-		<LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
-		<SetValue Key="Model3DOffset" Value="0.0" />
+		<!-- <LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression> -->
+		<!-- <SetValue Key="Model3DOffset" Value="0.0" /> -->
 		
-		<InsertAlignment VariantName="Bæreline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-			<SetValue Key="Material" Value="Bz II 70/19" />
-			<SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
-		</InsertAlignment>
+		<!-- <InsertAlignment VariantName="Bæreline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" >  -->
+			<!-- <IncludeSegmentType>Tangent</IncludeSegmentType> -->
+			<!-- <SetValue Key="Material" Value="Bz II 70/19" /> -->
+			<!-- <SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" /> -->
+		<!-- </InsertAlignment> -->
 
-		<InsertAlignment VariantName="Hengetråd" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic"  DefaultToTangentContinuity="false" > 
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-			<SetValue Key="Material" Value="Bz II 70/19" />
-			<SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
-		</InsertAlignment>
+		<!-- <InsertAlignment VariantName="Hengetråd" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic"  DefaultToTangentContinuity="false" >  -->
+			<!-- <IncludeSegmentType>Tangent</IncludeSegmentType> -->
+			<!-- <SetValue Key="Material" Value="Bz II 70/19" /> -->
+			<!-- <SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" /> -->
+		<!-- </InsertAlignment> -->
 
-		<InsertAlignment VariantName="Y-line" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-		</InsertAlignment>
+		<!-- <InsertAlignment VariantName="Y-line" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" >  -->
+			<!-- <IncludeSegmentType>Tangent</IncludeSegmentType> -->
+		<!-- </InsertAlignment> -->
 
-		<InsertAlignment VariantName="Fixline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-			<SetValue Key="Linetype" Value="RC-DASHED" />
-			<SetValue Key="Material" Value="Bz II 70/19" />
-			<SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
-		</InsertAlignment>
+		<!-- <InsertAlignment VariantName="Fixline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" >  -->
+			<!-- <IncludeSegmentType>Tangent</IncludeSegmentType> -->
+			<!-- <SetValue Key="Linetype" Value="RC-DASHED" /> -->
+			<!-- <SetValue Key="Material" Value="Bz II 70/19" /> -->
+			<!-- <SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" /> -->
+		<!-- </InsertAlignment> -->
 
-		<InsertAlignment VariantName="Z-line" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
-			<IncludeSegmentType>Tangent</IncludeSegmentType>
-			<SetValue Key="Material" Value="Bz II 70/19" />
-			<SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
-		</InsertAlignment>
+		<!-- <InsertAlignment VariantName="Z-line" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" >  -->
+			<!-- <IncludeSegmentType>Tangent</IncludeSegmentType> -->
+			<!-- <SetValue Key="Material" Value="Bz II 70/19" /> -->
+			<!-- <SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" /> -->
+		<!-- </InsertAlignment> -->
 
-	</ObjectType>
+	<!-- </ObjectType> -->
 
 
 
@@ -508,7 +560,7 @@
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_BAR Bardun"
 				Layer="JBTEH_BAR" Color="ByLayer"
-				Group="Kontaktledning/Avspenning"
+				Group="Kontaktledning/Bardun og strever"
 				>
 		
 		<RelationSpace>kl-bardun</RelationSpace>
@@ -520,6 +572,8 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code: -->
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
 		<Variants DefaultValue="Bardun" >
 			<Variant Name="Bardun" >
@@ -533,10 +587,10 @@
 		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
 		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Bz II 50/19" 
-			Description="The overhead catenary system (OCS) strecher material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
-			<Value>Bz II 50/19</Value>
-			<Value>Bz II 70/19</Value>
-			<Value>Bz II 50/19 isolert</Value>
+			Description="The overhead catenary system (OCS) stretcher material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
+			<Value>Bz II 50/19 KHF</Value>
+			<Value>Bz II 70/19 KHF</Value>
+			<Value>Bz II 50/19 KHF isolert</Value>
 		</CustomAttribute>
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_BAR_code()</Formula></LuaExpression>
@@ -545,13 +599,18 @@
 			<Constructor>String _JBTEH_BAR_code()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_code()
-					local s,r,n
-					s = "Er bardun for kontaktledning"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate OCS suspension wires with '"..s.."' to its contact wire."
-					else
-						return r[0].code
+					local t = "-B"
+					local s = "Har kraftoverføringskonsoll"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return "UNFINISHED - No OCS mast console found at start of stretcher wire alignment - cannot deduce stretcher's code."
+					elseif n == 1 then 
+						local s1 = "Er kraftoverføringskonsoll på kl-mast"
+						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
+						return r1[0].code..t
+					else -- Two or more mast consoles were found
+						--TODO 2021-11-22: Accept 2 if they are located at each end of wire???
+						return r[0].code..t, _info("WARNING - Multiple OCS mast consoles related to stretcher wire alignment, cannot deduce stretcher's code.")
 					end
 				end
 			</Formula>
@@ -560,7 +619,7 @@
 		<LuaExpression Name="name" ><Formula>_JBTEH_BAR_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_name()" ReturnType="String"
 				HideFromUser="false"
-				Description="Obtains the name for the OCS catenary wire strecher, derived from its code." >
+				Description="Obtains the name for the OCS catenary wire stretcher, derived from its code." >
 			<Constructor>String _JBTEH_BAR_name()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_name()
@@ -587,11 +646,11 @@
 		<LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
 		<SetValue Key="Model3DOffset" Value="0.0" />
 		
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_StrecherDirection" DisplayName="Bardun tegneretning" 
-			Description="Checking that a strecher alignment shall start at its connection to thw wire or object it relieves, and extend to the strecher's base plate or fixation." />
-		<LuaExpression Name="mc_JBTEH_BAR_StrecherDirection" IsModelCheck="true" ><Formula>_JBTEH_BAR_chkStretcherDirection()</Formula></LuaExpression>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_StretcherDirection" DisplayName="Bardun tegneretning" 
+			Description="Checking that a stretcher alignment shall start at its connection to thw wire or object it relieves, and extend to the stretcher's base plate or fixation." />
+		<LuaExpression Name="mc_JBTEH_BAR_StretcherDirection" IsModelCheck="true" ><Formula>_JBTEH_BAR_chkStretcherDirection()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_chkStretcherDirection()" ReturnType="String"
-			Description = "Checking that a spanner or strecher alignment shall start at an OCS mast's insertion point and extend to the strecher's / spanner's base plate." >
+			Description = "Checking that a spanner or stretcher alignment shall start at an OCS mast's insertion point and extend to the stretcher's / spanner's base plate." >
 			<Constructor>String _JBTEH_BAR_chkStretcherDirection()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_chkStretcherDirection()
@@ -617,7 +676,7 @@
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_STR Strever"
 				Layer="JBTEH_STR" Color="ByLayer"
-				Group="Kontaktledning/Avspenning"
+				Group="Kontaktledning/Bardun og strever"
 				>
 		
 		<RelationSpace>kl-strever</RelationSpace>
@@ -629,6 +688,8 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code: -->
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
 		<Variants DefaultValue="Strever" >
 			<Variant Name="Strever" >
@@ -649,13 +710,17 @@
 			<Constructor>String _JBTEH_STR_code()</Constructor>
 			<Formula>
 				function _JBTEH_STR_code()
-					local s,r,n
-					s = "Er strever for kontaktledning"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate OCS suspension wires with '"..s.."' to its contact wire."
-					else
-						return r[0].code
+					local s = "Har kraftoverføringskonsoll"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return "UNFINISHED - No OCS mast console found at start of spanner alignment - cannot deduce spanner's code."
+					elseif n == 1 then 
+						local s1 = "Er kraftoverføringskonsoll på kl-mast"
+						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
+						return r1[0].code..t
+					else -- Two or more mast consoles were found
+						--TODO 2021-11-22: Accept 2 if they are located at each end of wire???
+						return r[0].code..t, _info("WARNING - Multiple OCS mast consoles related to spanner alignment, cannot deduce spanner's code.")
 					end
 				end
 			</Formula>
@@ -691,10 +756,10 @@
 		<SetValue Key="Model3DOffset" Value="0.0" />
 		
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_STR_SpannerDirection" DisplayName="Strever tegneretning" 
-			Description="Checking that a spanner or strecher alignment shall start at an OCS mast's insertion point and extend to the strecher's / spanner's base plate." />
+			Description="Checking that a spanner or stretcher alignment shall start at an OCS mast's insertion point and extend to the stretcher's / spanner's base plate." />
 		<LuaExpression Name="mc_JBTEH_STR_SpannerDirection" IsModelCheck="true" ><Formula>_JBTEH_STR_chkSpannerDirection()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STR_chkSpannerDirection()" ReturnType="String"
-			Description = "Checking that a spanner or strecher alignment shall start at an OCS mast's insertion point and extend to the strecher's / spanner's base plate." >
+			Description = "Checking that a spanner or stretcher alignment shall start at an OCS mast's insertion point and extend to the stretcher's / spanner's base plate." >
 			<Constructor>String _JBTEH_STR_chkSpannerDirection()</Constructor>
 			<Formula>
 				function _JBTEH_STR_chkSpannerDirection()
@@ -720,13 +785,13 @@
 	STRECTCHER ANHCORING
 
 	NB! Covers both stretcher attachment and spanner attachment, as well as ready-made spanners for attachment to 
-	tunnel roofs, for Ø120 suspension masts. These are the end points for spanners and strechers, these are Note
-	the alignment objects themselves. They are also the attachment point for spanner / strecher.
+	tunnel roofs, for Ø120 suspension masts. These are the end points for spanners and stretchers, these are Note
+	the alignment objects themselves. They are also the attachment point for spanner / stretcher.
 	
-	To be inserted with a strecher alignment object as 'own alignment'.
+	To be inserted with a stretcher alignment object as 'own alignment'.
 	
 	Note: A catenary support mast may have from 0 to 4 stretcher, but never mor than two for the same corce conveyor.
-	Note: This is just the 2D symbol - the strecher wire / the spanner rod must be created as separate alignment
+	Note: This is just the 2D symbol - the stretcher wire / the spanner rod must be created as separate alignment
 	objects. 
 	
 	For NO-BN / Bane NOR:
@@ -736,15 +801,17 @@
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_BAF Bardunfeste"
 				Layer="JBTEH_BAF" Color="ByLayer"
-				Group="Kontaktledning/Avspenning"
+				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
 		<RelationSpace>forankring</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" />
+		<!-- Alternative:  <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" /> -->
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
@@ -754,6 +821,7 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code: -->
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
 		<Variants DefaultValue="Bardunfeste fotplate, enkel" >
@@ -761,19 +829,17 @@
 			</Variant>
 			<Variant Name="Bardunfeste fotplate, dobbel" >
 			</Variant>
-			<Variant Name="Bardunfeste konsoll på bjelkemast" >
-			</Variant>
 		</Variants>
 
         <LuaExpression Name="Model3DName" ><Formula>_JBTEH_BAF_Model3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAF_Model3DName()" 
 			ReturnType="String"
-			Description="Obtains the Model 3D Name for this OCS contact wire strecher object (the point object). Deduces its dimensions from the closest OCS mast." >
+			Description="Obtains the Model 3D Name for this OCS contact wire stretcher object (the point object). Deduces its dimensions from the closest OCS mast." >
 			<Constructor>String _JBTEH_BAF_Model3DName()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_Model3DName()
 					--Look for mast near start of associated wire (alignment).
-					local tol = 0.25 
+					tol = 0.5 --[m]
 					local t
 					if Variant:match("Bardunfeste fotplate, enkel") then 
 						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
@@ -781,19 +847,8 @@
 					elseif Variant:match("Bardunfeste fotplate, dobbel") then
 						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
 						
-					elseif Variant:match("Bardunfeste konsoll på bjelkemast") then 
-						local m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast")
-						local n = getCollectionLength(m)
-						if n &gt; 0 then 
-							local a = m[0].OcsMastProfile:match("HEB(%d%d%d)") --'HEB220' etc: Capture three digits.
-							a = a or "240" --Default size if not a HEB mast...
-							t = "NO-BN-3D-EH-STF-STREVERFESTE-KONSOLL-400x300-FOR-HEB"..a
-						else
-							t = "UNIFINSHED: No OCS mast found near stretcher, cannot deduce stretcher's 3D model name."
-						end
-						
 					else 
-						return "Bad strecher fastening Variant ["..Variant.."]."
+						return "Bad stretcher anchoring Variant ["..Variant.."]."
 					end
 					return t
 				end
@@ -803,28 +858,24 @@
         <LuaExpression Name="code" ><Formula>_JBTEH_BAF_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAF_code()" 
 			ReturnType="String"
-			Description="Obtains the code for this OCS contact wire strecher fastening object (the point object). Deduces code from OCS mast at the start of its associated wire alignment." >
+			Description="Obtains the code for this OCS contact wire stretcher fastening object (the point object). Deduces code from OCS mast at the start of its associated wire alignment." >
 			<Constructor>String _JBTEH_BAF_code()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_code()
-					--Look for mast near start of associated wire (alignment).
-					--Spanner rod / stretcher wire alignments always start at high elevation (top of OCS mast) and extend down to the ground, where the fixture element is.
-					--Note that spanner fixtures snap to the low-mileage end of the spanner (at the OCS mast), strecher fixtures snap to the hi-mileage (at the foundation)
-					--Both stretchers and spanners require an OCS mast (the item to relieve) at the START of the wire / the rod. 
-					local tol = 0.25 
-					local t
 					if Alignment == nil or Alignment.RcType ~= "JBTEH_BAR Bardun" then
-						return "UNFINISHED - Attach strecher footplate to an alignment of type 'JBTEH_BAR Bardun'."
+						return "UNFINISHED - Own alignment for stretcher footplate must be of type 'JBTEH_BAR Bardun'."
 					end
 					local t = "-B"
-					local m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast",Alignment.RcAlignment.StartPoint)
-					local n = getCollectionLength(m)
+					local s = "Har kraftoverføringskonsoll"
+					local r,n = RC__getCollectionOfRelatedObjects(s,Alignment)
 					if n == 0 then 
-						return "UNFINISHED - No OCS mast found at start of strecher wire alignment - cannot deduce stretcher's code."
+						return "UNFINISHED - No OCS mast console found at start of stretcher wire alignment - cannot deduce stretcher's code."
 					elseif n == 1 then 
-						return m[0].code..t
-					else -- Two or more masts were found
-						return m[0].code..t, _info("WARNING - Multiple OCS masts found at start of strecher wire alignment, cannot deduce stretcher's code.")
+						local s1 = "Er kraftoverføringskonsoll på kl-mast"
+						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
+						return r1[0].code..t
+					else -- Two or more mast consoles were found
+						return r[0].code..t, _info("WARNING - Multiple OCS mast consoles found at start of stretcher wire alignment, cannot deduce stretcher's code uniquely.")
 					end
 				end
 			</Formula>
@@ -833,11 +884,12 @@
         <LuaExpression Name="name" ><Formula>_JBTEH_BAF_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAF_name()" 
 			ReturnType="Double"
-			Description="Returns the name for this OCS contact wire strecher fastening object." >
+			Description="Returns the name for this OCS contact wire stretcher fastening object." >
 			<Constructor>String _JBTEH_BAF_name()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_name()
-					return tostring(code):upper():match("UNFINISHED") and code or ""
+					return code
+					--OTHER POSSIBILITY: return tostring(code):upper():match("UNFINISHED") and code or ""
 				end
 			</Formula>
 		</LuaFunction>
@@ -845,7 +897,7 @@
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_BAF_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAF_Mileage()" 
 			ReturnType="Double"
-			Description="Returns mileage for this OCS contact wire strecher fastening object. Snaps to the extremity of its associated strecher wire alignment." >
+			Description="Returns mileage for this OCS contact wire stretcher fastening object. Snaps to the extremity of its associated stretcher wire alignment." >
 			<Constructor>Double _JBTEH_BAF_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_Mileage()
@@ -855,14 +907,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- Strechers' dir = down, spanner's dir = down, assuming the spanner / strecher has been drawn from mast to the force relief's foundation -->
+		<!-- Stretchers' dir = down, spanner's dir = down, assuming the spanner / stretcher has been drawn from mast to the force relief's foundation -->
 		<LuaExpression Name="dir" ><Formula>"down"</Formula></LuaExpression>
 		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_BAF_RelativeElevation()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAF_RelativeElevation()" 
 			ReturnType="Double"
-			Description="Returns the releative elevation for this OCS contact wire strecher fastening object." >
+			Description="Returns the releative elevation for this OCS contact wire stretcher fastening object." >
 			<Constructor>Double _JBTEH_BAF_RelativeElevation()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_RelativeElevation()
@@ -888,14 +940,8 @@
 			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
-		
+																				
 		<InsertPointObject VariantName="Bardunfeste fotplate, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-DOBBEL-{{SymbolMode}}" 
-				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="Bardunfeste konsoll på bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -940,13 +986,13 @@
 	SPANNER ANHCORING
 
 	NB! Covers both stretcher attachment and spanner attachment, as well as ready-made spanners for attachment to 
-	tunnel roofs, for Ø120 suspension masts. These are the end points for spanners and strechers, these are Note
-	the alignment objects themselves. They are also the attachment point for spanner / strecher.
+	tunnel roofs, for Ø120 suspension masts. These are the end points for spanners and stretchers, these are Note
+	the alignment objects themselves. They are also the attachment point for spanner / stretcher.
 	
-	To be inserted with a strecher alignment object as 'own alignment'.
+	To be inserted with a stretcher alignment object as 'own alignment'.
 	
 	Note: A catenary support mast may have from 0 to 4 stretcher, but never mor than two for the same corce conveyor.
-	Note: This is just the 2D symbol - the strecher wire / the spanner rod must be created as separate alignment
+	Note: This is just the 2D symbol - the stretcher wire / the spanner rod must be created as separate alignment
 	objects. 
 	
 	For NO-BN / Bane NOR:
@@ -956,13 +1002,14 @@
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_STF Streverfeste"
 				Layer="JBTEH_STF" Color="ByLayer"
-				Group="Kontaktledning/Avspenning"
+				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
 		<RelationSpace>forankring</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -974,6 +1021,7 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code: -->
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
 		<Variants DefaultValue="Streverfeste fotplate (uten streveren)" >
@@ -993,7 +1041,7 @@
 			<Formula>
 				function _JBTEH_STF_Model3DName()
 					--Look for mast near start of associated wire alignment.
-					local tol = 0.25 
+					tol = 0.5 --[m]
 					local t
 					if Variant:match("Streverfeste fotplate (uten streveren)") then
 						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-525x350-191x374xM36"
@@ -1032,7 +1080,7 @@
 				function _JBTEH_STF_code()
 					--Look for mast near start of associated wire (alignment).
 					--Spanner rod / stretcher wire alignments always start at high elevation (top of OCS mast) and extend down to the ground, where the fixture element is.
-					--Note that spanner fixtures snap to the low-mileage end of the spanner (at the OCS mast), strecher fixtures snap to the hi-mileage (at the foundation)
+					--Note that spanner fixtures snap to the low-mileage end of the spanner (at the OCS mast), stretcher fixtures snap to the hi-mileage (at the foundation)
 					--Both stretchers and spanners require an OCS mast at the START of the wire / the rod. 
 					local tol = 0.25 
 					local t = "-S"
@@ -1054,7 +1102,7 @@
 
         <LuaExpression Name="name" ><Formula>_JBTEH_STF_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STF_name()" 
-			ReturnType="Double"
+			ReturnType="String"
 			Description="Returns the name for this OCS contact wire spanner fastening object." >
 			<Constructor>String _JBTEH_STF_name()</Constructor>
 			<Formula>
@@ -1078,7 +1126,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- Strechers' dir = down, spanner's dir = down, assuming the spanner / strecher has been drawn from mast to the force relief's foundation -->
+		<!-- Stretchers' dir = down, spanner's dir = down, assuming the spanner / stretcher has been drawn from mast to the force relief's foundation -->
 		<LuaExpression Name="dir" ><Formula>"down"</Formula></LuaExpression>
 		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
@@ -1114,7 +1162,7 @@
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast"
-				DisplayBlockName="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast-{{SymbolMode}}" 
+				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVERFESTE-FOTPLATE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -1171,13 +1219,14 @@
 	<!-- inn i fjell eller i en armert betongblokk mot fjell. -->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_TUF Tunnelfeste"
 				Layer="JBTEH_TUF" Color="ByLayer"
-				Group="Kontaktledning/Avspenning"
+				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
 		<RelationSpace>forankring</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -1189,6 +1238,7 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code: -->
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
 		<Variants DefaultValue="Veggfeste for KL-avspenning i tunnel" >
@@ -1236,6 +1286,262 @@
 		
 		<!-- Snapper ikke til noe spesielt - dette er litt som et boret fundament for barduner i friluft -->
 	
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	FORCE RELAY
+	STRETCHER/TENSIONING FASTENING TO MAST
+
+	Relays force from wire clamped around top-of-catenary-mast, to stretcher towards solid anchoring.
+
+	For NO-BN / Bane NOR:
+	See EH-701742 Festejern for fast-, fjær- og loddavspenning på stålmaster 
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KPM Konsoll på mast"
+				Layer="JBTEH_KPM" Color="ByLayer"
+				Group="Kontaktledning/Konsoller"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>kraftoverføringskonsoll</RelationSpace>
+		<!-- <AttachmentCategory Name="kraftoverføring" PassAttachmentToTarget="true" /> -->
+		<!-- <AttachTo Category="kl-mast" DrawTail="false" /> -->
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<!-- <xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" /> -->
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___OCS" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code: -->
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_AEH" />
+		
+		<Variants DefaultValue="Konsoll for bardunfeste på mast" >
+			<Variant Name="Konsoll for bardunfeste på mast" >
+			</Variant>
+			<Variant Name="Konsoll for streverfeste på mast" >
+			</Variant>
+		</Variants>
+
+<!-- xxx -->
+		<!-- <InsertPointObject VariantName="Bardunfeste konsoll på bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-DOBBEL-{{SymbolMode}}"  -->
+				<!-- DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" > -->
+			<!-- <OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace> -->
+			<!-- <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" /> -->
+		<!-- </InsertPointObject> -->
+		
+<!-- xxx -->
+        <LuaExpression Name="mileage" ><Formula>_JBTEH_KPM_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_mileage()" 
+			ReturnType="String"
+			Description="Returns the dir for this OCS mast console (force relay) object, deduced from its related OCS mast." >
+			<Constructor>String _JBTEH_KPM_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_mileage()
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return getPropertyValue("mileage"),
+							_info("No related OCS mast, cannot deduce value.")
+					elseif n == 1 then 
+						return r[0].mileage
+					else 
+						-- Two or more masts were found:
+						return r[0].mileage,
+							_info("WARNING - Multiple OCS masts found, console uses closest mast's mileage.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_KPM_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_DistanceToAlignment()" 
+			ReturnType="String"
+			Description="Returns the DistanceToAlignment for this OCS mast console (force relay) object, deduced from its related OCS mast." >
+			<Constructor>String _JBTEH_KPM_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_DistanceToAlignment()
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return getPropertyValue("DistanceToAlignment"),
+							_info("No related OCS mast, cannot deduce value.")
+					elseif n == 1 then 
+						return r[0].DistanceToAlignment
+					else
+						-- Two or more masts were found:
+						return r[0].DistanceToAlignment,
+							_warning,_info("WARNING - Multiple OCS masts found.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="code" ><Formula>_JBTEH_KPM_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_code()" 
+			ReturnType="String"
+			Description="Obtains the code for this OCS mast console (force relay) object, deduced from its related OCS mast." >
+			<Constructor>String _JBTEH_KPM_code()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_code()
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					local s1 = "Er kraftoverføringskonsoll for kl-bardun/kl-strever/kontaktledning/kl-oppheng"
+					local r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+					
+					if n == 0 then 
+						return "UNFINISHED - Relate console to its OCS mast with "..s.."."
+					
+					elseif n == 1 then 
+						if n1 == 0 then
+							return "UNFINISHED - No incoming or outgoing wire - relate console to wire(s) with "..s1.."."
+						elseif n1 == 1 then
+							return "Konsoll "..r[0].code.." : ["..r1[0].name.."]"
+						else
+							return "Konsoll "..r[0].code.." : ["..r1[0].name.."] &lt;-&gt; ["..r1[1].name.."]"
+						end
+
+					else
+						-- Two or more masts were found:
+						return _warning,"WARNING - Multiple OCS masts found."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="name" ><Formula>_JBTEH_KPM_name()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_name()" 
+			ReturnType="String"
+			Description="Returns the name for this OCS mast console (force relay object), deduced from its related OCS mast." >
+			<Constructor>String _JBTEH_KPM_name()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_name()
+					return code
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="dir" ><Formula>_JBTEH_KPM_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_dir()" 
+			ReturnType="String"
+			Description="Returns the dir for this OCS mast console (force relay object), deduced from its related OCS mast." >
+			<Constructor>String _JBTEH_KPM_dir()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_dir()
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return getPropertyValue("dir"),
+							_info("No related OCS mast, cannot deduce value.")
+					elseif n == 1 then 
+						return r[0].dir
+					else
+						-- Two or more masts were found:
+						return r[0].dir, _warning,_info("WARNING - Multiple OCS masts found.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Double" Name="ConsoleHeight" DisplayName="Konsollhøyde over mast innsettingspunkt" DefaultValue="6.0"
+			Description="The console's height [m] above its OCS mast's insertion point." >
+		</CustomAttribute>
+
+		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_KPM_RelativeElevation()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_RelativeElevation()" 
+			ReturnType="Double"
+			Description="Returns the releative elevation for this OCS mast console (force relay object), deduced from its related OCS mast." >
+			<Constructor>Double _JBTEH_KPM_RelativeElevation()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_RelativeElevation()
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return getPropertyValue("RelativeElevation"),
+							_info("No related OCS mast, cannot deduce value.")
+					elseif n == 1 then 
+						return r[0].RelativeElevation + ConsoleHeight
+					else
+						-- Two or more masts were found:
+						return r[0].RelativeElevation + ConsoleHeight, _warning,_info("WARNING - Multiple OCS masts found.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="Model3DName" ><Formula>_JBTEH_KPM_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_Model3DName()" 
+			ReturnType="String"
+			Description="Obtains the Model 3D Name for this OCS mast console (force relay object), deduced from its related OCS mast" >
+			<Constructor>String _JBTEH_KPM_Model3DName()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_Model3DName()
+					--TODO: Model real console in various sizes depending on the type of mast it is mounted on:
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					local a
+					if n == 0 then 
+						return "UNIFINSHED: No OCS mast found, cannot deduce console's 3D model name."
+					else
+						a = r[0].OcsMastProfile:match("HEB(%d%d%d)") --'HEB220' etc: Capture three digits.
+						a = a or "240" --Default size if not a HEB mast...
+						if Variant == "Konsoll for bardunfeste på mast" then
+							--TODO: Make model depend on mast type
+							return "NO-BN-3D-EH-KPM-KONSOLL-FOR-BARDUN-MOT-MAST"
+						elseif Variant == "Konsoll for streverfeste på mast" then 
+							return "NO-BN-3D-EH-STF-STREVERFESTE-KONSOLL-400x300-FOR-HEB"..a
+						else
+							return "Unknown Variant ["..Variant.."]."
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject VariantName="Konsoll for bardunfeste på mast" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-{{SymbolMode}}" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Konsoll for avspenning på mast" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-{{SymbolMode}}" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast" />
+			</SnapPoints>
+		</DockPointDefinitions>
+
 	</ObjectType>
 
 
@@ -1297,6 +1603,7 @@
 		<RelationSpace>avspenning</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -1401,6 +1708,8 @@
 					end
 					return _info("Bad tensioning device variant ["..Variant.."].")
 				end
+	--TODO: Include console for fastening to mast as well:
+	--elseif Variant == "Konsoll for avspenning på mast" then return "NO-BN-3D-EH-KPM-KONSOLL-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
 			</Formula>
 		</LuaFunction>
 		
@@ -1452,10 +1761,10 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- Note: They snap to the contact wire alignment even if they might actually work on the suspension catenary wire or a strecher wire or fix wire -->
+		<!-- Note: They snap to the contact wire alignment even if they might actually work on the suspension catenary wire or a stretcher wire or fix wire -->
 		<InsertPointObject VariantName="Fixpunkt" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
