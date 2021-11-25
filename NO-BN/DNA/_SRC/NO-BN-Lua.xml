@@ -22,7 +22,7 @@
 				-- More symbol frame types may be available - see the appropriate Style Definitions file.
 				_language = 2 -- 1:English, 2:Norwegian, 3:French, 4:German
 				_frames = { 
-					UNFINISHED	= { "Unfinished",			"Uferdig",				"Incomplet",			"Unvollständig"			},
+					UNFINISHED	= { "Unfinished",			"Unfinished",			"Incomplet",			"Unvollständig"			},
 					HISTORIC	= { "Historic",				"Historic",				"Historique",			"Historisch"			},
 					ERROR		= { "Error",				"Error",				"Erreur",				"Fehler"				},
 					WARNING		= { "Warning",				"Warning",				"Avertissement",		"Warnung"				},
@@ -456,76 +456,77 @@ end
 		Description="Returns a track-bound object's pitch [decimal degrees], consistent with own alignment's local gradient, and object orientation up/down/both/none. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
 		<Constructor>Double NOBN_trk_getPitchFromGradient([_position])</Constructor>
 		<Formula>
-function NOBN_trk_getPitchFromGradient(where)
-	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC, sampled along the alignment.
-	if where == nil then
-		g = getAlignmentInfo().gradient
-	else
-	    g = getAlignmentInfo(where).gradient 
-	end
-    if RC__isNan(g) then
-        return 0.0, _info("No gradient data in alignment, assuming zero gradient.")
-    else
-        return math.atan(g/1000)*(180/math.pi)
-    end
-end
+			function NOBN_trk_getPitchFromGradient(where)
+				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC, sampled along the alignment.
+				if where == nil then
+					g = getAlignmentInfo().gradient
+				else
+					g = getAlignmentInfo(where).gradient 
+				end
+				if RC__isNan(g) then
+					return 0.0, _info("No gradient data in alignment, assuming zero gradient.")
+				else
+					return math.atan(g/1000)*(180/math.pi)
+				end
+			end
 		</Formula>
 	</LuaFunction>
 	
 	
 	
     <LuaFunction Name="NOBN_trk_getYawFromDir()" ReturnType="Double"
-		Description="Returns object's 3D rotation [DD] from its direction property 'dir' (up/down/none/both) and side of alignment, as seen in the direction of increasing mileage. If a non-zero rotation [DD] is provided, then the rotation takes precedence over the 'dir' property. Balises are a special case, assuming cable extends to the right from the 3D model, a slight leftside bias turns the balise around so the cable extends at the left side of the track." >
+		Description="Returns object's 3D rotation [DD] from its direction property 'dir' (up/down/none/both) and side of alignment, as seen in the direction of increasing mileage. If a non-zero rotation [DD] is provided, then the rotation takes precedence over the 'dir' property. Balises are a special case, assuming cable extends to the right from the 3D model, a slight leftside bias turns the balise around so the cable extends at the left side of the track. Objects which do not feature the 'dir' property will return 0." >
         <Constructor>Double NOBN_trk_getYawFromDir([Double rotation])</Constructor>
 		<Formula>
-function NOBN_trk_getYawFromDir(rotation)
-	d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
-	if RcType == "JBTSA_ATB NSS balise" then 
-		--Special case: Place balise slightly to the right of center track to keep the cable extending to the right
-		--We assume that all balises have cable extending to the right when seen in the 3D object's 'up' direction
-		--(the cable will then be best protected for left-handed normal driving on double track lines).
-		if AngularOffset == nil then 
-			return RightSided and 0.0 or 180.0
-		else	
-			return AngularOffset + (RightSided and 0.0 or 180.0)
-		end
-	end
-	if rotation == nil and AngularOffset == nil then
-		-- No argument given, and no standard property 'AngularOffset' exists for the current object
-		if d == 'up' then
-			return 0.0
-		elseif d == 'down' then
-			return 180.0
-		elseif d == 'both' then
-			return RightSided and -90.0 or 90.0
-		elseif d == 'none' then
-			return RightSided and 90.0 or -90.0
-		else --d == unknown':
-			return 45.0,_warning, _info("EnableDirectionSetting is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning.")
-		end
-	else
-		--Modify 'dir' with extra rotation:
-		if rotation == nil then
-			--No arg given, use object's own AngularOffset:
-			rotation = AngularOffset
-		else 
-			if math.abs(rotation) &lt; 4e-4 then 
-				rotation = 0.0 --remove small inaccuracies
+			function NOBN_trk_getYawFromDir(rotation)
+				d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
+				if d == nil then return 0 end
+				if RcType == "JBTSA_ATB NSS balise" then 
+					--Special case: Place balise slightly to the right of center track to keep the cable extending to the right
+					--We assume that all balises have cable extending to the right when seen in the 3D object's 'up' direction
+					--(the cable will then be best protected for left-handed normal driving on double track lines).
+					if AngularOffset == nil then 
+						return RightSided and 0.0 or 180.0
+					else	
+						return AngularOffset + (RightSided and 0.0 or 180.0)
+					end
+				end
+				if rotation == nil and AngularOffset == nil then
+					-- No argument given, and no standard property 'AngularOffset' exists for the current object
+					if d == 'up' then
+						return 0.0
+					elseif d == 'down' then
+						return 180.0
+					elseif d == 'both' then
+						return RightSided and -90.0 or 90.0
+					elseif d == 'none' then
+						return RightSided and 90.0 or -90.0
+					else --d == unknown':
+						return 45.0,_warning, _info("EnableDirectionSetting is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning.")
+					end
+				else
+					--Modify 'dir' with extra rotation:
+					if rotation == nil then
+						--No arg given, use object's own AngularOffset:
+						rotation = AngularOffset
+					else 
+						if math.abs(rotation) &lt; 4e-4 then 
+							rotation = 0.0 --remove small inaccuracies
+						end
+					end
+					if d == 'up' then
+						return rotation, _info("'up' with "..rotation.." degrees extra rotation.")
+					elseif d == 'down' then
+						return 180.0+rotation, _info("'down' with "..rotation.." degrees extra rotation.")
+					elseif d == 'both' then
+						return (RightSided and -90.0 or 90.0) + rotation, _info("'both' with "..rotation.." degrees extra rotation.")
+					elseif d == 'none' then
+						return (RightSided and 90.0 or -90.0) + rotation, _info("'none' with "..rotation.." degrees extra rotation.")
+					else --d == unknown':
+						return 45.0,_warning, _info("EnableDirectionSetting is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning .")
+					end
+				end
 			end
-		end
-		if d == 'up' then
-			return rotation, _info("'up' with "..rotation.." degrees extra rotation.")
-		elseif d == 'down' then
-			return 180.0+rotation, _info("'down' with "..rotation.." degrees extra rotation.")
-		elseif d == 'both' then
-			return (RightSided and -90.0 or 90.0) + rotation, _info("'both' with "..rotation.." degrees extra rotation.")
-		elseif d == 'none' then
-			return (RightSided and 90.0 or -90.0) + rotation, _info("'none' with "..rotation.." degrees extra rotation.")
-		else --d == unknown':
-			return 45.0,_warning, _info("EnableDirectionSetting is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning .")
-		end
-	end
-end
 		</Formula>
 	</LuaFunction>
 
@@ -787,7 +788,7 @@ end
 		<Constructor>String NOBN_sub_getFoundationCode([ObjRef obj])</Constructor>
 		<Formula>
 			function NOBN_sub_getFoundationCode(obj)
-				local tol = 0.25 --Look for a matching object close to 'obj'
+				local tol = 0.50 --[m] Look for a matching object close to 'obj'
 				local function fn(obj,objectTypes,errMsg)
 		 			--Check for matching objects in prioritized order.
 					local ot,n,i,o
@@ -802,7 +803,7 @@ end
 		
 				if obj == nil then obj = this end
 				if RcType:match("JBTEH_FUN KL%-fundament") then 
-					return fn(obj,{"JBTEH_MAS KL-mast","JBTEH_BAF Bardunfeste"},"UNFINISHED - no visible OCS mast or spanner / strecher fastener found at foundation.")
+					return fn(obj,{"JBTEH_MAS KL-mast","JBTEH_BAF Bardunfeste"},"UNFINISHED - no visible OCS mast or spanner / stretcher fastener found at foundation.")
 				elseif RcType:match("JBTKU_FUN Signalfundament") then 
 					return fn(obj,{"JBTSA_SIG Signal"},"UNFINISHED - no visible signal found at foundation.")
 				elseif RcType:match("JBTKU_FUN Apparatskapfundament") then 

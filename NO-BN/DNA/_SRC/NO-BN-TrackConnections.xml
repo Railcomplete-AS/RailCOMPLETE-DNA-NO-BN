@@ -20,29 +20,29 @@
 		Description="Returns the reference mileage for the fouling point being farthest from the stock rail joint, using reference alignment mileage. Assumes caller is a switch unless argument 'v' is given." >
 		<Constructor>String NOBN_trk_getFoulingPointReferenceMileage(tSwitch v)</Constructor>
 		<Formula>
-function NOBN_trk_getFoulingPointReferenceMileage(v)
-	if v == nil then v = getObjectFromId(id) end
-	if v.RcType ~= "JBTKO_SPV Sporveksel" then
-		return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
-	else
-		local fp,dmax,w,i,d
-		fp = getFoulingPoints(v)
-		dmax = 0
-		w = nil
-		for i = 0,fp.count-1 do
-			d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
-			if d > dmax then
-				dmax = d
-				w = fp[i].Branch1.ReferenceMileage
-			end
-		end
-		if dmax == 0 then
-			return "(no fouling points found)"
-		else
-			return w
-		end
-	end
-end 
+			function NOBN_trk_getFoulingPointReferenceMileage(v)
+				if v == nil then v = getObjectFromId(id) end
+				if v.RcType ~= "JBTKO_SPV Sporveksel" then
+					return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
+				else
+					local fp,dmax,w,i,d
+					fp = getFoulingPoints(v)
+					dmax = 0
+					w = nil
+					for i = 0,fp.count-1 do
+						d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
+						if d > dmax then
+							dmax = d
+							w = fp[i].Branch1.ReferenceMileage
+						end
+					end
+					if dmax == 0 then
+						return "(no fouling points found)"
+					else
+						return w
+					end
+				end
+			end 
 		</Formula>
 	</LuaFunction>
 
@@ -53,29 +53,29 @@ end
 		Description="Returns the own alignment mileage for the fouling point being farthest from the stock rail joint, using own alignment mileage. Assumes caller is a switch unless argument 'v' is given." >
 		<Constructor>String NOBN_trk_getFoulingPointMileage(tSwitch v)</Constructor>
 		<Formula>
-function NOBN_trk_getFoulingPointMileage(v)
-	if v == nil then v = getObjectFromId(id) end
-	if v.RcType ~= "JBTKO_SPV Sporveksel" then
-		return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
-	else
-		local fp,dmax,w,i,d
-		fp = getFoulingPoints(v)
-		dmax = 0
-		w = nil
-		for i = 0,fp.count-1 do
-			d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
-			if d > dmax then
-				dmax = d
-				w = fp[i].Branch1.Mileage
-			end
-		end
-		if dmax == 0 then
-			return "(no fouling points found)",_warning
-		else
-			return w
-		end
-	end
-end 
+			function NOBN_trk_getFoulingPointMileage(v)
+				if v == nil then v = getObjectFromId(id) end
+				if v.RcType ~= "JBTKO_SPV Sporveksel" then
+					return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
+				else
+					local fp,dmax,w,i,d
+					fp = getFoulingPoints(v)
+					dmax = 0
+					w = nil
+					for i = 0,fp.count-1 do
+						d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
+						if d > dmax then
+							dmax = d
+							w = fp[i].Branch1.Mileage
+						end
+					end
+					if dmax == 0 then
+						return "(no fouling points found)",_warning
+					else
+						return w
+					end
+				end
+			end 
 		</Formula>
 	</LuaFunction>
 
@@ -94,6 +94,7 @@ end
 				
 		<RelationSpace>sporfortsettelse</RelationSpace>
 
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___TRK" />
@@ -119,12 +120,12 @@ end
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="code" ><Formula>_KO_SPF_code()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_SPF_code()" ReturnType="String"
+		<LuaExpression Name="code" ><Formula>_JBTKO_SPF_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPF_code()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two tracks that meet in a track continuation." >
-			<Constructor>String _KO_SPF_code()</Constructor>
+			<Constructor>String _JBTKO_SPF_code()</Constructor>
 			<Formula>
-				function _KO_SPF_code()
+				function _JBTKO_SPF_code()
 					local first,second
 					if RcType ~= "JBTKO_SPF Sporfortsettelse" then
 						return _error, "Bad object type ["..RcType.."] - 'JBTKO_SPF Sporfortsettelse' was expected"
@@ -132,10 +133,14 @@ end
 						first = Alignment
 						if first == nil then
 							return "Bad or missing alignment reference",_warning
+						elseif Alignment.RcType ~= "JBTKO_SPO Spor" then
+							return "Cannot connect to alignments of type '"..Alignmnent.RcType.."'.",_warning
 						end
 						second = TargetAlignment
 						if second == nil then
 							return "Bad or missing continuing alignment reference",_warning
+						elseif TargetAlignment.RcType ~= "JBTKO_SPO Spor" then
+							return "Cannot connect to alignments of type '"..Alignmnent.RcType.."'.",_warning
 						end
 						if first.id == second.id then
 							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
@@ -152,11 +157,12 @@ end
 
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 					
-		<LuaFunction Name="_KO_SPF_mileage()" ReturnType="Double"
+		<LuaExpression Name="Mileage" ><Formula>_JBTKO_SPF_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPF_mileage()" ReturnType="Double"
 				Description="Obtains the mileage from its alignment." >
-			<Constructor>Double _KO_SPF_mileage()</Constructor>
+			<Constructor>Double _JBTKO_SPF_mileage()</Constructor>
 			<Formula>
-				function _KO_SPF_mileage()
+				function _JBTKO_SPF_mileage()
 					ai = getAlignmentInfo()
 					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
 					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
@@ -164,7 +170,6 @@ end
 				end
 			</Formula>
 		</LuaFunction>
-		<LuaExpression Name="Mileage" ><Formula>_KO_SPF_mileage()</Formula></LuaExpression>
 						
 		<InsertPointObject VariantName="Sporfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
@@ -204,6 +209,7 @@ end
 				
 		<RelationSpace>sporkryss</RelationSpace>
 		
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___TRK" />
@@ -227,12 +233,18 @@ end
 		<LuaExpression Name="Var1" ><Formula>NOBN_trk_chkConnectionGradientAndCantMatch("Var1")</Formula></LuaExpression>
 		<LuaExpression Name="Var2" ><Formula>NOBN_trk_chkConnectionGradientAndCantMatch("Var2")</Formula></LuaExpression>
 		
-		<LuaExpression Name="code" ><Formula>_KO_SPV_crossingCode()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_SPV_crossingCode()" ReturnType="String"
+		<Variants DefaultValue="Sporkryss" >
+			<Variant Name="Sporkryss" >
+				<SetValue Key="Thumbnail3DModel" Value="NO-BN-3D-UNSPECIFIED" />
+			</Variant>
+		</Variants>
+		
+		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_crossingCode()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_crossingCode()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing." >
-			<Constructor>String _KO_SPV_crossingCode()</Constructor>
+			<Constructor>String _JBTKO_SPV_crossingCode()</Constructor>
 			<Formula>
-				function _KO_SPV_crossingCode()
+				function _JBTKO_SPV_crossingCode()
 					local first,second
 					if RcType ~= "JBTKO_SPV Sporkryss" then
 						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporkryss' was expected"
@@ -257,15 +269,9 @@ end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="code" ><Formula>_KO_SPV_crossingCode()</Formula></LuaExpression>
+		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_crossingCode()</Formula></LuaExpression>
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 		<LuaExpression Name="dir" ><Formula>"none"</Formula></LuaExpression>
-		
-		<Variants DefaultValue="Crossing" >
-			<Variant Name="Crossing" >
-				<SetValue Key="Thumbnail3DModel" Value="NO-BN-3D-UNSPECIFIED" />
-			</Variant>
-		</Variants>
 		
 		<InsertPointObject VariantName="Sporkryss" DisplayBlockName="NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORKRYSS-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
@@ -344,6 +350,7 @@ end
 		
 		<!--TODO finne konstruksjonstegninger for de vi mangler, samt Tp-forbudtområdet for 1:14 sporveksler med mer-->
 
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TRK" />
@@ -428,12 +435,13 @@ end
 		<xpp:expand select="NOBN_trk_CHK_CONNECTION___SWITCH" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_KO_SPV" />
 
-		<LuaExpression Name="code" ><Formula>_KO_SPV_switchCode()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_SPV_switchCode()" ReturnType="String"
+		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
+		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_switchCode()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing." >
-			<Constructor>String _KO_SPV_switchCode()</Constructor>
+			<Constructor>String _JBTKO_SPV_switchCode()</Constructor>
 			<Formula>
-				function _KO_SPV_switchCode()
+				function _JBTKO_SPV_switchCode()
 					local first,second
 					if RcType ~= "JBTKO_SPV Sporveksel" then
 						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
@@ -454,14 +462,15 @@ end
 				end
 			</Formula>
 		</LuaFunction>
-		<LuaExpression Name="code" ><Formula>_KO_SPV_switchCode()</Formula></LuaExpression>
+
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 
-	<LuaFunction Name="_KO_SPV_switchModel3DName()" ReturnType="String"
-		Description="Returns Model3DName according to switch variant." >
-		<Constructor>String _KO_SPV_switchModel3DName(tSwitch v)</Constructor>
-		<Formula>
-				function _KO_SPV_switchModel3DName(v)
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKO_SPV_switchModel3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_switchModel3DName()" ReturnType="String"
+				Description="Returns Model3DName according to switch variant." >
+			<Constructor>String _JBTKO_SPV_switchModel3DName(tSwitch v)</Constructor>
+			<Formula>
+				function _JBTKO_SPV_switchModel3DName(v)
 					if v == nil then v = this end
 					if v.RcType ~= "JBTKO_SPV Sporveksel" then
 						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
@@ -507,16 +516,15 @@ end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3DName" ><Formula>_KO_SPV_switchModel3DName()</Formula></LuaExpression>
 		<LuaExpression Name="model" ><Formula>Variant</Formula></LuaExpression>
 		
 		<!-- railML property trackContinueCourse: -->
-		<LuaExpression Name="trackContinueCourse" ><Formula>_KO_SPV_trackContinueCourse()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_SPV_trackContinueCourse()" ReturnType="String"
+		<LuaExpression Name="trackContinueCourse" ><Formula>_JBTKO_SPV_trackContinueCourse()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_trackContinueCourse()" ReturnType="String"
 			Description="Returns a string holding either 'left' or 'right'. At present, 3-way switches (allowed in railML) are not modeled in RailCOMPLETE, i.e. ConnectionCourse being 'straight' leads to an error message." >
-			<Constructor>String _KO_SPV_trackContinueCourse()</Constructor>
+			<Constructor>String _JBTKO_SPV_trackContinueCourse()</Constructor>
 			<Formula>
-				function _KO_SPV_trackContinueCourse()
+				function _JBTKO_SPV_trackContinueCourse()
 					if (ConnectionCourse == "right") then 
 						return "left"
 					elseif (ConnectionCourse == "left") then
@@ -1202,9 +1210,9 @@ end
 <!--=====================================u===================================================================
 	OVERBYGNING
 	SPORVEKSELTUNGER
-	KO-TNG Sporvekseltunge
+	JBTKO_TNG Sporvekseltunge
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="KO-TNG Sporvekseltunge"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTKO_TNG Sporvekseltunge"
 				Layer="JBTKO_TNG" Color="ByLayer"
 				Group="Overbygning/Tunger"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1257,12 +1265,12 @@ end
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="Alignment" ><Formula>_KO_TNG_alignment()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_TNG_alignment()" ReturnType="ObjRef"
+		<LuaExpression Name="Alignment" ><Formula>_JBTKO_TNG_alignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_TNG_alignment()" ReturnType="ObjRef"
 				Description="Obtains the alignment [ObjRef] from its switch, related with 'Er tunge for sporveksel'." >
-			<Constructor>ObjRef _KO_TNG_alignment()</Constructor>
+			<Constructor>ObjRef _JBTKO_TNG_alignment()</Constructor>
 			<Formula>
-				function _KO_TNG_alignment()
+				function _JBTKO_TNG_alignment()
 					s = "Er tunge for sporveksel"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
@@ -1274,12 +1282,12 @@ end
 			</Formula>
 		</LuaFunction>
 		
-		<LuaExpression Name="Mileage" ><Formula>_KO_TNG_mileage()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_TNG_mileage()" ReturnType="Double"
+		<LuaExpression Name="Mileage" ><Formula>_JBTKO_TNG_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_TNG_mileage()" ReturnType="Double"
 				Description="Obtains the mileage from its switch, related with 'Er tunge for sporveksel'." >
-			<Constructor>Double _KO_TNG_mileage()</Constructor>
+			<Constructor>Double _JBTKO_TNG_mileage()</Constructor>
 			<Formula>
-				function _KO_TNG_mileage()
+				function _JBTKO_TNG_mileage()
 					s = "Er tunge for sporveksel"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
@@ -1291,12 +1299,12 @@ end
 			</Formula>
 		</LuaFunction>
 		
-		<LuaExpression Name="code" ><Formula>_KO_TNG_code()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_TNG_code()" ReturnType="String"
+		<LuaExpression Name="code" ><Formula>_JBTKO_TNG_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_TNG_code()" ReturnType="String"
 				Description="Obtains the code from its switch, related with 'Er tunge for sporveksel'." >
-			<Constructor>Double _KO_TNG_code()</Constructor>
+			<Constructor>Double _JBTKO_TNG_code()</Constructor>
 			<Formula>
-				function _KO_TNG_code()
+				function _JBTKO_TNG_code()
 					s = "Er tunge for sporveksel"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
@@ -1310,12 +1318,12 @@ end
 		
 		<LuaExpression Name="name" ><Formula>"Tng."..code</Formula></LuaExpression>
 		
-		<LuaExpression Name="dir" ><Formula>_KO_TNG_dir()</Formula></LuaExpression>
-		<LuaFunction Name="_KO_TNG_dir()" ReturnType="Enum"
+		<LuaExpression Name="dir" ><Formula>_JBTKO_TNG_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_TNG_dir()" ReturnType="Enum"
 				Description="Obtains the direction (dir) [up | down] enum from its switch, related with 'Er tunge for sporveksel'." >
-			<Constructor>Double _KO_TNG_dir()</Constructor>
+			<Constructor>Double _JBTKO_TNG_dir()</Constructor>
 			<Formula>
-				function _KO_TNG_dir()
+				function _JBTKO_TNG_dir()
 					s = "Er tunge for sporveksel"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
