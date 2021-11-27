@@ -159,7 +159,7 @@ end
 function NOBN_sig_getSignalPartNames()
 	local s = ""
 	local errMsg = "*** Unrecognized signal configuration ***"
-	if RcType == "JBTSA_ERT ERTMS" then
+	if RcType == "JBTSA_ERT ERTMS-signal" then
 		if Variant:match("E35") then s = "E35" end
 		if Variant:lower():match("dverg") then s = s.."-EDS" end
 	elseif RcType == "JBTSA_SIG Signal" then
@@ -279,9 +279,231 @@ end
 
 
 <!--========================================================================================================
-	SIGNAL
-	KLASSE-B SIGNALER
-	JBTSA_SIG Signal
+	SIGNALING
+	CLASS A SIGNALS (ERTMS)
+=========================================================================================================-->
+	<!-- ERTMS markerboards boards with pole. 2D symbols feature the "mast foot". -->
+	<!-- Note: The other ERTMS boards have been classified as 'JBTSA_MSS ERTMS skilt' boards. -->
+	<!-- 2021-01-11 CLFEY TODO Check if Bane NOR decides to use E34 "Location signal" (stedssignal, black arrow on white): -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_ERT ERTMS-signal"
+				Layer="JBTSA_ERT" Color="ByLayer"
+				Group="Signal/Klasse-A signaler"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+		<AttachmentCategory Name="markerboard" PassAttachmentToTarget="true" />				
+		<RelationSpace>markerboard</RelationSpace>
+		<!-- Attach to 'signalfundament' for Ø76 shunting signal or to 'skiltfeste' for Ø60 poles. -->
+		<AttachTo Category="signalfundament" /> 
+		<AttachTo Category="skiltfeste" />
+		
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SIG" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
+		
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_SIG" />
+		
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalPartNames().." - "..code</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="ERTMS E35 Stoppskilt, sidestilt" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="Yokemounted" Value="False" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, sidestilt med dverg" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="intermediate" /> <!--most marker boards with shunting signal will be intermediate signals -->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="Yokemounted" Value="False" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, sidestilt med lav dverg" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="intermediate" /> <!--most marker boards with shunting signal will be intermediate signals -->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="Yokemounted" Value="False" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, over sporet" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="intermediate" /> <!--most marker boards above track will be intermediate signals -->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="Yokemounted" Value="True" />
+			</Variant>
+			<Variant Name="ERTMS E35 Stoppskilt, over sporet med dverg" >
+				<SetValue Key="type" Value="main" />
+				<SetValue Key="function" Value="intermediate" /> <!--most marker boards with shunting signal / above track will be intermediate signals -->
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="Yokemounted" Value="True" />
+			</Variant>
+			<Variant Name="ERTMS dverg" >
+				<SetValue Key="type" Value="shunting" />
+				<SetValue Key="function" Value="intermediate" />
+				<SetValue Key="switchable" Value="false" />
+				<SetValue Key="virtual" Value="false" />
+				<SetValue Key="ruleCode" Value="" />
+				<SetValue Key="Yokemounted" Value="False" />
+			</Variant>
+		</Variants>
+
+		<SetValue Key="code" Value="Kode?" />
+		
+		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
+		<LuaExpression Name="PoleRouting3D" ><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
+
+		<LuaExpression Name="Offset3D.Z" ><Formula>_JBTSA_SIG_ertms_Offset3dZ(_position)</Formula></LuaExpression>
+		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
+		<LuaFunction Name="_JBTSA_SIG_ertms_Offset3dZ" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the standard height of the board's pole." >
+			<Constructor>Double _JBTSA_SIG_ertms_Offset3dZ(_position)</Constructor>
+			<Formula>
+				function _JBTSA_SIG_ertms_Offset3dZ(_position)
+					
+					if Variant == "ERTMS E35 Stoppskilt, sidestilt med dverg" then
+						return Yokemounted and -3.2 or 1.9
+					
+					elseif Variant == "ERTMS E35 Stoppskilt, sidestilt med lav dverg" then
+						return Yokemounted and -3.0 or 0.2
+						
+					elseif Variant == "ERTMS dverg" then
+						return Yokemounted and -2.6 or 1.3
+
+					else
+						return Yokemounted and -3.0 or 3.3
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- 2020-11-05 CLFEY Deprecated - all ERTMS boards are now small, see BN document "NS-EN 16494_2015 ERTMS skilt" -->
+		<!-- <CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large" -->
+				<!-- Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400)." > -->
+			<!-- <Value DisplayName="Lite" >Small</Value> -->
+			<!-- <Value DisplayName="Stort" >Large</Value> -->
+		<!-- </CustomAttribute> -->
+
+		<LuaExpression Name="Model3DName" ><Formula>_JBTSA_SIG_ertms_model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SIG_ertms_model3DName()" ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the 3D model name [String] for the current ERTMS board. Covers position/stop markerboards. See also JBTSA_ERP ERTMS boards." >
+			<Constructor>String _JBTSA_SIG_ertms_model3DName()</Constructor>
+			<Formula>
+				function _JBTSA_SIG_ertms_model3DName()
+					local t = "NO-BN-3D-SA-SIG-ERTMS"
+					if Variant:match("E35")then
+						t = t.."-E35"
+					end
+					if Variant:match("sidestilt") then
+						t = t..(((RightSided and dir == "up") or (LeftSided and dir == "down")) and "-HSIDE" or "-VSIDE")
+					end
+					if Variant:match("over sporet") then
+						t = t.."-OVER"
+					elseif Variant:match("dverg") then 
+						t = t.."-DS" 
+					end
+					if Variant:match("lav") then t = t.."-LAV" end
+					return t
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-HSIDE-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-HSIDE-DS-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med lav dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-HSIDE-DS-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-OVER-AAK-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-OVER-DS-AAK-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="ERTMS dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-DS-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTSA_SIG-SIGNAL
+				{% if Variant contains 'sidestilt' %}
+					{% if RightSided and dir == 'up' %}ERTMS-E35-HSIDE
+					{% elsif LeftSided and dir == 'down' %}ERTMS-E35-HSIDE
+					{% else %}ERTMS-E35-VSIDE
+					{% endif %}
+				{% elsif Variant contains 'over' %}ERTMS-E35-OVER
+				{% endif %}
+				{% if Variant contains 'dverg' %}DS{% endif %}
+				{% if Yokemounted %}AAK{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
+				<SnapPoint X="0" Y="0" TargetSpace="skiltfeste" />
+			</SnapPoints>
+		</DockPointDefinitions>
+
+		<!-- Ingen displaypoints - 2D-symbolet settes der InsertionPoint er -->
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	SIGNALING
+	CLASS B SIGNALS (CONVENTIONAL)
 
 	Lyssignaler på egen mast, mange varianter er mulig.
 	Fungerer typisk som start & sluttpunkt for togveier og skifteveier.
@@ -305,7 +527,7 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	local tolerance = 6 --Tolerance in meters
 
 	--Preamble - called from a relevant object type?
-	if      RcType ~= "JBTSA_ERT ERTMS"
+	if      RcType ~= "JBTSA_ERT ERTMS-signal"
 		and RcType ~= "JBTSA_SIG Signal"
 		and RcType ~= "JBTSA_SIG Brusignal/Frostportsignal"
 		and RcType ~= "SA-SIG Planovergang"
@@ -319,8 +541,12 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	if Yokemounted then 
 		omit = false
 
-	elseif RcType == "JBTSA_ERT ERTMS" then
-		return "OK - Low markerboard - Safety distance to OCS mast not relevant.",_ok
+	elseif RcType == "JBTSA_ERT ERTMS-signal" then
+		if Yokemounted then
+			return "WARNING - Check manually that no OCS yoke is within safety distance from markerboard in yoke.",_warning
+		else
+			return "OK - Markerboard on the ground - Safety distance to OCS mast not relevant.",_ok
+		end
 
 	elseif RcType == "JBTSA_SIG Signal" then
 		if HighShuntingSignal == "-" and MainSignal == "-" then 
@@ -1643,202 +1869,6 @@ end
 			</SnapPoints>
 		</DockPointDefinitions>
 
-	</ObjectType>
-
-
-
-<!--========================================================================================================
-	SIGNAL
-	ERTMS SIGNAL
-=========================================================================================================-->
-	<!-- ERTMS markerboards boards with pole. 2D symbols feature the "mast foot". -->
-	<!-- Note: The other ERTMS boards have been classified as 'JBTSA_MSS ERTMS skilt' boards. -->
-	<!-- 2021-01-11 CLFEY TODO Check if Bane NOR decides to use E34 "Location signal" (stedssignal, black arrow on white): -->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_ERT ERTMS-signal"
-				Layer="JBTSA_ERT" Color="ByLayer"
-				Group="Signal/ERTMS signal"
-				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
-				>
-		<AttachmentCategory Name="markerboard" PassAttachmentToTarget="true" />				
-		<RelationSpace>markerboard</RelationSpace>
-		<!-- Attach to 'signalfundament' for Ø76 shunting signal or to 'skiltfeste' for Ø60 poles. -->
-		<AttachTo Category="signalfundament" /> 
-		<AttachTo Category="skiltfeste" />
-		
-		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SIG" />
-		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
-		
-		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
-		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
-		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_SIG" />
-		
-		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_sig_getSignalPartNames().." - "..code</Formula></LuaExpression> 
-
-		<Variants>
-			<Variant Name="ERTMS E35 Stoppskilt, sidestilt" >
-				<SetValue Key="type" Value="main" />
-				<SetValue Key="function" Value="blocking" /> <!--most marker boards will be blocking for long lines-->
-				<SetValue Key="switchable" Value="false" />
-				<SetValue Key="virtual" Value="false" />
-				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="Yokemounted" Value="False" />
-			</Variant>
-			<Variant Name="ERTMS E35 Stoppskilt, sidestilt med dverg" >
-				<SetValue Key="type" Value="main" />
-				<SetValue Key="function" Value="intermediate" /> <!--most marker boards with shunting signal will be intermediate signals -->
-				<SetValue Key="switchable" Value="false" />
-				<SetValue Key="virtual" Value="false" />
-				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="Yokemounted" Value="False" />
-			</Variant>
-			<Variant Name="ERTMS E35 Stoppskilt, sidestilt med lav dverg" >
-				<SetValue Key="type" Value="main" />
-				<SetValue Key="function" Value="intermediate" /> <!--most marker boards with shunting signal will be intermediate signals -->
-				<SetValue Key="switchable" Value="false" />
-				<SetValue Key="virtual" Value="false" />
-				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="Yokemounted" Value="False" />
-			</Variant>
-			<Variant Name="ERTMS E35 Stoppskilt, over sporet" >
-				<SetValue Key="type" Value="main" />
-				<SetValue Key="function" Value="intermediate" /> <!--most marker boards above track will be intermediate signals -->
-				<SetValue Key="switchable" Value="false" />
-				<SetValue Key="virtual" Value="false" />
-				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="Yokemounted" Value="True" />
-			</Variant>
-			<Variant Name="ERTMS E35 Stoppskilt, over sporet med dverg" >
-				<SetValue Key="type" Value="main" />
-				<SetValue Key="function" Value="intermediate" /> <!--most marker boards with shunting signal / above track will be intermediate signals -->
-				<SetValue Key="switchable" Value="false" />
-				<SetValue Key="virtual" Value="false" />
-				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="Yokemounted" Value="True" />
-			</Variant>
-			<Variant Name="ERTMS dverg" >
-				<SetValue Key="type" Value="shunting" />
-				<SetValue Key="function" Value="intermediate" />
-				<SetValue Key="switchable" Value="false" />
-				<SetValue Key="virtual" Value="false" />
-				<SetValue Key="ruleCode" Value="" />
-				<SetValue Key="Yokemounted" Value="False" />
-			</Variant>
-		</Variants>
-
-		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
-		<LuaExpression Name="PoleRouting3D" ><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
-		<LuaExpression Name="Offset3D.Z" ><Formula>NOBN_bnp_getBoardOffset3dZ()</Formula></LuaExpression>
-
-		<!-- 2020-11-05 CLFEY Deprecated - all ERTMS boards are now small, see BN document "NS-EN 16494_2015 ERTMS skilt" -->
-		<!-- <CustomAttribute DataType="Enumeration" Name="Size" DisplayName="Størrelse" DefaultValue="Large" -->
-				<!-- Description="The 'Size' custom attribute [Large | Small] decides the board's size (Large:700x700, Small:400x400)." > -->
-			<!-- <Value DisplayName="Lite" >Small</Value> -->
-			<!-- <Value DisplayName="Stort" >Large</Value> -->
-		<!-- </CustomAttribute> -->
-
-		<LuaExpression Name="Model3DName" ><Formula>_JBTSA_SIG_ertms_model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTSA_SIG_ertms_model3DName()" ReturnType="String"
-				HideFromUser="false"
-				Description="Returns the 3D model name [String] for the current ERTMS board. Covers position/stop markerboards. See also JBTSA_ERP ERTMS boards." >
-			<Constructor>String _JBTSA_SIG_ertms_model3DName()</Constructor>
-			<Formula>
-				function _JBTSA_SIG_ertms_model3DName()
-					local t = "NO-BN-3D-SA-SIG-ERTMS"
-					if Variant:match("E35")then
-						t = t.."-E35"
-					end
-					if Variant:match("sidestilt") then
-						t = t..(((RightSided and dir == "up") or (LeftSided and dir == "down")) and "-HSIDE" or "-VSIDE")
-					end
-					if Variant:match("over sporet") then
-						t = t.."-OVER"
-					elseif Variant:match("dverg") then 
-						t = t.."-DS" 
-					end
-					if Variant:match("lav") then t = t.."-LAV" end
-					return t
-				end
-			</Formula>
-		</LuaFunction>
-
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-HSIDE-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-HSIDE-DS-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, sidestilt med lav dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-HSIDE-DS-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-OVER-AAK-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="ERTMS E35 Stoppskilt, over sporet med dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-ERTMS-E35-OVER-DS-AAK-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="ERTMS dverg" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-DS-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true" />
-		</InsertPointObject>
-		
-		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic" >
-			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}" />	
-			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTSA_SIG-SIGNAL
-				{% if Variant contains 'sidestilt' %}
-					{% if RightSided and dir == 'up' %}ERTMS-E35-HSIDE
-					{% elsif LeftSided and dir == 'down' %}ERTMS-E35-HSIDE
-					{% else %}ERTMS-E35-VSIDE
-					{% endif %}
-				{% elsif Variant contains 'over' %}ERTMS-E35-OVER
-				{% endif %}
-				{% if Variant contains 'dverg' %}DS{% endif %}
-				{% if Yokemounted %}AAK{% endif %}
-				{{SymbolMode}}
-			</BlockNameFormat>
-		</SymbolDefinition>
-
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
-		<DockPointDefinitions>
-			<SnapPoints>
-				<SnapPoint X="0" Y="0" TargetSpace="skilt" />
-				<SnapPoint X="0" Y="0" TargetSpace="skiltfeste" />
-			</SnapPoints>
-		</DockPointDefinitions>
-
-		<!-- Ingen displaypoints - 2D-symbolet settes der InsertionPoint er -->
 	</ObjectType>
 
 
