@@ -13,7 +13,7 @@
 !define MUI_ICON "rc.ico"
 !define MUI_UNICON "rcun.ico"
 !define /date DATE "%Y%m%d"
-!define PRODUCT "RailCOMPLETE-2019.0-3D Library" 
+!define PRODUCT "RailCOMPLETE-2019.0 3D Library" 
 !define BUNDLEDIR "NO-BN"
 
 
