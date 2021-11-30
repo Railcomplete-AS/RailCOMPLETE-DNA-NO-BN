@@ -13,6 +13,9 @@
 !define MUI_ICON "rc.ico"
 !define MUI_UNICON "rcun.ico"
 !define /date DATE "%Y%m%d"
+!define PRODUCT "RailCOMPLETE-2019.0-3D Library" 
+!define BUNDLEDIR "NO-BN"
+
 
 ;--------------------------------
 ;General
@@ -22,7 +25,7 @@
   OutFile "${PRODUCT}.install-${DATE}.exe"
 
   ;Default installation folder
-  InstallDir "$APPDATA\Autodesk\ApplicationPlugins\RC.bundle\Adm\${BUNDLEDIR}"
+  InstallDir "$APPDATA\Autodesk\ApplicationPlugins\RC.bundle\Adm\${BUNDLEDIR}\3D\STD"
   
   ;Get installation folder from registry if available
   ;InstallDirRegKey HKCU "Software\${PRODUCT}" ""
@@ -61,20 +64,9 @@ Section "${PRODUCT}" SecRC1
   SetOutPath "$INSTDIR"
   
   ;Add files
-  File /r "..\TMP\${BUNDLEDIR}\*"
+  File /r "..\${BUNDLEDIR}\3D\STD\*"
   ;File "..\${BUNDLEDIR}\UserGuide\video\*.*"
   
-  ;Store installation folder
-  WriteRegStr HKCU "Software\${PRODUCT}" "" $INSTDIR
-  
-  ;Create uninstaller
-  WriteUninstaller "$INSTDIR\Uninstall.exe"
-
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${Product}" "DisplayName" "${Product}"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${Product}" "UninstallString" "$INSTDIR\uninstall.exe"
-  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "NoModify" 1
-  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "NoRepair" 1
-
 
 SectionEnd
 
@@ -82,24 +74,10 @@ SectionEnd
 ;Descriptions
 
   ;Language strings
-  LangString DESC_SecRC1 ${LANG_ENGLISH} "Administration tools for ${PRODUCT}."
+  LangString DESC_SecRC1 ${LANG_ENGLISH} "3D Library for 2019.o DNA"
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SecRC1} $(DESC_SecRC1)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
  
-;--------------------------------
-;Uninstaller Section
-Section "Uninstall"
-
-  ;ADD YOUR OWN FILES HERE...
-
-  Delete "$INSTDIR\Uninstall.exe"
-
-  RMDir /r "$INSTDIR"
-
-  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${Product}"
-  DeleteRegKey /ifempty HKCU "Software\${PRODUCT}"
-
-SectionEnd
