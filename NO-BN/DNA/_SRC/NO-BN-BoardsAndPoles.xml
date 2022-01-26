@@ -481,6 +481,7 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___YOKEMOUNTED" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___SIG" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___BNP" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
@@ -520,7 +521,7 @@
 				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-MSS-E101E-160x150-ERTMS-ID-FREE-STANDING-SHUNTING-SIGNAL-60" />
 				<SetValue Key="Offset3D.Z" Value="1.7" />
 			</Variant>
-			<Variant Name="Signal E101-F ID-skilt, Åkdverg, 160x150" >
+			<Variant Name="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" >
 				<SetValue Key="name" Value="ID ERTMS (Dverg i åk)" />
 				<SetValue Key="Model3DName" Value="NO-BN-3D-SA-MSS-E101F-160x150-ERTMS-ID-SHUNTING-SIGNAL-BELOW-MB-IN-YOKE-45" />
 				<SetValue Key="Offset3D.Z" Value="-1.7" />
@@ -556,6 +557,7 @@
 		<CustomAttribute DataType="String" Name="ID_NUMMER" DisplayName="ID-skilt signalnummer (midtre/øvre linje)" DefaultValue="" />
 		<CustomAttribute DataType="String" Name="ID_STED" DisplayName="ID-skilt stedsforkortelse (nedre linje)" DefaultValue="" />
 		<CustomAttribute DataType="String" Name="ID_KM" DisplayName="Kilometerangivelse" DefaultValue="" />
+		<CustomAttribute DataType="String" Name="ID_MINDRE_SIGNAL" DisplayName="Litra/Nummer" DefaultValue="" />
 						   
 		<LuaExpression Name="code" ><Formula>_JBTSA_MSS_E101_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_code()" ReturnType="String"
@@ -563,7 +565,7 @@
 		<Constructor>String _JBTSA_MSS_E101_code()</Constructor>
 			<Formula>
 				function _JBTSA_MSS_E101_code()
-					return Attachment and attachment.code or "UNFINISHED - Attach ID board to its associated ERTMS object."
+					return attachment and attachment.code or "UNFINISHED - Attach ID board to its associated ERTMS object (or if ID for low shunting signal associated with an MB in a yoke above, then enter MB's ID number as ID board's 4-digit code."
 				end
 			</Formula>
 		</LuaFunction>
@@ -593,13 +595,20 @@
 			</Formula>
 		</LuaFunction>
 		
-		<LuaExpression Name="ID_STED" ><Formula>_JBTSA_MSS_E101_Offset3dZ()</Formula></LuaExpression>
+		<LuaExpression Name="Offset3D.Z" ><Formula>_JBTSA_MSS_E101_Offset3dZ()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_Offset3dZ()" ReturnType="String" 
-			Description="Returns the ERTMS ID board's placement above its associated ERTMS object's insertion point." >
+			Description="Returns the ERTMS ID board's placement above its insertion point." >
 		<Constructor>String _JBTSA_MSS_E101_Offset3dZ()</Constructor>
 			<Formula>
 				function _JBTSA_MSS_E101_Offset3dZ()
-					return Yokemounted and -1.5 or 1.5
+					ym = Attachment and Attachment.Yokemounted or Yokemounted
+					if Variant == "Signal E101-E ID-skilt, Dverg, 160x150" 
+					or Variant == "Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150"
+					then
+						return ym and -1.2 or 1.2
+					else
+						return ym and -2.6 or 2.6
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -631,7 +640,7 @@
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
-		<InsertPointObject VariantName="Signal E101-F ID-skilt, Åkdverg, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-6-ID-MINDRE-SIGNAL-300x100-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-6-ID-MINDRE-SIGNAL-300x100-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -679,7 +688,7 @@
 				{% elsif Variant == 'Signal E101-C ID-skilt, Utkjør, Ø400, gul' %}101-3-ID-RUNDT
 				{% elsif Variant == 'Signal E101-D ID-skilt, Blokk, Ø400, hvit' %}101-3-ID-RUNDT
 				{% elsif Variant == 'Signal E101-E ID-skilt, Dverg, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
-				{% elsif Variant == 'Signal E101-F ID-skilt, Åkdverg, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
+				{% elsif Variant == 'Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
 				{% elsif Variant == 'Signal E101-G ID-skilt, Stopp for skift, 160x150' %}101-2-ID-2-LINJER
 				{% elsif Variant == 'Signal E101-H ID-skilt, Forriglet område, 160x150' %}101-1-ID-3-LINJER
 				{% elsif Variant == 'Signal E101-J ID-skilt, Veisikringsanlegg, 160x150' %}101-2-ID-2-LINJER
@@ -689,47 +698,68 @@
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
-		<!-- 2020-09-21 CLFEY Deprecated 101-4, 101-9 and 101-10, see E101A..E101L instead -->
-				<!-- {% elsif Variant == 'Signal 101-4 ID-skilt for ERTMS, 2 linjer, 700x325' %}101-2-ID-2-LINJER -->
-				<!-- {% elsif Variant == 'Signal 101-9 ID-skilt for ERTMS, 2 linjer, 400x200' %}101-9-ID-ERTMS-400x200 -->
-				<!-- {% elsif Variant == 'Signal 101-10 ID-skilt for ERTMS, 3 linjer, 700x350' %}101-10-ID-ERTMS-700x350 -->
 			<SymbolAttribute Tag="ID_BOKSTAV" >
 				<Value>{{ID_BOKSTAV}}</Value>
 			</SymbolAttribute>
+			<!-- Shunting signal ID board: -->
+			<!-- Ref. Bane NOR document 1000001649_00E, "ERTMS Programme Design requirements - Signs and boards" (2020-04-28), -->
+			<!-- chapter 4.2 Design of ID-boards for shunting signals: -->
+			<!-- "Standalone shunting signal with numbers up to and including 99 shall have an R in front of the number -->
+			<!-- (on the same line). As of 100, R is not used in front of the number. The only time 4 digits are used is -->
+			<!-- when a MB is placed in the yoke and a shunting signal on own mast below, because the shunting -->
+			<!-- signal shall have the same ID as the MB." -->
 			<SymbolAttribute Tag="ID_NUMMER" >
 				<Value>{{ID_NUMMER}}</Value>
 			</SymbolAttribute>
+			<SymbolAttribute Tag="ID_BOKSTAV_OG_NR" >
+				<!-- Used by 2-line 2D-symbol for entry MB: -->
+				<Value>{{ID_BOKSTAV}} {{ID_NUMMER}}</Value>
+			</SymbolAttribute>
 			<SymbolAttribute Tag="ID_STED" >
 				<Value>{{ID_STED}}</Value>
+			</SymbolAttribute>
+			<SymbolAttribute Tag="ID_MINDRE_SIGNAL" >
+				<!-- In use solely by the shunting signals, which use the Class-B ID-board for shunting signals. -->
+				<!-- TODO: Produce dedicated 2D-symbol with correct symbol description for all ERTMS ID boards. -->
+				<Value>{% if ID_NUMMER.size &lt; 3 %}R{% endif %}{{ID_NUMMER}}</Value>
 			</SymbolAttribute>
 		</SymbolDefinition>
 
 		<Model3DDefinition>
 			<Attribute Tag="T01" >
+				<!-- T01 is used by E101-B Entry MB, E101-C Exit MB, E101D Block MB and E101-G Stop for shunting: -->
 				<Value>{{ID_BOKSTAV}}</Value>
 			</Attribute>
 			<Attribute Tag="T02" >
+				<!-- T02 is used by E101-A Inner MB, E101-B Entry MB, E101-C Exit MB, E101D Block MB and E101-H Interlocked area: -->
 				<Value>{{ID_NUMMER}}</Value>
 			</Attribute>
 			<Attribute Tag="T03" >
+				<!-- T03 is used by E101-A Inner MB, E101-B Entry MB, E101-C Exit MB, E101D Block MB and E101-G Stop for shunting: -->
 				<Value>{{ID_STED}}</Value>
 			</Attribute>
 			<Attribute Tag="T04" >
-				<Value>{% if ID_BOKSTAV.size &lt; 3 %}R{% endif %}{{ID_BOKSTAV}}</Value>
+				<!-- T04 is used by shunting signal ID boards E101-E and E101-F. Precede with 'R' if 1 or 2 digits in code: -->
+				<Value>{% if ID_NUMMER | append: "" | size &lt; 3 %}R{{ID_NUMMER}}{% else %}{{ID_NUMMER}}{% endif %}</Value>
 			</Attribute>
 			<Attribute Tag="T05" >
+				<!-- T05 is used by E101-G Stop for shunting -->
 				<Value>R</Value>
 			</Attribute>
 			<Attribute Tag="T06" >
+				<!-- T06 is used by E101-H Interlocked area: -->
 				<Value>Z</Value>
 			</Attribute>
 			<Attribute Tag="T07" >
+				<!-- T07 is used by E101-J Level crossing: -->
 				<Value>W{{ID_NUMMER}}</Value>
 			</Attribute>
 			<Attribute Tag="T08" >
+				<!-- T08 is used by E101-J Level crossing, E101-K Avalanche area and E101-L Frost gate: -->
 				<Value>km</Value>
 			</Attribute>
 			<Attribute Tag="T09" >
+				<!-- T08 is used by E101-J Level crossing, E101-K Avalanche area and E101-L Frost gate: -->
 				<Value>{{ID_KM}}</Value>
 			</Attribute>
 		</Model3DDefinition>
@@ -1359,34 +1389,24 @@
 
 		<Variants DefaultValue="68A Nedsatt hastighet" >
 			<Variant Name="Signal 68A Nedsatt hastighet" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68A-NEDSATT-KJØREHASTIGHET" />
 			</Variant>
 			<Variant Name="Signal 68B Økt hastighet" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68B-ØKT-KJØREHASTIGHET" />
 			</Variant>
 			<Variant Name="Signal 68C Avvikende hastighet" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68C-AVVIKENDE-HASTIGHET" />
 			</Variant>
 			<Variant Name="Signal 68D-1 Markeringsmerke" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68D-MARKERINGSMERKE" />
 			</Variant>
 			<Variant Name="Signal 68D-2 Markeringsmerke på motrettet 68B" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-68D-MARKERINGSMERKE" />
 			</Variant>
 			<Variant Name="Signal 68D-3 Markeringsmerke på motrettet 69B" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68D-MARKERINGSMERKE" />
 			</Variant>
 			<Variant Name="Signal 68F Tilleggshastighet" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68F-TILLEGGSHASTIGHET" />
 			</Variant>
 			<Variant Name="Signal 68G Hastighet for krengetog" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-68G-HASTIGHET-FOR-KRENGETOG" />
 			</Variant>
 			<Variant Name="Signal 69A Midlertidig nedsatt hastighet" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-69A-MIDLERTIDIG-NEDSATT-HASTIGHET" />
 			</Variant>
 			<Variant Name="Signal 69B Midlertidig hastighet opphører" >
-				<SetValue Key="Model3DName" Value="NO-BN-3D-KO-SKT-SKILT-69B-MIDLERTIDIG-HASTIGHET-OPPHØRER" />
 			</Variant>
 		</Variants>
 

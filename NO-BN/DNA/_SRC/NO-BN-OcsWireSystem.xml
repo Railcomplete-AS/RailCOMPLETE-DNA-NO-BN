@@ -1548,7 +1548,7 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	TENSIONING
+	TENSION BALANCER
 =========================================================================================================-->
 	<!-- TODO Skal snappe til mast som default. Kan også plasseres f.eks. rett på vegg. -->
 	<LuaFunction Name="NOBN_ocs_getTensioningStandardValues()" 
@@ -1827,6 +1827,188 @@
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
+		</SymbolDefinition>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+		<!-- TODO: Kan avspenningene være snappepunkt for ALIGNMENT av type Wire? -->
+		<!-- <DockPointDefinitions> -->
+			<!-- <SnapPoints> -->
+				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste" /> -->
+				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="Streverfeste fotplate (uten streveren)" /> -->
+			<!-- </SnapPoints> -->
+		<!-- </DockPointDefinitions> -->
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	TENSION BALANCER
+=========================================================================================================-->
+	<!-- TODO Skal snappe til mast som default. Kan også plasseres f.eks. rett på vegg. -->
+	<LuaFunction Name="NOBN_ocs_getTensioningStandardValues()" 
+		ReturnType="Table[4*Double]"
+		Description="Returns a standard tensile force (tf) values table: [cwtf]=contact wire tf, [catf]=catenary tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf. See NO-BN TRV." >
+		<Constructor>Table[4*Double] NOBN_ocs_getTensioningStandardValues([String OcsSystem])</Constructor>
+		<Formula>
+			function NOBN_ocs_getTensioningStandardValues(os)
+				if os == nil then os = OcsSystem end
+				local OcsSystems = {
+					"Unknown", 
+					"S20A",
+					"S20AR",
+					"S20B",
+					"S20BR",
+					"S20C1",
+					"S20C2",
+					"S25",
+					"S35",
+					"S35MS",
+					"Cariboni"
+				}
+				--(20C1 and 20C2 use the same tensile forces)
+				local TensileForces = {
+					["Unknown"] = 	{cwtf=0, 	catf=0, 	swtf=0,		awtf=0},
+					["S20A"] = 		{cwtf=10, 	catf=10,	swtf=2.3,	awtf=10},
+					["S20AR"] = 	{cwtf=7.06,	catf=7.06,	swtf=2.3, 	awtf=10},
+					["S20B"] = 		{cwtf=10,	catf=10,	swtf=0, 	awtf=10},
+					["S20BR"] = 	{cwtf=7.06,	catf=7.06,	swtf=0, 	awtf=10},
+					["S20C1"] = 	{cwtf=13,	catf=13,	swtf=2.3, 	awtf=10},
+					["S20C2"] = 	{cwtf=13,	catf=13,	swtf=2.3, 	awtf=10},
+					["S25"] = 		{cwtf=15,	catf=15,	swtf=2.8, 	awtf=10},
+					["S35"] = 		{cwtf=7.06,	catf=7.06,	swtf=0, 	awtf=10},
+					["S35MS"] = 	{cwtf=7.06,	catf=7.06,	swtf=0, 	awtf=10},
+					["Cariboni"] = 	{cwtf=13,	catf=13,	swtf=0, 	awtf=13}
+				}
+--TODO: Code does not work when more than 10 items in table! Lua is fishy here:
+--				if not RC__isMemberOf(OcsSystems,os) then 
+--					return TensileForces.Unknown,_warning, _info("Bad tensioning device OCS System ["..os.."]. ")
+--				end
+				return TensileForces[os]
+			end 
+		</Formula>
+	</LuaFunction>
+
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_AEH Avspenning"
+				Layer="JBTEH_AEH" Color="ByLayer"
+				Group="Kontaktledning/Avspenning"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+				
+		<RelationSpace>avspenning</RelationSpace>
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_AEH" />
+
+		<Variants DefaultValue="Fixpunkt" >
+			<Variant Name="Fixpunkt" />
+			<Variant Name="Fastavspenning, enkel" />
+			<Variant Name="Fastavspenning, dobbel" />
+			<Variant Name="Loddavspenning, enkel" />
+			<Variant Name="Loddavspenning, dobbel" />
+			<Variant Name="Fjæravspenning, enkel" />
+			<Variant Name="Fjæravspenning, dobbel" />
+		</Variants>
+		
+        <LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
+
+        <LuaExpression Name="dir" ><Formula>_JBTEH_AEH_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_dir()" 
+			ReturnType="String"
+			Description="Obtains the 'dir' for this OCS tensioning device, related to its alignment's direction." >
+			<Constructor>String _JBTEH_AEH_dir()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_dir()
+					if Alignment == nil then
+						return "unknown", _info("UNFINISHED: Own Alignment (contact wire) undefined for OCS tensioning device.")
+					else
+						return RC__getDistance2D(Alignment.RcAlignment.StartPoint) &lt; RC__getDistance2D(Alignment.RcAlignment.EndPoint) and "up" or "down"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="code" ><Formula>_JBTEH_AEH_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_code()" 
+			ReturnType="String"
+			Description="Obtains the 'code' for this OCS tensioning device, related to its wire with 'Avspenner kontaktledning'." >
+			<Constructor>String _JBTEH_AEH_code()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_code()
+					if Alignment == nil then
+						return _warning, "UNFINISHED: Own Alignment (contact wire) undefined for OCS tensioning device."
+					else
+						if Variant:lower():match("fix") then
+							local RelationName = "Avspenner kontaktledning"
+							local r,n = RC__getCollectionOfRelatedObjects(RelationName)
+							if n == 0 then 
+								return "UNFINISHED - Relate fixpoint tensioning device with its catenary wire alignments with '"..RelationName.."'."
+							else
+								return r[0].code
+							end
+						else
+							return Alignment.code
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+	
+		<LuaExpression Name="name" ><Formula>_JBTEH_FIX_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_code()" 
+			ReturnType="String"
+			Description="Obtains the 'code' for this fixpoint, obtained via the cantilever to which the fixpoint applies." >
+			<Constructor>String _JBTEH_FIX_code()</Constructor>
+			<Formula>
+				function _JBTEH_FIX_code()
+					return "L"..code .. " - [FIX]"
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>_JBTEH_FIX_name()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_name()" 
+			ReturnType="String"
+			Description="Obtains the 'name' for this fixpoint, obtained from its code." >
+			<Constructor>String _JBTEH_FIX_name()</Constructor>
+			<Formula>
+				function _JBTEH_FIX_name()
+					return "L"..code .. " - [FIX]"
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<!-- TODO: Insert 3D alignment generation to draw the Z wires from fixed cantilever's fix wire clamp to the contact wire to both sides ogf cantilever. -->
+		
+		<InsertPointObject VariantName="Fixpunkt" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>fix_line</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
+		</InsertPointObject>
+		
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
 		</SymbolDefinition>
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />

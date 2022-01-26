@@ -1136,7 +1136,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				Layer="JBTSA_TEL" Color="ByLayer"
 				Group="Signal/Togdeteksjon/Akseltellere"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
-				>
+		>
 				
 		<RelationSpace>tellepunkt</RelationSpace>
 		
@@ -1238,7 +1238,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				function _JBTSA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()
 					searchDir = "down"
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
-					r,n = RC__getCollectionOfRelatedObjects("Har akseltellersopp")
+					s = "Har akselteller_tuningenhet"
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then tps = nil else tps = r[0] end --tps (tellepunktsopp) is nil if no tuning unit connected yet (used to trigger check of related object)
 					ac = getDownObject(RcType)
 					if ac == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
@@ -1259,15 +1260,16 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 
 
-		<LuaFunction Name="_JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()" ReturnType="String"
+		<LuaFunction Name="_JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()" ReturnType="String"
 			Description="Checks distance to next axle counter. Error if below 21 m, warning if below 23 m." >
-			<Constructor>String _JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()()</Constructor>
+			<Constructor>String _JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()()</Constructor>
 			<Formula>
-				function _JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()
+				function _JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()
 					searchDir = "up"
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
-					r,n = RC__getCollectionOfRelatedObjects("Har akseltellersopp")
-					if n == 0 then tps = nil else tps = r[0] end --tps (tellepunktsopp) is nil if no tuning unit connected yet (used to trigger check of related object)
+					s = "Har akselteller_tuningenhet"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then tptu = nil else tptu = r[0] end --tptu (tellepunkt tuning unit) is nil if no tuning unit connected yet (used to trigger check of related object)
 					ac = getUpObject(RcType)
 					if ac == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
 					dist = distance(ac)
@@ -1275,11 +1277,11 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					Etol = 21.0 --[m] error level tolerance
 					Wtol = Etol + 2.0 --[m] warning level tolerance
 					if dist &lt; Etol then 
-						return string.format("%.03f: ERROR - %s too close in '%s' direction, outside tolerance %0.3f m.", dist,ac.name,searchDir,Etol),{ac,tps},_error
+						return string.format("%.03f: ERROR - %s too close in '%s' direction, outside tolerance %0.3f m.", dist,ac.name,searchDir,Etol),{ac,tptu},_error
 					elseif dist &lt; Wtol then 
-						return string.format("%.03f: WARNING - %s close in '%s' direction, but within tolerance %0.3f m.", dist,ac.name,searchDir,Etol),{ac,tps},_warning
+						return string.format("%.03f: WARNING - %s close in '%s' direction, but within tolerance %0.3f m.", dist,ac.name,searchDir,Etol),{ac,tptu},_warning
 					else
-						return string.format("%.03f: OK - %s is nearest axle counter in '%s' direction, farther away than tolerance %0.3f m.", dist,ac.name,searchDir,Etol),{ac,tps},_ok
+						return string.format("%.03f: OK - %s is nearest axle counter in '%s' direction, farther away than tolerance %0.3f m.", dist,ac.name,searchDir,Etol),{ac,tptu},_ok
 					end
 				end
 			</Formula>
@@ -1294,7 +1296,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextAxleCounter" DisplayName="Avstand til neste tellepunkt" 
 				Description="Axle counters need at least 21 m between any two consecutive sensors, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon." />
 		<LuaExpression Name="mc_DistanceToPreviousAxleCounter" IsModelCheck="true" ><Formula>_JBTSA_TEL_chkAxleCounterDistanceToPreviousAxleCounter()</Formula></LuaExpression>
-		<LuaExpression Name="mc_DistanceToNextAxleCounter" IsModelCheck="true" ><Formula>_JBTSA_TEL_chkAxleCounterDistanceToNextAxleCounter()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToNextAxleCounter" IsModelCheck="true" ><Formula>_JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()</Formula></LuaExpression>
 			
 		<InsertPointObject VariantName="Tellepunkt" DisplayBlockName="NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
@@ -1331,10 +1333,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<DockPointDefinitions>
 			<SnapPoints>
-				<SnapPoint X="0.0" Y="3.0" TargetSpace="akseltellersopp" />
-				<SnapPoint X="0.0" Y="4.5" TargetSpace="akseltellersopp" />
-				<SnapPoint X="0.0" Y="-3.0" TargetSpace="akseltellersopp" />
-				<SnapPoint X="0.0" Y="-4.5" TargetSpace="akseltellersopp" />
+				<SnapPoint X="0.0" Y="3.0" TargetSpace="akselteller_tuningenhet" />
+				<SnapPoint X="0.0" Y="4.5" TargetSpace="akselteller_tuningenhet" />
+				<SnapPoint X="0.0" Y="-3.0" TargetSpace="akselteller_tuningenhet" />
+				<SnapPoint X="0.0" Y="-4.5" TargetSpace="akselteller_tuningenhet" />
 			</SnapPoints>
 		</DockPointDefinitions>
 
@@ -1346,14 +1348,16 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNALING
 	AXLE COUNTER TUNING UNIT
 =========================================================================================================-->
-	<!-- TODO: Avklare med Bane NOR om vi får innføre SA-TET for Tellepunkt tuningenhet -->
+	<!-- TODO: Avklare med Bane NOR om vi får innføre SA-TET for akselteller tuningenhet -->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTSA_TET Akselteller tuningenhet"
 				Layer="JBTSA_TET" Color="ByLayer"
 				Group="Signal/Togdeteksjon/Akseltellere"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
-				>
+		>
 				
-		<RelationSpace>akseltellersopp</RelationSpace>
+		<RelationSpace>akselteller_tuningenhet</RelationSpace>
+		<AttachmentCategory Name="akselteller_tuningenhet" PassAttachmentToTarget="true" />
+		<AttachTo Category="akselteller_tuningenhet" />
 		
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
@@ -1372,84 +1376,187 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="IsyPostnotat" ><Formula>name</Formula></LuaExpression> 
 
 		<Variants>
-			<Variant Name="Sopp for enkelt tellepunkt" >
-				<SetValue Key="name" Value="Tp-sopp, enkel" />
-			</Variant>
-			<Variant Name="Sopp for dobbelt tellepunkt" >
-				<SetValue Key="name" Value="Tp-sopp, dobbel" />
+			<Variant Name="Akselteller tuningenhet" >
+				<SetValue Key="name" Value="Tp-tuner" />
 			</Variant>
 		</Variants>
 
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromMushroomToAxleCounter" 
-						DisplayName="Kabelavstand fra sopp til tellepunkt" 
-						Description="Axle counters send very weak signals to the nearby tuning box, using impedance-matched coaxial cables of predefined lengths, typically from 3 to 7 meters." />
-		<LuaExpression Name="mc_CableDistanceFromMushroomToAxleCounter" IsModelCheck="true" ><Formula>_JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()" ReturnType="String"
-			Description="Checks 'grid distance' (perp to track + along track), from axle counter tuner (mushroom) to its axle counter. Error if outside (1.0 - 7.5), warning if outside (3.0 - 3.4) meter." >
-			<Constructor>String _JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()</Constructor>
+		<CustomAttribute DataType="Enumeration" Name="Mounting" DisplayName="Montering" DefaultValue="UPRIGHT"
+			Description="The axle counter tuning unit may be mounted as [ Flatt (flat) | Stående (upright) | Vegg (wall) | Som nummer to (as number two) ]. The flat mounting (aka 'mushroom') means a flat-lying tuning unit mounted on top of a short pole, the pole's foot is meant for shallow burying in ballast. The 'Stående' (upright) method implies a slightly taller ballast foot with an upright tuning unit mounted to the side of this pole. The 'Vegg' (wall) method has no foot, just a bracket allowing fitting of an upright tuning unit to a wall, for instance in a tunnel under the hand rail." >
+			<Values>
+				<Value DisplayName="Flatt" Description="Flat-lying tuning unit mounted on top of a short pole with a ballast-buried foot." >FLAT</Value>
+				<Value DisplayName="Oppreist" Description="Upright tuning unit mounted to the side of a medium tall pole with a ballast-buried foot." >UPRIGHT</Value>
+				<Value DisplayName="Vegg" Description="Upright tuning unit without pole or foot, for fitting to a wall." >WALL</Value>
+				<Value DisplayName="Som nummer to" Description="Upright tuning unit without pole or foot, for fitting to an existing other upright tuning." >SECOND</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="CableLength" DisplayName="Kabellengde" DefaultValue="MEDIUM"
+			Description="The axle counter tuning unit will usually benefit from a pre-fabricated standard coaxial cable with a low-pass filter. These cable come in a several standard lengths. The cable will be descend from the track-mounted sensor into the ballast, typically follow the ballast under the cable duct, turning left or right, then mounting along the foot of the axle counter tuning unit stand. Therefore, the required cable length is approcimately 0.3m + LateralOffset + AlongOffset + 0.7m = 1m + LateralOffset + AlongOffset. One supplier has standard coax cables of lengths 4, 5.5 or 8 meter. Another supplier has standard coax cable lengths up to 15m." >
+			<Values>
+				<Value DisplayName="15.0 m prefab" Description="Lateral offset plus along-offset should be around 6.0 to 14.0 meters" >EXTRALONG</Value>
+				<Value DisplayName="8.0 m prefab" Description="Lateral offset plus along-offset should be around 4.5 to 6.0 meters" >LONG</Value>
+				<Value DisplayName="5.5 m prefab" Description="Lateral offset plus along-offset should be around 3.0 to 4.5 meters" >MEDIUM</Value>
+				<Value DisplayName="4.0 m prefab" Description="Lateral offset plus along-offset should be around 2.5 to 3.0 meters" >SHORT</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromTuningUnitToAxleCounter" 
+			DisplayName="Kabelavstand fra tuningenhet til tellepunkt" 
+			Description="Axle counters send very weak signals to the nearby tuning unit, using impedance-matched coaxial cables of predefined lengths, typically 4, 5.5, 8 or 15 meters." />
+		<LuaExpression Name="mc_CableDistanceFromTuningUnitToAxleCounter" IsModelCheck="true" ><Formula>_JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()" ReturnType="String"
+			Description="Checks 'grid distance' (perp to track + along track), from axle counter tuning unit to its axle counter sensor. Error if more than 1 meter outside stated tolerance, warning if outside expected value but less than 1 meter off." >
+			<Constructor>String _JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()</Constructor>
 			<Formula>
-				function _JBTSA_TET_chkCableDistanceFromTunerToAxleCounter()
-					--Assume mushroom has same own alignment and approximate position as the axle counter it belongs to:
-					s = "Er akseltellersopp for tellepunkt"
+				function _JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()
+					--Assume tuning unit has same own alignment and approximate position as the axle counter it belongs to:
+					s = "Er akselteller_tuningenhet for tellepunkt"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
 					else
 						tol = 1.0 -- meter
-						ac = r[0]
-						gridDistancePerpendicular = math.abs(distanceToAlignment - ac.distanceToAlignment)
-						gridDistanceColinear = math.abs(mileage - ac.mileage)
-						-- Their sum is a cool metric:
-						gridDistance = gridDistancePerpendicular + gridDistanceColinear
-						msg = "Grid distance is the sum of "..RC__round(gridDistancePerpendicular,1).." (perpendicular to alignment) and "..RC__round(gridDistanceColinear,1).." (colinear to alignment)"
-						gt = string.format("%.1f=%.03f+%.03f",gridDistance,gridDistancePerpendicular,gridDistanceColinear)
-						if (gridDistance &lt; tol) then return gridDistance..": ERROR - Tuner is located too close to axle counter wrt minimum tolerance 1m.",{ac},_error, _info(msg)
-						elseif (gridDistance &gt;= 1.0 and gridDistance &lt; 3.0) then return gt..": WARNING - Tuner is located close to axle counter but above min 1m - try increase to 3.0.",{ac},_warning, _info(msg)
-						elseif (gridDistance &gt;= 3.0 and gridDistance &lt; 3.4) then return gt..": OK - Distance from tuner to axle counter is suitable for standard cabling 3m to 3.4m.",{ac},_ok, _info(msg)
-						elseif (gridDistance &gt;= 3.4 and gridDistance &lt;= 7.5) then return gt..": WARNING - Tuner is located far from axle counter, but below max 7.5m - try reduce to 3.4.",{ac},_warning, _info(msg)
-						else return gt..": ERROR - Tuner is located too far from axle counter, reduce distance.",{ac},_error, _info(msg) end
+						lo = { SHORT = 2.5, MEDIUM = 3.0, LONG = 4.5, EXTRALONG = 6.0 }
+						hi = { SHORT = 3.0, MEDIUM = 4.5, LONG = 6.0, EXTRALONG = 14.0 }
+						cLen = { SHORT = "short", MEDIUM = "medium", LONG = "long", EXTRALONG = "extra long" }
+						lo = lo[CableLength]
+						hi = hi[CableLength]
+						cLen = cLen[CableLength]
+						ac = r[0] --trigger modelcheck in related objects as well
+						gridLateralOffset = math.abs(distanceToAlignment - ac.distanceToAlignment)
+						gridAlongOffset = math.abs(mileage - ac.mileage)
+						-- Their sum is a square-grid metric:
+						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
+						msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
+						gt = string.format("%.1f=%.03f+%.03f", gridDistance, gridLateralOffset, gridAlongOffset)
+						if (gridDistance &lt; lo-tol) then return gt..": ERROR - Tuner is located too close to axle counter wrt minimum tolerance, change prefab cable length.",{ac},_error, _info(msg)
+						elseif (gridDistance &gt;= lo-tol and gridDistance &lt; lo) then return gt..": WARNING - Tuner is located close to axle counter but above the minimum - try increase to " ..lo..".",{ac},_warning, _info(msg)
+						elseif (gridDistance &gt;= lo and gridDistance &lt; hi) then return gt..": OK - Distance from tuner to axle counter is suitable for the "..cLen.." cable type",{ac},_ok, _info(msg)
+						elseif (gridDistance &gt;= hi and gridDistance &lt;= hi+tol) then return gt..": WARNING - Tuner is located far from axle counter, but below the maximum - try reduce to "..hi..".",{ac},_warning, _info(msg)
+						else return gt..": ERROR - Tuner is located too far from axle counter, change prefab cable length.",{ac},_error, _info(msg) end
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
+		<LuaExpression Name="dir" ><Formula>Mounting == "SECOND" and "none" or "both"</Formula></LuaExpression>
 		
 		<LuaExpression Name="code" ><Formula>_JBTSA_TET_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_TET_code()" ReturnType="String"
-			Description="Obtains the 'code' for axle counter tuning unit (mushroom). Uses relation 'Er akseltellersopp for tellepunkt'." >
+			Description="Obtains the 'code' for axle counter tuning unit. Uses relation 'Er akselteller_tuningenhet for tellepunkt'." >
 			<Constructor>String _JBTSA_TET_code()</Constructor>
 			<Formula>
 				function _JBTSA_TET_code()
-					s = "Er akseltellersopp for tellepunkt"
+					s = "Er akselteller_tuningenhet for tellepunkt"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
-					elseif n == 1 then
-						return "Tps("..r[0].code..")"
-					elseif n == 2 then
-						return "Tps("..r[0].code.."+"..r[1].code..")"
-					elseif n &gt;= 3 then
-						return "*** ERROR - Too many axle counters sensors related to mushroom with '"..s.."."
+					else
+						return r[0].code --same as sensor's code
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="name" ><Formula>"Tps("..code..")"</Formula></LuaExpression>
-		<LuaExpression Name="Mileage" ><Formula>RC__getMileageFromRelatedObject("Er akseltellersopp for tellepunkt")</Formula></LuaExpression>
+		<LuaExpression Name="Model3DName" ><Formula>_JBTSA_TET_Model3dName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_TET_Model3dName()" ReturnType="String"
+			Description="Obtains the '3D model name' for the axle counter tuning unit. Uses relation 'Er akselteller_tuningenhet for tellepunkt'." >
+			<Constructor>String _JBTSA_TET_Model3dName()</Constructor>
+			<Formula>
+				function _JBTSA_TET_Model3dName()
+					t = "NO-BN-3D-SA-TET-TELLEPUNKT-TUNINGENHET-EAK30K" --Thales product
+					if Mounting == "FLAT" then
+						return t.."-FLATT"
+					elseif Mounting == "UPRIGHT" then 
+						return t.."-OPPREIST"
+					elseif Mounting == "WALL" then 
+						return t.."-VEGG"
+					elseif Mounting == "SECOND" then 
+						return t.."-VEGG"
+					else
+						return "Bad Variant ["..Variant.."]."
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
-		<InsertPointObject VariantName="Sopp for enkelt tellepunkt" DisplayBlockName="NO-BN-2D-JBTSA_TET-AKSELTELLER-TUNING-ENHET-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="true" >
+		<LuaExpression Name="Offset3D.Y" ><Formula>_JBTSA_TET_Offset3dY()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_TET_Offset3dY()" ReturnType="String"
+			Description="Obtains the 3D Offset3D Y coordinate for the axle counter tuning unit, depending on the selected mounting method." >
+			<Constructor>Double _JBTSA_TET_Offset3dY()</Constructor>
+			<Formula>
+				function _JBTSA_TET_Offset3dY()
+					if Mounting == "SECOND" then
+						return -0.35 --Assume it has direction 'none', placed on the rear side of another upright tuning unit placed in the 'both' direction.
+					else
+						return 0.000 --at insertion point
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Offset3D.Z" ><Formula>_JBTSA_TET_Offset3dZ()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_TET_Offset3dZ()" ReturnType="String"
+			Description="Obtains the 3D Offset3D Z coordinate for the axle counter tuning unit, depending on the selected mounting method." >
+			<Constructor>Double _JBTSA_TET_Offset3dZ()</Constructor>
+			<Formula>
+				function _JBTSA_TET_Offset3dZ()
+					if Mounting == "FLAT" then 
+						return 0.000
+					elseif Mounting == "UPRIGHT" then 
+						return 0.000
+					elseif Mounting == "WALL" then 
+						return 0.700	-- Typically, under the hand-rail in a tunnel
+					elseif Mounting == "SECOND" then
+						return 0.686 --Rear side of upright pole, matching the height above ground
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>"Tptu("..code..")"</Formula></LuaExpression>
+		<LuaExpression Name="Mileage" ><Formula>RC__getMileageFromRelatedObject("Er akselteller_tuningenhet for tellepunkt")</Formula></LuaExpression>
+
+		<InsertPointObject VariantName="Akselteller tuningenhet" DisplayBlockName="NO-BN-2D-JBTSA_TET-AKSELTELLER-TUNING-ENHET-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="false" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" />
 		</InsertPointObject>
 
-		<InsertPointObject VariantName="Sopp for dobbelt tellepunkt" DisplayBlockName="NO-BN-2D-JBTSA_TET-AKSELTELLER-TUNING-ENHET-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="true" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" />
-		</InsertPointObject>
+		
+		<CustomAttribute DataType="String" Name="NamePlateText" DisplayName="Tekst på 3D-modellens merkeskilt" DefaultValue=""
+			ReadOnly="true"
+			Description="Holds the section numbers to be displayed on the 3D model's name plate. The numbers are arranged such that the detection section number at lower mileage is mentioned on the side of the board being closest to the low mileages. The text is parsed from the associated axle counter's code." >
+		</CustomAttribute>
+		<LuaExpression Name="NamePlateText" ><Formula>_JBTSA_TET_NamePlateText3D()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_TET_NamePlateText3D()" ReturnType="String"
+			Description="Obtains the section numbers to show on the 3D model's name plate." >
+			<Constructor>String _JBTSA_TET_NamePlateText3D()</Constructor>
+			<Formula>
+				function _JBTSA_TET_NamePlateText3D()
+					s = "Er akselteller_tuningenhet for tellepunkt"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
+					else
+						acc = r[0].code
+						if acc == "-/-" then
+							return "-/-"
+						elseif acc:match("%w+/%-") then
+							lo = acc:match("(%w+)/%-")
+							hi = "-"
+						elseif acc:match("%-/%w+") then
+							lo = "-"
+							hi = acc:match("%-/(%w+)")
+						else
+							lo,hi = acc:match("(%w+)/(%w+)")
+						end
+						return dir == "both" and hi.."/"..lo or lo.."/"..hi
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_TET-AKSELTELLER-TUNING-ENHET-{{SymbolMode}}" AllowSymbolMove="true" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
@@ -1462,6 +1569,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% endif %}" />	
 		</SymbolDefinition>
 
+		<Model3DDefinition>
+			<Attribute Tag="T01" >
+				<Value>{{NamePlateText}}</Value>
+			</Attribute>
+		</Model3DDefinition>
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
 
 	</ObjectType>
@@ -1471,7 +1584,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 <!--========================================================================================================
     SIGNALING
 	TRACK VACANTY DETECTION
-	TRACK CIRCUIT SECTION
+	TRACK CIRCUIT SECTION FOR 95 Hz / 105 Hz
 =========================================================================================================-->
 	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="JBTSA_SPF Sporfelt"
 				Layer="JBTSA_SPF" Color="ByLayer"
@@ -1513,16 +1626,15 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>NOBN_sig_chkTriggerNeighbourIsolatedJoints()</Constructor>
 			<Formula>
 				function NOBN_sig_chkTriggerNeighbourIsolatedJoints()
-					if Alignment == nil then return "INCOMPLET - Aucun axe propre trouvé.",_error end
-					--if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 					local n = 0
 					local t = {}
-					prev = getDownObject("TFVA_JOI Joint isolé")
+					prev = getDownObject("JBTKO_SKJ Skinneskjøt")
 					if prev then 
 						n = n + 1
 						table.insert(t,prev)
 					end
-					next = getUpObject("TFVA_JOI Joint isolé")
+					next = getUpObject("JBTKO_SKJ Skinneskjøt")
 					if next then 
 						n = n + 1
 						table.insert(t,next)
@@ -1555,7 +1667,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 <!--========================================================================================================
     SIGNALING / TRACK AND EMBANKMENT
-	ISOLATED JOINT
+	ISOLATED RAIL JOINT
 =========================================================================================================-->
 	<!-- JBTKO_SKJ Skinneskjøt -->
 	<!-- Isolert skinneskjøt. Tilhører Overbygningsfaget, som har sporet. Brukes også i returstrømkretsen. -->
@@ -1663,6 +1775,462 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	</ObjectType>
 
 
+
+<!--========================================================================================================
+    SIGNALING
+	TRACK VACANCY DETECTION
+	TRACK CIRCUIT CONNECTION (FEED AND RETURN)
+=========================================================================================================-->
+	<!-- Todo -->
+
+
+
+<!--========================================================================================================
+    SIGNALING
+	TRACK VACANCY DETECTION SECTION FOR FTGS AUDIO FREQUENCY TRACK CIRCUIT SYSTEM
+=========================================================================================================-->
+	<!-- TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for FTGS skjøteløst sporfelt -->
+	<!-- Dette er et fiktivt objekt, ringen med avsnitt-nummeret i. FTGS S_forbinderne søker etter dem for å tilegne seg nr. -->
+	<!-- TODO: Avklare med Bane NOR om vi kan benytte SA-SFA for "FTGS avsnitt" som ny objekt-type for Banedata. -->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="JBTSA_SFA Togdeteksjonsavsnitt for FTGS"
+				Layer="JBTSA_SFA" Color="ByLayer"
+				Group="Signal/Togdeteksjon/FTGS"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+	>
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___SIG" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+
+		<!-- Ikke ISY beskrivelse - fiktivt objekt -->
+
+		<Variants>
+			<Variant Name="Togdeteksjonsavsnitt for FTGS" >
+			</Variant>
+		</Variants>
+
+		<SetValue Key="code" Value="OOO" />
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_FtgsConnectorsToBeModelchecked" 
+			DisplayName="FTGS connectors to be refreshed" 
+			Description="When this section object is refreshed, then the nearest limiting object on each side is refreshed as well." />
+		<LuaExpression Name="mc_FtgsConnectorsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTSA_SFA_chkTriggerNeighbourFtgsConnectors()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SFA_chkTriggerNeighbourFtgsConnectors()" ReturnType="String"
+			Description="Triggers modelchecking in neighbour FTGS connectors." >
+			<Constructor>_JBTSA_SFA_chkTriggerNeighbourFtgsConnectors()</Constructor>
+			<Formula>
+				function _JBTSA_SFA_chkTriggerNeighbourFtgsConnectors()
+					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+					local n = 0
+					local t = {}
+					prev = getDownObject("JBTSA_SFS FTGS forbinder")
+					if prev then 
+						n = n + 1
+						table.insert(t,prev)
+					end
+					next = getUpObject("JBTSA_SFS FTGS forbinder")
+					if next then 
+						n = n + 1
+						table.insert(t,next)
+					end
+					return n,t, _info(n.." FTGS connectors have been refreshed.")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>"Sf("..code..")"</Formula></LuaExpression>	
+
+		<!-- Snap-distance 1.6 means that the snap-function with argument '3' snaps it to dist 3 from track, snapping to the correct track. -->
+		<InsertPointObject VariantName="Togdeteksjonsavsnitt for FTGS" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance EnableDirectionSetting="true" />
+			<SetValue Key="KmStigerMotVenstre" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<SetValue Key="DelimiterType" Value="JBTSA_SFS FTGS S-forbinder" />
+		</InsertPointObject>
+		
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
+			<Rotation AddAngle="{% if KmStigerMotVenstre %}180{% else %}0{% endif %}" />
+			<SymbolAttribute Tag="X" >
+				<Value>{{code}}</Value>
+			</SymbolAttribute>
+		</SymbolDefinition>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNALING
+	FTGS AUDIO FREQUENCY TRACK CIRCUIT SYSTEM - FTGS CONNECTOR
+=========================================================================================================-->
+<!-- Note: If cant has been exaggerated, then the axle counter sensors will move with the superelevated rails and may come closer to the -->
+<!-- track / alignment axis than expected, and a model check for XY-plane distance less than 5e-3 to own alignment will flag the axle counter as misplaced... -->
+<!-- if (math.abs(math.abs(DistanceToAlignment) - cantGauge/2) &gt; 5e-3) then -->
+<!-- 	return string.format("%.3f",DistanceToAlignment)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
+<!-- end -->
+	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" Name="JBTSA_SFS FTGS forbinder"
+				Layer="JBTSA_SFS" Color="ByLayer"
+				Group="Signal/Togdeteksjon/FTGS"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+		>
+				
+		<RelationSpace>FTGS_forbinder</RelationSpace>
+		
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___SIG" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		
+		<!-- TODO define other Pset?? -->
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_TEL" />
+
+		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="Kort/kort S-forbinder" />
+			<Variant Name="Kort/lang S-forbinder" />
+			<Variant Name="Lang/kort S-forbinder" />
+			<Variant Name="Lang/lang S-forbinder" />
+			<Variant Name="FTGS endeforbinder" />
+			<Variant Name="FTGS sporkryss forbinder" />
+		</Variants>
+
+		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
+
+		<LuaExpression Name="code" ><Formula>_JBTSA_SFS_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SFS_code()" ReturnType="String"
+			Description="Returns a text string 'DownSection/UpSection' for an FTGS connector." >
+			<Constructor>_JBTSA_SFS_code()</Constructor>
+			<Formula>
+				function _JBTSA_SFS_code()
+					first = "-"
+					shortestDistanceSoFar = math.huge
+					for i = 0, DownSections.count-1 do
+						obj = DownSections[i]
+						if obj and obj:isVisible() then
+							dist = RC__getDistance2D(obj)
+							if dist &lt; shortestDistanceSoFar then
+								first = DownSections[i].code
+								shortestDistanceSoFar = dist
+							end
+						end
+					end
+					second = "-"
+					shortestDistanceSoFar = math.huge
+					for i = 0, UpSections.count-1 do
+						obj = UpSections[i]
+						if obj and obj:isVisible() then 
+							dist = RC__getDistance2D(obj)
+							if dist &lt; shortestDistanceSoFar then
+								second = UpSections[i].code
+								shortestDistanceSoFar = dist
+							end
+						end
+					end
+					if KmStigerMotVenstre then first,second = second,first end
+					if first == "-" and second == "-" then
+						return first.."/"..second, _info("UNFINISHED - Create FTGS connector Section object(s) to obtain the section numbers 'a/b' for the FTGS connector.")
+					else
+						return first.."/"..second
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>"Sf("..code..")"</Formula></LuaExpression>	
+		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>	
+		
+		<LuaFunction Name="_JBTSA_SFS_chkFtgsConnectorDistanceToPreviousFtgsConnector()" ReturnType="String"
+			Description="Checks distance to previous FTGS connector. Error if below 21 m, warning if below 23 m." >
+			<Constructor>String _JBTSA_SFS_chkFtgsConnectorDistanceToPreviousFtgsConnector()</Constructor>
+			<Formula>
+				function _JBTSA_SFS_chkFtgsConnectorDistanceToPreviousFtgsConnector()
+					searchDir = "down"
+					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+					s = "Har FTGS_tuningenhet"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then fctu = nil else fctu = r[0] end --fctu (FTGS connector tuning unit) is nil if no tuning unit connected yet (used to trigger check of related object)
+					fc = getDownObject(RcType)
+					if fc == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
+					dist = distance(fc)
+					t = string.format("%.3f", dist)
+					Etol = 21.0 --[m] error level tolerance
+					Wtol = Etol + 2.0 --[m] warning level tolerance
+					if dist &lt; Etol then 
+						return string.format("%.03f: ERROR - %s too close in '%s' direction, outside tolerance %0.3f m.", dist,fc.name,searchDir,Etol),{fc,fctu},_error
+					elseif dist &lt; Wtol then 
+						return string.format("%.03f: WARNING - %s close in '%s' direction, but within tolerance %0.3f m.", dist,fc.name,searchDir,Etol),{fc,fctu},_warning
+					else
+						return string.format("%.03f: OK - %s is nearest FTGS connector in '%s' direction, farther away than tolerance %0.3f m.", dist,fc.name,searchDir,Etol),{fc,fctu},_ok
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()" ReturnType="String"
+			Description="Checks distance to next axle counter. Error if below 21 m, warning if below 23 m." >
+			<Constructor>String _JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()()</Constructor>
+			<Formula>
+				function _JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()
+					searchDir = "up"
+					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
+					s = "Har FTGS_tuningenhet"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then fctu = nil else fctu = r[0] end --fctu (FTGS connector tuning unit) is nil if no tuning unit connected yet (used to trigger check of related object)
+					ac = getUpObject(RcType)
+					if ac == nil then return "OK - No "..RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
+					dist = distance(fc)
+					t = string.format("%.3f", dist)
+					Etol = 21.0 --[m] error level tolerance
+					Wtol = Etol + 2.0 --[m] warning level tolerance
+					if dist &lt; Etol then 
+						return string.format("%.03f: ERROR - %s too close in '%s' direction, outside tolerance %0.3f m.", dist,fc.name,searchDir,Etol),{fc,fctu},_error
+					elseif dist &lt; Wtol then 
+						return string.format("%.03f: WARNING - %s close in '%s' direction, but within tolerance %0.3f m.", dist,fc.name,searchDir,Etol),{fc,fctu},_warning
+					else
+						return string.format("%.03f: OK - %s is nearest axle counter in '%s' direction, farther away than tolerance %0.3f m.", dist,fc.name,searchDir,Etol),{fc,fctu},_ok
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- Model checks -->
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousFtgsConnector" DisplayName="Avstand til forrige FTGS forbinder" 
+				Description="FTGS connectors need at least 21 m between any two consecutive loops, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextFtgsConnector" DisplayName="Avstand til neste FTGS forbinder" 
+				Description="FTGS connectors need at least 21 m between any two consecutive loops, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon." />
+		<LuaExpression Name="mc_DistanceToPreviousFtgsConnector" IsModelCheck="true" ><Formula>_JBTSA_SFS_chkFtgsConnectorDistanceToPreviousFtgsConnector()</Formula></LuaExpression>
+		<LuaExpression Name="mc_DistanceToNextFtgsConnector" IsModelCheck="true" ><Formula>_JBTSA_SFS_chkFtgsConnectorDistanceToNextFtgsConnector()</Formula></LuaExpression>
+			
+		<InsertPointObject VariantName="Tellepunkt" DisplayBlockName="NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="KmStigerMotVenstre" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+		</InsertPointObject>
+
+		<SymbolDefinition AllowSymbolMove="true" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>NO-BN-2D-JBTSA_SFS-FTGS-FORBINDER-{{SymbolMode}}</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="true" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+			<BlockNameFormat>{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTSA_SFS-FTGS-FORBINDER-Metric{% endif %}</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="3.0" TargetSpace="FTGS_tuningenhet" />
+				<SnapPoint X="0.0" Y="4.5" TargetSpace="FTGS_tuningenhet" />
+				<SnapPoint X="0.0" Y="-3.0" TargetSpace="FTGS_tuningenhet" />
+				<SnapPoint X="0.0" Y="-4.5" TargetSpace="FTGS_tuningenhet" />
+			</SnapPoints>
+		</DockPointDefinitions>
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+    SIGNALING
+	FTGS AUDIO FREQUENCY TRACK CIRCUIT SYSTEM - TUNING UNIT
+=========================================================================================================-->
+	<!-- TODO: Avklare med Bane NOR om vi får innføre SA-SFT for FTGS tuningenhet -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTSA_SFT FTGS tuningenhet"
+				Layer="JBTSA_SFT" Color="ByLayer"
+				Group="Signal/Togdeteksjon/FTGS"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+		>
+				
+		<RelationSpace>FTGS_tuningenhet</RelationSpace>
+		
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_FAR___SIG" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
+		
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<LuaExpression Name="IsyPostnotat" ><Formula>name</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="Sender/Sender" />
+			<Variant Name="Sender/Mottager" />
+			<Variant Name="Mottager/Sender" />
+			<Variant Name="Mottager/Mottager" />
+		</Variants>
+
+		<CustomAttribute DataType="Enumeration" Name="Mounting" DisplayName="Montering" DefaultValue="FLAT"
+			Description="The FTGS tuning unit may be mounted as [ Flatt (flatt/flat) | Oppreist (upright) | Vegg (wall) ]. The oppreist (aka 'Sopp' (mushroom)) mounting means a flat-lying tuning unit mounted on top of a short pole, the pole's foot is meant for shallow burying in ballast. The 'Stående' (upright) method implies a slightly taller ballast foot with an upright tuning unit mounted to the side of this pole. The 'Vegg' (wall) method has no foot, just a bracket allowing fitting of an upright tuning unit to a wall, for instance in a tunnel under the hand rail." >
+			<Values>
+				<Value DisplayName="Sopp" Description="Flat-lying tuning unit mounted on top of a short pole with a ballast-buried foot." >FLAT</Value>
+				<Value DisplayName="Stående" Description="Upright tuning unit mounted to the side of a medium tall pole with a ballast-buried foot." >UPRIGHT</Value>
+				<Value DisplayName="Vegg" Description="Upright tuning unit without pole or foot, for fitting to a wall." >WALL</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="Enumeration" Name="CableLength" DisplayName="Kabellengde" DefaultValue="MEDIUM"
+			Description="The FTGS tuning unit will usually benefit from a pre-fabricated standard coaxial cable with a low-pass filter. These cable come in a several standard lengths. The cable will be descend from the track-mounted sensor into the ballast, typically follow the ballast under the cable duct, turning left or right, then mounting along the foot of the axle counter tuning unit stand. Therefore, the required cable length is approcimately 0.3m + LateralOffset + AlongOffset + 0.7m = 1m + LateralOffset + AlongOffset. One supplier has standard coax cables of lengths 4, 5.5 or 8 meter. Another supplier has standard coax cable lengths up to 15m." >
+			<Values>
+				<Value DisplayName="15.0 m prefab" Description="Lateral offset plus along-offset should be around 6.0 to 14.0 meters" >EXTRALONG</Value>
+				<Value DisplayName="8.0 m prefab" Description="Lateral offset plus along-offset should be around 4.5 to 6.0 meters" >LONG</Value>
+				<Value DisplayName="5.5 m prefab" Description="Lateral offset plus along-offset should be around 3.0 to 4.5 meters" >MEDIUM</Value>
+				<Value DisplayName="4.0 m prefab" Description="Lateral offset plus along-offset should be around 2.5 to 3.0 meters" >SHORT</Value>
+			</Values>
+		</CustomAttribute>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromTuningUnitToFtgsConnector" 
+			DisplayName="Kabelavstand fra tuningenhet til FTGS forbinder" 
+			Description="FTGS connectors send very weak signals to the nearby tuning unit, using impedance-matched coaxial cables of predefined lengths, typically from 4 to 15 meters." />
+		<LuaExpression Name="mc_CableDistanceFromTuningUnitToFtgsConnector" IsModelCheck="true" ><Formula>_JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()" ReturnType="String"
+			Description="Checks 'grid distance' (perp to track + along track), from axle counter tuning unit to its axle counter sensor. Error if more than 1 meter outside stated tolerance, warning if outside expected value but less than 1 meter off." >
+			<Constructor>String _JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()</Constructor>
+			<Formula>
+				function _JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()
+					--Assume mushroom has same own alignment and approximate position as the axle counter it belongs to:
+					s = "Er FTGS_tuningenhet for FTGS_forbinder"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate with '"..s.."' to  its FTGS connector."
+					else
+						tol = 1.0 -- meter
+						lo = { SHORT = 2.5, MEDIUM = 3.0, LONG = 4.5, EXTRALONG = 6.0 }
+						hi = { SHORT = 3.0, MEDIUM = 4.5, LONG = 6.0, EXTRALONG = 14.0 }
+						cLen = { SHORT = "short", MEDIUM = "medium", LONG = "long", EXTRALONG = "extra long" }
+						lo = lo[CableLength]
+						hi = hi[CableLength]
+						cLen = cLen[CableLength]
+						fc = r[0] --trigger modelcheck in related objects as well
+						gridLateralOffset = math.abs(distanceToAlignment - fc.distanceToAlignment)
+						gridAlongOffset = math.abs(mileage - fc.mileage)
+						-- Their sum is a square-grid metric:
+						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
+						msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
+						gt = string.format("%.1f=%.03f+%.03f", gridDistance, gridLateralOffset, gridAlongOffset)
+						if (gridDistance &lt; lo-tol) then return gt..": ERROR - Tuner is located too close to axle counter wrt minimum tolerance, change prefab cable length.",{fc},_error, _info(msg)
+						elseif (gridDistance &gt;= lo-tol and gridDistance &lt; lo) then return gt..": WARNING - Tuner is located close to axle counter but above the minimum - try increase to " ..lo..".",{fc},_warning, _info(msg)
+						elseif (gridDistance &gt;= lo and gridDistance &lt; hi) then return gt..": OK - Distance from tuner to axle counter is suitable for the "..cLen.." cable type",{ac},_ok, _info(msg)
+						elseif (gridDistance &gt;= hi and gridDistance &lt;= hi+tol) then return gt..": WARNING - Tuner is located far from axle counter, but below the maximum - try reduce to "..hi..".",{fc},_warning, _info(msg)
+						else return gt..": ERROR - Tuner is located too far from axle counter, change prefab cable length.",{fc},_error, _info(msg) end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
+		
+		<LuaExpression Name="code" ><Formula>_JBTSA_SFT_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SFT_code()" ReturnType="String"
+			Description="Obtains the 'code' for FTGS connector tuning unit. Uses relation 'Er FTGS_tuningenhet for FTGS_forbinder'." >
+			<Constructor>String _JBTSA_SFT_code()</Constructor>
+			<Formula>
+				function _JBTSA_SFT_code()
+					s = "Er FTGS_tuningenhet for FTGS_forbinder"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate with '"..s.."' to  its FTGS connector."
+					elseif n == 1 then
+						return "Ftu("..r[0].code..")"
+					elseif n == 2 then
+						return "Ftu("..r[0].code.."+"..r[1].code..")"
+					elseif n &gt;= 3 then
+						return "*** ERROR - Too many FTGS connectors related to FTGS tuning unit with '"..s.."."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="code" ><Formula>_JBTSA_SFT_Model3dName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SFT_Model3dName()" ReturnType="String"
+			Description="Obtains the '3D model name' for the FTGS connector tuning unit. Uses relation 'Er FTGS_tuningenhet for FTGS_forbinder'." >
+			<Constructor>String _JBTSA_SFT_Model3dName()</Constructor>
+			<Formula>
+				function _JBTSA_SFT_Model3dName()
+					t = "NO-BN-3D-SA-SFT-SPORFELT-TUNINGENHET-FTGS"
+					if mounting == "FLAT" 
+						then return t.."-FLATT"
+					elseif mounting == "-UPRIGHT" then 
+						return t.."-OPPREIST"
+					elseif mounting == "WALL" then 
+						return t.."-VEGG"
+					end
+					return t.."Bad Variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>"Ftu("..code..")"</Formula></LuaExpression>
+		<LuaExpression Name="Mileage" ><Formula>RC__getMileageFromRelatedObject("Er FTGS_tuningenhet for FTGS_forbinder")</Formula></LuaExpression>
+
+		<InsertPointObject VariantName="FTGS tuningenhet" DisplayBlockName="NO-BN-2D-JBTSA_SFT-SPORFELT-TUNINGENHET-FTGS-FLATT-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" />
+		</InsertPointObject>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTSA_SFT-FTGS-TUNING-ENHET-{{SymbolMode}}" AllowSymbolMove="true" >
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}" />	
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+	</ObjectType>
+<!-- xxxxxxxxx -->
+	
 
 <!--========================================================================================================
     SIGNALING
@@ -1793,7 +2361,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 						return "NO-BN-3D-FE-DIV-UKJENT",_error, _info("Unrecognized variant ["..Variant.."].")
 					end
 					if ((dir == "up" and RightSided) or (dir == "down" and LeftSided)) then 
-						return t.."VSIDE"
+						return t.."HSIDE"
 					elseif ((dir == "up" and LeftSided) or (dir == "down" and RightSided)) then 
 						return t.."VSIDE"
 					else
