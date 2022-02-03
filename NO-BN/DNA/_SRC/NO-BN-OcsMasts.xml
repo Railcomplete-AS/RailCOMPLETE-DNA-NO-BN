@@ -38,34 +38,24 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanLength()" ReturnType="Double" 
 			HideFromUser="false"
-			Description="Returns the shortest span length [m] between this catenary mast and its related next mast (at higher reference mileage value)." >
+			Description="Returns the shortest span length [m] between this catenary mast and its related next mast." >
 		<Constructor>Double _JBTEH_MAS_SpanLength()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_SpanLength()
-				local s = "Neste kl-mast"
-				local r,n = RC__getCollectionOfRelatedObjects(s)
+				local s, r, n, m1, m2, d 
+				s = "Neste kl-mast"
+				r, n = RC__getCollectionOfRelatedObjects(s)
+				m1 = this
 				if n == 0 then
-					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS mast (at a higher reference mileage), otherwise span length cannot be computed.")
+					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS mast.")
 				else
-					local d,closest,i,dist
-					d = math.huge
-					closest = "(none)" --Closest mast's code
-					for i = 0, n-1 do
-						if isObjectReachableByPath(r[i]) then
-							--Masts belong to same path, assume that catenary follows the default path between them.
-							--Another way to measure would have been straight-line from wire clamp to wire clamp.
-							dist = distance(r[i]) -- traveled distance along the path's alignment axes
-						else
-							--Case where masts belong to different tracks with no path between the two masts.
-							--NB! We must assume that there is no chain break here, and that own tracks are fairly aligned with the ref.track
-							dist = math.abs(r[i].ReferenceMileage - ReferenceMileage)
-						end
-						if dist &lt; d then
-							d = dist
-							closest = r[i].code
-						end
+					m2 = r[0]
+					d = distance(m1, m2)
+					if RC__isNan(d) then
+						return 0.0, _error, _info("*** ERROR - cannot deduce a distance between "..RC__identify(m1).." and "..RC__identify(m2).." (no path found between masts)")					
+					else
+						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(m1).." and "..RC__identify(m2).." measured in center track.")
 					end
-					return string.format("%.03f",d), _info(RC__round(d,3).." span length deduced from mast "..this.code.." to  "..closest..".")
 				end
 			end
 		</Formula>
@@ -115,33 +105,14 @@
 				if n == 0 or n == 1 then
 					return 0.0, _info("No second spanlength.")
 				else
-					-- n &gt;= 2:
-					local d,d2,closest,closest2,i,dist
-					d = math.huge
-					d2 = math.huge
-					closest = "(none)" --Closest mast's code
-					closest2 = "(none)" --Second closest mast's code
-					for i = 0, n-1 do
-						if isObjectReachableByPath(r[i]) then
-							--Masts belong to same path, assume that catenary follows the default path between them.
-							--Another way to measure would have been straight-line from wire clamp to wire clamp.
-							dist = distance(r[i]) -- traveled distance along the path's alignment axes
-						else
-							--Case where masts belong to different tracks with no path between the two masts.
-							--NB! We must assume that there is no chain break here, and that own tracks are fairly aligned with the ref.track
-							dist = math.abs(r[i].ReferenceMileage - ReferenceMileage)
-						end
-						if dist &lt; d then
-							d2 = d
-							closest2 = closest
-							d = dist
-							closest = r[i].code
-						elseif dist &lt; d2 then
-							d2 = dist
-							closest2 = r[i].code
-						end
+					local m1 = this
+					local m2 = r[1]
+					local d = distance(m1, m2)
+					if RC__isNan(d) then
+						return 0.0, _error, _info("*** ERROR - cannot deduce a distance between "..RC__identify(m1).." and "..RC__identify(m2).." (no path found between masts)")					
+					else
+						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(m1).." and "..RC__identify(m2).." measured in center track.")
 					end
-					return string.format("%.03f",d2), _info(RC__round(d2,3).." span length deduced from mast "..this.code.." to  "..closest2..".")
 				end
 			end
 		</Formula>
@@ -640,7 +611,7 @@
 		</CustomAttribute>
 
 		<!-- Span length 1 -->
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" 
+		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="0.0" 
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
@@ -657,7 +628,7 @@
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<!-- Span length 2 -->
-		<CustomAttribute DataType="Double" Name="SpanLength2" DisplayName="Spennlengde 2" DefaultValue="30.0" 
+		<CustomAttribute DataType="Double" Name="SpanLength2" DisplayName="Spennlengde 2" DefaultValue="0.0" 
 			Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength2" ><Formula>_JBTEH_MAS_SpanLength2()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" 
