@@ -884,6 +884,47 @@ positive feeder in AT system				positiv leder i AT-system
 				end
 			</Formula>
 		</LuaFunction>
+		
+		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="0.0" 
+			Description="The span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using 'Neste utligger'/'Forrige utligger'." />
+		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
+			<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
+			HideFromUser="false"
+			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
+		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
+		<Formula>
+			function _JBTEH_UTL_spanLength()
+				local s, r, n, c1, c2, d 
+				s = "Neste utligger"
+				r,n = RC__getCollectionOfRelatedObjects(s)
+				c1 = this
+				if n == 0 then
+					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
+				else
+					c2 = r[0]
+					c1ai = getAlignmentInfo(c1)
+					c1adX, c1adY = RC__acsVector2wcsVector(c1.WireClampLateralOffset, 0.0, c1.AlignmentTangent)
+					
+					c1aX = c1ai.Point.X + c1adX
+					c1aY = c1ai.Point.Y + c1adY
+					
+					c2ai = getAlignmentInfo(c2)
+					c2adX, c2adY = RC__acsVector2wcsVector(c2.WireClampLateralOffset, 0.0, c2.AlignmentTangent)
+					c2aX = c2ai.Point.X + c2adX
+					c2aY = c2ai.Point.Y + c2adY
+					
+					d = math.sqrt((c1aX - c2aX)^2 + (c1aY - c2aY)^2)						
+					
+					if RC__isNan(d) then
+						return 0.0, _error, _info("*** ERROR - cannot deduce a distance between "..RC__identify(c1).." and "..RC__identify(c2))					
+					else
+						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(c1).." and "..RC__identify(c2).." measured in center track.")
+					end
+				end
+			end			
+		</Formula>
+	</LuaFunction>
+		
 
 		<!-- Extra functions, for use when the wire clamps have been provided based on survey data. -->
 		<!-- Use these functions to compute contact wire height and stagger "backwards". -->
