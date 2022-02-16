@@ -9,9 +9,9 @@ rem Set CLEAN to no or yes to decide if existing files in target folders shall b
 set       ADM=NO-BN
 set   RELEASE=2022.a
 set       LOG=no
-set    COPY3D=yes
+set    COPY3D=no
 set TUTORIALS=yes
-set     CLEAN=yes
+set     CLEAN=no
 
 echo %ADM%>__adm.txt
 echo %RELEASE%>__release.txt
