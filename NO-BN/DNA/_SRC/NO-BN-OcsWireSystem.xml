@@ -2250,17 +2250,17 @@
 	</ObjectType>
 
 <!--========================================================================================================
-	TRACK AND EMBANKMENT
+	OcsWireSystem
 	ALIGNMENT CONTINUATIONS
 	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
-	<!-- NB: 'KO-SPF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTKO_SPF Sporfortsettelse"
-				Layer="JBTKO_SPF" Color="ByLayer"
-				Group="Overbygning/Sporfortsettelser"
+	<!-- NB: 'EH_LEF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_LEF Ledningsfortsettelse"
+				Layer="JBTEH_LEF" Color="ByLayer"
+				Group="Kontaktledning/Høyspentledning"
 				>
 				
-		<RelationSpace>sporfortsettelse</RelationSpace>
+		<RelationSpace>ledningsfortsettelse</RelationSpace>
 
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />		
@@ -2283,31 +2283,31 @@
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 
-		<Variants DefaultValue="Sporfortsettelse" >
-			<Variant Name="Sporfortsettelse" >
+		<Variants DefaultValue="Ledningsfortsettelse" >
+			<Variant Name="Ledningsfortsettelse" >
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="code" ><Formula>_JBTKO_SPF_code()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKO_SPF_code()" ReturnType="String"
-			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two tracks that meet in a track continuation." >
-			<Constructor>String _JBTKO_SPF_code()</Constructor>
+		<LuaExpression Name="code" ><Formula>_JBTEH_LEF_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_LEF_code()" ReturnType="String"
+			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two wires that meet in a wire continuation." >
+			<Constructor>String _JBTEH_LEF_code()</Constructor>
 			<Formula>
-				function _JBTKO_SPF_code()
+				function _JBTEH_LEF_code()
 					local first,second
-					if RcType ~= "JBTKO_SPF Sporfortsettelse" then
-						return _error, "Bad object type ["..RcType.."] - 'JBTKO_SPF Sporfortsettelse' was expected"
+					if RcType ~= "JBTEH_LEF Ledningsfortsettelse" then
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_LEF Ledningsfortsettelse' was expected"
 					else
 						first = Alignment
 						if first == nil then
 							return "Bad or missing alignment reference",_warning
-						elseif Alignment.RcType ~= "JBTKO_SPO Spor" then
+						elseif Alignment.RcType ~= "JBTEH_LEF Ledningsfortsettelse" then
 							return "Cannot connect to alignments of type '"..Alignmnent.RcType.."'.",_warning
 						end
 						second = TargetAlignment
 						if second == nil then
 							return "Bad or missing continuing alignment reference",_warning
-						elseif TargetAlignment.RcType ~= "JBTKO_SPO Spor" then
+						elseif TargetAlignment.RcType ~= "JBTEH_LEF Ledningsfortsettelse" then
 							return "Cannot connect to alignments of type '"..Alignmnent.RcType.."'.",_warning
 						end
 						if first.id == second.id then
@@ -2325,12 +2325,12 @@
 
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 					
-		<LuaExpression Name="Mileage" ><Formula>_JBTKO_SPF_mileage()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKO_SPF_mileage()" ReturnType="Double"
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_LEF_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_LEF_mileage()" ReturnType="Double"
 				Description="Obtains the mileage from its alignment." >
-			<Constructor>Double _JBTKO_SPF_mileage()</Constructor>
+			<Constructor>Double _JBTEH_LEF_mileage()</Constructor>
 			<Formula>
-				function _JBTKO_SPF_mileage()
+				function _JBTEH_LEF_mileage()
 					ai = getAlignmentInfo()
 					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
 					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
@@ -2339,31 +2339,114 @@
 			</Formula>
 		</LuaFunction>
 						
-		<InsertPointObject VariantName="Sporfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Ledningsfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<SetValue Key="KmStigerMotVenstre" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 				
-		<!-- Track and embankment viewpoint's symbol (the other disciplines don't show anything) -->
-		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTKO$SPF"
-				Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock" >
-			<Rotation Add180DegreesIfDirIsDown="true" />
-			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE
-				{% if ExtendingFromEnd == 'True' %}
-					{% if ContinuingWithBegin == 'False' %}0-1{% else %}0-0{% endif %}
-				{% else %}
-					{% if ContinuingWithBegin == 'False' %}0-0{% else %}1-0{% endif %}
-				{% endif %}
-				{{SymbolMode}}
-			</BlockNameFormat>
-		</SymbolDefinition>
-		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
 
 	</ObjectType>
 
+
+<!--========================================================================================================
+	OcsWireSystem
+	ALIGNMENT CONTINUATIONS
+	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
+=========================================================================================================-->
+	<!-- NB: 'EH_KTF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_KTF Kontaktedningsfortsettelse"
+				Layer="JBTEH_KTF" Color="ByLayer"
+				Group="Kontaktledning/Kontaktledning"
+				>
+				
+		<RelationSpace>ledningsfortsettelse</RelationSpace>
+
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___TRK" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
+		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+				
+		<LuaExpression Name="DistanceToAlignment" >
+			<Formula>RightSided and 4e-4 or -4e-4</Formula>
+		</LuaExpression> 
+		
+		<!-- Model checks Continuation -->
+		<xpp:expand select="NOBN_trk_CHK_CONNECTION___CONTINUATION" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+
+		<Variants DefaultValue="Kontaktledningsfortsettelse" >
+			<Variant Name="Kontaktledningsfortsettelse" >
+			</Variant>
+		</Variants>
+
+		<LuaExpression Name="code" ><Formula>_JBTEH_KTF_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTF_code()" ReturnType="String"
+			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two wires that meet in a wire continuation." >
+			<Constructor>String _JBTEH_KTF_code()</Constructor>
+			<Formula>
+				function _JBTEH_KTF_code()
+					local first,second
+					if RcType ~= "JBTEH_KTF Kontaktledningsfortsettelse" then
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_KTF Kontaktledningsfortsettelse' was expected"
+					else
+						first = Alignment
+						if first == nil then
+							return "Bad or missing alignment reference",_warning
+						elseif Alignment.RcType ~= "JBTEH_KTF Kontaktledningsfortsettelse" then
+							return "Cannot connect to alignments of type '"..Alignmnent.RcType.."'.",_warning
+						end
+						second = TargetAlignment
+						if second == nil then
+							return "Bad or missing continuing alignment reference",_warning
+						elseif TargetAlignment.RcType ~= "JBTEH_KTF Kontaktledningsfortsettelse" then
+							return "Cannot connect to alignments of type '"..Alignmnent.RcType.."'.",_warning
+						end
+						if first.id == second.id then
+							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
+						end
+						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
+						--if KmStigerMotVenstre then
+						--	first,second = second,first 
+						--end
+						return "["..first.Code.."] ==> ["..second.Code.."]"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+					
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_KTF_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTF_mileage()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_KTF_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_KTF_mileage()
+					ai = getAlignmentInfo()
+					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
+					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
+							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+				end
+			</Formula>
+		</LuaFunction>
+						
+		<InsertPointObject VariantName="Kontaktledningsfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
+                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+				
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
+
+	</ObjectType>
 
 <!--========================================================================================================
     End of file 
