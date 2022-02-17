@@ -183,7 +183,7 @@
 		<Variants DefaultValue="Kontaktledning, kjørbar" >
 			<Variant Name="Kontaktledning, kjørbar" /> 
 			<Variant Name="Kontaktledning, ikke kjørbar" /> 
-			<Variant Name="Bæreline" /> 
+			<Variant Name="Kontaktledning, wire" /> 
 		</Variants>
 
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
@@ -195,8 +195,8 @@
 				function _JBTEH_KTL_Material()
 					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
 						return "RiS 100" --Default for System 20
-					elseif Variant:match("Bæreline") then
-						return "Bz II 50/19 KHF" --Default for System 20
+					elseif Variant:match("Kontaktledning, wire") then
+						return "50/19" --Default for System 20 (50mm2, 19 strands)
 					else
 						return "Bad Variant ["..Variant.."]."
 					end
@@ -204,30 +204,31 @@
 			</Formula>
 		</LuaFunction>
 		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue=""
-			Description="The overhead catenary system (OCS) contact wire material [Ri 100 | RiS 100 | Ri 120 | RiS 120], or tensioning wire material [Bz 10 |..| Bz 150]." 
+			Description="The overhead catenary system (OCS) contact wire material or tensioning wire material." 
 		>
 			<Values Variant="Kontaktledning, kjørbar" >
-				<Value>Ri 100</Value>
-				<Value>RiS 100</Value>
-				<Value>Ri 120</Value>
-				<Value>RiS 120</Value>
+				<!-- Ref section 3.2 in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Hard_drawn_bronze_conductors_.28KHF.29 -->
+				<Value Description="EN50149 - AC-100 – Cu-ETP" >Ri 100</Value>
+				<Value Description="EN 50149 – AC-100 – CuAg0,1 ">RiS 100</Value>
+				<Value Description="EN 50149 – AC-120 – Cu-ETP" >Ri 120</Value>
+				<Value Description= "EN 50149 – AC-120 – CuAg0,1" >RiS 120</Value>
 			</Values>
 			<Values Variant="Kontaktledning, ikke kjørbar" >
-				<Value>Ri 100</Value>
-				<Value>RiS 100</Value>
-				<Value>Ri 120</Value>
-				<Value>RiS 120</Value>
+				<Value Description="EN50149 - AC-100 – Cu-ETP" >Ri 100</Value>
+				<Value Description="EN 50149 – AC-100 – CuAg0,1 ">RiS 100</Value>
+				<Value Description="EN 50149 – AC-120 – Cu-ETP" >Ri 120</Value>
+				<Value Description= "EN 50149 – AC-120 – CuAg0,1" >RiS 120</Value>
 			</Values>
-			<Values Variant="Bæreline" >
-				<Value>Bz II 10/49 KHF</Value>
-				<Value>Bz II 25/7 KHF</Value>
-				<Value>Bz II 35/7 KHF</Value>
-				<Value>Bz II 50/19 KHF</Value>
-				<Value>Bz II 50/19 KHF isolert HDPE 15kV</Value>
-				<Value>Bz II 70/19 KHF</Value>
-				<Value>Bz II 70/19 KHF isolert HDPE 15kV</Value>
-				<Value>Bz II 95/19 KHF</Value>
-				<Value>Bz II 150/37 KHF</Value>
+			<Values Variant="Kontaktledning, wire" >
+				<!-- Ref. 3.8 in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Hard_drawn_bronze_conductors_.28KHF.29 -->
+				<Value>50/175 w/bitumen</Value>
+				<Value>60/222 w/bitumen</Value>
+				<Value>16/133</Value>
+				<Value>30/7</Value>
+				<Value>50/19</Value>
+				<Value>70/19</Value>
+				<Value>80/19</Value>
+				<Value>95/19</Value>
 			</Values>
 		</CustomAttribute>
 
@@ -247,8 +248,8 @@
 				function _JBTEH_KTL_Wire2dColor()
 					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
 						return "Sort"
-					elseif Variant:match("Bæreline") then
-						return "Gul"
+					elseif Variant == "Kontaktledning, wire" then
+						return "Stålgrå"
 					else
 						return "Bad Variant ["..Variant.."]."
 					end
@@ -276,8 +277,8 @@
 				<Value>Oransje</Value>
 				<Value>Grønn</Value>
 			</Values>
-			<Values Variant="Bæreline" >
-				<Value>Gul</Value>
+			<Values Variant="Kontaktledning, wire" >
+				<Value>Stålgrå</Value>
 			</Values>
 		</CustomAttribute>
 
@@ -311,8 +312,8 @@
 						return "Continuous"
 					elseif Variant == "Kontaktledning, ikke kjørbar" then
 						return "RC-DASHED"
-					elseif Variant == "Bæreline" then
-						return "RC-DASHED-01"
+					elseif Variant == "Kontaktledning, wire" then
+						return "RC-DASHED"
 					else
 						return "Continuous" --Cannot return text string here
 					end
@@ -320,6 +321,7 @@
 			</Formula>
 		</LuaFunction>
 
+		<!-- Colors according to Bane NOR TRV, Contact wire symbols: -->
 		<LuaExpression Name="Color" ><Formula>_JBTEH_KTL_Color()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_Color()" ReturnType="String"
 			Description="Obtains the CAD system's polyline color, based on the wire's Wire2dColor." >
@@ -333,7 +335,9 @@
 					elseif Wire2dColor:lower():match("brun") then return "139,69,19"
 					elseif Wire2dColor:lower():match("oransje") then return "255,140,0"
 					elseif Wire2dColor:lower():match("grønn") then return "50,205,50"
-					elseif Wire2dColor:lower():match("gul") then return "2"
+					elseif Wire2dColor:lower():match("gul") then return 2
+					elseif Wire2dColor:lower():match("stålgrå") then return 253
+					else return 7 --white
 					end
 				end
 			</Formula>
@@ -355,8 +359,8 @@
 			</Formula>
 		</LuaFunction>
 
-		<SetValue Key="Sweep3D" Value="True" />
-		<SetValue Key="QuickMode3D" Value="True" />
+		<SetValue Key="Sweep3D" Value="true" />
+		<SetValue Key="QuickMode3D" Value="true" />
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
@@ -364,6 +368,7 @@
 		<LuaExpression Name="Rotation3D.Z" ><Formula>0.0</Formula></LuaExpression>
 		
 		<!-- The 2D Sweep profile: -->
+		<!-- See chapter 3.8 Steel wires in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Steel_wires -->
 		<LuaExpression Name="Model3DName" ><Formula>_JBTEH_KTL_Model3dName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_Model3dName()" ReturnType="Double"
 			Description="Obtains the wire's 3D model name, based on its Variant and material." >
@@ -372,17 +377,16 @@
 				function _JBTEH_KTL_Model3dName()
 					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
 						return "NO-BN-SWEEP-EH-KTL-KONTAKTTRÅD-"..Material:gsub(" ","-")
-					elseif Variant:match("Bæreline") then
-						t = "NO-BN-SWEEP-FE-WIR-WIRE-BLANK-KOBBER-"
-						if     Material:match("50/19 KHF isolert") then return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-013"
-						elseif Material:match("70/19 KHF isolert") then return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-013"
-						elseif Material:match("10/49") then return t.."10-MM2-DIAMETER-004"
-						elseif Material:match("25/19") then return t.."25-MM2-DIAMETER-006"
-						elseif Material:match("35/19") then return t.."35-MM2-DIAMETER-008"
-						elseif Material:match("50/19") then return t.."50-MM2-DIAMETER-009"
-						elseif Material:match("70/19") then return t.."70-MM2-DIAMETER-011"
-						elseif Material:match("95/19") then return t.."95-MM2-DIAMETER-013"
-						elseif Material:match("150/37") then return t.. "150-MM2-DIAMETER-016"
+					elseif Variant == "Kontaktledning, wire" then
+						t = "NO-BN-SWEEP-FE-WIR-WIRE-"
+						if     Material:match("50/175 w/bitumen") then return "SVART-DIAMETER-013"
+						elseif Material:match("60/222 w/bitumen") then return "SVART-DIAMETER-014"
+						elseif Material:match("16/133") then return t.."-006"
+						elseif Material:match("30/7") then return t.."GRÅ-DIAMETER-007"
+						elseif Material:match("50/19") then return t.."GRÅ-DIAMETER-009"
+						elseif Material:match("70/19") then return t.."GRÅ-DIAMETER-011"
+						elseif Material:match("80/19") then return t.."GRÅ-DIAMETER-012" --11.5mm
+						elseif Material:match("95/19") then return t.."GRÅ-DIAMETER-013"
 						end
 					else 
 						return "Bad Variant ["..Variant.."]."
@@ -390,6 +394,45 @@
 				end
 			</Formula>
 		</LuaFunction>
+					<!-- 2022-02-16 CLFEY/JOSJO - ta vare på dette, til JBTEH_LED: -->
+						<!-- t = "NO-BN-SWEEP-FE-WIR-WIRE-BLANK-KOBBER-" -->
+						<!-- if     Material:match("50/19 KHF isolert") then return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-013" -->
+						<!-- elseif Material:match("70/19 KHF isolert") then return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-013" -->
+						<!-- elseif Material:match("10/49") then return t.."10-MM2-DIAMETER-004" -->
+						<!-- elseif Material:match("25/19") then return t.."25-MM2-DIAMETER-006" -->
+						<!-- elseif Material:match("35/19") then return t.."35-MM2-DIAMETER-008" -->
+						<!-- elseif Material:match("50/19") then return t.."50-MM2-DIAMETER-009" -->
+						<!-- elseif Material:match("70/19") then return t.."70-MM2-DIAMETER-011" -->
+						<!-- elseif Material:match("95/19") then return t.."95-MM2-DIAMETER-013" -->
+						<!-- elseif Material:match("150/37") then return t.. "150-MM2-DIAMETER-016" -->
+						<!-- end -->
+		<!-- <CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="" -->
+			<!-- Description="The overhead catenary system (OCS) contact wire material [Ri 100 | RiS 100 | Ri 120 | RiS 120], or tensioning wire material [Bz 10 |..| Bz 150]."  -->
+		<!-- > -->
+			<!-- <Values Variant="Kontaktledning, kjørbar" > -->
+				<!-- <Value>Ri 100</Value> -->
+				<!-- <Value>RiS 100</Value> -->
+				<!-- <Value>Ri 120</Value> -->
+				<!-- <Value>RiS 120</Value> -->
+			<!-- </Values> -->
+			<!-- <Values Variant="Kontaktledning, ikke kjørbar" > -->
+				<!-- <Value>Ri 100</Value> -->
+				<!-- <Value>RiS 100</Value> -->
+				<!-- <Value>Ri 120</Value> -->
+				<!-- <Value>RiS 120</Value> -->
+			<!-- </Values> -->
+			<!-- <Values Variant="Bæreline" > -->
+				<!-- <Value>Bz II 10/49 KHF</Value> -->
+				<!-- <Value>Bz II 25/7 KHF</Value> -->
+				<!-- <Value>Bz II 35/7 KHF</Value> -->
+				<!-- <Value>Bz II 50/19 KHF</Value> -->
+				<!-- <Value>Bz II 50/19 KHF isolert HDPE 15kV</Value> -->
+				<!-- <Value>Bz II 70/19 KHF</Value> -->
+				<!-- <Value>Bz II 70/19 KHF isolert HDPE 15kV</Value> -->
+				<!-- <Value>Bz II 95/19 KHF</Value> -->
+				<!-- <Value>Bz II 150/37 KHF</Value> -->
+			<!-- </Values> -->
+		<!-- </CustomAttribute> -->
 		
 		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
 		<LuaExpression Name="Model3DSeparation" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
@@ -406,7 +449,7 @@
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
-		<InsertAlignment VariantName="Bæreline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
+		<InsertAlignment VariantName="Kontaktledning, wire" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
 
@@ -419,7 +462,7 @@
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_LED Ledning"
 				Layer="JBTEH_KTL_Kontaktledning_Kjørbar" Color="ByLayer"
-				Group="Kontaktledning/Kontaktledning"
+				Group="Kontaktledning/Ledning"
 				>
 		
 		<RelationSpace>høyspentledning</RelationSpace>
@@ -480,7 +523,7 @@
 						return "RC-EH_LINJE"
 					elseif Variant == "AT-kabel" then
 						return "RC-EH_KABEL"
-					elseif Variant == "Fjernline then
+					elseif Variant == "Fjernline" then
 						return "RC-EH_LINJE"
 					elseif Variant == "Fjernkabel" then
 						return "RC-EH_KABEL"
@@ -532,8 +575,8 @@
 			</Formula>
 		</LuaFunction>
 
-		<SetValue Key="Sweep3D" Value="True" />
-		<SetValue Key="QuickMode3D" Value="True" />
+		<SetValue Key="Sweep3D" Value="true" />
+		<SetValue Key="QuickMode3D" Value="true" />
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
@@ -735,8 +778,8 @@
 		<!-- Spør etter relasjon til 'sin' kontaktledning, og hente koden derfra -->
 		<!-- <PropertyPrompt Key="code" DefaultValue="Bæreline" AcceptEmptyValue="false" /> 		 -->
 
-		<!-- <SetValue Key="Sweep3D" Value="True" /> -->
-		<!-- <SetValue Key="QuickMode3D" Value="False" /> -->
+		<!-- <SetValue Key="Sweep3D" Value="true" /> -->
+		<!-- <SetValue Key="QuickMode3D" Value="false" /> -->
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<!-- <LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression> -->
@@ -782,7 +825,89 @@
 
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	CATENARY WIRE SYSTEM : STRECTHER
+	CATENARY WIRE SYSTEM : FIXLINE
+	Comment: Object type is not known to Bane NOR's Banedata. The FIXLINE appears only as Pset values to
+	the contact wire EH-KTL object in Banedata.
+ =========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_FIL Fixline"
+				Layer="JBTEH_FIL" Color="ByLayer"
+				Group="Kontaktledning/Fixline"
+				>
+		
+		<RelationSpace>fixline</RelationSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS" />
+		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
+		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
+		<!-- This object does not have its own Banedata code ==> omit specialized Pset for fixlines -->
+
+		<Variants DefaultValue="Fixline" >
+			<Variant Name="Fixline" >
+			</Variant>
+		</Variants>
+
+		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Bz II 50/19" 
+			Description="The overhead catenary system (OCS) fixline wire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
+			<!-- Fixline materials: See https://trv.banenor.no/app/kg7u5e4fv/67vku51/EH-707195-000_004_002.PDF -->
+			<Value>Bz II 50/19</Value>
+			<Value>Bz II 70/19</Value>
+			<Value>Bz II 50/19 isolert</Value>
+		</CustomAttribute>
+
+		<LuaExpression Name="code" ><Formula>_JBTEH_FIL_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIL_code()" ReturnType="String"
+			Description="Obtains the code for the OCS fixline wire, inherited from the associated contact wire, indirectly thtough its related cantilever '' relation." >
+			<Constructor>String _JBTEH_FIL_code()</Constructor>
+			<Formula>
+				function _JBTEH_FIL_code()
+					s = "Fikserer utligger"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate OCS fixline wire with '"..s.."' to its cantilever."
+					elseif n > 1 then
+						return "ERROR - Fixline wire shall relate to just one cantilever with '"..s.."' ("..n.." were found)."
+					else
+						cl = r[0] --cantilever
+						s1 = "Utligger for kontaktledning"
+						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+						if n == 1 then return 
+							RC__identify(r1[0])
+						else 
+							return "UNFINISHED - The related cantilever '"..RC__identify(cl).."' is missing an OCS wire related with '"..s1.."'."
+						end		
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>"Fl."..code</Formula></LuaExpression>
+
+		<!-- TODO Lage modelchecks: Check that the fixpoint actually sits at the middle of the entire contat wire (with continuations at one or both ends) -->
+		<SetValue Key="Sweep3D" Value="true" />
+		<SetValue Key="QuickMode3D" Value="true" />
+
+		<!-- 2022-02-16 TODO - it is no longer necessary to make the step size fit exactly (RC takes "the last step" for you) -->
+		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
+		<!-- <LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression> -->
+		<!-- <SetValue Key="Model3DOffset" Value="0.0" /> -->
+		
+		<InsertAlignment VariantName="Fixline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<SetValue Key="Linetype" Value="RC-DASHED" />
+			<SetValue Key="Model3DName" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
+		</InsertAlignment>
+
+	</ObjectType>
+
+
+
+<!-- ========================================================================================================
+	HIGH VOLTAGE
+	CATENARY WIRE SYSTEM : STRETCHER
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_BAR Bardun"
 				Layer="JBTEH_BAR" Color="ByLayer"
@@ -854,23 +979,24 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- TODO Lage modelchecks. -->
+		<!-- TODO Modelchecks. -->
 		<!-- Bardun: Se EH-707162. Vinkel 40-50 grader med vertikalen. Totallengde fra mast til bardunfeste skal være mellom 13 og 18 meter. -->
 			
 		<!-- Asks for relation to its corresponding contact wire, and derives it code from it. -->
 		<PropertyPrompt Key="code" DefaultValue="Bardun" AcceptEmptyValue="false" /> 		
 
-		<SetValue Key="Sweep3D" Value="True" />
-		<SetValue Key="QuickMode3D" Value="False" />
+		<SetValue Key="Sweep3D" Value="true" />
+		<SetValue Key="QuickMode3D" Value="false" />
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Z" ><Formula>0</Formula></LuaExpression>
 		
+		<!-- 2022-02-16 TODO - it is no longer necessary to make the step size fit exactly (RC takes "the last step" for you) -->
 		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
-		<LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
-		<SetValue Key="Model3DOffset" Value="0.0" />
+		<!-- <LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression> -->
+		<!-- <SetValue Key="Model3DOffset" Value="0.0" /> -->
 		
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_StretcherDirection" DisplayName="Bardun tegneretning" 
 			Description="Checking that a stretcher alignment shall start at its connection to thw wire or object it relieves, and extend to the stretcher's base plate or fixation." />
@@ -969,8 +1095,8 @@
 		<!-- Asks for relation to its corresponding contact wire, and derives it code from it. -->
 		<PropertyPrompt Key="code" DefaultValue="Strever" AcceptEmptyValue="false" /> 		
 
-		<SetValue Key="Sweep3D" Value="True" />
-		<SetValue Key="QuickMode3D" Value="False" />
+		<SetValue Key="Sweep3D" Value="true" />
+		<SetValue Key="QuickMode3D" Value="false" />
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
@@ -1473,7 +1599,7 @@
 		</Variants>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation" ><Formula>4.0</Formula></LuaExpression>
+		<LuaExpression Name="RelativeElevation" ><Formula>6.0</Formula></LuaExpression>
 
 		<!-- TODO Create 3D-object from EH drawing. -->
 		<!-- For now, just use stratcher's footplate: -->
@@ -1526,7 +1652,7 @@
 	For NO-BN / Bane NOR:
 	See EH-701742 Festejern for fast-, fjær- og loddavspenning på stålmaster 
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KPM Konsoll på mast"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KPM Kraftoverføringskonsoll på mast"
 				Layer="JBTEH_KPM" Color="ByLayer"
 				Group="Kontaktledning/Konsoller"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1544,14 +1670,13 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" /> -->
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
-		<!-- This object does not have its own Banedata code: -->
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_AEH" />
+		<!-- This object does not have a specific Banedata Pset. -->
 		
 		<Variants DefaultValue="Konsoll for bardunfeste på mast" >
 			<Variant Name="Konsoll for bardunfeste på mast" >
@@ -1843,8 +1968,7 @@
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_AEH" />
 
-		<Variants DefaultValue="Fixpunkt" >
-			<Variant Name="Fixpunkt" />
+		<Variants DefaultValue="Loddavspenning, dobbel" >
 			<Variant Name="Fastavspenning, enkel" />
 			<Variant Name="Fastavspenning, dobbel" />
 			<Variant Name="Loddavspenning, enkel" />
@@ -1874,24 +1998,14 @@
 		<LuaExpression Name="code" ><Formula>_JBTEH_AEH_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_code()" 
 			ReturnType="String"
-			Description="Obtains the 'code' for this OCS tensioning device, related to its wire with 'Avspenner kontaktledning'." >
+			Description="Obtains the 'code' for this OCS tensioning device, deduced from its own alignment (its contact wire or its fix line)." >
 			<Constructor>String _JBTEH_AEH_code()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_code()
 					if Alignment == nil then
-						return _warning, "UNFINISHED: Own Alignment (contact wire) undefined for OCS tensioning device."
+						return _warning, "UNFINISHED: Own Alignment (contact wire or fix line) undefined for OCS tensioning device."
 					else
-						if Variant:lower():match("fix") then
-							local RelationName = "Avspenner kontaktledning"
-							local r,n = RC__getCollectionOfRelatedObjects(RelationName)
-							if n == 0 then 
-								return "UNFINISHED - Relate fixpoint tensioning device with its catenary wire alignments with '"..RelationName.."'."
-							else
-								return r[0].code
-							end
-						else
-							return Alignment.code
-						end
+						return Alignment.code
 					end
 				end
 			</Formula>
@@ -1900,12 +2014,11 @@
 		<LuaExpression Name="name" ><Formula>_JBTEH_AEH_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_name()" 
 			ReturnType="String"
-			Description="Obtains the 'name' for this OCS tensioning device, related to its wire with 'Avspenner kontaktledning'." >
+			Description="Obtains the 'name' for this OCS tensioning device, deduced from its own alignment (its contact wire)." >
 			<Constructor>String _JBTEH_AEH_name()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_name()
-					if Variant:match("Fix") then return "L"..code .. " - [FIX]"
-					elseif Variant:match("Fjær") then return "L"..code .. " - [FJ]"
+					if     Variant:match("Fjær") then return "L"..code .. " - [FJ]"
 					elseif Variant:match("Fast") then return "L"..code .. " - [F]"
 					elseif Variant:match("Lodd") then return "L"..code .. " - [L]"
 					else return "Bad tensioning device variant ["..Variant.."].",_warning
@@ -1922,15 +2035,17 @@
 			<Formula>
 				function _JBTEH_AEH_Model3DName()
 					t = "NO-BN-3D-EH-AEH-AVSPENNING"
-					if Variant:match("Fix") then return t.."-FIXPUNKT"
-					else
-						if Variant:match("Fjær") then t = t.."-FJÆR"
-						elseif Variant:match("Fast") then t = t.."-FAST"
-						elseif Variant:match("Lodd") then t = t.."-LODD"
-						end
-						if Variant:match("enkel") then return t.."-ENKEL"
-						elseif Variant:match("dobbel") then return t.."-DOBBEL"
-						end
+					if Variant:match("Fjær") then
+						t = t.."-FJÆR"
+					elseif Variant:match("Fast") then
+						t = t.."-FAST"
+					elseif Variant:match("Lodd") then
+						t = t.."-LODD"
+					end
+					if Variant:match("enkel") then
+						return t.."-ENKEL"
+					elseif Variant:match("dobbel") then
+						return t.."-DOBBEL"
 					end
 					return _info("Bad tensioning device variant ["..Variant.."].")
 				end
@@ -1987,13 +2102,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- Note: They snap to the contact wire alignment even if they might actually work on the suspension catenary wire or a stretcher wire or fix wire -->
-		<InsertPointObject VariantName="Fixpunkt" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" 
-				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
-		</InsertPointObject>
-		
+		<!-- Note: They snap to the contact wire or fixline alignment object even if they might actually work on the messenger wire inn the case of a tunnel installation where the "loddsats" are separated -->
 		<InsertPointObject VariantName="Fastavspenning, enkel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FAST-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
@@ -2030,7 +2139,7 @@
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" >
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-LODD-DOBBEL-{{SymbolMode}}" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
@@ -2042,8 +2151,7 @@
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTEH_AEH
 				AVSPENNING
-				{% if Variant == 'Fixpunkt' %}FIXPUNKT
-				{% elsif Variant == 'Fastavspenning, enkel' %}FAST-ENKEL
+				{% if    Variant == 'Fastavspenning, enkel' %}FAST-ENKEL
 				{% elsif Variant == 'Fastavspenning, dobbel' %}FAST-DOBBEL
 				{% elsif Variant == 'Loddavspenning, enkel' %}LODD-ENKEL
 				{% elsif Variant == 'Loddavspenning, dobbel' %}LODD-DOBBEL
@@ -2071,59 +2179,15 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	TENSION BALANCER
+	FIXPOINT
 =========================================================================================================-->
-	<!-- TODO Skal snappe til mast som default. Kan også plasseres f.eks. rett på vegg. -->
-	<LuaFunction Name="NOBN_ocs_getTensioningStandardValues()" 
-		ReturnType="Table[4*Double]"
-		Description="Returns a standard tensile force (tf) values table: [cwtf]=contact wire tf, [catf]=catenary tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf. See NO-BN TRV." >
-		<Constructor>Table[4*Double] NOBN_ocs_getTensioningStandardValues([String OcsSystem])</Constructor>
-		<Formula>
-			function NOBN_ocs_getTensioningStandardValues(os)
-				if os == nil then os = OcsSystem end
-				local OcsSystems = {
-					"Unknown", 
-					"S20A",
-					"S20AR",
-					"S20B",
-					"S20BR",
-					"S20C1",
-					"S20C2",
-					"S25",
-					"S35",
-					"S35MS",
-					"Cariboni"
-				}
-				--(20C1 and 20C2 use the same tensile forces)
-				local TensileForces = {
-					["Unknown"] = 	{cwtf=0, 	catf=0, 	swtf=0,		awtf=0},
-					["S20A"] = 		{cwtf=10, 	catf=10,	swtf=2.3,	awtf=10},
-					["S20AR"] = 	{cwtf=7.06,	catf=7.06,	swtf=2.3, 	awtf=10},
-					["S20B"] = 		{cwtf=10,	catf=10,	swtf=0, 	awtf=10},
-					["S20BR"] = 	{cwtf=7.06,	catf=7.06,	swtf=0, 	awtf=10},
-					["S20C1"] = 	{cwtf=13,	catf=13,	swtf=2.3, 	awtf=10},
-					["S20C2"] = 	{cwtf=13,	catf=13,	swtf=2.3, 	awtf=10},
-					["S25"] = 		{cwtf=15,	catf=15,	swtf=2.8, 	awtf=10},
-					["S35"] = 		{cwtf=7.06,	catf=7.06,	swtf=0, 	awtf=10},
-					["S35MS"] = 	{cwtf=7.06,	catf=7.06,	swtf=0, 	awtf=10},
-					["Cariboni"] = 	{cwtf=13,	catf=13,	swtf=0, 	awtf=13}
-				}
---TODO: Code does not work when more than 10 items in table! Lua is fishy here:
---				if not RC__isMemberOf(OcsSystems,os) then 
---					return TensileForces.Unknown,_warning, _info("Bad tensioning device OCS System ["..os.."]. ")
---				end
-				return TensileForces[os]
-			end 
-		</Formula>
-	</LuaFunction>
-
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_AEH Avspenning"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FIX Fixpunkt"
 				Layer="JBTEH_AEH" Color="ByLayer"
 				Group="Kontaktledning/Avspenning"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>avspenning</RelationSpace>
+		<RelationSpace>fixpunkt</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
@@ -2138,74 +2202,32 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_AEH" />
+		<!-- (No specific Pset is available from Bane NOR for Fixpoint) -->
 
 		<Variants DefaultValue="Fixpunkt" >
 			<Variant Name="Fixpunkt" />
-			<Variant Name="Fastavspenning, enkel" />
-			<Variant Name="Fastavspenning, dobbel" />
-			<Variant Name="Loddavspenning, enkel" />
-			<Variant Name="Loddavspenning, dobbel" />
-			<Variant Name="Fjæravspenning, enkel" />
-			<Variant Name="Fjæravspenning, dobbel" />
 		</Variants>
 		
         <LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
-        <LuaExpression Name="dir" ><Formula>_JBTEH_AEH_dir()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_AEH_dir()" 
-			ReturnType="String"
-			Description="Obtains the 'dir' for this OCS tensioning device, related to its alignment's direction." >
-			<Constructor>String _JBTEH_AEH_dir()</Constructor>
-			<Formula>
-				function _JBTEH_AEH_dir()
-					if Alignment == nil then
-						return "unknown", _info("UNFINISHED: Own Alignment (contact wire) undefined for OCS tensioning device.")
-					else
-						return RC__getDistance2D(Alignment.RcAlignment.StartPoint) &lt; RC__getDistance2D(Alignment.RcAlignment.EndPoint) and "up" or "down"
-					end
-				end
-			</Formula>
-		</LuaFunction>
+        <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 
-		<LuaExpression Name="code" ><Formula>_JBTEH_AEH_code()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_AEH_code()" 
+		<LuaExpression Name="code" ><Formula>_JBTEH_FIX_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_code()" 
 			ReturnType="String"
-			Description="Obtains the 'code' for this OCS tensioning device, related to its wire with 'Avspenner kontaktledning'." >
-			<Constructor>String _JBTEH_AEH_code()</Constructor>
+			Description="Obtains the 'code' for this fixpoint, deduced from its own alignment (its contact wire)." >
+			<Constructor>String _JBTEH_FIX_code()</Constructor>
 			<Formula>
-				function _JBTEH_AEH_code()
+				function _JBTEH_FIX_code()
 					if Alignment == nil then
 						return _warning, "UNFINISHED: Own Alignment (contact wire) undefined for OCS tensioning device."
 					else
-						if Variant:lower():match("fix") then
-							local RelationName = "Avspenner kontaktledning"
-							local r,n = RC__getCollectionOfRelatedObjects(RelationName)
-							if n == 0 then 
-								return "UNFINISHED - Relate fixpoint tensioning device with its catenary wire alignments with '"..RelationName.."'."
-							else
-								return r[0].code
-							end
-						else
-							return Alignment.code
-						end
+						return Alignment.code
 					end
 				end
 			</Formula>
 		</LuaFunction>
 	
-		<LuaExpression Name="name" ><Formula>_JBTEH_FIX_code()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIX_code()" 
-			ReturnType="String"
-			Description="Obtains the 'code' for this fixpoint, obtained via the cantilever to which the fixpoint applies." >
-			<Constructor>String _JBTEH_FIX_code()</Constructor>
-			<Formula>
-				function _JBTEH_FIX_code()
-					return "L"..code .. " - [FIX]"
-				end
-			</Formula>
-		</LuaFunction>
-
 		<LuaExpression Name="name" ><Formula>_JBTEH_FIX_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIX_name()" 
 			ReturnType="String"
@@ -2217,12 +2239,24 @@
 				end
 			</Formula>
 		</LuaFunction>
+
+		<!-- Model check: That FIX point is as close to the CW midpoint as possible and that is actually needed: -->
+						<!-- if Variant:lower():match("fix") then -->
+							<!-- local RelationName = "Avspenner kontaktledning" -->
+							<!-- local r,n = RC__getCollectionOfRelatedObjects(RelationName) -->
+							<!-- if n == 0 then  -->
+								<!-- return "UNFINISHED - Relate fixpoint tensioning device with its catenary wire alignments with '"..RelationName.."'." -->
+							<!-- else -->
+								<!-- return r[0].code -->
+							<!-- end -->
+						<!-- else -->
+
 		
-		<!-- TODO: Insert 3D alignment generation to draw the Z wires from fixed cantilever's fix wire clamp to the contact wire to both sides ogf cantilever. -->
+		<!-- TODO: Insert 3D alignment generation to draw the Z wires from fixed cantilever's fix line wire clamp to the contact wire to both sides of the cantilever. -->
 		
 		<InsertPointObject VariantName="Fixpunkt" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>fix_line</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
@@ -2239,15 +2273,9 @@
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
 
-		<!-- TODO: Kan avspenningene være snappepunkt for ALIGNMENT av type Wire? -->
-		<!-- <DockPointDefinitions> -->
-			<!-- <SnapPoints> -->
-				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste" /> -->
-				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="Streverfeste fotplate (uten streveren)" /> -->
-			<!-- </SnapPoints> -->
-		<!-- </DockPointDefinitions> -->
-
 	</ObjectType>
+
+
 
 <!--========================================================================================================
 	OcsWireSystem

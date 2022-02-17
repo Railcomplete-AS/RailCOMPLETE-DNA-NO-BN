@@ -269,7 +269,6 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_crossingCode()</Formula></LuaExpression>
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 		<LuaExpression Name="dir" ><Formula>"none"</Formula></LuaExpression>
 		
@@ -375,169 +374,6 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="0"
 		 />
 
-		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression> 
-		
-			<!-- 2021-03-21 CLFEY Deprecated Description="The 'SwitchControlAndLocking' custom property [RM | RL | Rr | Rb | Pl | Pr | Pb | Pn | Hl | Hr | Hb | Hn] defines the switch control and locking type. The abbreviations mean: R='Remote controlled'. P='Pushbutton, electrically operated'. H='Hand operated (hand thrown)'. m='Machine locked (using a point machine or clamping device, with end position detection)'. l='Keylocked for left switch leg train movements'. r='Keylocked for right switch leg train movements'. b='Keylocked for both right and left switch leg train movements (one at a time)'. n='Not interlocked'." -->
-		<CustomAttribute DataType="Enumeration" Name="SwitchControlAndLocking" DisplayName="Omlegging / Låsing" DefaultValue="RM" Category="Connections"
-			Description="The 'SwitchControlAndLocking' custom property [RM | PL | PR | PB | PN | HL | HR | HB | HN ] defines the switch control and locking type. The abbreviations mean: R='Remote controlled'. P='Pushbutton, electrically operated'. H='Hand operated (hand thrown)'. M='Machine locked (using a point machine or clamping device, with end position detection)'. L='Keylocked for left switch leg train movements'. R='Keylocked for right switch leg train movements'. B='Keylocked for both right and left switch leg train movements (one at a time)'. N='Not interlocked'."
-			>
-			<Values>
-				<Value DisplayName="Sentralstilt, maskinlåst" Description="Remote controlled, machine locked" >RM</Value>
-				<Value DisplayName="Kastelodd, kontrollåst V" Description="Hand thrown, keylocked for left switch leg train movements" >HL</Value>
-				<Value DisplayName="Kastelodd, kontrollåst H" Description="Hand thrown, keylocked for right switch leg train movements" >HR</Value>
-				<Value DisplayName="Kastelodd, kontrollåst HV" Description="Hand thrown, keylocked for both right and left switch leg train movements (one at a time)" >HB</Value>
-				<Value DisplayName="Kastelodd, uforriglet" Description="Hand thrown, not interlocked" >HN</Value>
-				<Value DisplayName="Trykknapp, kontrollåst V" Description="Pushbutton controlled, keylocked for left switch leg train movements (one at a time)" >PL</Value>
-				<Value DisplayName="Trykknapp, kontrollåst H" Description="Pushbutton controlled, keylocked for right switch leg train movements" >PR</Value>
-				<Value DisplayName="Trykknapp, kontrollåst HV" Description="Pushbutton controlled, keylocked for both right and left switch leg train movements" >PB</Value>
-				<Value DisplayName="Trykknapp, uforriglet" Description="Pushbutton controlled, not interlocked" >PN</Value>
-			</Values> 
-		</CustomAttribute>
-		
-		<CustomAttribute DataType="Enumeration" Name="SwitchElectrification" DisplayName="Ledningsføring" DefaultValue="Both" Category="Connections"
-			Description="The 'SwitchElectrification' custom property [Both | Left | Right | Unknown] defines the switch electrification (both/left/right driving directions are electrified)."
-			>
-			<Values>
-				<Value DisplayName="Begge spor" Description="Both switch legs are electrified" >Both</Value>
-				<Value DisplayName="Enkelt spor venstre" Description="Only left switch leg is electrified" >Left</Value>
-				<Value DisplayName="Enkelt spor høyre" Description="Only right switch leg is electrified" >Right</Value>
-				<Value DisplayName="Udefinert" Description="Switch leg electrification is unknown" >Unknown</Value>
-			</Values>
-		</CustomAttribute>
-
-	<!--railML modell av sporveksel:
-    ================================
-    trackContinueCourse finnes i tSwitch. course finnes i tSwitchConnectionData. Disse to har samme type 
-	{'left', 'straight', 'right', 'unknown', 'none'}.
-	
-	normalPosition {'straight', 'left', 'right', 'unknown', 'none'} er implementert 
-	i RC. Vi tolker dette som rettfram/venstre/høyre/ikkeTildeltEnnå, eller ikke-i-kontroll, som normalstillinger i sikringsanlegget.
-    normalPosition er {'straight', 'left', 'right', 'other'} i følge Spy-XML wiki sider hos railML-org. Merk at det jo tungene som skal 
-	ha normalstilling, ikke sporvekselen. Modelleringsfeil i railML. 
-	
-	Dir {'up','down'} er en railML-attributt i objektet for kjørbar sporforbindelse (klassen tSwitchConnectionData). 
-	Outgoing betyr at et tog som kjører i økende mileage-retning treffer på tungepartiet før bakkantpartiet i sporvekselen.
-    -->
-
-
-		<!--fast/bevegelig kryss var ikke modellert i railML i det hele tatt: -->
-		<CustomAttribute DataType="Enumeration" Name="SwitchNoseType" DisplayName="Fast eller bevegelig kryss" DefaultValue="Fixed" Category="Connections"
-			Description="The 'SwitchNoseType' custom property [Fixed | Movable] defines the type of switch nose (point frog), fixed or movable."
-			>
-			<!--tSwitchConnectionData-->
-			<Values>
-				<Value DisplayName="Fast" >Fixed</Value>
-				<Value DisplayName="Bevegelig" >Movable</Value>
-			</Values>
-		</CustomAttribute>
-		
-		<!-- Model checks for Switch -->
-		<xpp:expand select="NOBN_trk_CHK_CONNECTION___SWITCH" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_KO_SPV" />
-
-		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
-		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKO_SPV_switchCode()" ReturnType="String"
-			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing." >
-			<Constructor>String _JBTKO_SPV_switchCode()</Constructor>
-			<Formula>
-				function _JBTKO_SPV_switchCode()
-					local first,second
-					if RcType ~= "JBTKO_SPV Sporveksel" then
-						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
-					else
-						first = Alignment
-						if first == nil then
-							return "Bad or missing alignment reference",_warning
-						end
-						second = TargetAlignment
-						if second == nil then
-							return "Bad or missing branching alignment reference",_warning
-						end
-						if first.id == second.id then
-							return "Alignment and branching alignment cannot be the same ["..first.Code.."]"
-						end
-						return "["..Alignment.code.."] -&gt; ["..TargetAlignment.code.."]"
-					end
-				end
-			</Formula>
-		</LuaFunction>
-
-		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
-
-		<LuaExpression Name="Model3DName" ><Formula>_JBTKO_SPV_switchModel3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKO_SPV_switchModel3DName()" ReturnType="String"
-				Description="Returns Model3DName according to switch variant." >
-			<Constructor>String _JBTKO_SPV_switchModel3DName(tSwitch v)</Constructor>
-			<Formula>
-				function _JBTKO_SPV_switchModel3DName(v)
-					if v == nil then v = this end
-					if v.RcType ~= "JBTKO_SPV Sporveksel" then
-						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
-					end
-					local sideOfTrack = SwitchGeometry == "right" and "H" or "V"
-					local suffix = SwitchNoseType == "Fixed" and "-FX" or "-BX"
-					if Variant == "1:7 R190 FX 54E3 (KO-800157)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-7-R190-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R190 FX 54E3 (KO-701334)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-9-R190-"..sideOfTrack..suffix					
-					elseif Variant == "1:9 R300 FX 54E3 (KO-701287)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-9-R300-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R300 FX 60E1 (KO-701409)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-9-R300-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R300 BX 60E1 (KO-800099)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-9-R300-"..sideOfTrack..suffix
-					elseif Variant == "1:11,66 R500 FX 60E1 (KO-800068)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-11.66-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:12 R500 FX 54E3 (KO-701306)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-12-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:12 R500 FX 60E1 (KO-800068)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-12-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:12 R500 BX 60E1 (KO-800090)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-12-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:14 R760 FX 54E3 (KO-701319)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-14-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:14 R760 FX 60E1 (KO-701372)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-14-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:14 R760 BX 60E1 (KO-800108)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-14-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:15 R760 FX 60E1 (KO-701382)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-15-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:15 R760 BX 60E1 (KO-800164)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-15-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:18.4 R1200 BX 60E1 (KO-800081)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-18.4-R1200-"..sideOfTrack..suffix
-					elseif Variant == "1:26.1 R2500 BX 60E1 (KO-701399)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-26.1-R2500-"..sideOfTrack..suffix
-					else 
-						return "NO-BN-3D-UNSPECIFIED"
-					end
-				end
-			</Formula>
-		</LuaFunction>
-
-		<LuaExpression Name="model" ><Formula>Variant</Formula></LuaExpression>
-		
-		<!-- railML property trackContinueCourse: -->
-		<LuaExpression Name="trackContinueCourse" ><Formula>_JBTKO_SPV_trackContinueCourse()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKO_SPV_trackContinueCourse()" ReturnType="String"
-			Description="Returns a string holding either 'left' or 'right'. At present, 3-way switches (allowed in railML) are not modeled in RailCOMPLETE, i.e. ConnectionCourse being 'straight' leads to an error message." >
-			<Constructor>String _JBTKO_SPV_trackContinueCourse()</Constructor>
-			<Formula>
-				function _JBTKO_SPV_trackContinueCourse()
-					if (ConnectionCourse == "right") then 
-						return "left"
-					elseif (ConnectionCourse == "left") then
-						return "right"
-					elseif (ConnectionCourse == 'straight') then
-						return "Cannot use 'straight' connection course in 2-way switch, use 'left' or 'right'",_warning
-					else
-						return "Bad connection course ["..ConnectionCourse.."]",_error
-					end
-				end
-			</Formula>
-		</LuaFunction>
-		
 		<!--TODO For å kunne sette korrekt trackContinueRadius så må RC analysere avvikssporets fortsettelse, som er enten 0 (rettlinje) eller samme 
         kurvatur som i vx. Se TRV, Overbygning, sporveksler. D-partiet er et rett parti etter avvikssporets krumning. Dersom D <> 0 så finnes det
         kun ett svillesett. Dersom D = "-" så strekker avvikssporets kurvatur seg gjennomg hele sporvekselen og kan dermed fortsette inn i samme
@@ -671,6 +507,168 @@
 			</Variant>
 		</Variants>
 					
+			<!-- 2021-03-21 CLFEY Deprecated Description="The 'SwitchControlAndLocking' custom property [RM | RL | Rr | Rb | Pl | Pr | Pb | Pn | Hl | Hr | Hb | Hn] defines the switch control and locking type. The abbreviations mean: R='Remote controlled'. P='Pushbutton, electrically operated'. H='Hand operated (hand thrown)'. m='Machine locked (using a point machine or clamping device, with end position detection)'. l='Keylocked for left switch leg train movements'. r='Keylocked for right switch leg train movements'. b='Keylocked for both right and left switch leg train movements (one at a time)'. n='Not interlocked'." -->
+		<CustomAttribute DataType="Enumeration" Name="SwitchControlAndLocking" DisplayName="Omlegging / Låsing" DefaultValue="RM" Category="Connections"
+			Description="The 'SwitchControlAndLocking' custom property [RM | PL | PR | PB | PN | HL | HR | HB | HN ] defines the switch control and locking type. The abbreviations mean: R='Remote controlled'. P='Pushbutton, electrically operated'. H='Hand operated (hand thrown)'. M='Machine locked (using a point machine or clamping device, with end position detection)'. L='Keylocked for left switch leg train movements'. R='Keylocked for right switch leg train movements'. B='Keylocked for both right and left switch leg train movements (one at a time)'. N='Not interlocked'."
+			>
+			<Values>
+				<Value DisplayName="Sentralstilt, maskinlåst" Description="Remote controlled, machine locked" >RM</Value>
+				<Value DisplayName="Kastelodd, kontrollåst V" Description="Hand thrown, keylocked for left switch leg train movements" >HL</Value>
+				<Value DisplayName="Kastelodd, kontrollåst H" Description="Hand thrown, keylocked for right switch leg train movements" >HR</Value>
+				<Value DisplayName="Kastelodd, kontrollåst HV" Description="Hand thrown, keylocked for both right and left switch leg train movements (one at a time)" >HB</Value>
+				<Value DisplayName="Kastelodd, uforriglet" Description="Hand thrown, not interlocked" >HN</Value>
+				<Value DisplayName="Trykknapp, kontrollåst V" Description="Pushbutton controlled, keylocked for left switch leg train movements (one at a time)" >PL</Value>
+				<Value DisplayName="Trykknapp, kontrollåst H" Description="Pushbutton controlled, keylocked for right switch leg train movements" >PR</Value>
+				<Value DisplayName="Trykknapp, kontrollåst HV" Description="Pushbutton controlled, keylocked for both right and left switch leg train movements" >PB</Value>
+				<Value DisplayName="Trykknapp, uforriglet" Description="Pushbutton controlled, not interlocked" >PN</Value>
+			</Values> 
+		</CustomAttribute>
+		
+		<CustomAttribute DataType="Enumeration" Name="SwitchElectrification" DisplayName="Ledningsføring" DefaultValue="Both" Category="Connections"
+			Description="The 'SwitchElectrification' custom property [Both | Left | Right | Unknown] defines the switch electrification (both/left/right driving directions are electrified)."
+			>
+			<Values>
+				<Value DisplayName="Begge spor" Description="Both switch legs are electrified" >Both</Value>
+				<Value DisplayName="Enkelt spor venstre" Description="Only left switch leg is electrified" >Left</Value>
+				<Value DisplayName="Enkelt spor høyre" Description="Only right switch leg is electrified" >Right</Value>
+				<Value DisplayName="Udefinert" Description="Switch leg electrification is unknown" >Unknown</Value>
+			</Values>
+		</CustomAttribute>
+
+	<!--railML modell av sporveksel:
+    ================================
+    trackContinueCourse finnes i tSwitch. course finnes i tSwitchConnectionData. Disse to har samme type 
+	{'left', 'straight', 'right', 'unknown', 'none'}.
+	
+	normalPosition {'straight', 'left', 'right', 'unknown', 'none'} er implementert 
+	i RC. Vi tolker dette som rettfram/venstre/høyre/ikkeTildeltEnnå, eller ikke-i-kontroll, som normalstillinger i sikringsanlegget.
+    normalPosition er {'straight', 'left', 'right', 'other'} i følge Spy-XML wiki sider hos railML-org. Merk at det jo tungene som skal 
+	ha normalstilling, ikke sporvekselen. Modelleringsfeil i railML. 
+	
+	Dir {'up','down'} er en railML-attributt i objektet for kjørbar sporforbindelse (klassen tSwitchConnectionData). 
+	Outgoing betyr at et tog som kjører i økende mileage-retning treffer på tungepartiet før bakkantpartiet i sporvekselen.
+    -->
+
+
+		<!--fast/bevegelig kryss var ikke modellert i railML i det hele tatt: -->
+		<CustomAttribute DataType="Enumeration" Name="SwitchNoseType" DisplayName="Fast eller bevegelig kryss" DefaultValue="Fixed" Category="Connections"
+			Description="The 'SwitchNoseType' custom property [Fixed | Movable] defines the type of switch nose (point frog), fixed or movable."
+			>
+			<!--tSwitchConnectionData-->
+			<Values>
+				<Value DisplayName="Fast" >Fixed</Value>
+				<Value DisplayName="Bevegelig" >Movable</Value>
+			</Values>
+		</CustomAttribute>
+		
+		<!-- Model checks for Switch -->
+		<xpp:expand select="NOBN_trk_CHK_CONNECTION___SWITCH" />
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_KO_SPV" />
+
+		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression> 
+		
+		<LuaExpression Name="code" ><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_switchCode()" ReturnType="String"
+			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing." >
+			<Constructor>String _JBTKO_SPV_switchCode()</Constructor>
+			<Formula>
+				function _JBTKO_SPV_switchCode()
+					local first,second
+					if RcType ~= "JBTKO_SPV Sporveksel" then
+						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
+					else
+						first = Alignment
+						if first == nil then
+							return "Bad or missing alignment reference",_warning
+						end
+						second = TargetAlignment
+						if second == nil then
+							return "Bad or missing branching alignment reference",_warning
+						end
+						if first.id == second.id then
+							return "Alignment and branching alignment cannot be the same ["..first.Code.."]"
+						end
+						return "["..Alignment.code.."] -&gt; ["..TargetAlignment.code.."]"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+
+		<LuaExpression Name="Model3DName" ><Formula>_JBTKO_SPV_switchModel3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_switchModel3DName()" ReturnType="String"
+				Description="Returns Model3DName according to switch variant." >
+			<Constructor>String _JBTKO_SPV_switchModel3DName(tSwitch v)</Constructor>
+			<Formula>
+				function _JBTKO_SPV_switchModel3DName(v)
+					if v == nil then v = this end
+					if v.RcType ~= "JBTKO_SPV Sporveksel" then
+						return "Bad object type ["..RcType.."], 'JBTKO_SPV Sporveksel' was expected"
+					end
+					local sideOfTrack = SwitchGeometry == "right" and "H" or "V"
+					local suffix = SwitchNoseType == "Fixed" and "-FX" or "-BX"
+					if Variant == "1:7 R190 FX 54E3 (KO-800157)" then
+						return "NO-BN-3D-KO-SPV-54E3-1-7-R190-"..sideOfTrack..suffix
+					elseif Variant == "1:9 R190 FX 54E3 (KO-701334)" then
+						return "NO-BN-3D-KO-SPV-54E3-1-9-R190-"..sideOfTrack..suffix					
+					elseif Variant == "1:9 R300 FX 54E3 (KO-701287)" then
+						return "NO-BN-3D-KO-SPV-54E3-1-9-R300-"..sideOfTrack..suffix
+					elseif Variant == "1:9 R300 FX 60E1 (KO-701409)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-9-R300-"..sideOfTrack..suffix
+					elseif Variant == "1:9 R300 BX 60E1 (KO-800099)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-9-R300-"..sideOfTrack..suffix
+					elseif Variant == "1:11,66 R500 FX 60E1 (KO-800068)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-11.66-R500-"..sideOfTrack..suffix
+					elseif Variant == "1:12 R500 FX 54E3 (KO-701306)" then
+						return "NO-BN-3D-KO-SPV-54E3-1-12-R500-"..sideOfTrack..suffix
+					elseif Variant == "1:12 R500 FX 60E1 (KO-800068)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-12-R500-"..sideOfTrack..suffix
+					elseif Variant == "1:12 R500 BX 60E1 (KO-800090)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-12-R500-"..sideOfTrack..suffix
+					elseif Variant == "1:14 R760 FX 54E3 (KO-701319)" then
+						return "NO-BN-3D-KO-SPV-54E3-1-14-R760-"..sideOfTrack..suffix
+					elseif Variant == "1:14 R760 FX 60E1 (KO-701372)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-14-R760-"..sideOfTrack..suffix
+					elseif Variant == "1:14 R760 BX 60E1 (KO-800108)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-14-R760-"..sideOfTrack..suffix
+					elseif Variant == "1:15 R760 FX 60E1 (KO-701382)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-15-R760-"..sideOfTrack..suffix
+					elseif Variant == "1:15 R760 BX 60E1 (KO-800164)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-15-R760-"..sideOfTrack..suffix
+					elseif Variant == "1:18.4 R1200 BX 60E1 (KO-800081)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-18.4-R1200-"..sideOfTrack..suffix
+					elseif Variant == "1:26.1 R2500 BX 60E1 (KO-701399)" then
+						return "NO-BN-3D-KO-SPV-60E1-1-26.1-R2500-"..sideOfTrack..suffix
+					else 
+						return "NO-BN-3D-UNSPECIFIED"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="model" ><Formula>Variant</Formula></LuaExpression>
+		
+		<!-- railML property trackContinueCourse: -->
+		<LuaExpression Name="trackContinueCourse" ><Formula>_JBTKO_SPV_trackContinueCourse()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SPV_trackContinueCourse()" ReturnType="String"
+			Description="Returns a string holding either 'left' or 'right'. At present, 3-way switches (allowed in railML) are not modeled in RailCOMPLETE, i.e. ConnectionCourse being 'straight' leads to an error message." >
+			<Constructor>String _JBTKO_SPV_trackContinueCourse()</Constructor>
+			<Formula>
+				function _JBTKO_SPV_trackContinueCourse()
+					if (ConnectionCourse == "right") then 
+						return "left"
+					elseif (ConnectionCourse == "left") then
+						return "right"
+					elseif (ConnectionCourse == 'straight') then
+						return "Cannot use 'straight' connection course in 2-way switch, use 'left' or 'right'",_warning
+					else
+						return "Bad connection course ["..ConnectionCourse.."]",_error
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
 		<InsertPointObject VariantName="Generell sporveksel" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
