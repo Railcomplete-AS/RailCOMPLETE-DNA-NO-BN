@@ -382,29 +382,48 @@ positive feeder in AT system				positiv leder i AT-system
 						local mast = r[0]
 						local mv = mast.Variant
 						local mp = mast.OcsMastProfile
-						local d
-						if mv:lower():match("bjelkemast") then
+						local d = 0.500 --default value - a bad value which is easily recognized as such
+						if mv == "Bjelkemast" then
 							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
-						elseif mv:lower():match("gmb%-mast") then
+						
+						elseif mv == "GMB-mast" then
 							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
-						elseif mv:lower():match("b%-mast") then
-							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(23/1000000) --mast is not straight!
-						elseif mv:lower():match("h%-mast") then
+
+						elseif mv == "H-mast" then
 							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(1/50000)
-						elseif mv:lower():match("tremast") then
+						
+						elseif mv == "B-mast" then
+							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(23/1000000) --mast is not straight!
+
+						elseif mv == "Betongmast" then
 							d = 0.13
-						elseif mv:lower():match("hengemast") then
+						
+						elseif mv == "Tremast" then
+							d = 0.13
+						
+						elseif mv == "Hengemast for bru og tunnel" then
 							if (mp == 'Sirkulær, Ø120') then 
 								d = 0.06							
-							elseif (mp == 'Kvadratisk, 100x100') then 
-								d = 0.05
 							elseif (mp == 'Rektangulær, 100x150') then
 								d = 0.075
 							elseif (mp == 'Rektangulær, 100x200') then 
-								d = 0.1
+								d = 0.10
 							else
 								return 0,_warning, _info("Bad OCS mast profile ["..mp.."].")
 							end
+
+						elseif mv == "Hengemast i åk type 12" or mv == "Hengemast i åk type 14" or mv == "Hengemast i åk type 40" then
+							if (mp == 'Kvadratisk, 100x100') then 
+								d = 0.05
+							elseif (mp == 'Rektangulær, 100x150') then 
+								d = 0.075
+							end
+
+						elseif mv == "Hengemast Cariboni" then
+							if (mp == 'Rektangulær, 100x150') then 
+								d = 0.075
+							end
+
 						else 
 							return 0,_warning, _info("Bad OCS mast variant ["..mv.."].")
 						end
@@ -522,7 +541,10 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
+
+		<!-- Use custom version of wayside general object Lua functions (due to the possible angular offset): -->
+		<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" /> -->
+
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
@@ -1070,7 +1092,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />

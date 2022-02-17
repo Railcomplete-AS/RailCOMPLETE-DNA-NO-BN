@@ -103,24 +103,34 @@
 			<RelatesTo Prompt="Festet til" WarnAtSaturation="true" Min="0" Max="Inf" />
 			<ReverseRelatesTo Prompt="Utligger for" WarnAtSaturation="true" Min="1" Max="1" />
 		</Relation>
-		<Relation Name="KL oppheng" Color="32" RelationLineScale="10">
-			<TargetSpace>kl-oppheng</TargetSpace>
+		<!-- 2022-02-16 CLFEY - Deprecation of "KL oppheng", the FIXLINE will relate to the middle cantilever, which has a relation to the contact wire. -->
+		<!-- <Relation Name="KL oppheng" Color="32" RelationLineScale="10"> -->
+			<!-- <TargetSpace>kl-oppheng</TargetSpace> -->
 			<!-- We do at present not require that users relate the contact wire to a messenger wire: -->
 			<!-- We also allow the user to relate a contact wire to droppers, stich wire, fix line etc: -->
-			<RelatesTo Prompt="Er opphengt av" Min="0" Max="inf" WarnAtSaturation="false" NumberOfPromptsDuringInsertion="1" />
-			<ReverseRelatesTo Prompt="Er oppheng for" Min="1" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
+			<!-- <RelatesTo Prompt="Er opphengt av" Min="0" Max="inf" WarnAtSaturation="false" NumberOfPromptsDuringInsertion="1" /> -->
+			<!-- <ReverseRelatesTo Prompt="Er oppheng for" Min="1" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" /> -->
+		<!-- </Relation> -->
+	</Relations>
+	
+	<!-- Other wires -->
+	<Relations>
+		<SourceSpace>høyspentledning</SourceSpace>
+		<Relation Name="Tilkobling" Color="32" RelationLineScale="10">
+			<TargetSpace>kl-bryter</TargetSpace>
+			<RelatesTo Prompt="Koblet til" Min="0" Max="inf" WarnAtSaturation="false" NumberOfPromptsDuringInsertion="1" />
+			<ReverseRelatesTo Prompt="Koblet til" Min="1" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
 		</Relation>
 	</Relations>
 
 	<!-- Fixture for stretchers or spanners, which in turn takes up force created by a tensile force installation at the other end of contact/messenger wire. -->
-	<!-- There may possibly be several "hops" in between: console on mast / tensile force stretcher / stretcher-to-wire fitting / wire / etc -->
+	<!-- There may possibly be several "hops" in between: console on mast / tensile force balancer stretcher / stretcher-to-wire fitting / wire / etc -->
 	<Relations>
 		<SourceSpace>forankring</SourceSpace>
 		<Relation Name="KL forankring" AskForRelation="true" AskForReverseRelation="true" Color="32" >
 			<TargetSpace>kl-bardun</TargetSpace>
 			<TargetSpace>kl-strever</TargetSpace>
-			<!-- TODO: Fix-line burde være egen alignment type? -->
-			<TargetSpace>kl-oppheng</TargetSpace>
+			<TargetSpace>fixline</TargetSpace>
 			<!-- Usually, a footplate can act as anchor for max two stretchers (but just one spanner...) -->
 			<RelatesTo Prompt="Er forankring for" Min="1" Max="2" WarnAtSaturation="true"/>
 			<ReverseRelatesTo Prompt="Har" Min="1" Max="1" WarnAtSaturation="true" />
@@ -135,13 +145,13 @@
 			<ReverseRelatesTo Prompt="Har" Min="0" Max="inf" WarnAtSaturation="false" />
 		</Relation>
 		<Relation Name="KL kraftoverføring" AskForRelation="true" AskForReverseRelation="false" Color="32" >
+			<TargetSpace>kontaktledning</TargetSpace>
+			<TargetSpace>høyspentledning</TargetSpace>
+			<TargetSpace>fixline</TargetSpace>
 			<TargetSpace>kl-bardun</TargetSpace>
 			<TargetSpace>kl-strever</TargetSpace>
-			<TargetSpace>kontaktledning</TargetSpace>
-			<TargetSpace>kl-oppheng</TargetSpace>
 			<!-- Allow for one wire on each side of mast, related to the console: -->
 			<RelatesTo Prompt="Er kraftoverføringskonsoll for" Min="1" Max="2" NumberOfPromptsDuringInsertion="2" />
-			<!-- For now, allow kontaktledning (CW) to relate to a console at each end (max=2): -->
 			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="2" />
 		</Relation>
 	</Relations>
@@ -169,9 +179,9 @@
 			<ReverseRelatesTo Prompt="Forrige" WarnAtSaturation="false" Min="0" Max="inf" NumberOfPromptsDuringInsertion="1" />
 		</Relation>
 		<Relation Name="Utliggerfiksering" AskForRelation="false" Color="200" >
-			<TargetSpace>kl-oppheng</TargetSpace>
-			<RelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="1" />
-			<ReverseRelatesTo Prompt="Er fixpunktline for" WarnAtSaturation="true" Min="1" Max="1" />
+			<TargetSpace>fixline</TargetSpace>
+			<RelatesTo Prompt="Fikseres av" WarnAtSaturation="true" Min="1" Max="1" />
+			<ReverseRelatesTo Prompt="Fikserer" WarnAtSaturation="true" Min="1" Max="1" />
 		</Relation>
 		<Relation Name="Kontakttrådklemme" AskForRelation="false" AskForReverseRelation="true" Color="140" >
 			<TargetSpace>kontakttrådklemme</TargetSpace>
@@ -218,19 +228,22 @@
 		</Relation>
 	</Relations>
 
-	<!-- Tensioning relief for wires (weight, spring, fixed) -->
-	<Relations>
-		<SourceSpace>avspenning</SourceSpace>
-		<Relation Name="Avspenning" AskForRelation="true" Color="200" >
-			<TargetSpace>kontaktledning</TargetSpace>
-			<TargetSpace>fixline</TargetSpace>
+	<!-- Tensioning relief for contact wire and fixline wires (weight, spring, fixed) -->
+	<!-- 2022-02-16 CLFEY: Deprecated all "Avspenning" relations. -->
+	<!-- It snaps to either a "JBTEH_KTL Kontaktledning" or a "JBTEH_FIL Fixline" alignment object." -->
+	<!-- <Relations> -->
+		<!-- <SourceSpace>avspenning</SourceSpace> -->
+		<!-- <Relation Name="Avspenning" AskForRelation="true" Color="200" > -->
+			<!-- <TargetSpace>kontaktledning</TargetSpace> -->
+			<!-- <TargetSpace>fixline</TargetSpace> -->
 			<!-- Treat the messenger wire as included in the contact wire, i.e. relate avspenning to just 1 wire: -->
-			<RelatesTo Prompt="Avspenner" WarnAtSaturation="true" Min="1" Max="1" />
-			<!-- Fix lines will have a WTB at each end. Some contact wires might omit the elevated wire at each end and connect directly to the WTB: -->
-			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="2" />
-		</Relation>
-	</Relations>
+			<!-- <RelatesTo Prompt="Avspenner" WarnAtSaturation="true" Min="1" Max="1" /> -->
+			<!-- Fix lines will have a WTB at each end (wire tensioning balancer). Some contact wires might omit the elevated wire at each end and connect directly to the WTB: -->
+			<!-- <ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="2" /> -->
+		<!-- </Relation> -->
+	<!-- </Relations> -->
 
+	<!-- 2022-02-16 CLFEY: Deprecated all "fixpunkt" relations. It will snap to the "JBTEH_FIL Fixline" alignment object."
 	<Relations>
 		<SourceSpace>fixpunkt</SourceSpace>
 		<Relation Name="Fixpunkt linetilhørighet" AskForRelation="true" Color="200" >
@@ -238,17 +251,17 @@
 			<RelatesTo Prompt="Er fikspunkt fastholdt av" WarnAtSaturation="true" Min="1" Max="1" />
 			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="1" />
 		</Relation>
-		<Relation Name="Fixpunkt for kontaktledning" AskForRelation="true" Color="200" >
-			<TargetSpace>kontaktledning</TargetSpace>
-			<RelatesTo Prompt="Er fikspunkt for" WarnAtSaturation="true" Min="1" Max="1" />
-			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="1" />
-		</Relation>
-		<Relation Name="Fixpunkt for utligger" AskForRelation="true" Color="200" >
-			<TargetSpace>utligger</TargetSpace>
-			<RelatesTo Prompt="Fikserer" WarnAtSaturation="true" Min="1" Max="1" />
-			<ReverseRelatesTo Prompt="Er utligger fiksert av" WarnAtSaturation="true" Min="0" Max="1" />
-		</Relation>
-	</Relations>
+		<!-- <Relation Name="Fixpunkt for kontaktledning" AskForRelation="true" Color="200" > -->
+			<!-- <TargetSpace>kontaktledning</TargetSpace> -->
+			<!-- <RelatesTo Prompt="Er fikspunkt for" WarnAtSaturation="true" Min="1" Max="1" /> -->
+			<!-- <ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="1" /> -->
+		<!-- </Relation> -->
+		<!-- <Relation Name="Fixpunkt for utligger" AskForRelation="true" Color="200" > -->
+			<!-- <TargetSpace>utligger</TargetSpace> -->
+			<!-- <RelatesTo Prompt="Fikserer" WarnAtSaturation="true" Min="1" Max="1" /> -->
+			<!-- <ReverseRelatesTo Prompt="Er utligger fiksert av" WarnAtSaturation="true" Min="0" Max="1" /> -->
+		<!-- </Relation> -->
+	<!-- </Relations> -->
 
 	
 	
