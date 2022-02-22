@@ -375,66 +375,60 @@ positive feeder in AT system				positiv leder i AT-system
 				if n == 0 then
 					return RightSided and 4e-4 or -4e-4,_warning, _info("Cantilever is missing relation '"..s.."' to OCS mast.")
 				else
-					if (r[0].Alignment == nil) then 
-						return RightSided and 4e-4 or -4e-4,_warning,
-							_info("Cantilever's OCS mast is not connected to a track - cannot deduce cantilever's distance to own alignment.")
-					else
-						local mast = r[0]
-						local mv = mast.Variant
-						local mp = mast.OcsMastProfile
-						local d = 0.500 --default value - a bad value which is easily recognized as such
-						if mv == "Bjelkemast" then
-							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
-						
+					-- Cantilever's OCS mast does not have to be connected a track - this Lua sippet works fine without.
+					local mast = r[0]
+					local mv = mast.Variant
+					local mp = mast.OcsMastProfile
+					local d = 0.500 --default value - a bad value which is easily recognized as such
+					
+					if mv == "Bjelkemast" then
+						d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
 						elseif mv == "GMB-mast" then
-							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
-
-						elseif mv == "H-mast" then
-							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(1/50000)
-						
-						elseif mv == "B-mast" then
-							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(23/1000000) --mast is not straight!
-
-						elseif mv == "Betongmast" then
-							d = 0.13
-						
+						d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
+					
+					elseif mv == "H-mast" then
+						d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(1/50000)
+			
+					elseif mv == "B-mast" then
+						d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(23/1000000) --mast is not straight!
+					
+					elseif mv == "Betongmast" then
+						d = 0.13
 						elseif mv == "Tremast" then
-							d = 0.13
-						
+						d = 0.13
 						elseif mv == "Hengemast for bru og tunnel" then
-							if (mp == 'Sirkulær, Ø120') then 
-								d = 0.06							
-							elseif (mp == 'Rektangulær, 100x150') then
-								d = 0.075
-							elseif (mp == 'Rektangulær, 100x200') then 
-								d = 0.10
-							else
-								return 0,_warning, _info("Bad OCS mast profile ["..mp.."].")
-							end
-
-						elseif mv == "Hengemast i åk type 12" or mv == "Hengemast i åk type 14" or mv == "Hengemast i åk type 40" then
-							if (mp == 'Kvadratisk, 100x100') then 
-								d = 0.05
-							elseif (mp == 'Rektangulær, 100x150') then 
-								d = 0.075
-							end
-
-						elseif mv == "Hengemast Cariboni" then
-							if (mp == 'Rektangulær, 100x150') then 
-								d = 0.075
-							end
-
-						else 
-							return 0,_warning, _info("Bad OCS mast variant ["..mv.."].")
-						end
-						-- OCS mast and cantilever may belong to different tracks (when OCS mast is located between tracks):
-						mdist = getAlignmentInfo(alignment.id,
-								mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment --Distance from center OCS mast to *cantilever's* alignment
-						if mast.DistanceToAlignment &gt; 0 then 
-							return mdist - d
+						if (mp == 'Sirkulær, Ø120') then 
+							d = 0.06
+						elseif (mp == 'Rektangulær, 100x150') then
+							d = 0.075
+						elseif (mp == 'Rektangulær, 100x200') then 
+							d = 0.10
 						else
-							return mdist + d
+							return 0,_warning, _info("Bad OCS mast profile ["..mp.."].")
 						end
+					
+					elseif mv == "Hengemast i åk type 12" or mv == "Hengemast i åk type 14" or mv == "Hengemast i åk type 40" then
+						if (mp == 'Kvadratisk, 100x100') then 
+							d = 0.05
+						elseif (mp == 'Rektangulær, 100x150') then 
+							d = 0.075
+						end
+					
+					elseif mv == "Hengemast Cariboni" then
+						if (mp == 'Rektangulær, 100x150') then 
+							d = 0.075
+						end
+					
+					else 
+						return 0,_warning, _info("Bad OCS mast variant ["..mv.."].")
+					end
+					-- OCS mast and cantilever may belong to different tracks (when OCS mast is located between tracks):
+					mdist = getAlignmentInfo(alignment.id,
+							mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment --Distance from center OCS mast to *cantilever's* alignment
+					if mdist &gt; 0 then 
+						return mdist - d
+					else
+						return mdist + d
 					end
 				end
 			end
@@ -537,7 +531,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_MEDIUM_FAR___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
@@ -659,10 +653,42 @@ positive feeder in AT system				positiv leder i AT-system
 					s = "Tilhører kl-mast"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
-						return "UNFINISHED - Relate with '"..s.."' to an OCS mast."
+						return "UNFINISHED - Relate with '"..s.."' to its OCS mast."
 					else
-						--Empty string as code, just show the info tooltip.
-						return "", _info("Cantilever belongs to mast "..RC__identify(r[0]))
+						s1 = "Er kl-mast for utligger"
+						r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
+						if n1 == 1 then
+							return r[0].code --copy the mast's code
+						else
+							total = 0
+							totalRightSided = 0 --cantilevers placed to the right of its own alignment, regardless of what alignment the OCS mast has
+							for i = 0,n1-1 do
+								total = total + 1
+								if r1[i].SideOfAlignment == "Right" then
+									totalRightSided = totalRightSided + 1
+								end
+							end
+							indx = 1
+							for i = 0,n1-1 do
+								other = r1[i]
+								if (this.id ~= other.id) and (this.SideOfAlignment == other.SideOfAlignment) then
+									if this.ReferenceMileage &gt; other.ReferenceMileage then
+										indx = indx + 1
+									end
+								end
+							end
+							if total == 1 then
+								return r[0].code
+							else
+								if this.SideOfAlignment == "Right" then
+									--Cantilever extends to the left towards its track, use index 1 or 1,2:
+									return r[0].code.."-"..indx
+								else
+									--Cantilever extends to the right towards its track, use index n+1 or n+1,n+2 (n=#left-pointing cantilevers)
+									return r[0].code.."-"..(totalRightSided + indx)
+								end
+							end
+						end
 					end
 				end
 			</Formula>
@@ -671,6 +697,31 @@ positive feeder in AT system				positiv leder i AT-system
 		<CustomAttribute DataType="Double" Name="CantileverLength" DisplayName="Strekkstag kuttlengde" DefaultValue="4.0"
 			Description="The cantilever's length [m] is measured from console (mast side) to contact wire, perpendicularly to the track. Cariboni is more restricted." >
 		</CustomAttribute>
+		
+		<LuaExpression Name="CantileverLength" ><Formula>_JBTEH_UTL_CantileverLength()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_CantileverLength()" 
+			ReturnType="String"
+			Description="Returns the cantilever's length, adjusted for OCS mast placement and mast profile, mast's side of track, stagger and local cant. Cariboni is always 1200 mm long." >
+			<Constructor>Double _JBTEH_UTL_CantileverLength(Double CantileverLength)</Constructor>
+			<Formula>
+				function _JBTEH_UTL_CantileverLength()
+					if Variant == "Cariboni" then
+						return 1.200
+					else
+						local c,cr,cg,cl
+						c = getAlignmentInfo().Cant/1000
+						c = RC__isNan(c) and 0 or c
+						cr = getAlignmentInfo().CantRotation or "CW"
+						cg = Alignment.AlignmentSystem.CantGauge
+						cl = math.abs(DistanceToAlignment) + Stagger
+							+ (cr == "CCW" and 1 or -1) * (RightSided and 1 or -1) * ContactWireHeight * c/cg
+						return string.format("%.03f",cl)
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+
 		<CustomAttribute DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" DefaultValue="4000"
 			Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long." >
 		</CustomAttribute>
@@ -716,14 +767,14 @@ positive feeder in AT system				positiv leder i AT-system
 		
 		<CustomAttribute DataType="String" Name="StaggerDisplay" DisplayName="Sikk-sakk visning" DefaultValue="" 
 			Description="The stagger value, as shown next to the cantilever [cm]." />
-		<TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="5.5" 
+		<TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-6" 
 			Layer="JBTEH@SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0"
 			ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false" />       
 		<LuaExpression Name="StaggerDisplay" ><Formula>string.format("%.f",Stagger*100) --Centimeters</Formula></LuaExpression>
 		
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
-        <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="6" 
+        <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="-6" 
 				Layer="JBTEH@UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" 
 				Invisible="false" Lock="false" MText="false" /> 
 		<LuaExpression Name="OcsWireNameDisplay" ><Formula>_JBTEH_UTL_OcsWireNameDisplay()</Formula></LuaExpression>
@@ -740,9 +791,9 @@ positive feeder in AT system				positiv leder i AT-system
 					local s = "Utligger for kontaktledning"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 1 then return 
-						"("..RC__identify(r[0])..")"
+						RC__identify(r[0])
 					else
-						return "UNFINISHED - Relate cantilever to OCS wire with relation '"..s.."'"
+						return "CW=???"
 					end		
 				end
 			</Formula>
@@ -838,7 +889,7 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+		<!-- <LuaExpression Name="name" ><Formula>code</Formula></LuaExpression> -->
 		<LuaExpression Name="ReferenceMileage" ><Formula>_JBTEH_UTL_ReferenceMileage()</Formula></LuaExpression>
 		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_UTL_DistanceToAlignment()</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation" ><Formula>ContactWireHeight - _JBTEH_UTL_StandardValues(Variant)["wco"]</Formula></LuaExpression>

@@ -885,8 +885,8 @@
 					else
 						cl = r[0] --cantilever
 						s1 = "Utligger for kontaktledning"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
-						if n == 1 then return 
+						r1,n1 = RC__getCollectionOfRelatedObjects(s1,cl)
+						if n1 == 1 then return 
 							RC__identify(r1[0])
 						else 
 							return "UNFINISHED - The related cantilever '"..RC__identify(cl).."' is missing an OCS wire related with '"..s1.."'."
@@ -1760,7 +1760,7 @@
 				function _JBTEH_KPM_code()
 					local s = "Er kraftoverføringskonsoll på kl-mast"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
-					local s1 = "Er kraftoverføringskonsoll for kl-bardun/kl-strever/kontaktledning/kl-oppheng"
+					local s1 = "Er kraftoverføringskonsoll for kontaktledning/høyspentledning/fixline/kl-bardun/kl-strever"					
 					local r1,n1 = RC__getCollectionOfRelatedObjects(s1)
 					
 					if n == 0 then 
@@ -2039,6 +2039,22 @@
 			</Formula>
 		</LuaFunction>
 		
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_AEH_Mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_Mileage()" 
+			ReturnType="Double"
+			Description="Returns mileage for this OCS contact wire stretcher fastening object. Snaps to the extremity of its associated stretcher wire alignment." >
+			<Constructor>Double _JBTEH_AEH_Mileage()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_Mileage()
+					--Assume it runs from 0 (at mast or continuation) to L (at mast or continuation)
+					ai = getAlignmentInfo() --Own alignment is a contact wire
+					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found - move object inside the extent of its own alignment.") end
+					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
+							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="Model3DName" ><Formula>_JBTEH_AEH_Model3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_Model3DName()" 
 			ReturnType="String"
@@ -2118,36 +2134,48 @@
 		<InsertPointObject VariantName="Fastavspenning, enkel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FAST-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>fixline</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Fastavspenning, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FAST-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>fixline</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Loddavspenning, enkel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-LODD-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>fixline</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Loddavspenning, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-LODD-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>fixline</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Fjæravspenning, enkel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FJAER-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>fixline</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Fjæravspenning, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FJAER-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>fixline</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
@@ -2375,11 +2403,38 @@
 			</Formula>
 		</LuaFunction>
 						
+		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_LEF_TargetAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_LEF_TargetAlignment()" ReturnType="Double"
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object." >
+			<Constructor>Double _JBTEH_LEF_TargetAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_LEF_TargetAlignment()
+					return getClosestAlignments("JBTEH_LED Ledning"):filter(function (x) return x.id ~= Alignment.id end)[0]
+				end
+			</Formula>
+		</LuaFunction>
+						
 		<InsertPointObject VariantName="Ledningsfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 				
+		<!-- TODO 2022-02-22 CLFEY - provide same symbol as JBTKO_SPF, but with symbol name "JBTEH_KTF FORTSETTELSE FOR KONTAKTLEDNING" -->
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTKO$SPF"
+				Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock" 
+			>
+			<Rotation Add180DegreesIfDirIsDown="true" />
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE
+				{% if ExtendingFromEnd == 'True' %}
+					{% if ContinuingWithBegin == 'False' %}0-1{% else %}0-0{% endif %}
+				{% else %}
+					{% if ContinuingWithBegin == 'False' %}0-0{% else %}1-0{% endif %}
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
 
 	</ObjectType>
@@ -2470,12 +2525,39 @@
 				end
 			</Formula>
 		</LuaFunction>
+
+		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_KTF_TargetAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTF_TargetAlignment()" ReturnType="Double"
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object." >
+			<Constructor>Double _JBTEH_KTF_TargetAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_KTF_TargetAlignment()
+					return getClosestAlignments("JBTEH_KTL Kontaktledning"):filter(function (x) return x.id ~= Alignment.id end)[0]
+				end
+			</Formula>
+		</LuaFunction>
 						
 		<InsertPointObject VariantName="Kontaktledningsfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 				
+		<!-- TODO 2022-02-22 CLFEY - provide same symbol as JBTKO_SPF, but with symbol name "JBTEH_KTF FORTSETTELSE FOR KONTAKTLEDNING" -->
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTKO$SPF"
+				Color="ByBlock" LineType="ByBlock" LineWeight="ByBlock" Transparency="ByBlock"
+			>
+			<Rotation Add180DegreesIfDirIsDown="true" />
+			<BlockNameFormat JoinBy="-" >
+				NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE
+				{% if ExtendingFromEnd == 'True' %}
+					{% if ContinuingWithBegin == 'False' %}0-1{% else %}0-0{% endif %}
+				{% else %}
+					{% if ContinuingWithBegin == 'False' %}0-0{% else %}1-0{% endif %}
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
 
 	</ObjectType>
