@@ -660,17 +660,24 @@
 
 		<LuaExpression Name="Variant" ><Formula>_JBTKO_VET_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_Variant()" ReturnType="String"
-				Description="Analyzes local alignment profile and returns nearest vertex' 'Variant', i.e. type of geometric vertex/cant." >
+				Description="Analyzes local alignment profile and returns nearest segment delimiters or vertex' 'Variant', i.e. type of geometric vertex/cant." >
 			<Constructor>String _JBTKO_VET_Variant()</Constructor>
-			<Formula>
-				function _JBTKO_VET_Variant()
-					nearest = getAlignmentInfo().NearestVerticalVertex
-					if nearest == nil then return "" end
-					if nearest.Type == "Crest" then return "HBP" end
-					if nearest.Type == "Sag" then return "LBP" end
-					if nearest.Type == "None" then return "(Linje start/slutt)" end
+      <Formula>
+			function _JBTKO_VET_Variant()
+				alignmentInfo = getAlignmentInfo()
+				nearestDelimiter = alignmentInfo.NearestVerticalSegmentDelimiter
+				if nearestDelimiter ~= nil then
+					if nearestDelimiter.Type == "CurveStart" then return "SE1" end
+					if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
 				end
-			</Formula>
+			
+				nearestVertex = alignmentInfo.NearestVerticalVertex
+				if nearestVertex == nil then return "" end
+				if nearestVertex.Type == "Crest" then return "HBP" end
+				if nearestVertex.Type == "Sag" then return "LBP" end
+				if nearestVertex.Type == "None" then return "(Linje start/slutt)" end
+			end
+		</Formula>
 		</LuaFunction>
 
 		<CustomAttribute DataType="String" Name="PviInfo" DisplayName="PVI info" />
@@ -679,20 +686,29 @@
 		<LuaFunction Name="_JBTKO_VET_PviInfo()" ReturnType="String"
 				Description="Returns vertical profile info for crests and sags." >
 			<Constructor>String _JBTKO_VET_PviInfo()</Constructor>
-			<Formula>
-				function _JBTKO_VET_PviInfo()
-					str = ""
-					tNil			= "?"
-					tR				= "R"
-					tAxisStartEnd	= "(Linje start/slutt)"
-					tMasl			= " m.o.h."	--meters above [mean] sea level
-					nearest = getAlignmentInfo().NearestVerticalVertex
-					if nearest == nil then return tNil end
-					if nearest.Radius &gt; 0 then str = tR..string.format("%.3f", nearest.Radius) end
-					if nearest.Type == "None" then str = tAxisStartEnd end
-					return str.."\\P".."H="..string.format("%.3f", nearest.Elevation)..tMasl
+      <Formula>
+			function _JBTKO_VET_PviInfo()
+				str = ""
+				tNil			= "?"
+				tR				= "R"
+				tAxisStartEnd	= "(Linje start/slutt)"
+				tMasl			= " m.o.h."	--meters above [mean] sea level
+					
+				alignmentInfo = getAlignmentInfo()					
+				nearestDelimiter = alignmentInfo.NearestVerticalSegmentDelimiter
+				nearestVertex = alignmentInfo.NearestVerticalVertex
+					
+				if nearestVertex == nil then return tNil end
+				if nearestDelimiter ~= nil and nearestDelimiter.Type ~= "Pvi" then
+					if nearestDelimiter.Type == "CurveStart" then str = "SE1" end
+					if nearestDelimiter.Type == "CurveEnd" then str = "SE2" end
+				else
+					if nearestVertex.Radius &lt; 0 then str = tR..string.format("%.3f", nearestVertex.Radius) end
+					if nearestVertex.Type == "None" then str = tAxisStartEnd end
 				end
-			</Formula>
+				return str.."\\P".."H="..string.format("%.3f", nearestVertex.Elevation)..tMasl
+			end
+		</Formula>
 		</LuaFunction>
 		
 		<LuaExpression Name="Mileage" ><Formula>_JBTKO_VET_Mileage()</Formula></LuaExpression>
@@ -701,8 +717,8 @@
 			<Constructor>Double _JBTKO_VET_Mileage()</Constructor>
 			<Formula>
 				function _JBTKO_VET_Mileage()
-					nearest = getAlignmentInfo().NearestVerticalVertex
-					return nearest == nil and nil or nearest.Mileage
+					nearestDelimiter = getAlignmentInfo().NearestVerticalSegmentDelimiter
+					return nearestDelimiter == nil and nil or nearestDelimiter.Mileage
 				end
 			</Formula>
 		</LuaFunction>
@@ -712,16 +728,22 @@
 				Description="Analysiert das vertikale Profil der eigene Achse und gibt den Code des nächstgelegenen charakteristischen Punktes zurück." >
 				<!-- Description= "Analyzes local alignment vertical profile and returns code for the nearest characteristic point." > -->
 			<Constructor>String _JBTKO_VET_code()</Constructor>
-			<Formula>
-				function _JBTKO_VET_code()
-					nearest = getAlignmentInfo().NearestVerticalVertex
-					if nearest == nil then return "" end
-					if nearest.Type == "Crest" then return "HBP" end
-					if nearest.Type == "Sag" then return "LBP" end
-					if nearest.Type == "None" then return "(Linje start/slutt)" end
-					return ""
+		<Formula>
+			function _JBTKO_VET_code()
+				alignmentInfo = getAlignmentInfo()				
+				nearestDelimiter = alignmentInfo.NearestVerticalSegmentDelimiter
+				if nearestDelimiter ~= nil then
+					if nearestDelimiter.Type == "CurveStart" then return "SE1" end
+					if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
 				end
-			</Formula>
+			
+				nearestVertex = alignmentInfo.NearestVerticalVertex
+				if nearestVertex == nil then return "" end
+				if nearestVertex.Type == "Crest" then return "HBP" end
+				if nearestVertex.Type == "Sag" then return "LBP" end
+				if nearestVertex.Type == "None" then return "(Linje start/slutt)" end
+			end
+		</Formula>
 		</LuaFunction>
 
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
@@ -913,10 +935,19 @@
 		</Variants>
 		
 		<LuaExpression Name="Variant" >		   
-			<Formula>
-				--TODO: Define variants for vertical arcs (Crest / Sag) when non-zero radius in the PVI.
-				return "Gradient"
-			</Formula>
+		<Formula>
+			nearest = getAlignmentInfo().NearestVerticalVertex
+			ownMileage = Mileage
+			nearestVertexMileage = nearest.Mileage
+			mileageDelta = math.abs(ownMileage - nearestVertexMileage)
+
+			if mileageDelta &gt; 4e-3 then return "Gradient" end
+			if nearest.Type == "Crest" then return "HBP" end
+			if nearest.Type == "Sag" then return "LBP" end
+			if nearest.Type == "None" then return "Gradient" end
+
+			return "Gradient"
+		</Formula>
 		</LuaExpression>
 
 <!-- TODO: temp fix, use Watch symbol (which is multiline but does not behave correctly with scales). Section objects have temporarily been made into single-line text, whence they scale correctly with annotative scales. -->
