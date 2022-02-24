@@ -788,8 +788,8 @@ positive feeder in AT system				positiv leder i AT-system
 					if cantilever.RcType ~= "JBTEH_UTL Utligger" then
 						return nil, _info("Unrecognised calling object type ["..cantilever.RcType.."].")
 					end
-					local s = "Utligger for kontaktledning"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
+					s = "Er utligger for kontaktledning"
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 1 then return 
 						RC__identify(r[0])
 					else
@@ -812,15 +812,17 @@ positive feeder in AT system				positiv leder i AT-system
 					ai = getAlignmentInfo()
 					c = ai.Cant
 					h = RC__isNan(c) and 0 or c/1000.0
-					if h == 0 then 
-						return Stagger
+					signedStagger = (SideOfAlignment == "Right" and -Stagger or Stagger)
+					if h == 0 then
+						--no cant:
+						return signedStagger
 					else
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return ss*ContactWireHeight + cc*Stagger
+							return ss*ContactWireHeight + cc * side * signedStagger
 						elseif ai.CantRotation == "CCW" then
-							return -ss*ContactWireHeight + cc*Stagger
+							return -ss*ContactWireHeight + cc * side * signedStagger
 						else
 							return _error,0.999
 						end
@@ -989,7 +991,7 @@ positive feeder in AT system				positiv leder i AT-system
 					d = math.sqrt((c1aX - c2aX)^2 + (c1aY - c2aY)^2)						
 					
 					if RC__isNan(d) then
-						return 0.0, _error, _info("*** ERROR - cannot deduce a distance between "..RC__identify(c1).." and "..RC__identify(c2))					
+						return 0.0, _error, _info("ERROR - cannot deduce a distance between "..RC__identify(c1).." and "..RC__identify(c2))					
 					else
 						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(c1).." and "..RC__identify(c2).." measured in center track.")
 					end
