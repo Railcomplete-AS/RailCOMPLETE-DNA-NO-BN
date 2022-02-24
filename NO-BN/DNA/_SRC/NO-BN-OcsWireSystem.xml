@@ -1081,21 +1081,26 @@
 			<Constructor>String _JBTEH_FIL_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIL_code()
-					s = "Fikserer utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate OCS fixline wire with '"..s.."' to its cantilever."
-					elseif n > 1 then
-						return "ERROR - Fixline wire shall relate to just one cantilever with '"..s.."' ("..n.." were found)."
+					sfp = "Er fixline for fixpunkt"
+					rfp,nfp = RC__getCollectionOfRelatedObjects(sfp)
+					if nfp == 0 then
+						return "UNFINISHED - Relate OCS fixline wire with '"..sfp.."' to its fixpoint."
+					elseif nfp &gt; 1 then
+						return _error,"ERROR - Fixline wire shall relate to just one fixpoint with '"..sfp.."' ("..nfp.." were found)."
 					else
-						cl = r[0] --cantilever
-						s1 = "Utligger for kontaktledning"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1,cl)
-						if n1 == 1 then return 
-							RC__identify(r1[0])
-						else 
-							return "UNFINISHED - The related cantilever '"..RC__identify(cl).."' is missing an OCS wire related with '"..s1.."'."
-						end		
+						scl = "Fikserer utligger"
+						rcl,ncl = RC__getCollectionOfRelatedObjects(scl,rfp[0])
+						if ncl == 1 then
+							scw = "Er utligger for kontaktledning"
+							rcw,ncw = RC__getCollectionOfRelatedObjects(scw,rcl[0])
+							if ncw == 1 then
+								return RC__identify(rcw[0]),_info("Fixline code was deduced from its fixpoint-&gt;cantilever-&gt;contact wire, related with '"..sfp.."'.")
+							else
+								return "UNFINISHED - Related cantilever has no relation to its contact wire, cannot deduce fixline code."
+							end
+						else
+							return "UNFINISHED - The indirectly related cantilever has no relation to its contact wire, cannot deduce fixline code."
+						end
 					end
 				end
 			</Formula>
@@ -2219,7 +2224,7 @@
 			<Constructor>String _JBTEH_AEH_code()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_code()
-					if Alignment == nil then
+					if Alignment == nil or OcsSystem == "Unknown" then 
 						return _warning, "UNFINISHED: Own Alignment (contact wire or fix line) undefined for OCS tensioning device."
 					else
 						return Alignment.code
@@ -2464,10 +2469,21 @@
 			<Constructor>String _JBTEH_FIX_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIX_code()
-					if Alignment == nil then
-						return _warning, "UNFINISHED: Own Alignment (contact wire) undefined for OCS tensioning device."
+					s = "Fikserer utligger"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'."
+					elseif n == 1 then
+						s1 = "Er utligger for kontaktledning"
+						r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
+						if n1 == 1 then
+							return r1[0].code,_error,_info("Code was deduced from related cantilever's related contact wire.")
+						else
+							return _error,"ERROR - Fixpoint has zero or more than one related contact wire."
+						end
+						return r[0].code
 					else
-						return Alignment.code
+						return 
 					end
 				end
 			</Formula>
@@ -2481,6 +2497,26 @@
 			<Formula>
 				function _JBTEH_FIX_name()
 					return "L"..code .. " - [FIX]"
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="ReferenceMileage" ><Formula>_JBTEH_FIX_ReferenceMileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_ReferenceMileage()" 
+			ReturnType="String"
+			Description="Obtains the reference mileage value for this fixpoint, obtained from its related cantilever. NB! This function assumes that the contact wire has a defined relationship to the local ReferenceAlignment, use RC-AlignmentManager to define this." >
+			<Constructor>String _JBTEH_FIX_ReferenceMileage()</Constructor>
+			<Formula>
+				function _JBTEH_FIX_ReferenceMileage()
+					s = "Fikserer utligger"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return getPropertyValue("ReferenceMileage"),_warning,_info("UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'.")
+					elseif n == 1 then
+						return r[0].ReferenceMileage, _info("UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'.")
+					else
+						return getPropertyValue("ReferenceMileage"),_error,_info("ERROR - Fixpoint should fix just one cantilever (per construction phase).")
+					end
 				end
 			</Formula>
 		</LuaFunction>
