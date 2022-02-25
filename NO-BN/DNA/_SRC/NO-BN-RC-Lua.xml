@@ -232,23 +232,107 @@
 		</Formula>
 	</LuaFunction>
 
-<!--
-	Previous code:
-			function RC__acsVector2wcsVector(acsX,acsY)
-				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept: 
-				--acsX = Lateral offset to the right, perpendicular to the object's alignment axis
-				--acsY = Along offset in the direction of increasing distAlong, along the object's alignment axis
-				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
-				local angle
-				if alongAxisWcsAngle then 
-					angle = math.rad(alongAxisWcsAngle - 90) --Subtract 90 DD since RailCOMPLETE ACS is 90 degrees off from Ifc / ISO 10303 usual axis definitions.
-				else 
-					angle = math.rad(this.AlignmentTangent - 90)
-				end
-				return acsX*math.cos(angle) + acsY*math.sin(angle), - acsX*math.sin(angle) + acsY*math.cos(angle)
-			end
--->
 
+
+	<LuaFunction Name="RC__vectorNorm()" ReturnType="Double"
+		Description="Returns the norm ||u|| of a 3D vector u" >
+		<Constructor>Double RC__vectorNorm(Point3D u)</Constructor>
+		<Formula>
+			function RC__vectorNorm(u)
+				return math.sqrt(u.X*u.X+ u.Y*u.Y + u.Z*u.Z)
+			end
+		</Formula>
+	</LuaFunction>
+			
+	<LuaFunction Name="RC__vectorScalarMultiply()" ReturnType="Point3D"
+		Description="Returns the scalar product mu of scalar m with 3D vector u" >
+		<Constructor>Point3D RC__vectorScalarMultiply(Double m, Point3D u)</Constructor>
+		<Formula>
+			function RC__vectorScalarMultiply(m,u)
+				return getPoint3D(m*u.X, m*u.Y, m*u.Z)
+			end
+		</Formula>
+	</LuaFunction>
+			
+	<LuaFunction Name="RC__vectorNormalize()" ReturnType="Point3D"
+		Description="Returns a normalized non-zero 3D vector u/|u|" >
+		<Constructor>Point3D RC__vectorNormalize(Point3D u)</Constructor>
+		<Formula>
+			function RC__vectorNormalize(u)
+				m = 1/RC__vectorNorm(u)
+				return RC__vectorScalarMultiply(m,u)
+			end
+		</Formula>
+	</LuaFunction>
+			
+	<LuaFunction Name="RC__vectorAdd()" ReturnType="Point3D"
+		Description="Returns the sum u+v of two 3D vectors u,v" >
+		<Constructor>Point3D RC__vectorAdd(Point3D u, Point3D v)</Constructor>
+		<Formula>
+			function RC__vectorAdd(u,v)
+				return getPoint3D(u.X+v.X, u.Y+v.Y, u.Z+v.Z)
+			end
+		</Formula>
+	</LuaFunction>
+			
+	<LuaFunction Name="RC__vectorSubtract()" ReturnType="Point3D"
+		Description="Returns the subtraction u-v of two 3D vectors u,v" >
+		<Constructor>Point3D RC__vectorSubtract(Point3D u, Point3D v)</Constructor>
+		<Formula>
+			function RC__vectorSubtract(u,v)
+				return getPoint3D(u.X-v.X, u.Y-v.Y, u.Z-v.Z)
+			end
+		</Formula>
+	</LuaFunction>
+			
+	<LuaFunction Name="RC__vectorDotProduct()" ReturnType="Double"
+		Description="Returns the dot product u.v of two 3D vectors u,v" >
+		<Constructor>Double RC__vectorDotProduct(Point3D u, Point3D v)</Constructor>
+		<Formula>
+			function RC__vectorDotProduct(u,v)
+				return u.X*v.X + u.Y*v.Y + u.Z*v.Z
+			end
+		</Formula>
+	</LuaFunction>
+			
+	<LuaFunction Name="RC__vectorCrossProduct()" ReturnType="Point3D"
+		Description="Returns the cross product uxv of two 3D vectors u,v" >
+		<Constructor>Point3D RC__vectorCrossProduct(Point3D u, Point3D v)</Constructor>
+		<Formula>
+			function RC__vectorCrossProduct(u,v)
+				return getPoint3D((u.Y*v.Z - u.Z*v.Y), -(u.X*v.Z - v.X*u.Z), (u.X*v.Y - u.u*v.X))
+			end
+		</Formula>
+	</LuaFunction>
+
+	<LuaFunction Name="RC__vectorAngleVector()" ReturnType="Double,Double"
+		Description="Returns cosa,sina where cosa = u.v/|u||v| and sina = |uxv|/|u||v|" >
+		<Constructor>Double,Double RC__vectorAngleVector(Point3D u, Point3D v)</Constructor>
+		<Formula>
+			function RC__vectorAngleCosSin(u,v)
+				d = RC__vectorNorm(u) * RC__vectorNorm(v)
+				cos = RC__vectorDotProduct(u,v)/d
+				sin = RC__vectorNorm(RC__vectorCrossProduct(u,v))/d
+				return cos,sin
+			end
+		</Formula>
+	</LuaFunction>
+
+	<LuaFunction Name="RC__vectorAngleDD()" ReturnType="Double"
+		Description="Returns the signed angle [Decimal Degrees] from 3D vector u to 3D vector v" >
+		<Constructor>Double RC__vectorAngleDD(Point3D u, Point3D v)</Constructor>
+		<Formula>
+			function RC__vectorAngleDD(u,v)
+				w = RC__vectorAngleVector
+				cos = RC__vectorDotProduct(u,v) / d
+				sin = RC__vectorNorm(RC__vectorDotProduct(u,v)) / d
+				return math.atan(RC__vectorAngleVector(u))
+			end
+		</Formula>
+	</LuaFunction>
+
+
+			
 	<LuaFunction Name="RC__identify()" ReturnType="String"
 		Description="Returns the object's name if non-empty, or its code if non-empty, otherwise returns its ID. Addresses the calling object if no object reference is given." >
 		<Constructor>String RC__identify([Reference obj])</Constructor>
