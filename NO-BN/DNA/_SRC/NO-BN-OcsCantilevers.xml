@@ -694,8 +694,8 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 		
-		<CustomAttribute DataType="Double" Name="CantileverLength" DisplayName="Strekkstag kuttlengde" DefaultValue="4.0"
-			Description="The cantilever's length [m] is measured from console (mast side) to contact wire, perpendicularly to the track. Cariboni is more restricted." >
+		<CustomAttribute DataType="Double" Name="CantileverLength" DisplayName="Utliggerlengde" DefaultValue="4.0"
+			Description="The cantilever's length [m] is measured from console (mast side) to contact wire clamp, perpendicularly to the track. The Cariboni variant has a constant length of 1200 mm." >
 		</CustomAttribute>
 		
 		<LuaExpression Name="CantileverLength" ><Formula>_JBTEH_UTL_CantileverLength()</Formula></LuaExpression>
@@ -703,24 +703,108 @@ positive feeder in AT system				positiv leder i AT-system
 			ReturnType="String"
 			Description="Returns the cantilever's length, adjusted for OCS mast placement and mast profile, mast's side of track, stagger and local cant. Cariboni is always 1200 mm long." >
 			<Constructor>Double _JBTEH_UTL_CantileverLength(Double CantileverLength)</Constructor>
+						<!-- --2022-02-24 CLFEY Deprecated code, 2D symbol length shall not adapt to actual cant effects: -->
+						<!-- local c,cr,cg,cl -->
+						<!-- c = getAlignmentInfo().Cant/1000 -->
+						<!-- c = RC__isNan(c) and 0 or c -->
+						<!-- cr = getAlignmentInfo().CantRotation or "CW" -->
+						<!-- cg = Alignment.AlignmentSystem.CantGauge -->
+						<!-- cl = math.abs(DistanceToAlignment) + Stagger -->
+							<!-- + (cr == "CCW" and 1 or -1) * (RightSided and 1 or -1) * ContactWireHeight * c/cg -->
 			<Formula>
 				function _JBTEH_UTL_CantileverLength()
 					if Variant == "Cariboni" then
 						return 1.200
 					else
-						local c,cr,cg,cl
-						c = getAlignmentInfo().Cant/1000
-						c = RC__isNan(c) and 0 or c
-						cr = getAlignmentInfo().CantRotation or "CW"
-						cg = Alignment.AlignmentSystem.CantGauge
 						cl = math.abs(DistanceToAlignment) + Stagger
-							+ (cr == "CCW" and 1 or -1) * (RightSided and 1 or -1) * ContactWireHeight * c/cg
 						return string.format("%.03f",cl)
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
+		<LuaExpression Name="PushDirection" ><Formula>_JBTEH_UTL_PushDirection()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
+			ReturnType="String"
+			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever." >
+			<Constructor>String _JBTEH_UTL_PushDirection()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_PushDirection()
+					--[[
+						Find the net force acting on a cantilever, return Push or Pull accordingly.
+						p0 = previous cantilever's contact wire clamp (or the inital wire tension balancer)
+						p1 = this cantilever
+						p2 = next cantilever's contact wire clamp (or the termination in a wire tension balancer)
+						p3 = contact wire clamp
+						u = vector from p1 to p0
+						v = vector from p1 to p2
+						w = vector from p1 to p3
+								(3)
+								|
+								|
+						(0)-----(1)-----(2)
+
+						uu,vv,ww are previous/this/subsequent consecutive cantilever insertion points (or WTB)
+						u,v,w are their contact wire clamps.
+						All coordinates are in WCS.
+					--]]
+				
+					s0 = "Forrige utligger/avspenning"
+					r0,n0 = RC__getCollectionOfRelatedObjects(s0)
+					if n0 == 0 then
+						return Stagger &lt; 0 and "Pull" or "Push", _info("UNFINISHED - No item related with '"..s0.."'.")
+					else
+						prevItem = r0[0]
+						uu = getPoint3D(prevItem.geoCoord.X, prevItem.geoCoord.Y)
+						if prevItem.RcType == "JBTEH_AEH Avspenning" then
+							u = uu
+						else
+							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+							t = getAlignmentInfo(prevItem.Alignment.id,uu).Tangent --local track tangent vector t.XYZ
+							tg = math.atan(t.Y,t.X)
+							wcPrev = getPoint3D(RC__acsVector2wcsVector(prevItem.WireClampLateralOffset-prevItem.DistanceToAlignment,0,tg))
+							u = RC__vectorAdd(uu,wcPrev)
+						end
+					end
+					
+					--This cantilever:
+					vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+					t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
+					tg = math.atan(t.Y,t.X)
+					cantileverVector = getPoint3D(RC__acsVector2wcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
+					v = RC__vectorAdd(vv,cantileverVector)
+					
+					s2 = "Neste utligger/avspenning"
+					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
+					if n2 == 0 then
+						return Stagger &lt; 0 and "Pull" or "Push", _info("UNFINISHED - No item related with '"..s2.."'.")
+					else
+						nextItem = r2[0]
+						ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
+						if nextItem.RcType == "JBTEH_AEH Avspenning" then
+							w = ww
+						else
+							t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
+							tg = math.atan(t.Y,t.X)
+							wcNext = getPoint3D(RC__acsVector2wcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
+							w = RC__vectorAdd(ww,wcNext)
+						end
+					end
+				
+					toPrev = RC__vectorSubtract(u,v)
+					toNext = RC__vectorSubtract(w,v)
+					forceVector = RC__vectorAdd(toPrev,toNext)
+					dotProduct = RC__vectorDotProduct(forceVector,cantileverVector)
+					--if true then return toPrev,toNext,forceVector,cantileverVector,dotProduct  end
+				
+					t = "Push/Pull direction deduced from previous cantilever/WTB '"..RC__identify(r0[0])
+						.."', this cantilever '"..RC__identify(this).."' and next cantilever/WTB '"..RC__identify(r2[0]).."'."
+				
+					return RC__vectorDotProduct(forceVector,cantileverVector) &lt; 0 and "Push" or "Pull",_info(t)
+				end
+			</Formula>
+		</LuaFunction>
 
 		<CustomAttribute DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" DefaultValue="4000"
 			Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long." >
@@ -793,7 +877,7 @@ positive feeder in AT system				positiv leder i AT-system
 					if n == 1 then return 
 						RC__identify(r[0])
 					else
-						return "CW=???"
+						return "CW=?"
 					end		
 				end
 			</Formula>
@@ -820,9 +904,9 @@ positive feeder in AT system				positiv leder i AT-system
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return ss*ContactWireHeight + cc * side * signedStagger
+							return ss*ContactWireHeight + cc*signedStagger
 						elseif ai.CantRotation == "CCW" then
-							return -ss*ContactWireHeight + cc * side * signedStagger
+							return -ss*ContactWireHeight + cc*signedStagger
 						else
 							return _error,0.999
 						end
@@ -831,7 +915,7 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<CustomAttribute DataType="Double" Name="WireClampVerticalOffset" DisplayName="Kontakttråd vertikalavsett" DefaultValue="0.00" 
+		<CustomAttribute DataType="Double" Name="WireClampVerticalOffset" DisplayName="Kontakttråd høydeavsett" DefaultValue="0.00" 
 			Description="The contact wire clamp's vertical offset (wcvo) [m] denotes the vertical distance from the track's gradient curve (XYZ before cant effects) to the contact wire clamp (center of contact wire). It depends on contact wire height, stagger (zigzag), cant and the cantilever being LeftSided or RightSided." />
 		<LuaExpression Name="WireClampVerticalOffset" ><Formula>_JBTEH_UTL_WireClampVerticalOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_WireClampVerticalOffset()" 
@@ -969,34 +1053,35 @@ positive feeder in AT system				positiv leder i AT-system
 		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
 		<Formula>
 			function _JBTEH_UTL_spanLength()
-				local s, r, n, c1, c2, d 
+				--This cantilever:
+				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
+				tg = math.atan(t.Y,t.X)
+				cantileverVector = getPoint3D(RC__acsVector2wcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
+				v = RC__vectorAdd(vv,cantileverVector)
+				
+				--Next cantilever:
 				s = "Neste utligger/avspenning"
 				r,n = RC__getCollectionOfRelatedObjects(s)
-				c1 = this
 				if n == 0 then
 					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
 				else
-					c2 = r[0]
-					c1ai = getAlignmentInfo(c1)
-					c1adX, c1adY = RC__acsVector2wcsVector(c1.WireClampLateralOffset, 0.0, c1.AlignmentTangent)
-					
-					c1aX = c1ai.Point.X + c1adX
-					c1aY = c1ai.Point.Y + c1adY
-					
-					c2ai = getAlignmentInfo(c2)
-					c2adX, c2adY = RC__acsVector2wcsVector(c2.WireClampLateralOffset, 0.0, c2.AlignmentTangent)
-					c2aX = c2ai.Point.X + c2adX
-					c2aY = c2ai.Point.Y + c2adY
-					
-					d = math.sqrt((c1aX - c2aX)^2 + (c1aY - c2aY)^2)						
-					
-					if RC__isNan(d) then
-						return 0.0, _error, _info("ERROR - cannot deduce a distance between "..RC__identify(c1).." and "..RC__identify(c2))					
+					nextItem = r[0]
+					ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
+					if nextItem.RcType == "JBTEH_AEH Avspenning" then
+						w = ww
 					else
-						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(c1).." and "..RC__identify(c2).." measured in center track.")
+						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
+						tg = math.atan(t.Y,t.X)
+						wcNext = getPoint3D(RC__acsVector2wcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
+						w = RC__vectorAdd(ww,wcNext)
 					end
+			
+					d = RC__vectorNorm(RC__vectorSubtract(w,v)) --2D length
+					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
 				end
-			end			
+			end
 		</Formula>
 	</LuaFunction>
 		

@@ -1772,10 +1772,131 @@ Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="file
  				ExtendedDataPropertySet="FDV BaneData_EH-LED" ExtendedDataPropertyDefinition="Retur- Nullpunktsikring (fabrikant)" />
 		<CustomAttribute Category="Pset FDV BaneData_EH-LED" DataType="String" DisplayName="Retur- Nullpunktsikring (Km)  (0 ved annet enn RL)" Name="FDVBaneData_EHLEDReturNullpunktsikringKm0VedAnnetEnnRL" DefaultValue=""
  				ExtendedDataPropertySet="FDV BaneData_EH-LED" ExtendedDataPropertyDefinition="Retur- Nullpunktsikring (Km)  (0 ved annet enn RL)" />
+
+
+		<LuaExpression Name="FDVBaneData_EHLEDKategori" >			<Formula>NOBN_ocs_FDVBaneData_EHLEDKategoriFromVariant()</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneData_EHLEDFunksjon" >			<Formula>NOBN_ocs_FDVBaneData_EHLEDFunksjonFromVariant()</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneData_EHLEDFraObjektObjektnr" >	<Formula>NOBN_ocs_GetClosestMastToPoint(Alignment.StartPoint)</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneData_EHLEDTilObjektObjektnr" >	<Formula>NOBN_ocs_GetClosestMastToPoint(Alignment.EndPoint)</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneData_EHLEDBetegnelse" >			<Formula>WireType</Formula></LuaExpression>
+
+
+
 	</xpp:bloc>
 </xpp:define>
 
+<!-- Pset global automation functions (kept in DNA, called from object instances) -->
+<LuaFunction Name="NOBN_ocs_FDVBaneData_EHLEDKategoriFromVariant()" ReturnType="String"
+	Description="Returns 'Kabel' or 'Line' for corresponding variants." >
+	<Constructor>String NOBN_ocs_FDVBaneData_EHLEDKategoriFromVariant()</Constructor>
+	<Formula>
+		function NOBN_ocs_FDVBaneData_EHLEDKategoriFromVariant()
+			if Variant == "AT-line (PL)" then
+				return "Line"
+			elseif Variant == "AT-kabel (PL)" then
+				return "Kabel"
+			elseif Variant == "AT-line (NL)" then
+				return "Line"
+			elseif Variant == "AT-kabel (NL)" then
+				return "Kabel"
+			elseif Variant == "Fjernline" then
+				return "Line"
+			elseif Variant == "Fjernkabel" then
+				return "Kabel"
+			elseif Variant == "Forbigangsline" then
+				return "Line"
+			elseif Variant == "Forbigangskabel" then
+				return "Kabel"
+			elseif Variant == "Forsterkningsline" then
+				return "Line"
+			elseif Variant == "Forsterkningskabel" then
+				return "Kabel"
+			elseif Variant == "Mateline" then
+				return "Line"
+			elseif Variant == "Matekabel" then
+				return "Kabel"
+			elseif Variant == "Returline" then
+				return "Line"
+			elseif Variant == "Returkabel" then
+				return "Kabel"
+			end
+		end
+	</Formula>
+</LuaFunction> 
 
+<LuaFunction Name="NOBN_ocs_FDVBaneData_EHLEDFunksjonFromVariant()" ReturnType="String"
+	Description="Returns 'Kabel' or 'Line' for corresponding variants." >
+	<Constructor>String NOBN_ocs_FDVBaneData_EHLEDFunksjonFromVariant()</Constructor>
+	<Formula>
+		function NOBN_ocs_FDVBaneData_EHLEDFunksjonFromVariant()
+			if Variant == "AT-line (PL)" then
+				return "AT (PL/NL)"
+			elseif Variant == "AT-kabel (PL)" then
+				return "AT (PL/NL)"
+			elseif Variant == "AT-line (NL)" then
+				return "AT (PL/NL)"
+			elseif Variant == "AT-kabel (NL)" then
+				return "AT (PL/NL)"
+			elseif Variant == "Fjernline" then
+				return "Fjern"
+			elseif Variant == "Fjernkabel" then
+				return "Fjern"
+			elseif Variant == "Forbigangsline" then
+				return "Forbigang"
+			elseif Variant == "Forbigangskabel" then
+				return "Forbigang"
+			elseif Variant == "Forsterkningsline" then
+				return "Forsterkning"
+			elseif Variant == "Forsterkningskabel" then
+				return "Forsterkning"
+			elseif Variant == "Mateline" then
+				return "Mating"
+			elseif Variant == "Matekabel" then
+				return "Mating"
+			elseif Variant == "Returline" then
+				return "Return"
+			elseif Variant == "Returkabel" then
+				return "Retur"
+			end
+		end
+	</Formula>
+</LuaFunction> 
+
+
+<LuaFunction Name="NOBN_ocs_GetClosestMastToPoint()" ReturnType="String"
+	Description="Gets closest 'JBTEH_MAS KL-mast' or 'JBTEH_TUF Tunnelfeste' object within MaxDistance of point" >
+	<Constructor>String NOBN_ocs_GetClosestMastToPoint(Point point, [Double MaxDistance = 10])</Constructor>
+	<Formula>
+		function NOBN_ocs_GetClosestMastToPoint(point, MaxDistance)
+			local minDistance = MaxDistance or 10
+			local nearby = getNearbyPointObjects2D(point, minDistance)
+			local closest
+
+
+			for i = 0,nearby.count -1 do
+				local obj = nearby[i]
+				local distance = RC__getDistance2D(nearby[i].geoCoord, point)
+				if nearby[i] and nearby[i].RcType == 'JBTEH_MAS KL-mast' and  distance &lt; minDistance then
+					minDistance = distance
+					closest = obj
+				end
+			end
+			if not closest then
+				for i = 0,nearby.count -1 do
+					local obj = nearby[i]
+					local distance = RC__getDistance2D(nearby[i].geoCoord, point)
+					if nearby[i] and nearby[i].RcType == 'JBTEH_TUF Tunnelfeste' and  distance &lt; minDistance then
+						minDistance = distance
+						closest = obj
+				end
+			end
+			end 
+			return closest and closest.FDVBaneDataObjektID	
+		end
+	</Formula>
+</LuaFunction> 
+	
+	
 
 <!--========================================================================================================
 	End of file
