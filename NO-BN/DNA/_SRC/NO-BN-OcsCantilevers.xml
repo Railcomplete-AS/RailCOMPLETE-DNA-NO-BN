@@ -697,7 +697,6 @@ positive feeder in AT system				positiv leder i AT-system
 		<CustomAttribute DataType="Double" Name="CantileverLength" DisplayName="Utliggerlengde" DefaultValue="4.0"
 			Description="The cantilever's length [m] is measured from console (mast side) to contact wire clamp, perpendicularly to the track. The Cariboni variant has a constant length of 1200 mm." >
 		</CustomAttribute>
-		
 		<LuaExpression Name="CantileverLength" ><Formula>_JBTEH_UTL_CantileverLength()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_CantileverLength()" 
 			ReturnType="String"
@@ -739,11 +738,13 @@ positive feeder in AT system				positiv leder i AT-system
 						u = vector from p1 to p0
 						v = vector from p1 to p2
 						w = vector from p1 to p3
-								(3)
-								|
-								|
-						(0)-----(1)-----(2)
-
+						.
+						  (uu)    (vv)    (ww)
+						   |       |       |
+						   |       |       |
+						---u-------v-------w--- (contact wire)
+						(prev) (this)  (next)
+						.
 						uu,vv,ww are previous/this/subsequent consecutive cantilever insertion points (or WTB)
 						u,v,w are their contact wire clamps.
 						All coordinates are in WCS.
@@ -854,12 +855,58 @@ positive feeder in AT system				positiv leder i AT-system
 		<TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-6" 
 			Layer="JBTEH@SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0"
 			ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false" />       
-		<LuaExpression Name="StaggerDisplay" ><Formula>string.format("%.f",Stagger*100) --Centimeters</Formula></LuaExpression>
-		
+		<LuaExpression Name="StaggerDisplay" ><Formula>_JBTEH_UTL_StaggerDisplay()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_StaggerDisplay()" ReturnType="Double" 
+				HideFromUser="false"
+				Description="Returns the rounded stagger value in centimeters. A negative stagger means that the cantilever holds the contact wire in a position such that it touches a passing train's pantograph side which is closest to the OCS mast. Note that the tip of the cantilever's 2D symbol is located in 2D relative to the track's 2D polyline representation, which does not show the effect of cant. The actual contact wire position in 3D is shifted sideways as a function of the track's cant. The net effect is that the 2D cantilever's tip is located at the stagger distance from the 2D contact wire." >
+			<Constructor>Double _JBTEH_UTL_StaggerDisplay()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_StaggerDisplay()
+					return string.format("%.f",Stagger*100) --Centimeters
+				end
+			</Formula>
+		</LuaFunction>
+		<TextPositionLuaExpression Name="SIKKSAKK" ><Formula>_JBTEH_UTL_StaggerTextPosition()</Formula></TextPositionLuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_StaggerTextPosition()" ReturnType="Vector2D" 
+				HideFromUser="false"
+				Description="Returns a World Coordinate System offset vector for the stagger text attribute." >
+			<Constructor>{Double,Double} _JBTEH_UTL_StaggerTextPosition()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_StaggerTextPosition()
+					--Standard text placement for rightsided single cantilever, on the opposite
+					--side of its track, 6 units from the track, at 2 units lower mileage along track:
+					lateralOffset = -2
+					longitudinalOffset = 6
+					
+					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS mast: 
+					sMast = "Tilhører kl-mast"
+					Masts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
+					sCantilever = "Er kl-mast for utligger"
+					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,Masts[0])
+					if nCantilevers == 1 then
+						--must be at least 1
+						return RC__acsVector2wcsVector(RightSided and -longitudinalOffset or longitudinalOffset,lateralOffset)
+					else
+						--2 or more cantilevers - same side of mast?
+						for i = 0,nCantilevers-1 do
+							other = rCantilevers[i]
+							if this.id ~= other.id then
+								--if true and i == 1 then return Masts[0].Relations[sCantilever],this,other end
+								if this.SideOfAlignment == other.SideOfAlignment then
+									return RC__acsVector2wcsVector( LeftSided and longitudinalOffset or -longitudinalOffset, 
+																	this.mileage &lt;= other.mileage and lateralOffset or -lateralOffset)
+								end
+							end
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
         <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="-6" 
-				Layer="JBTEH@UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" 
+				Layer="JBTEH@UTLIGGER_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" 
 				Invisible="false" Lock="false" MText="false" /> 
 		<LuaExpression Name="OcsWireNameDisplay" ><Formula>_JBTEH_UTL_OcsWireNameDisplay()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_OcsWireNameDisplay()" 
@@ -879,6 +926,17 @@ positive feeder in AT system				positiv leder i AT-system
 					else
 						return "CW=?"
 					end		
+				end
+			</Formula>
+		</LuaFunction>
+		<TextPositionLuaExpression Name="UTLIGGER_LEDNING" ><Formula>_JBTEH_UTL_OcsWireNameDisplayTextPosition()</Formula></TextPositionLuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_OcsWireNameDisplayTextPosition()" ReturnType="Vector2D" 
+				HideFromUser="false"
+				Description="Returns a World Coordinate System offset vector for the stagger text attribute." >
+			<Constructor>{Double,Double} _JBTEH_UTL_OcsWireNameDisplayTextPosition()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_OcsWireNameDisplayTextPosition()
+					RC__acsVector2wcsVector(LeftSided and 6 or -6, 0)		
 				end
 			</Formula>
 		</LuaFunction>
@@ -1043,8 +1101,41 @@ positive feeder in AT system				positiv leder i AT-system
 				end
 			</Formula>
 		</LuaFunction>
-		
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="0.0" 
+
+		<CustomAttribute DataType="String" Name="mc_OcsCantileverSequence" DisplayName="Utliggersekvens" 
+			ReadOnly="true" Category="Model check" 
+			Description="Each cantilever shall feature exactly one preceding cantilever (but the first one is preceded by a wire tensioning balancer), and shall be followed by exactly one cantilever (but the last one is followed by a wire tensioning balancer)."
+		 />
+		<LuaExpression Name="mc_OcsCantileverSequence" IsModelCheck="true" ><Formula>_JBTEH_UTL_chkCantileverSequence()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_chkCantileverSequence()" 
+			ReturnType="String"
+			Description="Checks the cantilever sequence: Preceded and followed by exactly one cantilever (or wire tension balancer)." >
+			<Constructor>String _JBTEH_UTL_chkCantileverSequence()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_chkCantileverSequence()
+					sPrev = "Forrige utligger/avspenning"
+					rPrev,nPrev = RC__getCollectionOfRelatedObjects(sPrev)
+					sNext = "Neste utligger/avspenning"
+					rNext,nNext = RC__getCollectionOfRelatedObjects(sNext)
+					if nPrev == 1 and nNext == 1 then
+						return string.format("%d / %d: OK - Preceded by %s '%s' / followed by %s '%s'.", nPrev,nNext,
+								rPrev[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rPrev[0]),
+								rNext[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rNext[0])
+							),_ok
+					elseif nPrev == 0 and nNext == 0 then
+						return string.format("%d / %d: WARNING - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_warning
+					elseif nPrev == 0 and nNext == 1 then
+						return string.format("%d / %d: WARNING - Relate to preceding cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sPrev),_warning
+					elseif nPrev == 1 and nNext == 0 then
+						return string.format("%d / %d: WARNING - Relate to following cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sNext),_warning
+					else
+						return string.format("%d / %d: ERROR - Too many related cantilevers (or wire tension balancers), remove the wrong ones or check construction phase settings and refresh the object.", nPrev,nNext),_error
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
 			Description="The span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using 'Neste utligger/avspenning'/'Forrige utligger/avspenning'." />
 		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
@@ -1052,7 +1143,7 @@ positive feeder in AT system				positiv leder i AT-system
 			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
 		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
 		<Formula>
-			function _JBTEH_UTL_spanLength()
+			function _JBTEH_UTL_SpanLength()
 				--This cantilever:
 				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
 				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
@@ -1267,7 +1358,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="Alignment" ><Formula>_JBTEH_KLK_Alignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KLK_Alignment()" 
 			ReturnType="String"
-			Description="Obtains the 'code' for this OCS contact wire clamp. Uses relation 'Appartient à armement' to access the related object's data." >
+			Description="Obtains the 'Alignment' property for this OCS contact wire clamp, deduced via its cantilever." >
 			<Constructor>String _JBTEH_KLK_Alignment()</Constructor>
 			<Formula>
 				function _JBTEH_KLK_Alignment()
