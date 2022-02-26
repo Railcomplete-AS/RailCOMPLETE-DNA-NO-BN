@@ -178,7 +178,6 @@
 					return "", _info("Spanlength display intentionally suppressed due to other prevailing spanlength.")
 				end
 				
-
 				--Look for nearby masts/suspension masts:
 				local npo1 = getNearbyPointObjects2D(nearbyMastTolerance,"JBTEH_MAS KL-mast") 
 				local npo2 = getNearbyPointObjects2D(nearbyMastTolerance,"JBTEH_MAS Hengemast for bru og tunnel")
@@ -210,12 +209,12 @@
 				</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextOffset()" ReturnType="Vector2D" 
+	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
 			Description="Returns a World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point to halfway between the concerned masts' display points. Optionally, specify offsets as [offsetLateral [,offsetAlong]])." >
-		<Constructor>{Double,Double} _JBTEH_MAS_SpanLengthTextOffset([Double offsetLateral [,Double offsetAlong]])</Constructor>
+		<Constructor>{Double,Double} _JBTEH_MAS_SpanLengthTextPosition([Double offsetLateral [,Double offsetAlong]])</Constructor>
 		<Formula>
-			function _JBTEH_MAS_SpanLengthTextOffset(offsetLateral,offsetAlong)
+			function _JBTEH_MAS_SpanLengthTextPosition(offsetLateral,offsetAlong)
 				offsetLateral = offsetLateral or 0
 				offsetAlong = offsetAlong or 0
 				worldOffsetX,worldOffsetY = RC__acsVector2wcsVector(offsetLateral,offsetAlong)
@@ -237,12 +236,12 @@
 		</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextOffset2()" ReturnType="Vector2D" 
+	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextPosition2()" ReturnType="Vector2D" 
 			HideFromUser="false"
 			Description="Returns a World Coordinate System offset vector for the second span length custom text attribute, by default from the object's insertion point to halfway between the concerned masts' display points. Optionally, specify offsets as [offsetLateral2 [,offsetAlong2]])." >
-		<Constructor>{Double,Double} _JBTEH_MAS_SpanLengthTextOffset2([Double offsetLateral2 [,Double offsetAlong2]])</Constructor>
+		<Constructor>{Double,Double} _JBTEH_MAS_SpanLengthTextPosition2([Double offsetLateral2 [,Double offsetAlong2]])</Constructor>
 		<Formula>
-			function _JBTEH_MAS_SpanLengthTextOffset2(offsetLateral2,offsetAlong2)
+			function _JBTEH_MAS_SpanLengthTextPosition2(offsetLateral2,offsetAlong2)
 				offsetLateral2 = offsetLateral2 or 0
 				offsetAlong2 = offsetAlong2 or 0
 				worldOffsetX,worldOffsetY = RC__acsVector2wcsVector(offsetLateral2,offsetAlong2)
@@ -265,7 +264,7 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextRotation()" ReturnType="Double" 
 			HideFromUser="false" 
-			Description="Returns the text attribute's rotation for the shortest span length custom text attribute, to place the text nicely between its two masts' display points." >
+			Description="Returns the text attribute's rotation [DD] for the shortest span length custom text attribute, to place the text nicely between its two masts' display points." >
 		<Constructor>Double _JBTEH_MAS_SpanLengthTextRotation()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_SpanLengthTextRotation()
@@ -288,7 +287,7 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextRotation2()" ReturnType="Double" 
 			HideFromUser="false" 
-			Description="Returns the text attribute's rotation for the second shortest span length custom text attribute, to place the text nicely between its two masts." >
+			Description="Returns the text attribute's rotation [DD] for the second shortest span length custom text attribute, to place the text nicely between its two masts." >
 		<Constructor>Double _JBTEH_MAS_SpanLengthTextRotation2()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_SpanLengthTextRotation2()
@@ -310,6 +309,48 @@
 			end
 		</Formula>
 	</LuaFunction>
+
+	<LuaFunction Name="_JBTEH_MAS_otherObjectsToModelcheck()" ReturnType="String"
+		Description = "Returns the number of other items to modelcheck, and a table with references to them." >
+		<Constructor>_JBTEH_MAS_otherObjectsToModelcheck()</Constructor>
+		<Formula>
+			function _JBTEH_MAS_otherObjectsToModelcheck()
+				sYoke1 = "Er åk-mast for åk"
+				sYoke2 = "Er hengemast festet i åk"
+				sMast = "Er åk holdt oppe av kl-mast"
+				sSuspensionMast = "Er åk for hengemast - kl-mast"
+				t = {} --Collection of other objects to check
+				txt = "{"
+				first = true
+				rYoke1,nYoke1 = RC__getCollectionOfRelatedObjects(sYoke1)
+				rYoke2,nYoke2 = RC__getCollectionOfRelatedObjects(sYoke2)
+				rYoke = getUnionOfCollections({rYoke1,rYoke2})
+				nYoke = nYoke1 + nYoke2
+				for j = 0,nYoke-1 do
+					table.insert(t,rYoke[j])
+					txt = first and "{"..RC__identify(rYoke[j]) or txt..","..RC__identify(rYoke[j])
+					first = false
+					rMast,nMast = RC__getCollectionOfRelatedObjects(sMast,rYoke[j])
+					for i = 0, nMast-1 do 
+						if rMast[i].id ~= this.id then
+							table.insert(t,rMast[i])
+							txt = txt..","..RC__identify(rMast[i])
+						end
+					end
+					rSuspensionMast,nSuspensionMast = RC__getCollectionOfRelatedObjects(sSuspensionMast,rYoke[j])
+					for i = 0, nSuspensionMast-1 do
+						if rSuspensionMast[i].id ~= this.id then
+							table.insert(t,rSuspensionMast[i])
+							txt = txt..","..RC__identify(rSuspensionMast[i])
+						end
+					end
+					n = nMast + nSuspensionMast
+					return n,t,_info(n..": "..txt.."}")
+				end
+				return 0,{},_info(first and "{}" or txt)
+			end
+		</Formula>
+	</LuaFunction> 
 
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_MAS KL-mast"
 				Layer="JBTEH_MAS" Color="ByLayer"
@@ -370,42 +411,11 @@
 			</Variant>
 		</Variants>
 		
-		<LuaFunction Name="_JBTEH_MAS_otherObjectsToModelcheck()" ReturnType="String"
-			Description = "Returns the number of other items to modelcheck, and a table with references to them." >
-			<Constructor>_JBTEH_MAS_otherObjectsToModelcheck()</Constructor>
-			<Formula>
-				function _JBTEH_MAS_otherObjectsToModelcheck()
-					s = "Er åk-mast for åk"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n > 0 then
-						s1 = "Er åk holdt oppe av kl-mast"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
-						t = {}
-						txt = nil
-						for i = 0, n1-1 do 
-							table.insert(t,r1[i])
-							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
-						end
-						s2 = "Er hengemast festet i åk"
-						r2,n2 = RC__getCollectionOfRelatedObjects(s2)
-						for i = 0, n2-1 do
-							table.insert(t,r2[i])
-							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
-						end
-						if n1+n2 == 0 then
-							return 0, _info("No other objects to modelcheck.")
-						else
-							m = 1 + n1 + n2 --One for the yoke
-							return t
-						end
-					end
-				end
-			</Formula>
-		</LuaFunction> 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Other objects to be refreshed" 
+			DisplayName="Other objects to be modelchecked" 
 			Description="If this mast supports a yoke, then the yoke with more masts are modelchecked as well."
 		 />
+		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Enumeration" Name="OcsMastProfile" DisplayName="Masteprofil"
@@ -633,7 +643,7 @@
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextPosition(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<!-- Span length 2 -->
@@ -650,7 +660,7 @@
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong2" DisplayName="Langsmed spennlengdetekst offset 2" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextOffset2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextPosition2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextRotation2()</Formula></TextRotationLuaExpression>
 		
 		<CustomAttribute DataType="Boolean" Name="HasSpire" DisplayName="Har spir" DefaultValue="false"
@@ -1093,7 +1103,7 @@
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextPosition(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<!-- Span length 2 -->
@@ -1110,7 +1120,7 @@
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong2" DisplayName="Langsmed spennlengdetekst offset 2" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextOffset2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextPosition2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextRotation2()</Formula></TextRotationLuaExpression>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
@@ -1253,42 +1263,11 @@
 			</Variant>
 		</Variants>
 		
-		<LuaFunction Name="_JBTEH_MAS_otherObjectsToModelcheck()" ReturnType="String"
-			Description = "Returns the number of other items to modelcheck, and a table with references to them." >
-			<Constructor>_JBTEH_MAS_otherObjectsToModelcheck()</Constructor>
-			<Formula>
-				function _JBTEH_MAS_otherObjectsToModelcheck()
-					s = "Er hengemast festet i åk"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n > 0 then
-						s1 = "Er åk holdt oppe av kl-mast"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
-						t = {}
-						txt = nil
-						for i = 0, n1-1 do 
-							table.insert(t,r1[i])
-							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
-						end
-						s2 = "Er hengemast festet i åk"
-						r2,n2 = RC__getCollectionOfRelatedObjects(s2)
-						for i = 0, n2-1 do
-							table.insert(t,r2[i])
-							txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
-						end
-						if n1+n2 == 0 then
-							return 0, _info("No other objects to modelcheck.")
-						else
-							m = 1 + n1 + n2 --One for the yoke
-							return m,t, _info(m..": "..txt.."}")
-						end
-					end
-				end
-			</Formula>
-		</LuaFunction> 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Other objects to be refreshed" 
+			DisplayName="Other objects to be modelchecked" 
 			Description="If this mast supports a yoke, then the yoke with more masts are modelchecked as well."
 		 />
+		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
@@ -1425,7 +1404,7 @@
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextPosition(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<!-- Span length 2 -->
@@ -1442,7 +1421,7 @@
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong2" DisplayName="Langsmed spennlengdetekst offset 2" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextOffset2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextPosition2(SpanLengthTextOffsetLateral2,SpanLengthTextOffsetAlong2)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE2" ><Formula>_JBTEH_MAS_SpanLengthTextRotation2()</Formula></TextRotationLuaExpression>
 
 		<LuaExpression Name="Variant" ><Formula>_JBTEH_MAS_yoke_suspension_mast_Variant()</Formula></LuaExpression>
@@ -1843,32 +1822,34 @@
 			<Constructor>_JBTEH_AAK_otherObjectsToModelcheck()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_otherObjectsToModelcheck()
-					s1 = "Er åk holdt oppe av kl-mast"
-					r1,n1 = RC__getCollectionOfRelatedObjects(s1)
-					t = {}
-					txt = nil
-					for i = 0, n1-1 do 
-						table.insert(t,r1[i])
-						txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+					sMast = "Er åk holdt oppe av kl-mast"
+					rMast,nMast = RC__getCollectionOfRelatedObjects(sMast)
+					t = {} --Collection of other objects to check
+					first = true
+					for i = 0, nMast-1 do 
+						table.insert(t,rMast[i])
+						txt = first and "{"..RC__identify(rMast[i]) or txt..","..RC__identify(rMast[i])
+						first = false
 					end
-					s2 = "Er hengemast festet i åk"
-					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
-					for i = 0, n2-1 do
-						table.insert(t,r2[i])
-						txt = txt and txt..","..RC__identify(r1[i]) or "{"..RC__identify(r1[i])
+					sSuspensionMast = "Er åk for hengemast - kl-mast"
+					rSuspensionMast,nSuspensionMast = RC__getCollectionOfRelatedObjects(sSuspensionMast)
+					for i = 0, nSuspensionMast-1 do
+						table.insert(t,rSuspensionMast[i])
+						txt = first and "{"..RC__identify(rSuspensionMast[i]) or txt..","..RC__identify(rSuspensionMast[i])
+						first = false
 					end
-					if n1+n2 == 0 then
-						return 0, _info("No other objects to modelcheck.")
+					n = nMast + nSuspensionMast
+					if n == 0 then
+						return 0,{},_info("{}")
 					else
-						m = n1+n2
-						return m,t, _info(m..": "..txt.."}")
+						return n,t,_info(n..": "..txt.."}")
 					end
 				end
 			</Formula>
 		</LuaFunction> 
 		
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Other objects to be refreshed" 
+			DisplayName="Other objects to be modelchecked" 
 			Description="When this yoke is refreshed, then all of its support masts and suspension masts are modelchecked as well."
 		 />
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_AAK_otherObjectsToModelcheck()</Formula></LuaExpression>

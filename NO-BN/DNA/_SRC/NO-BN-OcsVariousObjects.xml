@@ -296,7 +296,8 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	CATENARY SUPPORT WIRE ISOLATOR (and for contact wires outside the pantograph's reach)
+	CATENARY SUPPORT WIRE ISOLATOR
+	(and for contact wires tensioning wire outside, the pantograph's reach)
 =========================================================================================================-->
 	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
 				Layer="JBTEH_ISO" Color="ByLayer"
@@ -341,6 +342,97 @@
 			</Formula>
 		</LuaExpression>
 
+		<LuaExpression Name="Alignment" ><Formula>_JBTEH_ISO_Alignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_Alignment()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_ISO_Alignment()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_Alignment()
+					return getClosestAlignments():filter(
+						function (x)
+							return RC__isMemberOf({"JBTEH_KTL Kontaktledning","JBTEH_FIL Fixline"},x.RcType) 
+						end)[0]
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_ISO_TargetAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_TargetAlignment()" ReturnType="Double"
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation (isolation) object. The isolator is supposed to connect a contact wire with a contact wire tensioning wire, or to connect two parts of a tensioning wire. Note that braking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here. " >
+			<Constructor>Double _JBTEH_ISO_TargetAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_TargetAlignment()
+					tol = 1 --[m]
+					if Alignment.RcType == "JBTEH_KTL Kontaktledning" then
+						ta = getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
+						d1 = RC__getDistance2D(this,ta.RcAlignment.StartPoint)
+						d2 = RC__getDistance2D(this,ta.RcAlignment.EndPoint)
+						if math.min(d1,d2) &lt; tol then
+							return ta,_info("Target alignment is the closest alignment with a start or end point within "..tol.." m from this isolator.")
+						else
+							return nil,_info("No target alignment found where its start or end is within tolerance "..tol.." m.")
+						end
+					elseif Alignment.RcType == "JBTEH_FIL Fixline" then
+						return nil,_info("No target alignment selected since fixlines shall not be split in several alignment parts.")
+					else
+						return nil,_info("*** ERROR - Unexpected alignment type '"..Alignment.RcType.."'.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+						
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_ISO_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_mileage()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_ISO_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_mileage()
+					tol = 1 --[m] from end-of-wire, snap to start/end point if within this distance from own the alignment's extremity
+					--Manipulate isolator's mileage (position) only if it used as a continuation object and close to the wire's breakpoint.
+					pos = getAlignmentInfo().RelativePosition
+					if RC__isNan(pos) then return nil, _info("Position not found.") end
+					L = Alignment.RcAlignment.HorizontalProfile.Length
+					if TargetAlignment and math.min(pos,L-pos) &lt; tol then
+						return pos &lt; (L-pos) and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+					else
+						return getPropertyValue("mileage") --read own value without re-evaluating this object
+					end
+				end
+			</Formula>
+		</LuaFunction>
+						
+		<CustomAttribute DataType="String" Name="mc_JBTEH_ISO_AlignmentTypes" DisplayName="Kompatible linjetyper" 
+			ReadOnly="true" Category="Model check" 
+			Description="."
+		 />
+		<LuaExpression Name="mc_JBTEH_ISO_AlignmentType" IsModelCheck="true" ><Formula>_JBTEH_ISO_chkAlignmentTypes()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISO_chkAlignmentTypes()" 
+			ReturnType="String"
+			Description="Checks alignment type compatibility: Isolators may only be placed inside a fixine, inside a stretcher or where a contact wire suspension line meets with another or meets a contact wire." >
+			<Constructor>String _JBTEH_ISO_chkAlignmentTypes()</Constructor>
+			<Formula>
+				function _JBTEH_ISO_chkAlignmentTypes()
+					compatibility = { 
+						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
+						{ a="Kontaktledning, kjørbar", ta={"Kontaktledning, avspenningsline"}},
+						{ a="Kontaktledning, ikke kjørbar", ta={"Kontaktledning, avspenningsline"}},
+						{ a="Fixline", ta={"Fixline","-"}},
+						{ a="Bardun", ta={"Bardun","-"}}
+					}
+					v1 = Alignment.Variant
+					v2 = TargetAlignment and TargetAlignment.Variant or "-"
+					for i = 1,5 do
+						if compatibility[i].a == v1 then
+							if RC__isMemberOf(compatibility[i].ta,v2) then
+								return v1.."/"..v2..": OK - Compatible alignment types / variants",_ok
+							end
+						end
+					end
+					return v1.."/"..v2..": ERROR - Incompatible adjacent alignment types / variants.",_error
+				end
+			</Formula>
+		</LuaFunction>
+		
 		<InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
@@ -365,126 +457,6 @@
 
 	</ObjectType>
 
-	<!-- 2021-11-21 CLFEY: Experimenting with lineisolator as continuation object between kl-bardun and kl-oppheng and kontaktledning: -->
-<!--	
-	
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
-				Layer="JBTEH_ISO" Color="ByLayer"
-				Group="Kontaktledning/Isolatorer"
-				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
-				>
-				
-		<RelationSpace>lineisolator</RelationSpace>
-
-		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___OCS" />
-		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
-		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
-		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
-		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
-		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
-		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
-
-		<Variants DefaultValue="Lineisolator" >
-			<Variant Name="Lineisolator" >
-			</Variant>
-		</Variants>
-
-		<LuaExpression Name="name" >
-			<Formula>
-				if Variant == "Lineisolator" then return "Isol."
-				else return "Unrecognized variant ["..Variant.."].",_warning
-				end
-			</Formula>
-		</LuaExpression>
-
-		<LuaExpression Name="code" ><Formula>_JBTEH_ISO_code()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_ISO_code()" ReturnType="String"
-			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two stretchers or wires that meet in a OCS wire continuation (a line isolator)." >
-			<Constructor>String _JBTEH_ISO_code()</Constructor>
-			<Formula>
-				function _JBTEH_ISO_code()
-					local first,second
-					local compatibleAlignments = {"JBTEH_KTL Kontaktledning", "JBTEH_KLO Kontaktledningsoppheng", "JBTEH_BAR Bardun"}
-					if RcType ~= "JBTEH_ISO Lineisolator" then
-						return _error, "Bad object type ["..RcType.."] - 'JBTEH_ISO Lineisolator' was expected"
-					else
-						first = Alignment
-						if first == nil then
-							return "Bad or missing alignment reference",_warning
-						elseif not RC__isMemberOf(compatibleAlignments,Alignment.RcType) then
-							return "Cannot connect to alignment of type '"..Alignment.RcType.."'.",_warning
-						end
-						second = TargetAlignment
-						if second == nil then
-							return "Bad or missing continuing alignment reference",_warning
-						end
-						if first.id == second.id then
-							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
-						elseif not RC__isMemberOf(compatibleAlignments,TargetAlignment.RcType) then
-							return "Cannot connect to targert alignment of type '"..Alignment.RcType.."'.",_warning
-						end
-						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
-						--if KmStigerMotVenstre then
-						--	first,second = second,first 
-						--end
-						return "["..first.Code.."] ==> ["..second.Code.."]"
-					end
-				end
-			</Formula>
-		</LuaFunction>
-
-		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
-
-		<LuaExpression Name="Mileage" ><Formula>_JBTEH_ISO_mileage()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_ISO_mileage()" ReturnType="Double"
-				Description="Obtains the mileage from its alignment." >
-			<Constructor>Double _JBTEH_ISO_mileage()</Constructor>
-			<Formula>
-				function _JBTEH_ISO_mileage()
-					ai = getAlignmentInfo()
-					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
-					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
-							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
-				end
-			</Formula>
-		</LuaFunction>
-						
-		<LuaExpression Name="Model3DName" >
-			<Formula>
-				if Variant == "Lineisolator" then return "NO-BN-3D-EH-ISO-LINEISOLATOR-600x100"
-				else return "Unrecognized variant ["..Variant.."].",_warning
-				end
-			</Formula>
-		</LuaExpression>
-
-		<InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
-			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
-			<OwnAlignmentTargetSpace>kl-oppheng</OwnAlignmentTargetSpace> 
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" />
-		</InsertPointObject>
-		
-		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" >
-			<Rotation Add180DegreesIfDirIsDown="true" />
-			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_ISO
-				ISOLATOR
-				{% if Variant == 'Lineisolator' %}LINEISOLATOR
-				{% else %}BAD_Variant
-				{% endif %}
-				{{SymbolMode}}
-			</BlockNameFormat>
-		</SymbolDefinition>
-		
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
-
-	</ObjectType>
--->
 
 
 <!--========================================================================================================
