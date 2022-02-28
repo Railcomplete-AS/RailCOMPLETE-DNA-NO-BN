@@ -316,6 +316,10 @@
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
+
+		<!-- Model checks (special care is taken for the JBTEH_ISO object): -->
+		<xpp:expand select="NOBN_com_CHK_CONNECTION___CONTINUATION" />
+
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
@@ -326,13 +330,7 @@
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="name" >
-			<Formula>
-				if Variant == "Lineisolator" then return "Isol."
-				else return "Unrecognized variant ["..Variant.."].",_warning
-				end
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="code" ><Formula>Variant</Formula></LuaExpression>
 
 		<LuaExpression Name="Model3DName" >
 			<Formula>
@@ -358,7 +356,7 @@
 
 		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_ISO_TargetAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_ISO_TargetAlignment()" ReturnType="Double"
-				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation (isolation) object. The isolator is supposed to connect a contact wire with a contact wire tensioning wire, or to connect two parts of a tensioning wire. Note that braking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here. " >
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation (isolation) object. The isolator is supposed to connect a contact wire with a contact wire tensioning wire, or to connect two parts of a tensioning wire. Note that breaking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here." >
 			<Constructor>Double _JBTEH_ISO_TargetAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_ISO_TargetAlignment()
@@ -383,7 +381,7 @@
 						
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_ISO_mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_ISO_mileage()" ReturnType="Double"
-				Description="Obtains the mileage from its alignment." >
+				Description="Returns 'mileage', snapped to a compatible alignment if within 1m from object." >
 			<Constructor>Double _JBTEH_ISO_mileage()</Constructor>
 			<Formula>
 				function _JBTEH_ISO_mileage()
@@ -400,39 +398,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-						
-		<CustomAttribute DataType="String" Name="mc_JBTEH_ISO_AlignmentTypes" DisplayName="Kompatible linjetyper" 
-			ReadOnly="true" Category="Model check" 
-			Description="."
-		 />
-		<LuaExpression Name="mc_JBTEH_ISO_AlignmentType" IsModelCheck="true" ><Formula>_JBTEH_ISO_chkAlignmentTypes()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_ISO_chkAlignmentTypes()" 
-			ReturnType="String"
-			Description="Checks alignment type compatibility: Isolators may only be placed inside a fixine, inside a stretcher or where a contact wire suspension line meets with another or meets a contact wire." >
-			<Constructor>String _JBTEH_ISO_chkAlignmentTypes()</Constructor>
-			<Formula>
-				function _JBTEH_ISO_chkAlignmentTypes()
-					compatibility = { 
-						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
-						{ a="Kontaktledning, kjørbar", ta={"Kontaktledning, avspenningsline"}},
-						{ a="Kontaktledning, ikke kjørbar", ta={"Kontaktledning, avspenningsline"}},
-						{ a="Fixline", ta={"Fixline","-"}},
-						{ a="Bardun", ta={"Bardun","-"}}
-					}
-					v1 = Alignment.Variant
-					v2 = TargetAlignment and TargetAlignment.Variant or "-"
-					for i = 1,5 do
-						if compatibility[i].a == v1 then
-							if RC__isMemberOf(compatibility[i].ta,v2) then
-								return v1.."/"..v2..": OK - Compatible alignment types / variants",_ok
-							end
-						end
-					end
-					return v1.."/"..v2..": ERROR - Incompatible adjacent alignment types / variants.",_error
-				end
-			</Formula>
-		</LuaFunction>
-		
+
 		<InsertPointObject VariantName="Lineisolator" DisplayBlockName="NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>

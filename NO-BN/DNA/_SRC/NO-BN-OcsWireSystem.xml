@@ -336,7 +336,7 @@
 					elseif Wire2dColor:lower():match("oransje") then return "255,140,0"
 					elseif Wire2dColor:lower():match("grønn") then return "50,205,50"
 					elseif Wire2dColor:lower():match("gul") then return 2
-					elseif Wire2dColor:lower():match("stålgrå") then return 253
+					elseif Wire2dColor:lower():match("stålgrå") then return 252 --Moderately dark gray
 					else return 7 --white
 					end
 				end
@@ -367,6 +367,12 @@
 		<LuaExpression Name="Rotation3D.Y" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		<LuaExpression Name="Rotation3D.Z" ><Formula>0.0</Formula></LuaExpression>
 		
+		<LuaExpression Name="name" ><Formula>"L"..code</Formula></LuaExpression>
+		
+		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
+		<LuaExpression Name="Model3DSeparation" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
+		<SetValue Key="Model3DOffset" Value="0.0" />
+
 		<!-- The 2D Sweep profile: -->
 		<!-- See chapter 3.8 Steel wires in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Steel_wires -->
 		<LuaExpression Name="Model3DName" ><Formula>_JBTEH_KTL_Model3dName()</Formula></LuaExpression>
@@ -395,13 +401,25 @@
 			</Formula>
 		</LuaFunction>
 		
-		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
-		<LuaExpression Name="Model3DSeparation" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression>
-		<SetValue Key="Model3DOffset" Value="0.0" />
+		<CustomAttribute DataType="String" Name="mc_OtherObjectsToBeModelchecked" ReadOnly="true" Category="Model check"
+			DisplayName="Other objects to be modelchecked" 
+			Description="When this contact wire is refreshed, then all point objects in 2D closer than 0.1 m from the alignment are modelchecked as well."
+		 />
+		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_KTL_otherObjectsToModelcheck()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_otherObjectsToModelcheck()" ReturnType="String"
+			Description = "Returns the number of other items to modelcheck, and a table with references to them." >
+			<Constructor>_JBTEH_KTL_otherObjectsToModelcheck()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_otherObjectsToModelcheck()
+					t = getNearbyPointObjects2D(0.10)
+					n = t.count
+					return n,t,_info(n.." objects close to this contact wire have been modelchecked.")
+				end
+			</Formula>
+		</LuaFunction> 
 
-		<LuaExpression Name="name" ><Formula>"L"..code</Formula></LuaExpression>
 		<PropertyPrompt Key="code" DefaultValue="Kontaktledning" AcceptEmptyValue="false" />
-		
+
 		<InsertAlignment VariantName="Kontaktledning, kjørbar" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTTRAAD-Schematic" DefaultToTangentContinuity="false" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 		</InsertAlignment>
@@ -2126,7 +2144,7 @@
 	<!-- TODO Skal snappe til mast som default. Kan også plasseres f.eks. rett på vegg. -->
 	<LuaFunction Name="NOBN_ocs_getTensioningStandardValues()" 
 		ReturnType="Table[4*Double]"
-		Description="Returns a standard tensile force (tf) Values table: [cwtf]=contact wire tf, [catf]=catenary tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf. See NO-BN TRV." >
+		Description="Returns a standard tensioning force (tf) Values table: [cwtf]=contact wire tf, [catf]=catenary tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf. See NO-BN TRV." >
 		<Constructor>Table[4*Double] NOBN_ocs_getTensioningStandardValues([String OcsSystem])</Constructor>
 		<Formula>
 			function NOBN_ocs_getTensioningStandardValues(os)
@@ -2144,8 +2162,8 @@
 					"S35MS",
 					"Cariboni"
 				}
-				--(20C1 and 20C2 use the same tensile forces)
-				local TensileForces = {
+				--(20C1 and 20C2 use the same tensioning forces)
+				local TensioningForces = {
 					["Unknown"] = 	{cwtf=0, 	catf=0, 	swtf=0,		awtf=0},
 					["S20A"] = 		{cwtf=10, 	catf=10,	swtf=2.3,	awtf=10},
 					["S20AR"] = 	{cwtf=7.06,	catf=7.06,	swtf=2.3, 	awtf=10},
@@ -2160,9 +2178,9 @@
 				}
 --TODO: Code does not work when more than 10 items in table! Lua is fishy here:
 --				if not RC__isMemberOf(OcsSystems,os) then 
---					return TensileForces.Unknown,_warning, _info("Bad tensioning device OCS System ["..os.."]. ")
+--					return TensioningForces.Unknown,_warning, _info("Bad tensioning device OCS System ["..os.."]. ")
 --				end
-				return TensileForces[os]
+				return TensioningForces[os]
 			end 
 		</Formula>
 	</LuaFunction>
@@ -2248,7 +2266,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_AEH_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_Mileage()" 
 			ReturnType="Double"
@@ -2309,22 +2327,22 @@
 			</Values>
 		</CustomAttribute>
 
-		<CustomAttribute DataType="String" Name="TensileForce" DisplayName="Strekkraft" DefaultValue="(not in use)" 
-			Description="The tensile force/forces (tf) exerted on the tensioning device [kN]." />
+		<CustomAttribute DataType="String" Name="TensioningForce" DisplayName="Strekkraft" DefaultValue="(not in use)" 
+			Description="The tensioning force/forces (tf) exerted on the tensioning device [kN]." />
 
-		<CustomAttribute DataType="String" Name="TensileForceDisplay" DisplayName="Strekkraft visning" DefaultValue="" 
-			Description="The tensile force Value, as shown close to the tensioning device [kN]." />
-		<TextAttribute Annotative="true" BindingProperty="TensileForceDisplay" CadAttributeTag="STREKKRAFT" 
+		<CustomAttribute DataType="String" Name="TensioningForceDisplay" DisplayName="Strekkraft visning" DefaultValue="" 
+			Description="The tensioning force Value, as shown close to the tensioning device [kN]." />
+		<TextAttribute Annotative="true" BindingProperty="TensioningForceDisplay" CadAttributeTag="STREKKRAFT" 
 			X="0" Y="20" 
 			Layer="JBTEH@STREKKRAFT" Justify="MiddleCenter" Height="0.9" Width="0" Color="ByBlock"
 			Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false" />  
-		<LuaExpression Name="TensileForceDisplay" ><Formula>_JBTEH_AEH_TensileForces(OcsSystem)</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_AEH_TensileForces()" 
+		<LuaExpression Name="TensioningForceDisplay" ><Formula>_JBTEH_AEH_TensioningForces(OcsSystem)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_TensioningForces()" 
 			ReturnType="String"
-			Description="Obtains the tensile forces for this OCS tensioning device, of OcsSystem type The OCS System is one of [Unknown | S20A | S20AR (redusert) | S20B | S20BR | S20C1 | S20C2 | S25 | S35 | S35MS | Cariboni]." >
-			<Constructor>String _JBTEH_AEH_TensileForces(String OcsSystem)</Constructor>
+			Description="Obtains the tensioning forces for this OCS tensioning device, of OcsSystem type The OCS System is one of [Unknown | S20A | S20AR (redusert) | S20B | S20BR | S20C1 | S20C2 | S25 | S35 | S35MS | Cariboni]." >
+			<Constructor>String _JBTEH_AEH_TensioningForces(String OcsSystem)</Constructor>
 			<Formula>
-				function _JBTEH_AEH_TensileForces(os)
+				function _JBTEH_AEH_TensioningForces(os)
 					tf = NOBN_ocs_getTensioningStandardValues(os)
 					if os == "Unknown" then 
 						return "?/? kN (UNFINISHED - unknown OcsSystem)."
@@ -2336,6 +2354,34 @@
 						end
 					end
 					return _info("Bad tensioning device variant ["..Variant.."].")
+				end
+			</Formula>
+		</LuaFunction>
+
+		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>_JBTEH_AEH_ObjectNameTextPosition()</Formula></TextPositionLuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_ObjectNameTextPosition()" ReturnType="Vector2D" 
+				HideFromUser="false"
+				Description="Returns a World Coordinate System offset vector for the object name text attribute." >
+			<Constructor>{Double,Double} _JBTEH_AEH_ObjectNameTextPosition()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_ObjectNameTextPosition()
+					lateralOffset = -1
+					longitudinalOffset = 3.5
+					return RC__acsVector2wcsVector(lateralOffset,dir == "up" and longitudinalOffset or -longitudinalOffset)
+				end
+			</Formula>
+		</LuaFunction>
+
+		<TextPositionLuaExpression Name="STREKKRAFT" ><Formula>_JBTEH_AEH_TensioningForceTextPosition()</Formula></TextPositionLuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_TensioningForceTextPosition()" ReturnType="Vector2D" 
+				HideFromUser="false"
+				Description="Returns a World Coordinate System offset vector for the tensioning force text attribute." >
+			<Constructor>{Double,Double} _JBTEH_AEH_TensioningForceTextPosition()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_TensioningForceTextPosition()
+					lateralOffset = 1
+					longitudinalOffset = 3.5
+					return RC__acsVector2wcsVector(lateralOffset,dir == "up" and longitudinalOffset or -longitudinalOffset)
 				end
 			</Formula>
 		</LuaFunction>
@@ -2564,7 +2610,7 @@
 	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
 	<!-- NB: 'EH_LEF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_LEF Ledningsfortsettelse"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_LEF Ledningfortsettelse"
 				Layer="JBTEH_LEF" Color="ByLayer"
 				Group="Kontaktledning/Forbindelser"
 				>
@@ -2577,22 +2623,20 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
-				
-		<LuaExpression Name="DistanceToAlignment" >
-			<Formula>RightSided and 4e-4 or -4e-4</Formula>
-		</LuaExpression> 
 		
 		<!-- Model checks Continuation -->
 		<xpp:expand select="NOBN_com_CHK_CONNECTION___CONTINUATION" />
+		
+		<!-- Psets -->
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 
-		<Variants DefaultValue="Ledningsfortsettelse" >
-			<Variant Name="Ledningsfortsettelse" >
+		<Variants DefaultValue="Ledningfortsettelse" >
+			<Variant Name="Ledningfortsettelse" >
 			</Variant>
 		</Variants>
 
@@ -2603,8 +2647,8 @@
 			<Formula>
 				function _JBTEH_LEF_code()
 					local first,second
-					if RcType ~= "JBTEH_LEF Ledningsfortsettelse" then
-						return _error, "Bad object type ["..RcType.."] - 'JBTEH_LEF Ledningsfortsettelse' was expected"
+					if RcType ~= "JBTEH_LEF Ledningfortsettelse" then
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_LEF Ledningfortsettelse' was expected"
 					else
 						first = Alignment
 						if first == nil then
@@ -2654,7 +2698,7 @@
 			</Formula>
 		</LuaFunction>
 						
-		<InsertPointObject VariantName="Ledningsfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Ledningfortsettelse" DisplayBlockName="NO-BN-2D-JBTEH_LEF-LEDNINGFORTSETTELSE-0-0-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>høyspentledning</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -2665,7 +2709,7 @@
 			>
 			<Rotation Add180DegreesIfDirIsDown="true" />
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE
+				NO-BN-2D-JBTEH_LEF-LEDNINGFORTSETTELSE
 				{% if ExtendingFromEnd == 'True' %}
 					{% if ContinuingWithBegin == 'False' %}0-1{% else %}0-0{% endif %}
 				{% else %}
@@ -2686,7 +2730,7 @@
 	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
 	<!-- NB: 'EH_KTF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_KTF Kontaktledningsfortsettelse"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_KTF Kontaktledningfortsettelse"
 				Layer="JBTEH_KTF" Color="ByLayer"
 				Group="Kontaktledning/Forbindelser"
 				>
@@ -2699,7 +2743,7 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
+		<xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 				
 		<LuaExpression Name="DistanceToAlignment" >
@@ -2713,8 +2757,8 @@
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 
-		<Variants DefaultValue="Kontaktledningsfortsettelse" >
-			<Variant Name="Kontaktledningsfortsettelse" >
+		<Variants DefaultValue="Kontaktledningfortsettelse" >
+			<Variant Name="Kontaktledningfortsettelse" >
 			</Variant>
 		</Variants>
 
@@ -2725,8 +2769,8 @@
 			<Formula>
 				function _JBTEH_KTF_code()
 					local first,second
-					if RcType ~= "JBTEH_KTF Kontaktledningsfortsettelse" then
-						return _error, "Bad object type ["..RcType.."] - 'JBTEH_KTF Kontaktledningsfortsettelse' was expected"
+					if RcType ~= "JBTEH_KTF Kontaktledningfortsettelse" then
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_KTF Kontaktledningfortsettelse' was expected"
 					else
 						first = Alignment
 						if first == nil then
@@ -2765,18 +2809,37 @@
 			</Formula>
 		</LuaFunction>
 
+		<LuaExpression Name="Alignment" ><Formula>_JBTEH_KTF_Alignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTF_Alignment()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_KTF_Alignment()</Constructor>
+			<Formula>
+				function _JBTEH_KTF_Alignment()
+					return getClosestAlignments():filter(function (x) return x.RcType == "JBTEH_KTL Kontaktledning" end)[0]
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_KTF_TargetAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTF_TargetAlignment()" ReturnType="Double"
-				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object." >
+				Description="Obtains the target alignment, as long as it has a start or an end close to own alignment and close to this continuation object. The continuation object is supposed to connect a contact wire alignment of any variant with a contact wire alignment of any variant, but no other alignment types." >
 			<Constructor>Double _JBTEH_KTF_TargetAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_KTF_TargetAlignment()
-					return getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
+					tol = 1 --[m]
+					ta = getClosestAlignments("JBTEH_KTL Kontaktledning"):filter(function (x) return x.id ~= Alignment.id end)[0]
+					d1 = RC__getDistance2D(this,ta.RcAlignment.StartPoint)
+					d2 = RC__getDistance2D(this,ta.RcAlignment.EndPoint)
+					if math.min(d1,d2) &lt; tol then
+						return ta,_info("Target alignment is the closest alignment with a start or end point within "..tol.." m from this contact wire continuation.")
+					else
+						return nil,_info("No contact wire target alignment found where its start or end is within tolerance "..tol.." m.")
+					end
 				end
 			</Formula>
 		</LuaFunction>
 						
-		<InsertPointObject VariantName="Kontaktledningsfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Kontaktledningfortsettelse" DisplayBlockName="NO-BN-2D-JBTEH_KTF-KONTAKTLEDNING-FORTSETTELSE-0-0-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -2787,7 +2850,7 @@
 			>
 			<Rotation Add180DegreesIfDirIsDown="true" />
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE
+				NO-BN-2D-JBTEH_KTF-KONTAKTLEDNING-FORTSETTELSE
 				{% if ExtendingFromEnd == 'True' %}
 					{% if ContinuingWithBegin == 'False' %}0-1{% else %}0-0{% endif %}
 				{% else %}
