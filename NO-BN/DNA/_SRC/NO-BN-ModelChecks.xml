@@ -18,7 +18,7 @@
 <xpp:define name="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" >
 	<xpp:bloc>
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_NumberOfOcpAreas" DisplayName="Antall OCP områder" 
-			Description="Number of peration / Control Point (OCP) areas to which the object belongs. Most objects shall belong to an OCP, holding properties such as location name and/or resource names." />
+			Description="Number of Operation / Control Point (OCP) areas to which the object belongs. Most objects shall belong to an OCP, holding properties such as location name and/or resource names." />
 		<LuaExpression Name="mc_NumberOfOcpAreas" IsModelCheck="true" >
 			<Formula>NOBN_com_chkNumberOfOcpAreas()</Formula>
 		</LuaExpression>
@@ -91,69 +91,113 @@
 		Description="Checks that own alignment type and target alignment type are compatible at a connection." >
 		<Constructor>String NOBN_com_chkConnectionAlignmentCompatibility()</Constructor>
 		<Formula>
-function NOBN_com_chkConnectionAlignmentCompatibility()
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-	if TargetAlignment.RcType ~= Alignment.RcType then return TargetAlignment.RcType..": ERROR - Target alignment type must be same as own alignment type '"..Alignment.RcType.."'.",_error end
-	if Alignment.id == TargetAlignment.id then return TargetAlignment.id..": ERROR - Target alignment is same as own alignment.",_error end
-	return Alignment.RcType.."/"..TargetAlignment.RcType..": OK - Alignment types are compatible.",_ok
-end
+			function NOBN_com_chkConnectionAlignmentCompatibility()
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if TargetAlignment and Alignment.id == TargetAlignment.id then 
+					return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment object is same as own alignment object.",_error
+				end
+				if RcType == "JBTEH_ISO Lineisolator" then
+					compatibility = { 
+						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
+						{ a="Kontaktledning, kjørbar", ta={"Kontaktledning, avspenningsline"}},
+						{ a="Kontaktledning, ikke kjørbar", ta={"Kontaktledning, avspenningsline"}},
+						{ a="Fixline", ta={"Fixline","-"}},
+						{ a="Bardun", ta={"Bardun","-"}}
+					}
+					v1 = Alignment.Variant
+					v2 = TargetAlignment and TargetAlignment.Variant or "-"
+					for i = 1,5 do
+						if compatibility[i].a == v1 then
+							if RC__isMemberOf(compatibility[i].ta,v2) then
+								return v1.."/"..v2..": OK - Alignment types and variants are compatible ",_ok
+							end
+						end
+					end
+					return v1.."/"..v2..": ERROR - Incompatible adjacent alignment types / variants.",_error
+				else
+					if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+					if TargetAlignment.RcType ~= Alignment.RcType then
+						return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment type must be same as own alignment type ("..Alignment.RcType..").",_error
+					else
+						return Alignment.RcType.."/"..TargetAlignment.RcType..": OK - Alignment types are compatible.",_ok
+					end
+				end
+			end
 		</Formula>
 	</LuaFunction>
-	
-	
 	
 	<LuaFunction Name="NOBN_com_chkConnectionContinuity()" ReturnType="String"
 		Description="Checks that alignments are well-positioned where they meet (in the XY-plane)." >
 		<Constructor>String NOBN_com_chkConnectionContinuity()</Constructor>
 		<Formula>
-function NOBN_com_chkConnectionContinuity()
-	tol = 0.030 -- meter
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-	if RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningsfortsettelse" or RcType == "JBTEH_KTF Kontaktledningsfortsettelse" then 
-		if ExtendingFromEnd then 
-			p1 = alignment.RcAlignment.EndPoint
-		else
-			p1 = alignment.RcAlignment.StartPoint
-		end 
-		if ContinuingWithBegin then
-			p2 = TargetAlignment.RcAlignment.StartPoint
-		else 
-			p2 = TargetAlignment.RcAlignment.EndPoint
-		end
-		delta = RC__getDistance2D(p1,p2)
-	elseif RcType == "JBTKO_SPV Sporveksel" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
-		d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
-		d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
-		delta = d1 &lt; d2 and d1 or d2
-	elseif RcType == "JBTKO_SPV Sporkryss" then
-		-- Check that both alignments pass, i.e. none of them should have a continuation exactly at the crossing's position
-		if not getAlignmentInfo(Alignment.id).NormalProjectionExists then
-			return "ERROR: Crossing is outside Own Alignment - move crossing or extend own alignment.",_error
-		elseif not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
-			return "ERROR: Crossing is outside Target Alignment - move crossing or extend target alignment.",_error
-		else
-			delta = RC__getDistance2D(getAlignmentInfo().Point.getAlignmentInfo(TargetAlignment.id).Point) --p projection (in XY-plane) onto both alignments
-			if (delta &lt; tol/2) then
-				return string.format("%.03f",delta) .. ": OK – Crossing is close to both alignments where they cross, within 50% of tolerance " .. string.format("%.03f", tol).." m.",_ok
-			elseif (delta &lt; tol) then
-				return string.format("%.03f",delta) .. ": WARNING – Crossing should be moved closer to where alignments cross, but is still within tolerance " .. string.format("%.03f", tol).." m.",_warning
-			else
-				return string.format("%.03f",delta) .. ": ERRROR – Crossing is placed too far away from where alignments cross, outside tolerance " .. string.format("%.03f", tol).." m.",_error
+			function NOBN_com_chkConnectionContinuity()
+				tol = 0.030 -- meter
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+
+				if RcType == "JBTEH_ISO Lineisolator" then 
+					if TargetAlignment == nil then
+						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+					else
+						if ExtendingFromEnd then 
+							p1 = Alignment.RcAlignment.EndPoint
+						else
+							p1 = Alignment.RcAlignment.StartPoint
+						end 
+						if ContinuingWithBegin then
+							p2 = TargetAlignment.RcAlignment.StartPoint
+						else 
+							p2 = TargetAlignment.RcAlignment.EndPoint
+						end
+						delta = RC__getDistance2D(p1,p2)
+					end
+
+				elseif RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningfortsettelse" or RcType == "JBTEH_KTF Kontaktledningfortsettelse" then 
+					if ExtendingFromEnd then 
+						p1 = Alignment.RcAlignment.EndPoint
+					else
+						p1 = Alignment.RcAlignment.StartPoint
+					end 
+					if ContinuingWithBegin then
+						p2 = TargetAlignment.RcAlignment.StartPoint
+					else 
+						p2 = TargetAlignment.RcAlignment.EndPoint
+					end
+					delta = RC__getDistance2D(p1,p2)
+
+				elseif RcType == "JBTKO_SPV Sporveksel" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
+					d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
+					d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
+					delta = d1 &lt; d2 and d1 or d2
+
+				elseif RcType == "JBTKO_SPV Sporkryss" then
+					-- Check that both alignments pass, i.e. none of them should have a continuation exactly at the crossing's position
+					if not getAlignmentInfo(Alignment.id).NormalProjectionExists then
+						return "ERROR: Crossing is outside Own Alignment - move crossing or extend own alignment.",_error
+					elseif not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
+						return "ERROR: Crossing is outside Target Alignment - move crossing or extend target alignment.",_error
+					else
+						delta = RC__getDistance2D(getAlignmentInfo().Point.getAlignmentInfo(TargetAlignment.id).Point) --p projection (in XY-plane) onto both alignments
+						if (delta &lt; tol/2) then
+							return string.format("%.03f",delta) .. ": OK – Crossing is close to both alignments where they cross, within 50% of tolerance " .. string.format("%.03f", tol).." m.",_ok
+						elseif (delta &lt; tol) then
+							return string.format("%.03f",delta) .. ": WARNING – Crossing should be moved closer to where alignments cross, but is still within tolerance " .. string.format("%.03f", tol).." m.",_warning
+						else
+							return string.format("%.03f",delta) .. ": ERRROR – Crossing is placed too far away from where alignments cross, outside tolerance " .. string.format("%.03f", tol).." m.",_error
+						end
+					end
+
+				else
+					return RcType..": ERROR - Bad connection object type",_error
+				end
+				if (delta &lt; tol/2) then return string.format("%.03f",delta) .. ": OK – Alignments meet at connection within 50% of tolerance " .. string.format("%.03f", tol).." m.",_ok
+				elseif (delta &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Alignments should be closer at connection, but are still within tolerance " .. string.format("%.03f", tol).." m.",_warning
+				else return string.format("%.03f",delta) .. ": ERROR: Alignments are too far apart at connection, outside tolerance " .. string.format("%.03f", tol).." m.",_error end
 			end
-		end
-	else
-		return RcType..": ERROR - Bad connection object type",_error
-	end
-	if (delta &lt; tol/2) then return string.format("%.03f",delta) .. ": OK – Alignments meet at connection within 50% of tolerance " .. string.format("%.03f", tol).." m.",_ok
-	elseif (delta &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Alignments should be closer at connection, but are still within tolerance " .. string.format("%.03f", tol).." m.",_warning
-	else return string.format("%.03f",delta) .. ": ERROR: Alignments are too far apart at connection, outside tolerance " .. string.format("%.03f", tol).." m.",_error end
-end
 		</Formula>
 	</LuaFunction>
 	
@@ -163,122 +207,129 @@ end
 		Description="Checks that alignment tangents (directions) match where they meet (in the XY-plane)." >
 		<Constructor>String NOBN_com_chkConnectionTangentMatch()</Constructor>
 		<Formula>
-function NOBN_com_chkConnectionTangentMatch()
-	tol = 1.0  -- decimal degrees (Deutsche Bahn allegedly allows 1 degree in discontinuities)
-	maxNumber = 20 -- 2:(maxNumber*2) is the steepest crossing that we will classify as a crossing and not as an engineering error
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	if TargetAlignment == nil then return "UNFINISEHD - Missing target alignment." end
-	
-	if RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningsfortsettelse" or RcType == "JBTEH_KTF Kontaktledningsfortsettelse" then
-		if ExtendingFromEnd then 
-			t1 = Alignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
-		else
-			t1 = Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir * (180/math.pi)
-		end 
-		if ContinuingWithBegin then
-			t2 = TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir * (180/math.pi)
-		else
-			t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
-		end
-		delta = ((90 + t2 - t1) % 180) - 90 --decimal degrees difference (alignments may be counterdirected)
-		if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
-		elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
-				string.format("%.03f", tol).." degrees.",_warning
-		else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
-		end
+			function NOBN_com_chkConnectionTangentMatch()
+				tol = 1.0  -- decimal degrees (Deutsche Bahn allegedly allows 1 degree in discontinuities)
+				maxNumber = 20 -- 2:(maxNumber*2) is the steepest crossing that we will classify as a crossing and not as an engineering error
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-	elseif RcType == "JBTKO_SPV Sporveksel" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
-		d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
-		d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
-		t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi) -- Can disregard Tangent.Z here, since only relative zize Y:X matters
-		if d1 &lt; d2 then
-			t2 = TargetAlignment.RcAlignment.HorizontalProfile.StartDir * (180/math.pi)
-		else
-			t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
-		end
-		delta = ((90 + t2 - t1) % 180) - 90 --decimal degrees difference (alignments may be counterdirected)
-		if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
-		elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
-				string.format("%.03f", tol).." degrees.",_warning
-		else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
-		end
-
-	elseif RcType == "JBTKO_SPV Sporkryss" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		if not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
-			return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
-		end
-		-- Can disregard Tangent.Z here, since only relative size Y:X matters:
-		t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi)
-		t2 = math.atan(getAlignmentInfo(TargetAlignment.id).Tangent.Y, getAlignmentInfo(TargetAlignment.id).Tangent.X) * (180/math.pi)
-
-		x_1_9 = (180/math.pi) * math.atan(1/9) -- Single or double slip 1:9 point
-		x_1_12 = (180/math.pi) * math.atan(1/12) -- Single or double slip 1:12 point
-		x_2_9 = 2.0 * (180/math.pi) * math.atan(1/9) -- Crossing between four 1:9 switches in parallel tracks
-		x_2_12 = 2.0 *(180/math.pi) * math.atan(1/12) -- Crossing between four 1:12 switches in parallel tracks
-
-		delta = math.abs(((90 + t2 - t1) % 180) - 90) --decimal degrees difference (alignments may be counterdirected)
-		d_1_9 = delta - x_1_9
-		d_1_12 = delta - x_1_12
-		d_2_9 = delta - x_2_9
-		d_2_12 = delta - x_2_12
-		crossingNumber = 1/math.tan(math.abs(delta*(math.pi/180))) --Add the angles between each track to the centerline between the tracks
-	
-		-- If angle is close to 1:9 or 1:12 then the crossing is probably part of an Englishman (EKW, DKW), and not a crossing:
-		if math.abs(d_1_12) &lt; tol then 
-			if math.abs(d_1_12) &lt; (tol / 2) then 
-				return string.format("%.03f (1:%.03f): OK - Crossing tangents match 1:12 within 50%% of tolerance +/- %.03f degrees.", 
-					d_1_12, 1/math.tan(delta*(math.pi/180)), tol),_ok
-			else 
-				return string.format("%.03f (1:%.03f): WARNING – Crossing tangents match 1:12, but close to tolerance +/- %.03f degrees.", 
-					d_1_12, 1/math.tan(delta*(math.pi/180)), tol),_warning
+				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+			
+				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
+				or RcType == "JBTEH_LEF Ledningfortsettelse" 
+				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
+				or RcType == "JBTEH_ISO Lineisolator"
+				then
+					if ExtendingFromEnd then 
+						t1 = Alignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
+					else
+						t1 = Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir * (180/math.pi)
+					end 
+					if ContinuingWithBegin then
+						t2 = TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir * (180/math.pi)
+					else
+						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
+					end
+					delta = ((90 + t2 - t1) % 180) - 90 --decimal degrees difference (alignments may be counterdirected)
+					if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
+					elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
+							string.format("%.03f", tol).." degrees.",_warning
+					else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
+					end
+			
+				elseif RcType == "JBTKO_SPV Sporveksel" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
+					d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
+					d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
+					t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi) -- Can disregard Tangent.Z here, since only relative zize Y:X matters
+					if d1 &lt; d2 then
+						t2 = TargetAlignment.RcAlignment.HorizontalProfile.StartDir * (180/math.pi)
+					else
+						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
+					end
+					delta = ((90 + t2 - t1) % 180) - 90 --decimal degrees difference (alignments may be counterdirected)
+					if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
+					elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
+							string.format("%.03f", tol).." degrees.",_warning
+					else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
+					end
+			
+				elseif RcType == "JBTKO_SPV Sporkryss" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					if not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
+						return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
+					end
+					-- Can disregard Tangent.Z here, since only relative size Y:X matters:
+					t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi)
+					t2 = math.atan(getAlignmentInfo(TargetAlignment.id).Tangent.Y, getAlignmentInfo(TargetAlignment.id).Tangent.X) * (180/math.pi)
+			
+					x_1_9 = (180/math.pi) * math.atan(1/9) -- Single or double slip 1:9 point
+					x_1_12 = (180/math.pi) * math.atan(1/12) -- Single or double slip 1:12 point
+					x_2_9 = 2.0 * (180/math.pi) * math.atan(1/9) -- Crossing between four 1:9 switches in parallel tracks
+					x_2_12 = 2.0 *(180/math.pi) * math.atan(1/12) -- Crossing between four 1:12 switches in parallel tracks
+			
+					delta = math.abs(((90 + t2 - t1) % 180) - 90) --decimal degrees difference (alignments may be counterdirected)
+					d_1_9 = delta - x_1_9
+					d_1_12 = delta - x_1_12
+					d_2_9 = delta - x_2_9
+					d_2_12 = delta - x_2_12
+					crossingNumber = 1/math.tan(math.abs(delta*(math.pi/180))) --Add the angles between each track to the centerline between the tracks
+				
+					-- If angle is close to 1:9 or 1:12 then the crossing is probably part of an Englishman (EKW, DKW), and not a crossing:
+					if math.abs(d_1_12) &lt; tol then 
+						if math.abs(d_1_12) &lt; (tol / 2) then 
+							return string.format("%.03f (1:%.03f): OK - Crossing tangents match 1:12 within 50%% of tolerance +/- %.03f degrees.", 
+								d_1_12, 1/math.tan(delta*(math.pi/180)), tol),_ok
+						else 
+							return string.format("%.03f (1:%.03f): WARNING – Crossing tangents match 1:12, but close to tolerance +/- %.03f degrees.", 
+								d_1_12, 1/math.tan(delta*(math.pi/180)), tol),_warning
+						end
+					elseif math.abs(d_1_9) &lt; tol then 
+						if math.abs(d_1_9) &lt; (tol / 2) then 
+							return string.format("%.03f (1:%.03f): OK - Crossing tangents match 1:9 within 50%% of tolerance +/- %.03f degrees.",
+								d_1_9, 1/math.tan(delta*(math.pi/180)), tol),_ok
+						else 
+							return string.format("%.03f (1:%.03f): WARNING – Crossing tangents match 1:9, but close to tolerance +/- %.03f degrees.",
+								d_1_9, 1/math.tan(delta*(math.pi/180)), tol),_warning
+						end
+			
+					-- A standard crossing matches two symmetrical pairs of 1:9 or 1:12 switches (here called '2_9' and '2_12'):
+					elseif math.abs(d_2_12) &lt; tol then 
+						if math.abs(d_2_12) &lt; (tol / 2) then 
+							return string.format("%.03f (2:%.03f): OK - Crossing tangents match 2:12 within 50%% of tolerance +/- %.03f degrees.", 
+								d_2_12, 1/math.tan((delta/2)*(math.pi/180)), tol),_ok
+						else 
+							return string.format("%.03f (2:%.03f): WARNING – Crossing tangents match 2:12, but close to tolerance +/- %.03f degrees.", 
+								d_2_12, 1/math.tan((delta/2)*(math.pi/180)), tol),_warning
+						end
+					elseif math.abs(d_2_9) &lt; tol then 
+						if math.abs(d_2_9) &lt; (tol / 2) then 
+							return string.format("%.03f (2:%.03f): OK - Crossing tangents match 2:9 within 50%% of tolerance +/- %.03f degrees.",
+								d_2_9, 1/math.tan((delta/2)*(math.pi/180)), tol),_ok
+						else 
+							return string.format("%.03f (2:%.03f): WARNING – Crossing tangents match 2:9, but close to tolerance +/- %.03f degrees.",
+								d_2_9, 1/math.tan((delta/2)*(math.pi/180)), tol),_warning
+						end
+			
+					elseif crossingNumber &gt;= maxNumber then 
+						return string.format("%.03f (1:%.01f): ERROR - Crossing tangents are close to being parallel, check for engineering or measurement errors.",
+								delta, crossingNumber),_error
+			
+					else
+						return string.format("%.03f (1:%.01f): WARNING – Crossing tangents do not fit 1:9, 1:12, 2:9 or 2:12 (single slip / double slip / 4 switches) within tolerance %.03f degrees", 
+								delta, 1/(2*math.tan((delta/2)*(math.pi/180))), tol),_warning
+					end
+				
+				else 
+					return RcType..": ERROR - Bad connection object type",_error
+				end
 			end
-		elseif math.abs(d_1_9) &lt; tol then 
-			if math.abs(d_1_9) &lt; (tol / 2) then 
-				return string.format("%.03f (1:%.03f): OK - Crossing tangents match 1:9 within 50%% of tolerance +/- %.03f degrees.",
-					d_1_9, 1/math.tan(delta*(math.pi/180)), tol),_ok
-			else 
-				return string.format("%.03f (1:%.03f): WARNING – Crossing tangents match 1:9, but close to tolerance +/- %.03f degrees.",
-					d_1_9, 1/math.tan(delta*(math.pi/180)), tol),_warning
-			end
-
-		-- A standard crossing matches two symmetrical pairs of 1:9 or 1:12 switches (here called '2_9' and '2_12'):
-		elseif math.abs(d_2_12) &lt; tol then 
-			if math.abs(d_2_12) &lt; (tol / 2) then 
-				return string.format("%.03f (2:%.03f): OK - Crossing tangents match 2:12 within 50%% of tolerance +/- %.03f degrees.", 
-					d_2_12, 1/math.tan((delta/2)*(math.pi/180)), tol),_ok
-			else 
-				return string.format("%.03f (2:%.03f): WARNING – Crossing tangents match 2:12, but close to tolerance +/- %.03f degrees.", 
-					d_2_12, 1/math.tan((delta/2)*(math.pi/180)), tol),_warning
-			end
-		elseif math.abs(d_2_9) &lt; tol then 
-			if math.abs(d_2_9) &lt; (tol / 2) then 
-				return string.format("%.03f (2:%.03f): OK - Crossing tangents match 2:9 within 50%% of tolerance +/- %.03f degrees.",
-					d_2_9, 1/math.tan((delta/2)*(math.pi/180)), tol),_ok
-			else 
-				return string.format("%.03f (2:%.03f): WARNING – Crossing tangents match 2:9, but close to tolerance +/- %.03f degrees.",
-					d_2_9, 1/math.tan((delta/2)*(math.pi/180)), tol),_warning
-			end
-
-		elseif crossingNumber &gt;= maxNumber then 
-			return string.format("%.03f (1:%.01f): ERROR - Crossing tangents are close to being parallel, check for engineering or measurement errors.",
-					delta, crossingNumber),_error
-
-		else
-			return string.format("%.03f (1:%.01f): WARNING – Crossing tangents do not fit 1:9, 1:12, 2:9 or 2:12 (single slip / double slip / 4 switches) within tolerance %.03f degrees", 
-					delta, 1/(2*math.tan((delta/2)*(math.pi/180))), tol),_warning
-		end
-	
-	else 
-		return RcType..": ERROR - Bad connection object type",_error
-	end
-end
 		</Formula>
 	</LuaFunction>
 
@@ -288,60 +339,65 @@ end
 		Description="Checks that alignment elevations (Z-coordinate) match at the connection." >
 		<Constructor>String NOBN_com_chkConnectionElevationMatch()</Constructor>
 		<Formula>
-function NOBN_com_chkConnectionElevationMatch()
-	tol = 0.030  -- meter
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	--Drop distance2D check here - is covered in other test:
-	--if math.abs(DistanceToAlignment) &gt; 2e-3 then return string.format("%.03f",DistanceToAlignment)..
-	--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
-	if TargetAlignment == nil then return "UNFINISEHD - Missing target alignment." end
-	if RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningsfortsettelse" or RcType == "JBTEH_KTF Kontaktledningsfortsettelse" then
-		if ExtendingFromEnd then 
-			z1 = Alignment.RcAlignment.EndPoint.Z
-		else
-			z1 = Alignment.RcAlignment.StartPoint.Z
-		end 
-		if ContinuingWithBegin then
-			z2 = TargetAlignment.RcAlignment.StartPoint.Z
-		else 
-			z2 = TargetAlignment.RcAlignment.EndPoint.Z
-		end
-		delta = z2 - z1 -- meter difference in elevations at connection
+			function NOBN_com_chkConnectionElevationMatch()
+				tol = 0.030  -- meter
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-	elseif RcType == "JBTKO_SPV Sporveksel" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
-		d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-		d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
-		z1 = p1.Z 							--TopOfRail where StockRailJoint is projected onto own alignment
-		if d1 &lt; d2 then
-			z2 = TargetAlignment.RcAlignment.StartPoint.Z
-		else
-			z2 = TargetAlignment.RcAlignment.EndPoint.Z
-		end
-
-	elseif RcType == "JBTKO_SPV Sporkryss" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		if not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
-			return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
-		end
-		z1 = getAlignmentInfo().Elevation
-		z2 = getAlignmentInfo(TargetAlignment.id).Elevation
-	
-	else 
-		return RcType..": ERROR - Bad connection object type",_error
-	end
-	if RC__isNan(z1) then z1 = 0 end
-	if RC__isNan(z2) then z2 = 0 end
-	delta = z2 - z1 -- meter difference in elevations at connection
-	if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Elevations match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
-	elseif (math.abs(delta) &lt; tol) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Elevations match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
-	else return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Elevations are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
-end
+				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+			
+				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
+				or RcType == "JBTEH_LEF Ledningfortsettelse" 
+				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
+				or RcType == "JBTEH_ISO Lineisolator"
+				then
+					if ExtendingFromEnd then 
+						z1 = Alignment.RcAlignment.EndPoint.Z
+					else
+						z1 = Alignment.RcAlignment.StartPoint.Z
+					end 
+					if ContinuingWithBegin then
+						z2 = TargetAlignment.RcAlignment.StartPoint.Z
+					else 
+						z2 = TargetAlignment.RcAlignment.EndPoint.Z
+					end
+					delta = z2 - z1 -- meter difference in elevations at connection
+			
+				elseif RcType == "JBTKO_SPV Sporveksel" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
+					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					z1 = p1.Z 							--TopOfRail where StockRailJoint is projected onto own alignment
+					if d1 &lt; d2 then
+						z2 = TargetAlignment.RcAlignment.StartPoint.Z
+					else
+						z2 = TargetAlignment.RcAlignment.EndPoint.Z
+					end
+			
+				elseif RcType == "JBTKO_SPV Sporkryss" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					if not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
+						return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
+					end
+					z1 = getAlignmentInfo().Elevation
+					z2 = getAlignmentInfo(TargetAlignment.id).Elevation
+				
+				else 
+					return RcType..": ERROR - Bad connection object type",_error
+				end
+				if RC__isNan(z1) then z1 = 0 end
+				if RC__isNan(z2) then z2 = 0 end
+				delta = z2 - z1 -- meter difference in elevations at connection
+				if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Elevations match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
+				elseif (math.abs(delta) &lt; tol) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Elevations match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
+				else return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Elevations are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
+			end
 		</Formula>
 	</LuaFunction>
 	
@@ -351,77 +407,83 @@ end
 		Description="Checks the continuity of gradient through the connection." >
 		<Constructor>NOBN_com_chkConnectionGradientMatch()</Constructor>
 		<Formula>
-function NOBN_com_chkConnectionGradientMatch()
-	tol = 1.0  -- o/oo (per mille, elevation change per thousand meters running length)
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	--Drop distance2D check here - is covered in other test:
-	--if math.abs(DistanceToAlignment) > 2e-3 then return string.format("%.03f",DistanceToAlignment)..
-	--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
-	if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-	if RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningsfortsettelse" or RcType == "JBTEH_KTF Kontaktledningsfortsettelse" then --find gradient in o/oo from the tangent vector at the alignment's ends, where there ends are closest
-		if ExtendingFromEnd then 
-			t = Alignment.RcAlignment.EndTangent
-			g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-			t1 = Alignment.RcAlignment.HorizontalProfile.EndDir
-		else
-			t = Alignment.RcAlignment.StartTangent
-			g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-			t1 = Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir
-		end 
-		if ContinuingWithBegin then
-			t = TargetAlignment.RcAlignment.StartTangent
-			g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-			t2 = TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir
-		else 
-			t = TargetAlignment.RcAlignment.EndTangent
-			g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-			t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir
-		end
+			function NOBN_com_chkConnectionGradientMatch()
+				tol = 1.0  -- o/oo (per mille, elevation change per thousand meters running length)
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-	elseif RcType == "JBTKO_SPV Sporveksel" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-
-		 --Own alignment's gradient and direction at stock rail joint:
-		t = getAlignmentInfo().Tangent
-		g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-		t1 = math.atan(t.Y,t.X) * (180/math.pi)
-
-		--Target alignment's gradient and direction where branch track takes off from own alignment:
-		p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
-		d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-		d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
-		if d1 &lt; d2 then
-			t = TargetAlignment.RcAlignment.StartTangent
-			g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-			t2 = (180/math.pi) * math.atan(t.Y, t.X)
-		else
-			t = TargetAlignment.RcAlignment.EndTangent
-			g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-			t2 = (180/math.pi) * math.atan(t.Y, t.X)
-		end
-
-	else 
-		return RcType..": ERROR - Bad connection object type",_error
-	end
-
-	-- Return o/oo difference in gradients at connection:
-	if math.cos(t2-t1) > 0 then
-		-- Same mileage directions
-		delta = g2 - g1
-	else 
-		-- Opposite mileage directions
-		delta = g2 - (-g1)
-	end
-	if (math.abs(delta) &lt; tol / 2) then
-		return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": OK - Gradients match within 50% of tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_ok
-	elseif (math.abs(delta) &lt; tol) then
-		return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": WARNING – Gradients match, but close to tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_warning
-	else 
-		return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": ERROR – Gradients are too different, outside tolerance +/- " .. string.format("%.03f", tol).." o/oo",_error
-	end
-end
+				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+			
+				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
+				or RcType == "JBTEH_LEF Ledningfortsettelse" 
+				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
+				or RcType == "JBTEH_ISO Lineisolator"
+				then
+					--find gradient in o/oo from the tangent vector at the alignment's ends, where there ends are closest
+					if ExtendingFromEnd then 
+						t = Alignment.RcAlignment.EndTangent
+						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t1 = Alignment.RcAlignment.HorizontalProfile.EndDir
+					else
+						t = Alignment.RcAlignment.StartTangent
+						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t1 = Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir
+					end 
+					if ContinuingWithBegin then
+						t = TargetAlignment.RcAlignment.StartTangent
+						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t2 = TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir
+					else 
+						t = TargetAlignment.RcAlignment.EndTangent
+						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir
+					end
+			
+				elseif RcType == "JBTKO_SPV Sporveksel" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+			
+					--Own alignment's gradient and direction at stock rail joint:
+					t = getAlignmentInfo().Tangent
+					g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+					t1 = math.atan(t.Y,t.X) * (180/math.pi)
+			
+					--Target alignment's gradient and direction where branch track takes off from own alignment:
+					p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
+					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					if d1 &lt; d2 then
+						t = TargetAlignment.RcAlignment.StartTangent
+						g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t2 = (180/math.pi) * math.atan(t.Y, t.X)
+					else
+						t = TargetAlignment.RcAlignment.EndTangent
+						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t2 = (180/math.pi) * math.atan(t.Y, t.X)
+					end
+			
+				else 
+					return RcType..": ERROR - Bad connection object type",_error
+				end
+			
+				-- Return o/oo difference in gradients at connection:
+				if math.cos(t2-t1) > 0 then
+					-- Same mileage directions
+					delta = g2 - g1
+				else 
+					-- Opposite mileage directions
+					delta = g2 - (-g1)
+				end
+				if (math.abs(delta) &lt; tol / 2) then
+					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": OK - Gradients match within 50% of tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_ok
+				elseif (math.abs(delta) &lt; tol) then
+					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": WARNING – Gradients match, but close to tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_warning
+				else 
+					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": ERROR – Gradients are too different, outside tolerance +/- " .. string.format("%.03f", tol).." o/oo",_error
+				end
+			end
 		</Formula>
 	</LuaFunction>
 	
@@ -432,56 +494,61 @@ end
 		Description="Checks the cant (superelevation) continuity through the connection." >
 		<Constructor>NOBN_com_chkConnectionCantMatch()</Constructor>
 		<Formula>
-function NOBN_com_chkConnectionCantMatch()
-	tol = 0.010  -- cant (superelevation) [m]
-	msg = ""
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	--Drop distance2D check here - is covered in other test:
-	--if math.abs(DistanceToAlignment) &gt; 2e-3 then return string.format("%.03f",DistanceToAlignment)..
-	--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
-	if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-	if RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningsfortsettelse" or RcType == "JBTEH_KTF Kontaktledningsfortsettelse" then
-		if ExtendingFromEnd then
-			p1 = Alignment.RcAlignment.EndPoint
-		else
-			p1 = Alignment.RcAlignment.StartPoint
-		end 
-		if ContinuingWithBegin then
-			p2 = TargetAlignment.RcAlignment.StartPoint
-		else 
-			p2 = TargetAlignment.RcAlignment.EndPoint
-		end
-		z1 = getAlignmentInfo(p1).Cant
-		z2 = getAlignmentInfo(TargetAlignment.id,p2).Cant
-	
-	elseif RcType == "JBTKO_SPV Sporveksel" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
-		d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-		d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
-		z1 = getAlignmentInfo().Cant
-		if d1 &lt; d2 then
-			z2 = getAlignmentInfo(TargetAlignment.id,TargetAlignment.RcAlignment.StartPoint).Cant		
-		else
-			z2 = getAlignmentInfo(TargetAlignment.id,TargetAlignment.RcAlignment.EndPoint).Cant			
-		end
+			function NOBN_com_chkConnectionCantMatch()
+				tol = 0.010  -- cant (superelevation) [m]
+				msg = ""
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-	else 
-		return RcType..": ERROR - Bad connection object type",_error
-	end
-
-	if RC__isNan(z1) then z1 = 0 end
-	if RC__isNan(z2) then z2 = 0 end
-	delta = z2 - z1 -- difference [mm] in superelevations at connection
-	-- Presentation in meters:
-	--TODO: Check all combinations of CW, CCW and track directions
-	delta = delta/1000
-	if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Cants match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
-	elseif (math.abs(delta) &lt; tol) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Cants match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
-	else return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Cants are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
-end
+				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+			
+				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
+				or RcType == "JBTEH_LEF Ledningfortsettelse" 
+				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
+				or RcType == "JBTEH_ISO Lineisolator"
+				then
+					if ExtendingFromEnd then
+						p1 = Alignment.RcAlignment.EndPoint
+					else
+						p1 = Alignment.RcAlignment.StartPoint
+					end 
+					if ContinuingWithBegin then
+						p2 = TargetAlignment.RcAlignment.StartPoint
+					else 
+						p2 = TargetAlignment.RcAlignment.EndPoint
+					end
+					z1 = getAlignmentInfo(p1).Cant
+					z2 = getAlignmentInfo(TargetAlignment.id,p2).Cant
+				
+				elseif RcType == "JBTKO_SPV Sporveksel" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
+					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					z1 = getAlignmentInfo().Cant
+					if d1 &lt; d2 then
+						z2 = getAlignmentInfo(TargetAlignment.id,TargetAlignment.RcAlignment.StartPoint).Cant		
+					else
+						z2 = getAlignmentInfo(TargetAlignment.id,TargetAlignment.RcAlignment.EndPoint).Cant			
+					end
+			
+				else 
+					return RcType..": ERROR - Bad connection object type",_error
+				end
+			
+				if RC__isNan(z1) then z1 = 0 end
+				if RC__isNan(z2) then z2 = 0 end
+				delta = z2 - z1 -- difference [mm] in superelevations at connection
+				-- Presentation in meters:
+				--TODO: Check all combinations of CW, CCW and track directions
+				delta = delta/1000
+				if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Cants match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
+				elseif (math.abs(delta) &lt; tol) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Cants match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
+				else return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Cants are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
+			end
 		</Formula>
 	</LuaFunction>
 

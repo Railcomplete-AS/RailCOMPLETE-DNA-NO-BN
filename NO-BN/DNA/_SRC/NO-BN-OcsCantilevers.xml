@@ -873,10 +873,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>{Double,Double} _JBTEH_UTL_StaggerTextPosition()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_StaggerTextPosition()
-					--Standard text placement for rightsided single cantilever, on the opposite
-					--side of its track, 6 units from the track, at 2 units lower mileage along track:
-					lateralOffset = -2
-					longitudinalOffset = 6
+					lateralOffset = 5.5
+					longitudinalOffset = 2.0
 					
 					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS mast: 
 					sMast = "Tilhører kl-mast"
@@ -884,8 +882,8 @@ positive feeder in AT system				positiv leder i AT-system
 					sCantilever = "Er kl-mast for utligger"
 					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,Masts[0])
 					if nCantilevers == 1 then
-						--must be at least 1
-						return RC__acsVector2wcsVector(RightSided and -longitudinalOffset or longitudinalOffset,lateralOffset)
+						--(it is always at least 1...)
+						return RC__acsVector2wcsVector(LeftSided and lateralOffset or -lateralOffset,LeftSided and longitudinalOffset or -longitudinalOffset)
 					else
 						--2 or more cantilevers - same side of mast?
 						for i = 0,nCantilevers-1 do
@@ -893,8 +891,8 @@ positive feeder in AT system				positiv leder i AT-system
 							if this.id ~= other.id then
 								--if true and i == 1 then return Masts[0].Relations[sCantilever],this,other end
 								if this.SideOfAlignment == other.SideOfAlignment then
-									return RC__acsVector2wcsVector( LeftSided and longitudinalOffset or -longitudinalOffset, 
-																	this.mileage &lt;= other.mileage and lateralOffset or -lateralOffset)
+									return RC__acsVector2wcsVector( LeftSided and lateralOffset or -lateralOffset,
+																	this.mileage &lt;= other.mileage and longitudinalOffset or -longitudinalOffset)
 								end
 							end
 						end
@@ -906,7 +904,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
         <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="-6" 
-				Layer="JBTEH@UTLIGGER_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" 
+				Layer="JBTEH@UTLIGGER_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 				Invisible="false" Lock="false" MText="false" /> 
 		<LuaExpression Name="OcsWireNameDisplay" ><Formula>_JBTEH_UTL_OcsWireNameDisplay()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_OcsWireNameDisplay()" 
@@ -934,9 +932,32 @@ positive feeder in AT system				positiv leder i AT-system
 				HideFromUser="false"
 				Description="Returns a World Coordinate System offset vector for the stagger text attribute." >
 			<Constructor>{Double,Double} _JBTEH_UTL_OcsWireNameDisplayTextPosition()</Constructor>
+			<!-- Same distance to alignment as the stagger annotation, a little to the left (to avoid conflict with opposing track's annotation): -->
 			<Formula>
 				function _JBTEH_UTL_OcsWireNameDisplayTextPosition()
-					RC__acsVector2wcsVector(LeftSided and 6 or -6, 0)		
+					lateralOffset = 4.7
+					longitudinalOffset = 2.0
+					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS mast: 
+					sMast = "Tilhører kl-mast"
+					Masts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
+					sCantilever = "Er kl-mast for utligger"
+					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,Masts[0])
+					if nCantilevers == 1 then
+						--(it is always at least 1...)
+						return RC__acsVector2wcsVector(LeftSided and lateralOffset or -lateralOffset,LeftSided and longitudinalOffset or -longitudinalOffset)
+					else
+						--2 or more cantilevers - same side of mast?
+						for i = 0,nCantilevers-1 do
+							other = rCantilevers[i]
+							if this.id ~= other.id then
+								--if true and i == 1 then return Masts[0].Relations[sCantilever],this,other end
+								if this.SideOfAlignment == other.SideOfAlignment then
+									return RC__acsVector2wcsVector( LeftSided and lateralOffset or -lateralOffset, 
+																	this.mileage &lt;= other.mileage and longitudinalOffset or -longitudinalOffset)
+								end
+							end
+						end
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -1123,13 +1144,13 @@ positive feeder in AT system				positiv leder i AT-system
 								rNext[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rNext[0])
 							),_ok
 					elseif nPrev == 0 and nNext == 0 then
-						return string.format("%d / %d: WARNING - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_warning
+						return string.format("%d / %d: UNFINISHED - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_warning --TODO: _unfinished
 					elseif nPrev == 0 and nNext == 1 then
-						return string.format("%d / %d: WARNING - Relate to preceding cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sPrev),_warning
+						return string.format("%d / %d: UNFINISHED - Relate to preceding cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sPrev),_warning --TODO: _unfinished
 					elseif nPrev == 1 and nNext == 0 then
-						return string.format("%d / %d: WARNING - Relate to following cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sNext),_warning
+						return string.format("%d / %d: UNFINISHED - Relate to following cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sNext),_warning --TODO: _unfinished
 					else
-						return string.format("%d / %d: ERROR - Too many related cantilevers (or wire tension balancers), remove the wrong ones or check construction phase settings and refresh the object.", nPrev,nNext),_error
+						return string.format("%d / %d: WARNING - Too many related cantilevers (or wire tension balancers), remove the wrong ones or check construction phase settings and refresh the object.", nPrev,nNext),_warning
 					end
 				end
 			</Formula>
