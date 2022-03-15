@@ -205,6 +205,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<RelationSpace>seksjonsutliggerkonsoll</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
@@ -650,43 +651,41 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_code()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_code()
-					s = "Tilhører kl-mast"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					sMast = "Tilhører kl-mast"
+					rMasts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its OCS mast."
 					else
-						s1 = "Er kl-mast for utligger"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
-						if n1 == 1 then
-							return r[0].code --copy the mast's code
+						mast = rMasts[0]
+						sCantilever = "Er kl-mast for utligger"
+						rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,mast)
+						if nCantilevers == 1 then
+							--If only one single cantilever, then just copy the mast's code as-is:
+							return mast.code --copy the mast's code
 						else
-							total = 0
-							totalRightSided = 0 --cantilevers placed to the right of its own alignment, regardless of what alignment the OCS mast has
-							for i = 0,n1-1 do
-								total = total + 1
-								if r1[i].SideOfAlignment == "Right" then
-									totalRightSided = totalRightSided + 1
+							--If two or more cantilevers, count them and separate them in left-sided and rightsided, count each side.
+							nRightSided = 0 --Cantilevers placed to the right of its own alignment, regardless of what alignment the OCS mast has.
+							for i = 0,nCantilevers-1 do
+								if rCantilevers[i].RightSided then
+									nRightSided = nRightSided + 1
 								end
 							end
-							indx = 1
-							for i = 0,n1-1 do
-								other = r1[i]
-								if (this.id ~= other.id) and (this.SideOfAlignment == other.SideOfAlignment) then
-									if this.ReferenceMileage &gt; other.ReferenceMileage then
-										indx = indx + 1
+							--Then assign the mast's code plus suffix: code-1 / code-2 / .. / code-4, left-sided first, then right-sided.
+							index = 1 --Sort the cantilevers on the same side as 'this' cantilever
+							for i = 0,nCantilevers-1 do
+								Cantilever = rCantilevers[i]
+								if (this.id ~= Cantilever.id) and (this.SideOfAlignment == Cantilever.SideOfAlignment) then
+									if this.ReferenceMileage &gt; Cantilever.ReferenceMileage then
+										index = index + 1
 									end
 								end
 							end
-							if total == 1 then
-								return r[0].code
+							if this.SideOfAlignment == "Right" then
+								--Rightsided cantilever extends to the left towards its track, use index 1 or 1,2:
+								return mast.code.."-"..index
 							else
-								if this.SideOfAlignment == "Right" then
-									--Cantilever extends to the left towards its track, use index 1 or 1,2:
-									return r[0].code.."-"..indx
-								else
-									--Cantilever extends to the right towards its track, use index n+1 or n+1,n+2 (n=#left-pointing cantilevers)
-									return r[0].code.."-"..(totalRightSided + indx)
-								end
+								--Lefsided cantilever extends to the right towards its track, add index to nRightSided:
+								return mast.code.."-"..(nRightSided + index)
 							end
 						end
 					end
@@ -866,40 +865,6 @@ positive feeder in AT system				positiv leder i AT-system
 				end
 			</Formula>
 		</LuaFunction>
-		<TextPositionLuaExpression Name="SIKKSAKK" ><Formula>_JBTEH_UTL_StaggerTextPosition()</Formula></TextPositionLuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_StaggerTextPosition()" ReturnType="Vector2D" 
-				HideFromUser="false"
-				Description="Returns a World Coordinate System offset vector for the stagger text attribute." >
-			<Constructor>{Double,Double} _JBTEH_UTL_StaggerTextPosition()</Constructor>
-			<Formula>
-				function _JBTEH_UTL_StaggerTextPosition()
-					lateralOffset = 5.5
-					longitudinalOffset = 2.0
-					
-					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS mast: 
-					sMast = "Tilhører kl-mast"
-					Masts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
-					sCantilever = "Er kl-mast for utligger"
-					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,Masts[0])
-					if nCantilevers == 1 then
-						--(it is always at least 1...)
-						return RC__acsVector2wcsVector(LeftSided and lateralOffset or -lateralOffset,LeftSided and longitudinalOffset or -longitudinalOffset)
-					else
-						--2 or more cantilevers - same side of mast?
-						for i = 0,nCantilevers-1 do
-							other = rCantilevers[i]
-							if this.id ~= other.id then
-								--if true and i == 1 then return Masts[0].Relations[sCantilever],this,other end
-								if this.SideOfAlignment == other.SideOfAlignment then
-									return RC__acsVector2wcsVector( LeftSided and lateralOffset or -lateralOffset,
-																	this.mileage &lt;= other.mileage and longitudinalOffset or -longitudinalOffset)
-								end
-							end
-						end
-					end
-				end
-			</Formula>
-		</LuaFunction>
 
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
@@ -927,36 +892,54 @@ positive feeder in AT system				positiv leder i AT-system
 				end
 			</Formula>
 		</LuaFunction>
-		<TextPositionLuaExpression Name="UTLIGGER_LEDNING" ><Formula>_JBTEH_UTL_OcsWireNameDisplayTextPosition()</Formula></TextPositionLuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_OcsWireNameDisplayTextPosition()" ReturnType="Vector2D" 
+		
+		<TextPositionLuaExpression Name="UTLIGGER_LEDNING" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-9,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SIKKSAKK" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-11,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-14,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-16,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-18,-4)</Formula></TextPositionLuaExpression>
+
+		<LuaFunction Name="_JBTEH_UTL_TextAttributeAcsPosition()" ReturnType="Vector2D" 
 				HideFromUser="false"
-				Description="Returns a World Coordinate System offset vector for the stagger text attribute." >
-			<Constructor>{Double,Double} _JBTEH_UTL_OcsWireNameDisplayTextPosition()</Constructor>
-			<!-- Same distance to alignment as the stagger annotation, a little to the left (to avoid conflict with opposing track's annotation): -->
+				Description="Returns a World Coordinate System offset vector in the current drawing scale for a text attribute, placed according to there being 1, 2, 3 or 4 cantilevers. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and acsY = the longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000)." >
+			<Constructor>{Double,Double} _JBTEH_UTL_TextAttributeAcsPosition(Double lateralOffset, Double longitudinalOffset)</Constructor>
 			<Formula>
-				function _JBTEH_UTL_OcsWireNameDisplayTextPosition()
-					lateralOffset = 4.7
-					longitudinalOffset = 2.0
+				function _JBTEH_UTL_TextAttributeAcsPosition(lateralOffset,longitudinalOffset)
+					scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
+					lateralOffset = (lateralOffset or 5)/scale
+					longitudinalOffset = (longitudinalOffset or 0)/scale
 					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS mast: 
 					sMast = "Tilhører kl-mast"
-					Masts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
+					rMasts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
 					sCantilever = "Er kl-mast for utligger"
-					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,Masts[0])
+					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,rMasts[0])
+
 					if nCantilevers == 1 then
 						--(it is always at least 1...)
-						return RC__acsVector2wcsVector(LeftSided and lateralOffset or -lateralOffset,LeftSided and longitudinalOffset or -longitudinalOffset)
+						return RC__acsVector2wcsVector(
+							RightSided and lateralOffset or -lateralOffset, 
+							RightSided and -longitudinalOffset or longitudinalOffset)
+
 					else
-						--2 or more cantilevers - same side of mast?
+						--Two or more cantilevers: count them and separate them in left-sided and rightsided, count each side.
+						nRightSided = 0 --Cantilevers placed to the right of its own alignment, regardless of what alignment the OCS mast has.
 						for i = 0,nCantilevers-1 do
-							other = rCantilevers[i]
-							if this.id ~= other.id then
-								--if true and i == 1 then return Masts[0].Relations[sCantilever],this,other end
-								if this.SideOfAlignment == other.SideOfAlignment then
-									return RC__acsVector2wcsVector( LeftSided and lateralOffset or -lateralOffset, 
-																	this.mileage &lt;= other.mileage and longitudinalOffset or -longitudinalOffset)
+							if rCantilevers[i].RightSided then
+								nRightSided = nRightSided + 1
+							end
+						end
+						index = 1 --Sort the cantilevers on the same side as 'this' cantilever
+						for i = 0,nCantilevers-1 do
+							Cantilever = rCantilevers[i]
+							if (this.id ~= Cantilever.id) and (this.SideOfAlignment == Cantilever.SideOfAlignment) then
+								if this.ReferenceMileage &gt; Cantilever.ReferenceMileage then
+									index = index + 1
 								end
 							end
 						end
+						return RC__acsVector2wcsVector(
+							RightSided and lateralOffset or -lateralOffset,
+							index == 1 and longitudinalOffset or -longitudinalOffset)
 					end
 				end
 			</Formula>
@@ -1328,7 +1311,7 @@ positive feeder in AT system				positiv leder i AT-system
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM WIRE CLAMP
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="EH-KLK Kontakttrådklemme"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KLK Kontakttrådklemme"
 				Layer="JBTEH_KLK" Color="ByLayer"
 				Group="Kontaktledning/Klemmer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1337,6 +1320,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<RelationSpace>kontakttrådklemme</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
+		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
