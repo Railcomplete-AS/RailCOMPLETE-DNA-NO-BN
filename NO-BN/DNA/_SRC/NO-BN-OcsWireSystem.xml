@@ -940,29 +940,29 @@
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_FIL_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIL_code()" ReturnType="String"
-			Description="Obtains the code for the OCS fixline wire, inherited from the associated contact wire, indirectly thtough its related cantilever '' relation." >
+			Description="Obtains the code for the contact wire midpoint anchoring line, inherited from the associated contact wire, indirectly through its relation to a cantilever." >
 			<Constructor>String _JBTEH_FIL_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIL_code()
-					sfp = "Er fixline for fixpunkt"
-					rfp,nfp = RC__getCollectionOfRelatedObjects(sfp)
-					if nfp == 0 then
-						return "UNFINISHED - Relate OCS fixline wire with '"..sfp.."' to its fixpoint."
-					elseif nfp &gt; 1 then
-						return _error,"ERROR - Fixline wire shall relate to just one fixpoint with '"..sfp.."' ("..nfp.." were found)."
+					smp = "Er fixline for fixpunkt"
+					rmp,nmp = RC__getCollectionOfRelatedObjects(smp)
+					if nmp == 0 then
+						return "UNFINISHED - Relate contact wire midpoint_anchoring_line with '"..smp.."' to its contact wire midpoint."
+					elseif nmp &gt; 1 then
+						return _error,"ERROR - Midpoint anchoring line shall relate to just one contact wire midpoint with '"..smp.."' ("..nmp.." were found)."
 					else
 						scl = "Fikserer utligger"
-						rcl,ncl = RC__getCollectionOfRelatedObjects(scl,rfp[0])
+						rcl,ncl = RC__getCollectionOfRelatedObjects(scl,rmp[0])
 						if ncl == 1 then
 							scw = "Er utligger for kontaktledning"
 							rcw,ncw = RC__getCollectionOfRelatedObjects(scw,rcl[0])
 							if ncw == 1 then
-								return rcw[0].code,_info("Fixline code was deduced from its fixpoint-&gt;cantilever-&gt;contact wire, related with '"..sfp.."'.")
+								return rcw[0].code,_info("Midpoint anchoring line code was deduced from its midpoint-&gt;cantilever-&gt;contact wire, related with '"..smp.."'.")
 							else
-								return "UNFINISHED - Related cantilever has no relation to its contact wire, cannot deduce fixline code."
+								return "UNFINISHED - Related cantilever has no relation to its contact wire, cannot deduce midpoint anchoring line code."
 							end
 						else
-							return "UNFINISHED - The indirectly related cantilever has no relation to its contact wire, cannot deduce fixline code."
+							return "UNFINISHED - The indirectly related cantilever has no relation to its contact wire, cannot deduce midpoint anchoring line code."
 						end
 					end
 				end
@@ -2320,7 +2320,29 @@
 			<Variant Name="Fixpunkt" />
 		</Variants>
 		
-        <LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
+        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_FIX_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_DistanceToAlignment()" 
+			ReturnType="String"
+			Description="Obtains the DistanceToAlignment for this midpoint anchor, deduced from its cantilever." >
+			<Constructor>String _JBTEH_FIX_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_FIX_DistanceToAlignment()
+					s = "Fikserer utligger"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED - Relate midpoint anchor to its cantilever with '"..s.."'."
+					elseif n == 1 then
+							return r[0].DistanceToAlignment - r[0].CantileverLength,_info("Distance to alignment was deduced from related cantilever '"..r[0].code.."'.")
+						else
+							return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
+						end
+						return r[0].code
+					else
+						return 
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
         <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 
