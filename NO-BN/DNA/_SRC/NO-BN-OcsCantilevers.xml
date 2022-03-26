@@ -233,7 +233,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Variant Name="H-390" ></Variant>
 		</Variants>
 
-		<LuaExpression Name="name" ><Formula>"Utliggerkonsoll"..Variant</Formula></LuaExpression>
+		<LuaExpression Name="name" ><Formula>"Utliggerkonsoll "..Variant</Formula></LuaExpression>
 		<LuaExpression Name="Model3DName" ><Formula>"NO-BN-3D-EH-UTK-SEKSJONSUTLIGGERKONSOLL-1440-"..Variant</Formula></LuaExpression>
 
 		<!-- TODO Seksjonsutliggerkonsoll skal snappe til mast, og skal selv tilby snapping for utliggere -->
@@ -721,6 +721,35 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
+		<CustomAttribute DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" DefaultValue="4000"
+			Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long." >
+		</CustomAttribute>
+		<LuaExpression Name="CantileverLengthDisplay" ><Formula>_JBTEH_UTL_CantileverLengthDisplay(CantileverLength)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_CantileverLengthDisplay()" 
+			ReturnType="String"
+			Description="Returns the cantilever's display length, min 1000mm, max 6000mm, rounded to nearest multiple of 100mm. Cariboni is always 1200 mm long." >
+			<Constructor>Int _JBTEH_UTL_CantileverLengthDisplay(Double CantileverLength)</Constructor>
+			<Formula>
+				function _JBTEH_UTL_CantileverLengthDisplay(CantileverLength)
+					if Variant == "Cariboni" then
+						return "1200"
+					else
+						step = 50 --mm - To be verified with the 2D library file
+						minL = 1000 --mm
+						maxL = 6000 --mm
+						local L = step * ((1000*CantileverLength + step/2)//step)
+						if L &lt; minL then 
+							return minL
+						elseif L &gt; maxL then 
+							return maxL
+						else 
+							return RC__toint(L)
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="PushDirection" ><Formula>_JBTEH_UTL_PushDirection()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
 			ReturnType="String"
@@ -802,35 +831,6 @@ positive feeder in AT system				positiv leder i AT-system
 						.."', this cantilever '"..RC__identify(this).."' and next cantilever/WTB '"..RC__identify(r2[0]).."'."
 				
 					return RC__vectorDotProduct(forceVector,cantileverVector) &lt; 0 and "Push" or "Pull",_info(t)
-				end
-			</Formula>
-		</LuaFunction>
-
-		<CustomAttribute DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" DefaultValue="4000"
-			Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long." >
-		</CustomAttribute>
-		<LuaExpression Name="CantileverLengthDisplay" ><Formula>_JBTEH_UTL_CantileverLengthDisplay(CantileverLength)</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_CantileverLengthDisplay()" 
-			ReturnType="String"
-			Description="Returns the cantilever's display length, min 1000mm, max 6000mm, rounded to nearest multiple of 100mm. Cariboni is always 1200 mm long." >
-			<Constructor>Int _JBTEH_UTL_CantileverLengthDisplay(Double CantileverLength)</Constructor>
-			<Formula>
-				function _JBTEH_UTL_CantileverLengthDisplay(CantileverLength)
-					if Variant == "Cariboni" then
-						return "1200"
-					else
-						step = 50 --mm - To be verified with the 2D library file
-						minL = 1000 --mm
-						maxL = 6000 --mm
-						local L = step * ((1000*CantileverLength + step/2)//step)
-						if L &lt; minL then 
-							return minL
-						elseif L &gt; maxL then 
-							return maxL
-						else 
-							return RC__toint(L)
-						end
-					end
 				end
 			</Formula>
 		</LuaFunction>
