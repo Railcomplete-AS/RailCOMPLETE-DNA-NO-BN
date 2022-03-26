@@ -55,6 +55,9 @@
 			<Variant Name="Jordingsbryter" >
 				<SetValue Key="name" Value="Jordingsbryter" />
 			</Variant>
+			<Variant Name="Effektbryter" >
+				<SetValue Key="name" Value="Effektbryter" />
+			</Variant>
 		</Variants>
 		
 		<CustomAttribute DataType="Enumeration" Name="NormalPosition" DisplayName="Grunnstilling" DefaultValue="Open"
@@ -123,13 +126,6 @@
 			<SetValue Key="Poles" Value="Three" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Skillebryter" DisplayName="Motorisert Skillebryter" DisplayBlockName="NO-BN-2D-JBTEH_BRY-SKILLEBRYTER-ÅPEN-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.6" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
-			<JigSymbolAppearance EnableDirectionSetting="true" />
-			<SetValue Key="Poles" Value="One" />
-		</InsertPointObject>
-		
 		<InsertPointObject VariantName="Lastskillebryter" DisplayName="Lastskillebryter" DisplayBlockName="NO-BN-2D-JBTEH_BRY-LASTSKILLEBRYTER-ÅPEN-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.6" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
@@ -171,6 +167,27 @@
 			<JigSymbolAppearance EnableDirectionSetting="true" />
 			<SetValue Key="Poles" Value="Three" />
 		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Effektbryter" DisplayName="Effektbryter" DisplayBlockName="NO-BN-2D-JBTEH_BRY-EFFEKTBRYTER-ÅPEN-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.6" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance EnableDirectionSetting="true" />
+			<SetValue Key="Poles" Value="One" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Effektbryter" DisplayName="Topols Effektbryter" DisplayBlockName="NO-BN-2D-JBTEH_BRY-EFFEKTBRYTER-TOPOLET-ÅPEN-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.6" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance EnableDirectionSetting="true" />
+			<SetValue Key="Poles" Value="Two" />
+		</InsertPointObject>
+		
+		<InsertPointObject VariantName="Effektbryter" DisplayName="Trepols Effektbryter" DisplayBlockName="NO-BN-2D-JBTEH_BRY-EFFEKTBRYTER-TREPOLET-ÅPEN-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="false" SnapDistance="0.6" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance EnableDirectionSetting="true" />
+			<SetValue Key="Poles" Value="Three" />
+		</InsertPointObject>
 
 		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_BRY-SKILLEBRYTER-ÅPEN-{{SymbolMode}}" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
@@ -186,6 +203,7 @@
 				{% if Variant == 'Skillebryter' %}SKILLEBRYTER
 				{% elsif Variant == 'Lastskillebryter' %}LASTSKILLEBRYTER
 				{% elsif Variant == 'Jordingsbryter' %}JORDINGSBRYTER
+				{% elsif Variant == 'Effektbryter' %}EFFEKTBRYTER
 				{% else %}BAD_Variant
 				{% endif %}
 				{% if Poles == 'Two' %}TOPOLET
@@ -239,8 +257,54 @@
 		<Variants DefaultValue="Manøvermaskin" >
 			<Variant Name="Manøvermaskin" />
 		</Variants>
+
+		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()</Formula></LuaExpression>		
+		<LuaFunction Name="_JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()" ReturnType="String"
+		Description="Gets the DistanceToAlignment of the related switch if there is one." >
+		<Constructor>String _JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()</Constructor>
+			<Formula>
+				function _JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()
+					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					if n &gt; 0 then
+						return r[0].DistanceToAlignment
+					else
+						return 0/0,_warning, _info("WARNING - No related switch")
+					end
+				end
+			</Formula>
+		</LuaFunction>
 		
-		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_MAN_getMileageFromRelatedSwitch()</Formula></LuaExpression>		
+		<LuaFunction Name="_JBTEH_MAN_getMileageFromRelatedSwitch()" ReturnType="String"
+		Description="Gets the mileage of the related switch if there is one." >
+		<Constructor>String _JBTEH_MAN_getMileageFromRelatedSwitch()</Constructor>
+			<Formula>
+				function _JBTEH_MAN_getMileageFromRelatedSwitch()
+					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					if n &gt; 0 then
+						return r[0].Mileage
+					else
+						return 0/0,_warning, _info("WARNING - No related switch")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="dir" ><Formula>_JBTEH_MAN_getDirFromRelatedSwitch()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAN_getDirFromRelatedSwitch()" ReturnType="String"
+		Description="Gets the dir of the related switch if there is one." >
+		<Constructor>String _JBTEH_MAN_getDirFromRelatedSwitch()</Constructor>
+			<Formula>
+				function _JBTEH_MAN_getDirFromRelatedSwitch()
+					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					if n &gt; 0 then
+						return r[0].dir
+					else
+						return nil,_warning, _info("WARNING - No related switch")
+					end
+				end
+			</Formula>
+		</LuaFunction>
 		
 		<CustomAttribute DataType="Enumeration" Name="NormalPosition" DisplayName="Grunnstilling" DefaultValue="Open"
 			Description="Switch circuit normal position [Open | Closed]." >
@@ -259,6 +323,8 @@
 					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
 					if n &gt; 0 then
 						return r[0].NormalPosition
+					else
+						return Open,_warning, _info("WARNING - No related switch")
 					end
 				end
 			</Formula>
