@@ -69,9 +69,6 @@
 		<Formula>
 			function NOBN_com_chkConnectionAlignmentCompatibility()
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if TargetAlignment and Alignment.id == TargetAlignment.id then 
-					return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment object is same as own alignment object.",_error
-				end
 				if RcType == "JBTEH_ISO Lineisolator" then
 					compatibility = { 
 						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
@@ -92,6 +89,9 @@
 					return v1.."/"..v2..": ERROR - Incompatible adjacent alignment types / variants.",_error
 				else
 					if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+					if TargetAlignment and Alignment.id == TargetAlignment.id then 
+						return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment object is same as own alignment object.",_error
+					end
 					if TargetAlignment.RcType ~= Alignment.RcType then
 						return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment type must be same as own alignment type ("..Alignment.RcType..").",_error
 					else
@@ -114,6 +114,9 @@
 				if RcType == "JBTEH_ISO Lineisolator" then 
 					if TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+					elseif TargetAlignment and Alignment.id == TargetAlignment.id then 
+						return "-: OK - This object type accepts that target alignment is same as own 
+						alignment.",_ok
 					else
 						if ExtendingFromEnd then 
 							p1 = Alignment.RcAlignment.EndPoint
@@ -678,9 +681,9 @@ function NOBN_trk_chkConnectionGradientAndCantMatch(CallingProperty)
 	
 		--Assert normalized vectors:
 		d1 = math.sqrt(w1.x^2+w1.y^2+w1.z^2)
-		if math.abs(d1-1.000) > 4e-4 then return RC__round(d1,3)..": ERROR - w1 not unit vector.",_error end 
+		if math.abs(d1-1.000) > 4e-4 then return RC__getRounded(d1,3)..": ERROR - w1 not unit vector.",_error end 
 		d2 = math.sqrt(w2.x^2+w2.y^2+w2.z^2)
-		if math.abs(d2-1.000) > 4e-4 then return RC__round(d2,3)..": ERROR - w2 not unit vector.",_error end 
+		if math.abs(d2-1.000) > 4e-4 then return RC__getRounded(d2,3)..": ERROR - w2 not unit vector.",_error end 
 		
 		--Find 3D angle between normal vectors (knowing that cos(delta) = (w1.w2)/(|w1|*|w2|) - and both vectors are already of length 1. 
 		delta = math.acos(w1.x*w2.x + w1.y*w2.y + w1.z*w2.z) * 180/math.pi 

@@ -147,11 +147,11 @@
 				dist = distance(closest)
 				t = string.format("%.3f", dist)
 				if dist &lt; errorThreshold then 
-					return string.format("%.03f: ERROR - %s '%s' too close in '%s' direction, outside tolerance %0.3f m.", dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_error
+					return string.format("%.03f: ERROR - %s '%s' too close in '%s' direction, outside tolerance %0.3f m.", dist,objectType:sub(10),RC__getNameOrCodeorId(closest),searchDir,errorThreshold),_error
 				elseif dist &lt; warningThreshold then 
-					return string.format("%.03f: WARNING - %s '%s' close in '%s' direction, but within tolerance %0.3f m.",dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_warning
+					return string.format("%.03f: WARNING - %s '%s' close in '%s' direction, but within tolerance %0.3f m.",dist,objectType:sub(10),RC__getNameOrCodeorId(closest),searchDir,errorThreshold),_warning
 				else
-					return string.format("%.03f: OK - %s '%s' is nearest in '%s' direction, farther away than tolerance %0.3f m.", dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_ok
+					return string.format("%.03f: OK - %s '%s' is nearest in '%s' direction, farther away than tolerance %0.3f m.", dist,objectType:sub(10),RC__getNameOrCodeorId(closest),searchDir,errorThreshold),_ok
 				end
 			end
 		</Formula>
@@ -302,13 +302,13 @@
 				if obj.EarthingMethod == "None" then 
 					return ""
 				elseif obj.EarthingMethod == "Object" then
-					return RC__identify(obj.EarthingObject).." / "..RC__identify(obj)
+					return RC__getNameOrCodeorId(obj.EarthingObject).." / "..RC__getNameOrCodeorId(obj)
 				elseif obj.EarthingMethod == "Wire" then 
-					return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
+					return RC__getNameOrCodeorId(obj.EarthingAlignment).." / "..RC__getNameOrCodeorId(obj)
 				elseif obj.EarthingMethod == "Rail" then 
-					return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
+					return RC__getNameOrCodeorId(obj.EarthingAlignment).." / "..RC__getNameOrCodeorId(obj)
 				elseif obj.EarthingMethod == "Unknown" then 
-					return "(?)".." / "..RC__identify(obj)
+					return "(?)".." / "..RC__getNameOrCodeorId(obj)
 				else
 					return _error, "ERROR - Bad Earthing Method ["..obj.EarthingMethod.."]."
 				end
@@ -372,66 +372,207 @@
 	Track - general position issues, relative to track alignments, used by all objects.
 	See also the lua source files for track objects and track connections.
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_trk_getLiftFromCant()" ReturnType="Double"
+	<LuaFunction Name="NOBN_trk_toKm()" ReturnType="String"
+		Description="Converts input x [m] into mileage [km] with precision p (0..6), default precision is 3. E.g., 462371.637 => 462.372." >
+		<Constructor>Double NOBN_trk_toKm(Double x [, Int p])</Constructor>
+		<Formula>
+			function NOBN_trk_toKm(x,p) 
+				if p == nil then 
+					if x == nil then
+						return 0.0,_warning
+					else
+						p = 3
+					end
+				end
+				p = math.floor(math.abs(p))
+				if p &lt; 0 or p &gt; 6 then
+					return "Precision ["..p.."] must be from 0 to 6, cannot format value ["..x.."]",_warning
+				elseif p == 0 then return string.format("%.0f",math.floor((x+0.5*1e3)*1e-3)/1e0)
+				elseif p == 1 then return string.format("%.1f",math.floor((x+0.5*1e2)*1e-2)/1e1)
+				elseif p == 2 then return string.format("%.2f",math.floor((x+0.5*1e1)*1e-1)/1e2) 
+				elseif p == 3 then return string.format("%.3f",math.floor((x+0.5*1e0)*1e0)/1e3)
+				elseif p == 4 then return string.format("%.4f",math.floor((x+0.5*1e-1)*1e1)/1e4) 
+				elseif p == 5 then return string.format("%.5f",math.floor((x+0.5*1e-2)*1e2)/1e5) 
+				elseif p == 6 then return string.format("%.6f",math.floor((x+0.5*1e-3)*1e3)/1e6) 
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getNearestEntireKm()" ReturnType="String"
+		Description="Returns object's reference mileage's whole km when also half km is to be shown, e.g., 461.749 => 461 (half km is 5) and 461.750 => 462 (half km is 0)." >
+		<Constructor>Int NOBN_com_getNearestEntireKm([RailwayPlacedObject obj])</Constructor>
+		<Formula>
+			function NOBN_com_getNearestEntireKm(obj)
+				obj = obj or this
+				return math.floor(math.floor((obj:getPropertyValue("ReferenceMileage")/500)+.5)/2)
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getNearestEntireKm2()" ReturnType="String"
+		Description="Returns object's reference mileage's whole km when the half km is not to be shown, e.g., 461.499 => 461 and 461.500 => 462." >
+		<Constructor>Int NOBN_com_getNearestEntireKm2([RailwayPlacedObject obj])</Constructor>
+		<Formula>
+			function NOBN_com_getNearestEntireKm2(obj)
+				obj = obj or this
+				return math.floor(math.floor(obj:getPropertyValue("ReferenceMileage")/1000 + 0.5))
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getNearestHalfKm()" ReturnType="String"
+		Description="Returns object's reference mileage's half km (0 or 5), e.g., 461.750 => 0 (whole km is 461) and 462.372 => 5 (whole km is 462)." >
+		<Constructor>Int NOBN_com_getNearestHalfKm([RailwayPlacedObject obj])</Constructor>
+		<Formula>
+			function NOBN_com_getNearestHalfKm(obj)
+				obj = obj or this
+				return (math.floor((obj.ReferenceMileage/500)+0.5)%2)*5
+			end
+		</Formula>
+	</LuaFunction>
+	
+	
+	
+	<LuaFunction Name="NOBN_com_getNearestHectometricSnap()" ReturnType="String"
+		Description="Returns object's reference mileage's nearest whole hectometer." >
+		<Constructor>Int NOBN_com_getNearestHectometricSnap([RailwayPlacedObject obj])</Constructor>
+		<Formula>
+			function NOBN_com_getNearestHectometricSnap(obj)
+				obj = obj or this
+				return 100 * ((50 + obj:getPropertyValue("ReferenceMileage")) // 100)
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getNearestKilometricSnap()" ReturnType="String"
+		Description="Returns object's reference mileage's nearest whole kilometer." >
+		<Constructor>Int NOBN_com_getNearestKilometricSnap([RailwayPlacedObject obj])</Constructor>
+		<Formula>
+			function NOBN_com_getNearestKilometricSnap(obj)
+				obj = obj or this
+				return 1000 * ((500 + obj:getPropertyValue("ReferenceMileage")) // 1000)
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getLabelItem1()" ReturnType="String"
+		Description="Returns the ReferenceMileage, formated as Km.&lt;value&gt;, for the label's own insertion point." >
+		<Constructor>String NOBN_com_getLabelItem1()</Constructor>
+		<Formula>
+			function NOBN_com_getLabelItem1()
+				return "Km."..NOBN_trk_toKm(referenceMileage,3)
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getLabelItem2()" ReturnType="String"
+		Description="Returns a list consisting of the Code for each item related to the label (labels can relate to anything)." >
+		<Constructor>String NOBN_com_getLabelItem2()</Constructor>
+		<Formula>
+			function NOBN_com_getLabelItem2()
+				local r,n,s,i
+				s = "Er etikett for anything"
+				r,n = RC__getCollectionOfRelatedObjects(s)
+				if n == 0 then 
+					return "UNFINISHED - Relate with '"..s.."'."
+				else
+					t = "("..r[0].code
+					for i = 1, n-1 do
+						t = t..", "..r[i].code
+					end
+					return t..")"
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="NOBN_com_getLabelItem3()" ReturnType="String"
+		Description="Returns the reference alignment Code for the label itself (not for a related item)." >
+		<Constructor>String NOBN_com_getLabelItem3()</Constructor>
+		<Formula>
+			function NOBN_com_getLabelItem3()
+				return "(Ref. "..referenceAlignment.code..")"
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+ 	<LuaFunction Name="NOBN_trk_getLiftFromCant()" ReturnType="Double"
 		Description="Returns a track-bound object's Z-coordinate offset above the gradient curve [m], consistent with own alignment's local cant. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
 		<Constructor>Double NOBN_trk_getLiftFromCant([_position])</Constructor>
 		<Formula>
-function NOBN_trk_getLiftFromCant(where)
-	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
-	--'where' is a data structure, if present, consisting of .Pos and .Ref
-	if where == nil then
-		-- can be called from point objects:
-		ai = getAlignmentInfo()
-	else
-		-- can be called from anywhere, including an alignment, as a sampled formula:
-	    ai = getAlignmentInfo(where)
-	end
-	if RcAlignment == nil then 
-		-- 'this' is a point object:
-		cg = Alignment.AlignmentSystem.CantGauge
-		lwc = Alignment.AlignmentSystem.QuickMode3DLiftWithCant
-		dta = DistanceToAlignment
-	else 
-		-- 'this' is an alignment:
-		cg = AlignmentSystem.CantGauge
-		lwc = AlignmentSystem.QuickMode3DLiftWithCant
-		dta = 0.0 --DistanceToAlignment
-	end
-	if not lwc then 
-		return 0.0, _info("Alignment system does not lift with cant.")
-	end
-	c = ai.Cant
-    if c == nil or RC__isNan(c) then
-        return 0.0, _info("UNFINISHED - No cant data in alignment, assuming zero cant.")
-	elseif c == 0 then
-		return 0.0
-    else
-        -- Cant is measured in millimeter superelevation
-        -- Ask alignment system whether cant leads to lift or not:
-	    h = c/1000.0 --[m]
-		if h &gt; cg then 
-			h = cg - 0.001 -- Almost 90 degrees roll...
-			msg = "Cant truncated to max, "..RC__round(1000*h).." mm."
-		else
-			msg = RC__round(1000*h).." mm cant."
-		end
-		railSeparationXY = math.sqrt(cg^2 - h^2)
-		if h == 0.0 then
-			return 0.0, _info(msg)
-		else
-			cr = ai.CantRotation
-			if cr == "CCW" then
-				-- Right rail lifted above left rail
-				return h/2 + h/2 * dta / (railSeparationXY / 2)
-			elseif cr == "CW" then
-				-- Left rail lifted above right rail
-				return h/2 - h/2 * dta / (railSeparationXY / 2)
-			else
-				return 0.0,_error, _info("Bad cant rotation data ["..CantRotation.."], assuming zero lift.")
+			function NOBN_trk_getLiftFromCant(where)
+				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
+				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				if where == nil then
+					-- can be called from point objects:
+					ai = getAlignmentInfo()
+				else
+					-- can be called from anywhere, including an alignment, as a sampled formula:
+					ai = getAlignmentInfo(where)
+				end
+				if RcAlignment == nil then 
+					-- 'this' is a point object:
+					cg = Alignment.AlignmentSystem.CantGauge
+					lwc = Alignment.AlignmentSystem.QuickMode3DLiftWithCant
+					dta = DistanceToAlignment
+				else 
+					-- 'this' is an alignment:
+					cg = AlignmentSystem.CantGauge
+					lwc = AlignmentSystem.QuickMode3DLiftWithCant
+					dta = 0.0 --DistanceToAlignment
+				end
+				if not lwc then 
+					return 0.0, _info("Alignment system does not lift with cant.")
+				end
+				c = ai.Cant
+				if c == nil or RC__isNan(c) then
+					return 0.0, _info("UNFINISHED - No cant data in alignment, assuming zero cant.")
+				elseif c == 0 then
+					return 0.0
+				else
+					-- Cant is measured in millimeter superelevation
+					-- Ask alignment system whether cant leads to lift or not:
+					h = c/1000.0 --[m]
+					if h &gt; cg then 
+						h = cg - 0.001 -- Almost 90 degrees roll...
+						msg = "Cant truncated to max, "..RC__getRounded(1000*h).." mm."
+					else
+						msg = RC__getRounded(1000*h).." mm cant."
+					end
+					railSeparationXY = math.sqrt(cg^2 - h^2)
+					if h == 0.0 then
+						return 0.0, _info(msg)
+					else
+						cr = ai.CantRotation
+						if cr == "CCW" then
+							-- Right rail lifted above left rail
+							return h/2 + h/2 * dta / (railSeparationXY / 2)
+						elseif cr == "CW" then
+							-- Left rail lifted above right rail
+							return h/2 - h/2 * dta / (railSeparationXY / 2)
+						else
+							return 0.0,_error, _info("Bad cant rotation data ["..CantRotation.."], assuming zero lift.")
+						end
+					end
+				end
 			end
-		end
-	end
-end
 		</Formula>		
 	</LuaFunction>
 	
@@ -440,36 +581,36 @@ end
 	<LuaFunction Name="NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance()" ReturnType="Double"
 		Description="Returns a track-bound object's 2D distance to the alignment axis (IFC:gradient curve) as a function of its track plane distance to own model insertion axis. 'TrackPlaneDistance' is by default set to half of the rail separation (track gauge). If called from an alignment object, the reserved identifier '_position' holding a {Pos, Ref} must be provided as an input argument." >
 		<Formula>
-function NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(TrackPlaneDistance,where)
-	local cg
-	if RcAlignment == nil then 
-		-- 'this' is a point object:
-		cg = Alignment.AlignmentSystem.CantGauge
-	else 
-		-- 'this' is an alignment:
-		cg = AlignmentSystem.CantGauge
-	end
-	if TrackPlaneDistance == nil then
-		--No specific distance as input, use side of track and place on rail:
-		TrackPlaneDistance = RightSided and cg/2.0 or -cg/2.0
-	end
-	--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
-	--'where' is a data structure, if present, consisting of .Pos and .Ref
-	if where == nil then
-		-- Assume function has been called from a point object:
-		ai = getAlignmentInfo()
-	else
-	    ai = getAlignmentInfo(where)
-	end
-	g = ai.Gradient
-	h = ai.Cant/1000.0
-	if RC__isNan(h) then 
-		return TrackPlaneDistance, _info("No cant data in alignment, assuming zero cant.")
-	else
-		-- Scale track plane distance to alignment with effect of cant:
-	 	return TrackPlaneDistance * math.sqrt(1 - (h/cg)^2)
-	end
-end
+			function NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(TrackPlaneDistance,where)
+				local cg
+				if RcAlignment == nil then 
+					-- 'this' is a point object:
+					cg = Alignment.AlignmentSystem.CantGauge
+				else 
+					-- 'this' is an alignment:
+					cg = AlignmentSystem.CantGauge
+				end
+				if TrackPlaneDistance == nil then
+					--No specific distance as input, use side of track and place on rail:
+					TrackPlaneDistance = RightSided and cg/2.0 or -cg/2.0
+				end
+				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
+				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				if where == nil then
+					-- Assume function has been called from a point object:
+					ai = getAlignmentInfo()
+				else
+					ai = getAlignmentInfo(where)
+				end
+				g = ai.Gradient
+				h = ai.Cant/1000.0
+				if RC__isNan(h) then 
+					return TrackPlaneDistance, _info("No cant data in alignment, assuming zero cant.")
+				else
+					-- Scale track plane distance to alignment with effect of cant:
+					return TrackPlaneDistance * math.sqrt(1 - (h/cg)^2)
+				end
+			end
 		</Formula>
 	</LuaFunction>
 
@@ -554,7 +695,7 @@ end
 
 
 	
-	<!-- TODO Lage funksjoner for 3D Offset og Rotation slik at de benytter _position og kan brukes i linjers 3D-eksport også. -->
+	<!-- TODO Create functions for 3D Offset and Rotation so that they use _position and can be used in line 3D export too. -->
 	<LuaFunction Name="NOBN_trk_getPitchFromGradient()" ReturnType="Double"
 		Description="Returns a track-bound object's pitch [decimal degrees], consistent with own alignment's local gradient, and object orientation up/down/both/none. If called from an alignment object, the reserved identifier '_position' must be provided as an input argument." >
 		<Constructor>Double NOBN_trk_getPitchFromGradient([_position])</Constructor>
@@ -670,13 +811,13 @@ end
 							return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 						else 
 							v = math.max(135,math.min(210,DesignSpeed))
-							return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
+							return RC__getRounded(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 						end
 			
 					elseif DistantSignal == "Ja" then 
 						-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 						v = math.max(40,math.min(130,DesignSpeed))
-						return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
+						return RC__getRounded(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 			
 					elseif HighShuntingSignal ~= "-" then
 						return 50, _info("50 m fixed sighting requirement during shunting movements.")
@@ -692,13 +833,13 @@ end
 						return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 					else 
 						v = math.max(135,math.min(210,DesignSpeed))
-						return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
+						return RC__getRounded(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 					end
 			
 				elseif RcType == "SA-SIG PLO-forsignal" then
 					-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 					v = math.max(40,math.min(130,DesignSpeed))
-					return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
+					return RC__getRounded(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 			
 				elseif RcType == "JBTSA_SIG Veisignal" then
 					--Signal mot vei
@@ -867,7 +1008,7 @@ function NOBN_bnp_getBoardSightingRequirement()
 	then
 		-- Ref TRV Underbygning vedlikehold, 2.1.1 "Sikt til signaler og skilt"
 		v = math.max(40,math.min(130,DesignSpeed))
-		d = RC__round(v/3.6 * 5, 0)
+		d = RC__getRounded(v/3.6 * 5, 0)
 		return d, _info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m.")
 
 	elseif		

@@ -95,9 +95,9 @@
 									..RelationName.."' and define the 'code' or 'name' property."
 							else
 								local s,i
-								s = RC__identify(r[0])
+								s = RC__getNameOrCodeorId(r[0])
 								for i = 1, n-1 do
-									s = s..", "..RC__identify(r[i])
+									s = s..", "..RC__getNameOrCodeorId(r[i])
 								end
 								return "UNFINISHED - Define the 'code' property or change the 'name' property to annotate related items ["..s.."]."
 							end
@@ -250,7 +250,7 @@
 					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
 						return "Sort"
 					elseif Variant == "Kontaktledning, avspenningsline" then
-						return "Stålgrå"
+						return "Gul"
 					else
 						return "Bad Variant ["..Variant.."]."
 					end
@@ -279,7 +279,7 @@
 				<Value>Grønn</Value>
 			</Values>
 			<Values Variant="Kontaktledning, avspenningsline" >
-				<Value>Stålgrå</Value>
+				<Value>Gul</Value>
 			</Values>
 		</CustomAttribute>
 
@@ -305,19 +305,18 @@
 		<!-- Colors according to Bane NOR TRV, Contact wire symbols: -->
 		<LuaExpression Name="Color" ><Formula>_JBTEH_KTL_Color()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_Color()" ReturnType="String"
-			Description="Obtains the CAD system's polyline color, based on the wire's Wire2dColor." >
+			Description="Obtains the CAD system's polyline color, based on the wire's Wire2dColor property." >
 			<Constructor>String _JBTEH_KTL_Color()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_Color()
-					if     Wire2dColor:lower():match("sort") then return 7 --Displays as white
-					elseif Wire2dColor:lower():match("blå") then return "30,144,255"
-					elseif Wire2dColor:lower():match("lilla") then return "148,0,211"
-					elseif Wire2dColor:lower():match("rød") then return "252,10,28"
-					elseif Wire2dColor:lower():match("brun") then return "139,69,19"
-					elseif Wire2dColor:lower():match("oransje") then return "255,140,0"
-					elseif Wire2dColor:lower():match("grønn") then return "50,205,50"
-					elseif Wire2dColor:lower():match("gul") then return 2
-					elseif Wire2dColor:lower():match("stålgrå") then return 252 --Moderately dark gray
+					if     Wire2dColor == "Sort") then return 7 --Displays as white
+					elseif Wire2dColor == "Blå") then return "30,144,255"
+					elseif Wire2dColor == "Lilla") then return "148,0,211"
+					elseif Wire2dColor == "Rød") then return "252,10,28"
+					elseif Wire2dColor == "Brun") then return "139,69,19"
+					elseif Wire2dColor == "Oransje") then return "255,140,0"
+					elseif Wire2dColor == "Grønn") then return "50,205,50"
+					elseif Wire2dColor == "Gul") then return 2
 					else return 7 --white
 					end
 				end
@@ -331,7 +330,7 @@
 			<Formula>
 				--AutoCAD needs lineweights to be of the form "LineWeight035" for "0.35 mm" (only predefined Values according to AutoCAD enum):
 				function _JBTEH_KTL_Lineweight()
-					if Wire2dColor:lower():match("sort") then
+					if Wire2dColor == "Sort") then
 						return "LineWeight035"
 					else
 						return "LineWeight040"
@@ -1250,7 +1249,7 @@
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
 		<!-- Alternative:  <xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" /> -->
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___TRK" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" /> -->
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
@@ -1883,9 +1882,30 @@
 			</Formula>
 		</LuaFunction>
 
-		<CustomAttribute DataType="Double" Name="ConsoleHeight" DisplayName="Konsollhøyde over mast innsettingspunkt" DefaultValue="6.0"
+		<CustomAttribute DataType="Double" Name="ConsoleHeight" DisplayName="Konsollhøyde over mast innsettingspunkt" DefaultValue="7.1"
 			Description="The console's height [m] above its OCS mast's insertion point." >
 		</CustomAttribute>
+        <LuaExpression Name="dir" ><Formula>_JBTEH_KPM_ConsoleHeight()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_dir()" 
+			ReturnType="String"
+			Description="Returns the dir for this OCS mast console (force relay object), deduced from its related OCS mast." >
+			<Constructor>String _JBTEH_KPM_dir()</Constructor>
+			<Formula>
+				function _JBTEH_KPM_dir()
+					local s = "Er kraftoverføringskonsoll på kl-mast"
+					local r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then 
+						return getPropertyValue("dir"),
+							_info("No related OCS mast, cannot deduce Value.")
+					elseif n == 1 then 
+						return r[0].dir
+					else
+						-- Two or more masts were found:
+						return r[0].dir, _warning,_info("WARNING - Multiple OCS masts found.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_KPM_RelativeElevation()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KPM_RelativeElevation()" 
@@ -2001,6 +2021,7 @@
 					"Cariboni"
 				}
 				--(20C1 and 20C2 use the same tensioning forces)
+				--[cwtf]=contact wire tf, [catf]=catenary tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf.
 				local TensioningForces = {
 					["Unknown"] = 	{cwtf=0, 	catf=0, 	swtf=0,		awtf=0},
 					["S20A"] = 		{cwtf=10, 	catf=10,	swtf=2.3,	awtf=10},
@@ -2056,10 +2077,10 @@
 		</Variants>
 		
 		<!-- Text attribute positions are stated in ACS for the 1:1 drawing scale: -->
-		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>RC__TextAttributeAcsPosition(1,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="STREKKRAFT" ><Formula>RC__TextAttributeAcsPosition(3,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>RC__TextAttributeAcsPosition(5,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>RC__TextAttributeAcsPosition(7,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>RC__getTextAttributePositionWcsFromAcs(1,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="STREKKRAFT" ><Formula>RC__getTextAttributePositionWcsFromAcs(3,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>RC__getTextAttributePositionWcsFromAcs(5,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>RC__getTextAttributePositionWcsFromAcs(7,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
 
         <LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 
@@ -2114,15 +2135,16 @@
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_AEH_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_Mileage()" 
 			ReturnType="Double"
-			Description="Returns mileage for this OCS contact wire stretcher fastening object. Snaps to the extremity of its associated stretcher wire alignment." >
+			Description="Returns mileage for this wire tension balancer. Snaps to the extremity of its associated wire alignment." >
 			<Constructor>Double _JBTEH_AEH_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_Mileage()
 					--Assume it runs from 0 (at mast or continuation) to L (at mast or continuation)
-					ai = getAlignmentInfo() --Own alignment is a contact wire
-					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found - move object inside the extent of its own alignment.") end
-					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
-							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+					ai = getAlignmentInfo() --Own alignment is a contact wire object type
+					if RC__isNan(ai.RelativePosition) then
+						return nil, _info("Position not found - move object inside the extent of its own alignment.")
+					end
+					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition) and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
 				end
 			</Formula>
 		</LuaFunction>
@@ -2171,6 +2193,27 @@
 			</Values>
 		</CustomAttribute>
 
+		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_AEH_RelativeElevation()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_RelativeElevation()" 
+			ReturnType="String"
+			Description="Obtains the relative elevation above the wire that will be tensioned. Fixed WTBs and spring WTBs are located at the same zero relative elevation (same height). Weighted WTBs will vary with design. The default Bane NOR weighted WTB has its force relay point located at 0.235 m above its wire. If the WTB tensions two wires (double WTB), then the default separation is 0.70 m. The reference elevation is the elevation of the contact wire - the messenger wire will be deduced from surrounding object's parameters." >
+			<Constructor>String _JBTEH_AEH_RelativeElevation()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_RelativeElevation()
+					if OcsSystem == "Unknown" then return "?/? kN (UNFINISHED - unknown OcsSystem)." end
+					if Variant:match("Fjær") or Variant:match("Fast")
+						return 0
+					elseif Variant:match("Lodd") then
+						--Default Bane NOR force relay point on ocs mast for weighted WTB, relative to its (main) wire.
+						--If two wires are tensioned, then their standard vertical separation is 0.70 m.
+						--An alternative relative elevation is 0.065=0.150=0.085 instead of 0.235=0.150+0.085.
+						return 0.235 
+					end
+					return _info("Bad tensioning device variant ["..Variant.."].")
+				end
+			</Formula>
+		</LuaFunction>
+
 		<CustomAttribute DataType="String" Name="TensioningForce" DisplayName="Strekkraft" DefaultValue="(not in use)" 
 			Description="The tensioning force/forces (tf) exerted on the tensioning device [kN]." />
 
@@ -2184,13 +2227,12 @@
 		<LuaFunction Name="_JBTEH_AEH_TensioningForces()" 
 			ReturnType="String"
 			Description="Obtains the tensioning forces for this OCS tensioning device, of OcsSystem type The OCS System is one of [Unknown | S20A | S20AR (redusert) | S20B | S20BR | S20C1 | S20C2 | S25 | S35 | S35MS | Cariboni]." >
-			<Constructor>String _JBTEH_AEH_TensioningForces(String OcsSystem)</Constructor>
+			<Constructor>String _JBTEH_AEH_TensioningForces()</Constructor>
 			<Formula>
-				function _JBTEH_AEH_TensioningForces(os)
-					tf = NOBN_ocs_getTensioningStandardValues(os)
-					if os == "Unknown" then 
-						return "?/? kN (UNFINISHED - unknown OcsSystem)."
-					elseif Variant:match("Fix") then 
+				function _JBTEH_AEH_TensioningForces()
+					if OcsSystem == "Unknown" then return "?/? kN (UNFINISHED - unknown OcsSystem)." end
+					tf = NOBN_ocs_getTensioningStandardValues(OcsSystem)
+					if Variant:match("enkel") then 
 						return tf.awtf.." kN (fix)"
 					else
 						if Variant:match("Fjær") or Variant:match("Fast") or Variant:match("Lodd") then
@@ -2198,7 +2240,6 @@
 						end
 					end
 					return _info("Bad tensioning device variant ["..Variant.."].")
-				end
 			</Formula>
 		</LuaFunction>
 
@@ -2332,14 +2373,11 @@
 					if n == 0 then
 						return "UNFINISHED - Relate midpoint anchor to its cantilever with '"..s.."'."
 					elseif n == 1 then
-							return r[0].DistanceToAlignment - r[0].CantileverLength,_info("Distance to alignment was deduced from related cantilever '"..r[0].code.."'.")
-						else
-							return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
-						end
-						return r[0].code
+						return r[0].Stagger,_info("Distance to alignment was copied from related cantilever's stagger '"..r[0].code.."'.")
 					else
-						return 
+						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
 					end
+
 				end
 			</Formula>
 		</LuaFunction>

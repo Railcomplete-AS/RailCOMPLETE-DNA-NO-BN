@@ -249,7 +249,7 @@
 					refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
 					if getObjectFromId(refId).RcType ~= "JBTKO_SPO Spor" then
 						return _warning, (getObjectFromId(refId).name or getObjectFromId(refId).code or ""),
-							_info("Referansesporet "..RC__identify(getObjectFromId(refId)).." som er angitt i linjeobjektets startpunkt må ha RcType 'JBTKO_SPO Spor'.")
+							_info("Referansesporet "..RC__getNameOrCodeorId(getObjectFromId(refId)).." som er angitt i linjeobjektets startpunkt må ha RcType 'JBTKO_SPO Spor'.")
 					else
 						if refId == this.id then
 							return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId).." (self)"
@@ -269,7 +269,7 @@
 					refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
 					if getObjectFromId(refId).RcType ~= "JBTKO_SPO Spor" then
 						return _warning, refId.." / "..(getObjectFromId(refId).name or getObjectFromId(refId).code or ""),
-							_info("Punktobjektets referansespor "..RC__identify(getObjectFromId(refId)).." må ha RcType 'JBTKO_SPO Spor'.")
+							_info("Punktobjektets referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId)).." må ha RcType 'JBTKO_SPO Spor'.")
 					else
 						return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId)
 					end
@@ -298,10 +298,10 @@
 					ai = getAlignmentInfo(refId,x,y)
 					if ai.NormalProjectionExists then
 						return string.format("%.03f",ai.Mileage/1000,3), 
-							_info("Ref. "..RC__identify(getObjectFromId(refId)))
+							_info("Ref. "..RC__getNameOrCodeorId(getObjectFromId(refId)))
 					else
 						return _warning, "Ukjent",
-							_info("Linjeobjektets startpunkt har ikke en projeksjon på referansespor "..RC__identify(getObjectFromId(refId))..", kan ikke utlede Km.")
+							_info("Linjeobjektets startpunkt har ikke en projeksjon på referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId))..", kan ikke utlede Km.")
 					end
 
 				elseif Alignment then 
@@ -316,10 +316,10 @@
 					ai = getAlignmentInfo(refId,x,y)
 					if ai.NormalProjectionExists then
 						return string.format("%.03f",ai.Mileage/1000,3), 
-							_info("Ref. "..RC__identify(getObjectFromId(refId)))
+							_info("Ref. "..RC__getNameOrCodeorId(getObjectFromId(refId)))
 					else
 						return _warning, "Ukjent",
-							_info("Punktobjektet har ikke en projeksjon på referansespor "..RC__identify(getObjectFromId(refId))..", kan ikke utlede Km.")
+							_info("Punktobjektet har ikke en projeksjon på referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId))..", kan ikke utlede Km.")
 					end
 
 				else
@@ -348,10 +348,10 @@
 					if ai.NormalProjectionExists then
 						d = ai.DistanceToAlignment
 						t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
-						return t, _info(t.." i forhold til referansespor "..RC__identify(getObjectFromId(refId))..".")
+						return t, _info(t.." i forhold til referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId))..".")
 					else
 						return _warning, "Ukjent",
-							_info("Linjeobjektets startpunkt har ikke en projeksjon på referansespor "..RC__identify(getObjectFromId(refId))..", kan ikke utlede side av spor.")
+							_info("Linjeobjektets startpunkt har ikke en projeksjon på referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId))..", kan ikke utlede side av spor.")
 					end
 				elseif Alignment then 
 					--Punktobjekt som tilhører en linje:
@@ -365,7 +365,7 @@
 						--Punktobjekt som tilhører et jernbanespor:
 						d = getAlignmentInfo(Alignment.id,x,y).DistanceToAlignment
 						t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
-						return t, _info(t.." i forhold til eget spor "..RC__identify(Alignment))
+						return t, _info(t.." i forhold til eget spor "..RC__getNameOrCodeorId(Alignment))
 					else
 						--Punktobjekt som tilhører en linje som ikke er et jernbanespor:
 						refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
@@ -373,10 +373,10 @@
 						if ai.NormalProjectionExists then
 							d = ai.DistanceToAlignment
 							t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
-							return t, _info(t.." i forhold til referansespor "..RC__identify(getObjectFromId(refId))..".")
+							return t, _info(t.." i forhold til referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId))..".")
 						else
 							return _warning, "Ukjent",
-								_info("Punktobjektet har ikke en projeksjon på referansespor "..RC__identify(getObjectFromId(refId))..", kan ikke utlede side av spor.")
+								_info("Punktobjektet har ikke en projeksjon på referansespor "..RC__getNameOrCodeorId(getObjectFromId(refId))..", kan ikke utlede side av spor.")
 						end
 					end
 				else
@@ -446,11 +446,11 @@
 			function NOBN_com_Pset_FDVBaneDataSporNrFra()
 				if RcAlignment and RcType == "JBTKO_SPO Spor" then 
 					--Linjeobjekt av type jernbanespor:
-					return RC__identify(this)
+					return RC__getNameOrCodeorId(this)
 
 				elseif Alignment and Alignment.RcType == "JBTKO_SPO Spor" then 
 					--Punktobjekt i jernbanespor:
-					return RC__identify(Alignment)
+					return RC__getNameOrCodeorId(Alignment)
 					
 				else
 					--Ingen direkte angivelse av sportilhørighet:
@@ -469,7 +469,7 @@
 					for i = 0,n-1 do
 						ai = getAlignmentInfo(t[i].id,x,y)
 						if ai.NormalProjectionExists then  
-							return RC__identify(t[i])
+							return RC__getNameOrCodeorId(t[i])
 						end
 					end
 					--Fant ingen spor vi kunne projisere oss inn på:
@@ -492,11 +492,11 @@
 			function NOBN_com_Pset_FDVBaneDataAvstSpormidtFra()
 				if RcAlignment and RcType == "JBTKO_SPO Spor" then 
 					--Linjeobjekt av type jernbanespor:
-					return string.format("%.03f",0.000), _info("Null avstand til seg selv, spor "..RC__identify(this))
+					return string.format("%.03f",0.000), _info("Null avstand til seg selv, spor "..RC__getNameOrCodeorId(this))
 
 				elseif Alignment and Alignment.RcType == "JBTKO_SPO Spor" then 
 					--Punktobjekt i jernbanespor:
-					return string.format("%.03f",RC__round(DistanceToAlignment)), _info("Avstand til spor "..RC__identify(Alignment))
+					return string.format("%.03f",RC__getRounded(DistanceToAlignment)), _info("Avstand til spor "..RC__getNameOrCodeorId(Alignment))
 					
 				else
 					--Ingen direkte angivelse av sportilhørighet:
@@ -515,7 +515,7 @@
 					for i = 0,n-1 do
 						ai = getAlignmentInfo(t[i].id,x,y)
 						if ai.NormalProjectionExists then  
-							return string.format("%.03f",RC__round(ai.DistanceToAlignment)), _info("Avstand til spor "..RC__identify(t[i]))
+							return string.format("%.03f",RC__getRounded(ai.DistanceToAlignment)), _info("Avstand til spor "..RC__getNameOrCodeorId(t[i]))
 						end
 					end
 					--Fant ingen spor vi kunne projisere oss inn på:
@@ -538,7 +538,7 @@
 			function NOBN_com_FDVBaneDataNordFra()
 				if RcAlignment then
 					--Alignment object:
-					return RC__round(RcAlignment.StartPoint.Y,3), _info("Nord (Y) i kartprojeksjon "..DocumentData.CoordinateSystem)
+					return RC__getRounded(RcAlignment.StartPoint.Y,3), _info("Nord (Y) i kartprojeksjon "..DocumentData.CoordinateSystem)
 				else
 					--Point object:
 					return string.format("%.3f",geoCoord.Y), _info("Nord (Y) i kartprojeksjon "..DocumentData.CoordinateSystem)
@@ -556,7 +556,7 @@
 			function NOBN_com_FDVBaneDataOestFra()
 				if RcAlignment then
 					--Alignment object:
-					return RC__round(RcAlignment.StartPoint.X,3), _info("Øst (X) i kartprojeksjon "..DocumentData.CoordinateSystem)
+					return RC__getRounded(RcAlignment.StartPoint.X,3), _info("Øst (X) i kartprojeksjon "..DocumentData.CoordinateSystem)
 				else
 					--Point object:
 					return string.format("%.3f",geoCoord.X), _info("Øst (X) i kartprojeksjon "..DocumentData.CoordinateSystem)
@@ -574,7 +574,7 @@
 			function NOBN_com_FDVBaneDataHoeydeFra()
 				if RcAlignment then
 					--Alignment object:
-					return RC__round(RcAlignment.StartPoint.Z,3), _info("Høyde over midlere havnivå (Z) i vertikalt datum "..DocumentData.CoordinateSystem)
+					return RC__getRounded(RcAlignment.StartPoint.Z,3), _info("Høyde over midlere havnivå (Z) i vertikalt datum "..DocumentData.CoordinateSystem)
 				else
 					--Point object:
 					return string.format("%.3f",geoCoord.Z), _info("Høyde over midlere havnivå (Z) i vertikalt datum "..DocumentData.CoordinateSystem)
