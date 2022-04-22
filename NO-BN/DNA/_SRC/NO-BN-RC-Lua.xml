@@ -54,12 +54,12 @@
 
 
 
-	<LuaFunction Name="RC__getTextAttributeAcsPosition()" ReturnType="Vector2D" 
+	<LuaFunction Name="RC__getTextAttributePositionWcsFromAcs()" ReturnType="Vector2D" 
 			HideFromUser="false"
 			Description="Returns a World Coordinate System offset vector in the current drawing scale for a text attribute. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and the acsY = longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000)." >
-		<Constructor>{Double,Double} RC__getTextAttributeAcsPosition(Double lateralOffset, Double longitudinalOffset)</Constructor>
+		<Constructor>{Double,Double} RC__getTextAttributePositionWcsFromAcs(Double lateralOffset, Double longitudinalOffset)</Constructor>
 		<Formula>
-			function RC__getTextAttributeAcsPosition(lateralOffset,longitudinalOffset)
+			function RC__getTextAttributePositionWcsFromAcs(lateralOffset,longitudinalOffset)
 				scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
 				lateralOffset = (lateralOffset or 5)/scale
 				longitudinalOffset = (longitudinalOffset or 0)/scale
@@ -445,11 +445,11 @@
 
 
 
-	<LuaFunction Name="RC__getRound()" ReturnType="String"
+	<LuaFunction Name="RC__getRounded()" ReturnType="String"
 		Description="Rounds floating point input x to p [-6..6] decimal places. Default precision is 0 decimals." >
-		<Constructor>Double RC__getRound(Double x [, Int p])</Constructor>
+		<Constructor>Double RC__getRounded(Double x [, Int p])</Constructor>
 		<Formula>
-			function RC__getRound(x,p) 
+			function RC__getRounded(x,p) 
 				if math.abs(x) == math.huge then return x end --plus/minus Inf
 				if p == nil then p = 0 end
 				p = math.floor(p)
@@ -476,11 +476,11 @@
 
   
   
-	<LuaFunction Name="RC__getSnap()" ReturnType="String"
+	<LuaFunction Name="RC__getSnapped()" ReturnType="String"
 		Description="Returns nearest multiple of step size. Default step size is 3. E.g., '4.51' => '6' and '-7.49' => '-6'." >
-		<Constructor>Double RC__getSnap(Double x [, Double stepSize])</Constructor>
+		<Constructor>Double RC__getSnapped(Double x [, Double stepSize])</Constructor>
 		<Formula>
-			function RC__getSnap(x,stepSize) 
+			function RC__getSnapped(x,stepSize) 
 				if stepSize == nil then 
 					if x == nil then
 						return 0,_warning
@@ -557,7 +557,7 @@
 	</LuaFunction>
 
 	
-	
+	<!-- TODO 2022-04-21 CLFEY Deprecate this one - use table.sort() from standard Lua instead. -->
 	<LuaFunction Name="RC__sortTable()" ReturnType="Table"
 		Description="Returns a sorted table (indexed 1,2,...)." >
 		<Constructor>table RC__sortTable(table t)</Constructor>
@@ -586,35 +586,6 @@
 				end
 				return v
 			end 
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC__toKm()" ReturnType="String"
-		Description="Converts input x [m] into mileage [km] with precision p (0..6), default precision is 3. E.g., 462371.637 => 462.372." >
-		<Constructor>Double RC__toKm(Double x [, Int p])</Constructor>
-		<Formula>
-			function RC__toKm(x,p) 
-				if p == nil then 
-					if x == nil then
-						return 0.0,_warning
-					else
-						p = 3
-					end
-				end
-				p = math.floor(math.abs(p))
-				if p &lt; 0 or p &gt; 6 then
-					return "Precision ["..p.."] must be from 0 to 6, cannot format value ["..x.."]",_warning
-				elseif p == 0 then return string.format("%.0f",math.floor((x+0.5*1e3)*1e-3)/1e0)
-				elseif p == 1 then return string.format("%.1f",math.floor((x+0.5*1e2)*1e-2)/1e1)
-				elseif p == 2 then return string.format("%.2f",math.floor((x+0.5*1e1)*1e-1)/1e2) 
-				elseif p == 3 then return string.format("%.3f",math.floor((x+0.5*1e0)*1e0)/1e3)
-				elseif p == 4 then return string.format("%.4f",math.floor((x+0.5*1e-1)*1e1)/1e4) 
-				elseif p == 5 then return string.format("%.5f",math.floor((x+0.5*1e-2)*1e2)/1e5) 
-				elseif p == 6 then return string.format("%.6f",math.floor((x+0.5*1e-3)*1e3)/1e6) 
-				end
-			end
 		</Formula>
 	</LuaFunction>
 
@@ -701,127 +672,11 @@
 
 
 	
-<!--========================================================================================================
-    RC common Lua, general but still railway-specific issues, present in any railway administration
-	NB! These Lua functions shall not rely on RailCOMPLETE custom-specific attributes, only inherent ones.
-=========================================================================================================-->
-	<LuaFunction Name="RC_com_getNearestEntireKm()" ReturnType="String"
-		Description="Returns object's reference mileage's whole km when also half km is to be shown, e.g., 461.749 => 461 (half km is 5) and 461.750 => 462 (half km is 0)." >
-		<Constructor>Int RC_com_getNearestEntireKm([RailwayPlacedObject obj])</Constructor>
-		<Formula>
-			function RC_com_getNearestEntireKm(obj)
-				obj = obj or this
-				return math.floor(math.floor((obj:getPropertyValue("ReferenceMileage")/500)+.5)/2)
-			end
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC_com_getNearestEntireKm2()" ReturnType="String"
-		Description="Returns object's reference mileage's whole km when the half km is not to be shown, e.g., 461.499 => 461 and 461.500 => 462." >
-		<Constructor>Int RC_com_getNearestEntireKm2([RailwayPlacedObject obj])</Constructor>
-		<Formula>
-			function RC_com_getNearestEntireKm2(obj)
-				obj = obj or this
-				return math.floor(math.floor(obj:getPropertyValue("ReferenceMileage")/1000 + 0.5))
-			end
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC_com_getNearestHalfKm()" ReturnType="String"
-		Description="Returns object's reference mileage's half km (0 or 5), e.g., 461.750 => 0 (whole km is 461) and 462.372 => 5 (whole km is 462)." >
-		<Constructor>Int RC_com_getNearestHalfKm([RailwayPlacedObject obj])</Constructor>
-		<Formula>
-			function RC_com_getNearestHalfKm(obj)
-				obj = obj or this
-				return (math.floor((obj.ReferenceMileage/500)+0.5)%2)*5
-			end
-		</Formula>
-	</LuaFunction>
-	
-	
-	
-	<LuaFunction Name="RC_com_getNearestHectometricSnap()" ReturnType="String"
-		Description="Returns object's reference mileage's nearest whole hectometer." >
-		<Constructor>Int RC_com_getNearestHectometricSnap([RailwayPlacedObject obj])</Constructor>
-		<Formula>
-			function RC_com_getNearestHectometricSnap(obj)
-				obj = obj or this
-				return 100 * ((50 + obj:getPropertyValue("ReferenceMileage")) // 100)
-			end
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC_com_getNearestKilometricSnap()" ReturnType="String"
-		Description="Returns object's reference mileage's nearest whole kilometer." >
-		<Constructor>Int RC_com_getNearestKilometricSnap([RailwayPlacedObject obj])</Constructor>
-		<Formula>
-			function RC_com_getNearestKilometricSnap(obj)
-				obj = obj or this
-				return 1000 * ((500 + obj:getPropertyValue("ReferenceMileage")) // 1000)
-			end
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC_com_getLabelItem1()" ReturnType="String"
-		Description="Returns the ReferenceMileage, formated as Km.&lt;value&gt;, for the label's own insertion point." >
-		<Constructor>String RC_com_getLabelItem1()</Constructor>
-		<Formula>
-			function RC_com_getLabelItem1()
-				return "Km."..RC__toKm(referenceMileage,3)
-			end
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC_com_getLabelItem2()" ReturnType="String"
-		Description="Returns a list consisting of the Code for each item related to the label (labels can relate to anything)." >
-		<Constructor>String RC_com_getLabelItem2()</Constructor>
-		<Formula>
-			function RC_com_getLabelItem2()
-				local r,n,s,i
-				s = "Er etikett for anything"
-				r,n = RC__getCollectionOfRelatedObjects(s)
-				if n == 0 then 
-					return "UNFINISHED - Relate with '"..s.."'."
-				else
-					t = "("..r[0].code
-					for i = 1, n-1 do
-						t = t..", "..r[i].code
-					end
-					return t..")"
-				end
-			end
-		</Formula>
-	</LuaFunction>
-
-	
-	
-	<LuaFunction Name="RC_com_getLabelItem3()" ReturnType="String"
-		Description="Returns the reference alignment Code for the label itself (not for a related item)." >
-		<Constructor>String RC_com_getLabelItem3()</Constructor>
-		<Formula>
-			function RC_com_getLabelItem3()
-				return "(Ref. "..referenceAlignment.code..")"
-			end
-		</Formula>
-	</LuaFunction>
-
-
-
-    <LuaFunction Name="RC_com_getAreasOfVariant()" ReturnType="Collection of RcArea"
+   <LuaFunction Name="RC__getAreasOfVariant()" ReturnType="Collection of RcArea"
 		Description="Returns a count and a collection of visible areas of the given variant, enclosing the object." >
-        <Constructor>Int, Collection of RcArea RC_com_getAreasOfVariant(String areaVariantName [, String guidString])</Constructor>
+        <Constructor>Int, Collection of RcArea RC__getAreasOfVariant(String areaVariantName [, String guidString])</Constructor>
         <Formula>
-			function RC_com_getAreasOfVariant(areaVariantName, guidString)
+			function RC__getAreasOfVariant(areaVariantName, guidString)
 				local obj = guidString and getObjectFromId(guidString) or this
 				local areas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:match(areaVariantName) end)
 				return areas.count,areas
@@ -831,6 +686,10 @@
 
 
 
+<!--========================================================================================================
+    RC common Lua, general but still railway-specific issues, present in any railway administration
+	NB! These Lua functions shall not rely on RailCOMPLETE custom-specific attributes, only inherent ones.
+=========================================================================================================-->
 <!--========================================================================================================
 	The old railML property 'ocpStationRef' has been set to Browsable = false in C#, to HIDE IT from users.
 	Do NOT try to assign values to it (this is possible even if it does not show up in RC-ManageProperties).
