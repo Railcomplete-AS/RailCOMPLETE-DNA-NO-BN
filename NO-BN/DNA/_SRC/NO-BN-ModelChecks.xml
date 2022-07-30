@@ -115,8 +115,7 @@
 					if TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 					elseif TargetAlignment and Alignment.id == TargetAlignment.id then 
-						return "-: OK - This object type accepts that target alignment is same as own 
-						alignment.",_ok
+						return "-: OK - This object type accepts that target alignment is same as own alignment.",_ok
 					else
 						if ExtendingFromEnd then 
 							p1 = Alignment.RcAlignment.EndPoint
@@ -460,7 +459,7 @@
 				elseif (math.abs(delta) &lt; tol) then
 					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": WARNING – Gradients match, but close to tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_warning
 				else 
-					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": ERROR – Gradients are too different, outside tolerance +/- " .. string.format("%.03f", tol).." o/oo",_error
+					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": ERROR – Gradients are too different, outside tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_error
 				end
 			end
 		</Formula>
@@ -579,141 +578,141 @@
 		Description="Checks the cant (superelevation) continuity through the connection." >
 		<Constructor>NOBN_trk_chkConnectionGradientAndCantMatch(callingProperty)</Constructor>
 		<Formula>
-function NOBN_trk_chkConnectionGradientAndCantMatch(CallingProperty)
-	-- 'CallingProperty' ["Var0" | "Var1"] identifies the intended custom property where the result is to be returned (since this function does not know otherwise who is calling)
-	tol = 0.300  -- Decimal degrees
-	msg = "" -- to be returned with _info(msg)
-	if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-	--Drop distance2D check here - is covered in other test:
-	--if math.abs(DistanceToAlignment) &gt; 2e-3 then return string.format("%.03f",DistanceToAlignment)..
-	--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
-	if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-	if RcType == "JBTKO_SPV Sporkryss" then
-		if not getAlignmentInfo().NormalProjectionExists then
-			return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
-		end
-		if not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
-			return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
-		end
-		-- Get info about the projections of the Crossing onto its own / its target alignment
-		a1 = getAlignmentInfo() --own alignment
-		a2 = getAlignmentInfo(TargetAlignment.id) --target alignment
-
-		-- Crossing's projection onto own and target alignments [3D vector {X,Y,Z}]:
-		p1 = a1.Point						
-		p2 = a2.Point
-		
-		-- Alignments' tangential, normalized, vectors at projection points [3D vector {X,Y,Z}]:
-		t1 = getAlignmentInfo().Tangent
-		t2 = getAlignmentInfo(TargetAlignment.id).Tangent
-		if t1 == nil or t2 == nil then return "UNFINISHED - Missing elevation data, cannot compute normal vector(s)." end
-
-		-- Alignment direction phi wrt WCS East [rad]:
-		phi1 = math.atan(a1.Tangent.y,a1.Tangent.x)
-		phi2 = math.atan(a2.Tangent.y,a2.Tangent.x)
-		
-		-- JigSymbolAppearance angle rho ("rholl"...) theta (zenith angles) due to cant [rad] (roll with cant):
-		h1 = a1.Cant/1000.0
-		h2 = a2.Cant/1000.0
-		if RC__isNan(h1) and RC__isNan(h2) then 
-			msg = "UNFINISHED -  Missing cant data in both alignments, assuming zero cant."
-		elseif RC__isNan(h1) then 
-			msg = "UNFINISHED -  Missing cant data in own alignment, assuming zero cant."
-		elseif RC__isNan(h2) then 
-			msg = "UNFINISHED -  Missing cant data in crossing (target) alignment, assuming zero cant."
-		end
-		-- 'this' is a point object:
-		cg = Alignment.AlignmentSystem.CantGauge
-		tcg = TargetAlignment.AlignmentSystem.CantGauge
-		if tcg ~= cg then return ": ERROR - cant gauges are not identical in the two alignments: "..string.format("%.3f / %.3f",cg,tcg),_error end 
-		if RC__isNan(h1) then 
-			h1 = 0.0
-			rho1 = 0.0
-		else
-			rho1 = math.asin((a1.CantRotation=="CCW" and h1 or -h1) / cg) 
-		end
-		if RC__isNan(h2) then
-			h2 = 0.0
-			rho2 = 0.0
-		else
-			rho2 = math.asin((a2.CantRotation=="CCW" and h2 or -h2) / cg) 
-		end
-		
-		-- Rotation angle theta ('thilt'...) around the Alignment Coordinate System Y-axis (perp to track direction), Z pointing straight up (pitch with gradient)
-		theta1 = math.atan(t1.z,math.sqrt(t1.x^2+t1.y^2)) 
-		theta2 = math.atan(t2.z,math.sqrt(t2.x^2+t2.y^2)) 
-
-		--Start with normal vector (0,0,1)
-		n = {x="0.0",y="0.0",z="1.0"}
-
-		--Then, apply zenith angle rho (roll) in the coordinate system where the 'x' axis points along the track direction:
-		u1 = {x="0.0",y="0.0",z="0.0"}
-		u1.x = 0.0
-		u1.y = math.cos(rho1)*n.y - math.sin(rho1)*n.z
-		u1.z = math.sin(rho1)*n.y + math.cos(rho1)*n.z
-
-		u2 = {x="0.0",y="0.0",z="0.0"}
-		u2.x = 0.0
-		u2.y = math.cos(rho2)*n.y - math.sin(rho2)*n.z
-		u2.z = math.sin(rho2)*n.y + math.cos(rho2)*n.z
-
-		--Then, pitch the rolled normal vector with theta (tilt) around the second axis in the same axis system (perpendicular to the track direction):
-		v1 = {x="0.0",y="0.0",z="0.0"}
-		v1.x = math.cos(theta1)*u1.x - math.sin(theta1)*u1.z
-		v1.y = u1.y
-		v1.z = math.sin(theta1)*u1.x + math.cos(theta1)*u1.z
-	
-		v2 = {x="0.0",y="0.0",z="0.0"}
-		v2.x = math.cos(theta2)*u2.x - math.sin(theta2)*u2.z
-		v2.y = u2.y
-		v2.z = math.sin(theta2)*u2.x + math.cos(theta2)*u2.z
+			function NOBN_trk_chkConnectionGradientAndCantMatch(CallingProperty)
+				-- 'CallingProperty' ["Var0" | "Var1"] identifies the intended custom property where the result is to be returned (since this function does not know otherwise who is calling)
+				tol = 0.300  -- Decimal degrees
+				msg = "" -- to be returned with _info(msg)
+				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				--Drop distance2D check here - is covered in other test:
+				--if math.abs(DistanceToAlignment) &gt; 2e-3 then return string.format("%.03f",DistanceToAlignment)..
+				--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
+				if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if RcType == "JBTKO_SPV Sporkryss" then
+					if not getAlignmentInfo().NormalProjectionExists then
+						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+					end
+					if not getAlignmentInfo(TargetAlignment.id).NormalProjectionExists then
+						return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
+					end
+					-- Get info about the projections of the Crossing onto its own / its target alignment
+					a1 = getAlignmentInfo() --own alignment
+					a2 = getAlignmentInfo(TargetAlignment.id) --target alignment
 			
-		--Finally, express vectors in WCS coordinates, i.e rotate by phi (the forward direction in the WCS XY plane) around the WCS Z axis:
-		w1 = {x="0.0",y="0.0",z="0.0"}
-		w1.x = math.cos(phi1)*v1.x - math.sin(phi1)*v1.y
-		w1.y = math.sin(phi1)*v1.x + math.cos(phi1)*v1.y 
-		w1.z = v1.z 
-	
-		w2 = {x="0.0",y="0.0",z="0.0"}
-		w2.x = math.cos(phi2)*v2.x - math.sin(phi2)*v2.y 
-		w2.y = math.sin(phi2)*v2.x + math.cos(phi2)*v2.y 
-		w2.z = v2.z
-	
-		--Assert normalized vectors:
-		d1 = math.sqrt(w1.x^2+w1.y^2+w1.z^2)
-		if math.abs(d1-1.000) > 4e-4 then return RC__getRounded(d1,3)..": ERROR - w1 not unit vector.",_error end 
-		d2 = math.sqrt(w2.x^2+w2.y^2+w2.z^2)
-		if math.abs(d2-1.000) > 4e-4 then return RC__getRounded(d2,3)..": ERROR - w2 not unit vector.",_error end 
-		
-		--Find 3D angle between normal vectors (knowing that cos(delta) = (w1.w2)/(|w1|*|w2|) - and both vectors are already of length 1. 
-		delta = math.acos(w1.x*w2.x + w1.y*w2.y + w1.z*w2.z) * 180/math.pi 
-
-		if (CallingProperty == "Var1") then
-			return string.format("delta= %.04f",delta)
-			..string.format(", rho= %.04f / %.04f",rho1*180/math.pi,rho2*180/math.pi)
-			..string.format(", theta= %.04f / %.04f",theta1*180/math.pi,theta2*180/math.pi)
-			..string.format(", phi= %.04f / %.04f",phi1*180/math.pi,phi2*180/math.pi)
-		end
-
-		if (CallingProperty == "Var2") then
-			return string.format("N=(%.04f,%.04f,%.04f) / (%.04f,%.04f,%.04f)",
-			-math.cos(phi1)*math.sin(theta1)*math.cos(rho1) + math.sin(phi1)*math.sin(rho1),
-			-math.sin(phi1)*math.sin(theta1)*math.cos(rho1) - math.cos(phi1)*math.sin(rho1),
-			math.cos(theta1)*math.cos(rho1),
-			-math.cos(phi2)*math.sin(theta2)*math.cos(rho2) + math.sin(phi2)*math.sin(rho2),
-			-math.sin(phi2)*math.sin(theta2)*math.cos(rho2) - math.cos(phi2)*math.sin(rho2),
-			math.cos(theta2)*math.cos(rho2)
-			)
-		end
-		
-	else 
-		return RcType..": ERROR - Bad connection object type",_error, _info(msg)
-	end
-
-	if (math.abs(delta) &lt; tol / 2.0) then return string.format("%.03f",delta) .. ": OK - Normal vectors match within 50% of tolerance +/- " .. string.format("%.03f",tol).." degrees.",_ok, _info(msg)
-	elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Normal vectors match, but close to tolerance +/- " .. string.format("%.03f",tol).." degrees.",_warning, _info(msg)
-	else return string.format("%.03f",delta) .. ": ERROR – Normal vectors are too different, outside tolerance +/- " .. string.format("%.03f",tol).." degrees.",_error, _info(msg) end
-end		
+					-- Crossing's projection onto own and target alignments [3D vector {X,Y,Z}]:
+					p1 = a1.Point						
+					p2 = a2.Point
+					
+					-- Alignments' tangential, normalized, vectors at projection points [3D vector {X,Y,Z}]:
+					t1 = getAlignmentInfo().Tangent
+					t2 = getAlignmentInfo(TargetAlignment.id).Tangent
+					if t1 == nil or t2 == nil then return "UNFINISHED - Missing elevation data, cannot compute normal vector(s)." end
+			
+					-- Alignment direction phi wrt WCS East [rad]:
+					phi1 = math.atan(a1.Tangent.y,a1.Tangent.x)
+					phi2 = math.atan(a2.Tangent.y,a2.Tangent.x)
+					
+					-- JigSymbolAppearance angle rho ("rholl"...) theta (zenith angles) due to cant [rad] (roll with cant):
+					h1 = a1.Cant/1000.0
+					h2 = a2.Cant/1000.0
+					if RC__isNan(h1) and RC__isNan(h2) then 
+						msg = "UNFINISHED -  Missing cant data in both alignments, assuming zero cant."
+					elseif RC__isNan(h1) then 
+						msg = "UNFINISHED -  Missing cant data in own alignment, assuming zero cant."
+					elseif RC__isNan(h2) then 
+						msg = "UNFINISHED -  Missing cant data in crossing (target) alignment, assuming zero cant."
+					end
+					-- 'this' is a point object:
+					cg = Alignment.AlignmentSystem.CantGauge
+					tcg = TargetAlignment.AlignmentSystem.CantGauge
+					if tcg ~= cg then return ": ERROR - cant gauges are not identical in the two alignments: "..string.format("%.3f / %.3f",cg,tcg),_error end 
+					if RC__isNan(h1) then 
+						h1 = 0.0
+						rho1 = 0.0
+					else
+						rho1 = math.asin((a1.CantRotation=="CCW" and h1 or -h1) / cg) 
+					end
+					if RC__isNan(h2) then
+						h2 = 0.0
+						rho2 = 0.0
+					else
+						rho2 = math.asin((a2.CantRotation=="CCW" and h2 or -h2) / cg) 
+					end
+					
+					-- Rotation angle theta ('thilt'...) around the Alignment Coordinate System Y-axis (perp to track direction), Z pointing straight up (pitch with gradient)
+					theta1 = math.atan(t1.z,math.sqrt(t1.x^2+t1.y^2)) 
+					theta2 = math.atan(t2.z,math.sqrt(t2.x^2+t2.y^2)) 
+			
+					--Start with normal vector (0,0,1)
+					n = {x="0.0",y="0.0",z="1.0"}
+			
+					--Then, apply zenith angle rho (roll) in the coordinate system where the 'x' axis points along the track direction:
+					u1 = {x="0.0",y="0.0",z="0.0"}
+					u1.x = 0.0
+					u1.y = math.cos(rho1)*n.y - math.sin(rho1)*n.z
+					u1.z = math.sin(rho1)*n.y + math.cos(rho1)*n.z
+			
+					u2 = {x="0.0",y="0.0",z="0.0"}
+					u2.x = 0.0
+					u2.y = math.cos(rho2)*n.y - math.sin(rho2)*n.z
+					u2.z = math.sin(rho2)*n.y + math.cos(rho2)*n.z
+			
+					--Then, pitch the rolled normal vector with theta (tilt) around the second axis in the same axis system (perpendicular to the track direction):
+					v1 = {x="0.0",y="0.0",z="0.0"}
+					v1.x = math.cos(theta1)*u1.x - math.sin(theta1)*u1.z
+					v1.y = u1.y
+					v1.z = math.sin(theta1)*u1.x + math.cos(theta1)*u1.z
+				
+					v2 = {x="0.0",y="0.0",z="0.0"}
+					v2.x = math.cos(theta2)*u2.x - math.sin(theta2)*u2.z
+					v2.y = u2.y
+					v2.z = math.sin(theta2)*u2.x + math.cos(theta2)*u2.z
+						
+					--Finally, express vectors in WCS coordinates, i.e rotate by phi (the forward direction in the WCS XY plane) around the WCS Z axis:
+					w1 = {x="0.0",y="0.0",z="0.0"}
+					w1.x = math.cos(phi1)*v1.x - math.sin(phi1)*v1.y
+					w1.y = math.sin(phi1)*v1.x + math.cos(phi1)*v1.y 
+					w1.z = v1.z 
+				
+					w2 = {x="0.0",y="0.0",z="0.0"}
+					w2.x = math.cos(phi2)*v2.x - math.sin(phi2)*v2.y 
+					w2.y = math.sin(phi2)*v2.x + math.cos(phi2)*v2.y 
+					w2.z = v2.z
+				
+					--Assert normalized vectors:
+					d1 = math.sqrt(w1.x^2+w1.y^2+w1.z^2)
+					if math.abs(d1-1.000) > 4e-4 then return RC__getRounded(d1,3)..": ERROR - w1 not unit vector.",_error end 
+					d2 = math.sqrt(w2.x^2+w2.y^2+w2.z^2)
+					if math.abs(d2-1.000) > 4e-4 then return RC__getRounded(d2,3)..": ERROR - w2 not unit vector.",_error end 
+					
+					--Find 3D angle between normal vectors (knowing that cos(delta) = (w1.w2)/(|w1|*|w2|) - and both vectors are already of length 1. 
+					delta = math.acos(w1.x*w2.x + w1.y*w2.y + w1.z*w2.z) * 180/math.pi 
+			
+					if (CallingProperty == "Var1") then
+						return string.format("delta= %.04f",delta)
+						..string.format(", rho= %.04f / %.04f",rho1*180/math.pi,rho2*180/math.pi)
+						..string.format(", theta= %.04f / %.04f",theta1*180/math.pi,theta2*180/math.pi)
+						..string.format(", phi= %.04f / %.04f",phi1*180/math.pi,phi2*180/math.pi)
+					end
+			
+					if (CallingProperty == "Var2") then
+						return string.format("N=(%.04f,%.04f,%.04f) / (%.04f,%.04f,%.04f)",
+						-math.cos(phi1)*math.sin(theta1)*math.cos(rho1) + math.sin(phi1)*math.sin(rho1),
+						-math.sin(phi1)*math.sin(theta1)*math.cos(rho1) - math.cos(phi1)*math.sin(rho1),
+						math.cos(theta1)*math.cos(rho1),
+						-math.cos(phi2)*math.sin(theta2)*math.cos(rho2) + math.sin(phi2)*math.sin(rho2),
+						-math.sin(phi2)*math.sin(theta2)*math.cos(rho2) - math.cos(phi2)*math.sin(rho2),
+						math.cos(theta2)*math.cos(rho2)
+						)
+					end
+					
+				else 
+					return RcType..": ERROR - Bad connection object type",_error, _info(msg)
+				end
+			
+				if (math.abs(delta) &lt; tol / 2.0) then return string.format("%.03f",delta) .. ": OK - Normal vectors match within 50% of tolerance +/- " .. string.format("%.03f",tol).." degrees.",_ok, _info(msg)
+				elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Normal vectors match, but close to tolerance +/- " .. string.format("%.03f",tol).." degrees.",_warning, _info(msg)
+				else return string.format("%.03f",delta) .. ": ERROR – Normal vectors are too different, outside tolerance +/- " .. string.format("%.03f",tol).." degrees.",_error, _info(msg) end
+			end		
 		</Formula>
 	</LuaFunction>
 
