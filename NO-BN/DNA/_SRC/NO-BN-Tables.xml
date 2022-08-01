@@ -3046,6 +3046,958 @@ end</Data>
 			</TableSpecification>
 		</InsertTable>
 
+
+		
+		<InsertTable VariantName="Kontaktledningsmaster" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-TABELL-Schematic" >
+			<TableSpecification>
+  <Title>Kontaktledningsmaster</Title>
+  <IncludeTitle>true</IncludeTitle>
+  <ColumnSelectionSelf>true</ColumnSelectionSelf>
+  <ColumnSelectionFromMasterTable>false</ColumnSelectionFromMasterTable>
+  <LuaPreviewAutoExecute>false</LuaPreviewAutoExecute>
+  <LuaPreviewRowSelectionSearchFilter />
+  <ShowInvisibleObjects>false</ShowInvisibleObjects>
+  <ObjectManagerFilterList />
+  <ObjectTypeBrowser>false</ObjectTypeBrowser>
+  <EnableLuaFilter>false</EnableLuaFilter>
+  <LuaFilter>--[[
+	Tabell for kontaktledningsmaster
+	--------------------------------
+	Catenary OCS pole table
+	
+	2022-05-10_003 CLFEY Created (based on earlier version).
+	2022-06-07_004 CLFEY Removed the fixpoint from the collection of WTBs, if present
+	2022-06-08_005 CLFEY Added power interrupters to the comment field. NB each interrupter must be
+						located within 25 cm from its OCS pole.
+	2022-06-09_006 CLFEY Re-written column code for OCS pole height
+	2022-06-14_007 CLFEY/SINBRE Adapted to multiple spanlengths.
+	2022-06-16_008 CLFEY/RAGBER/SINBRE Column "Avspenning" now tackles multiple WTBs at one cantilever's
+						OCS pole. Also tackles other WTBs at one WTB's pole.
+	2022-06-21_009 CLFEY Increased tolerance 'tol' in the "Avspenning" column from 1.0 to 1.2, to accept
+						WTB's for AT conductors drawn at distance 1.0 from center OCS pole.
+	2022-06-23_010 CLFEY Introduced a second tolerance and checking for a midpoint anchor ('fixpunkt')
+						close to the tip of a cantilever (CantileverLength in plan view, disregarding cant).
+
+	Find wire parts with a name that matches the pattern 'XX-YYY' stated in the table's 'Var0' property.
+	Then list all OCS poles inside the area stated as the table's 'Area' property, having a role
+	for the contact wire in question.
+	
+	It is expected that the wire tension balancers (wtb1 and wtb2) connect to wire parts 'a' and 'e'.
+	It is expected that the one or two cantilevers (cnt) connect to wire parts 'b' and 'd'.
+	It is expected that the bulk of cantilevers (cnt) connect to wire part 'c'.
+	It is expected that the wtb's for the midpoint anchor connect to wire part 'f'.
+	It is expected that the midpoint anchor belongs to the track but has a relation to wire part 'c'.
+	
+	All wire parts must be of the form 'XX-YYYx' where x is 'a' to 'e'.
+	In addition, there will be midtpoint anchor lines (fixline) name as 'XX-YYYf', suffix 'f'.
+--]]
+
+
+--Abbreviations:
+--	cow		contact wire
+--	gwy		guy wire (spanner)
+--	pol		OCS pole (mast), all types
+--	fun		OCS pole foundation, guy wire or spanner foundation
+--	cnt		cantilever
+--	mal		midpoint anchor line
+--  map		midpoint anchor point
+--	wtb		wire tension balancer [avspenning]
+
+ContactWireRcType				= "JBTEH_KTL Kontaktledning" 
+MidpointAnchorRcType			= "JBTEH_AEH Avspenning"
+MidPointAnchorVariant			= "Fixpunkt"
+relCowCntFittedToCantilever		= "Festet til utligger"
+relCowWtbHasWireTensionBalancer	= "Har avspenning"
+
+-- Find all wire parts present in the table's dedicated area, with the wire part number as stated in Var0:
+-- Ignore the midpoint anchoring lines.
+contactWireParts = DocumentData.ObjectCollection:filter(
+	function (x)
+		return x.RcType == ContactWireRcType
+			and (x.code:match("(%d+%-%d+)") == Var0) -- 'XX-YYY'
+			and not (x.code:match("%d+%-%d+(%a)") == 'f') -- ignore all 'XX-YYYf' - the midpoint anchor lines
+			and x:isVisible()
+	end)
+nContactWireParts = getCollectionLength(contactWireParts)
+
+-- For each wire part, add its cantilevers and wtbs:
+items = {}  --The empty collection (safe Lua coding).
+for i=0,nContactWireParts-1 do
+	wireTensionBalancers = RC__getCollectionOfRelatedObjects(relCowWtbHasWireTensionBalancer,contactWireParts[i])
+	wireTensionBalancers = wireTensionBalancers:filter(function (x) return not x.Variant:upper():match("FIX") end) --Remove the fixpoint (concerns DNA 2021.a)
+	cantilevers = RC__getCollectionOfRelatedObjects(relCowCntFittedToCantilever,contactWireParts[i])
+	items = getUnionOfCollections({items,wireTensionBalancers,cantilevers})
+end
+
+return items</LuaFilter>
+  <UseDataSetFilter>true</UseDataSetFilter>
+  <EnableCustomSettings>true</EnableCustomSettings>
+  <TitleTextHeight>1.6</TitleTextHeight>
+  <HeaderTextHeight>1.3</HeaderTextHeight>
+  <DataTextHeight>1.3</DataTextHeight>
+  <VerticalCellMargin>0.15</VerticalCellMargin>
+  <HorizontalCellMargin>0.15</HorizontalCellMargin>
+  <BlockScale>1</BlockScale>
+  <MinRowHeight>1</MinRowHeight>
+  <EnableWrap>false</EnableWrap>
+  <WrapDepth>270</WrapDepth>
+  <WrapSpacing>10</WrapSpacing>
+  <WrapDirection>Right</WrapDirection>
+  <RepeatHeaders>true</RepeatHeaders>
+  <VerticalNumbering>
+    <Enabled>false</Enabled>
+    <IsVertical>true</IsVertical>
+    <Location>Left</Location>
+    <NumberFormat>Numbers</NumberFormat>
+    <TextHeight>2</TextHeight>
+    <HideBorders>true</HideBorders>
+    <Alignment>MiddleCenter</Alignment>
+  </VerticalNumbering>
+  <HorizontalNumbering>
+    <Enabled>false</Enabled>
+    <IsVertical>false</IsVertical>
+    <Location>Bottom</Location>
+    <NumberFormat>Numbers</NumberFormat>
+    <TextHeight>2</TextHeight>
+    <HideBorders>true</HideBorders>
+    <Alignment>MiddleCenter</Alignment>
+  </HorizontalNumbering>
+  <TableFormat>Standard</TableFormat>
+  <Font>ISOCP</Font>
+  <Columns>
+    <ColumnSpecification>
+      <Guid>f1f18abb-27b1-4628-9b2f-d386b18f3229</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="ObjektID" />
+      </Headers>
+      <Width>13</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+return tostring(m.BaneNORBaneDataID)</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>71b321ec-4bc3-493d-974b-2b01236d720c</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Nr" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>Ascending</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+return tostring(m.name)</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>630b8470-4cee-4f85-875f-9634b9076eef</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Profil\PRef. spor\P[km]" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>Ascending</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+return string.format("%.03f",m.ReferenceMileage/1000)</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>10272f0b-a413-49f6-bd6a-b520ea345d97</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Spenn-\Plengde\P[m]" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.1
+p1 = "L%d+%-%d+"
+p2 = "%-(%d+%.%d)%-"
+
+relCntCowCantileverForContactWire	= "Utligger for kontaktledning"
+relWtbCowWtbForContactWire			= "Avspenner kontaktledning"
+
+if RcType == "JBTEH_UTL Utligger" then
+	pole = Relations["Tilhører kl-mast"][0]
+
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if dir:lower() == "down" then
+		return ""
+	else
+		poles = getUnionOfCollections({
+					getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel"),
+					getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast"),
+					getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast i åk"),
+					getNearbyPointObjects2D(tol,"JBTEH_TUF Tunnelfeste")
+				})
+		if getCollectionLength(poles) == 0 then return "No OCS pole found near WTB "..this.code end
+		pole = poles[0]
+	end
+else
+	return "Bad object type ["..this.RcType.."]."
+end
+
+wireNames = {}
+for match in (pole.SpanLengthDisplay):gmatch(p1) do
+	table.insert(wireNames,match)
+end
+wireNames = getCollectionFromTable(wireNames)
+nWires = getCollectionLength(wireNames)
+	
+spanLengths = {}
+for match in (pole.SpanLengthDisplay):gmatch(p2) do
+	table.insert(spanLengths,match)
+end
+spanLengths = getCollectionFromTable(spanLengths)
+
+if nWires == 0 then
+	--The OCS pole had just one spanlength mentioned:
+	return string.format("%.01f",spanLengths[0])
+else
+	--Find the spanlength corresponding to this cantilever's contact wire:
+	for i = 0,nWires-1 do
+		if RcType == "JBTEH_UTL Utligger" then
+			rCow,nCow = RC__getCollectionOfRelatedObjects(relCntCowCantileverForContactWire)
+		elseif RcType == "JBTEH_AEH Avspenning" then
+			rCow,nCow = RC__getCollectionOfRelatedObjects(relWtbCowWtbForContactWire)
+		else
+			return _error,"Bad RcType ["..RcType.."]."
+		end
+		if nCow == 0 then return "Cantilever/WTB "..this.name.." has no contact wire" end
+		if rCow[0].name == wireNames[i] then
+			return string.format("%.01f",spanLengths[i])
+		end
+	end
+end
+
+return string.format("%.01f",poles[0].SpanLength)</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>eb169134-3c23-4575-8073-fa8da33a13a7</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Type" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+if (string.find(m.Variant,"Hengemast")) then 
+	if (string.find(m.OcsMastProfile,"Ø120")) then
+		s = "HGM" 
+	elseif (string.find(m.OcsMastProfile,"100x100")) then
+		s = "HGM" 
+	elseif (string.find(m.OcsMastProfile,"100x150")) and m.Var4 == "Kun fiktivt punkt for avspenning" then
+		s = "Fiktiv" 
+		elseif (string.find(m.OcsMastProfile,"100x150")) and m.Var4 ~= "Kun fiktivt punkt for avspenning" then
+		s = "HGM" 
+	elseif (string.find(m.OcsMastProfile,"200x100")) then
+		s = "HGM" 
+	elseif (string.find(m.OcsMastProfile,"100x200")) then
+		s = "HGM" 
+	else
+		s = "Ukjent Masteprofil ["..m.OcsMastProfile.."]",_warning
+	end
+	
+	return s
+end	
+if m.RcType == "JBTEH_TUF Tunnelfeste" then
+return "TF"
+end
+if m.RcType == "JBTEH_MAS KL-mast" and m.Var3 == "HE260M" then 
+	return "HEM260"
+	elseif m.RcType == "JBTEH_MAS KL-mast" then
+	return tostring(m.OcsMastProfile:gsub("eksisterende","eks."))
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>59f1642a-0cbf-4c5f-9c66-11831e8ffce1</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Høyde\P[m]" />
+      </Headers>
+      <Width>6</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	return Relations["Tilhører kl-mast"][0].OcsMastheight/1000 --[m] OCS pole height
+
+elseif RcType == "JBTEH_AEH Avspenning" then
+	a = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")
+	b = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")
+	c = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")
+	poles = getUnionOfCollections({a,b,c})
+	n = getCollectionLength(poles)
+	if n == 0 then
+		return "No OCS pole found within "..tol".. m from WTB "..code
+	elseif n == 1 then
+		return poles[0].OcsMastheight/1000 --[m] OCS pole height
+	else
+		--n &gt;= 2
+		return "More than one OCS pole found within "..tol.." m from WTB "..code
+	end
+
+else
+	return "Unexpected RC type ["..RcType.."] for object "..code
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>5eeb2da8-04be-46f2-82a8-e33d3de50004</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Retning" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>-- "Mastens stilling" betyr egentlig "mastesymbol med utligger".
+--
+--   Nedenfor vil "*" bety enten O = gittermast, X = hengemast, 8 = bjelkemast G = GMB-mast
+--
+--   *-   Enkel utligger til høyre side i økende km-retning
+--  -*    Enkel utligger til venstre side i økende km-retning
+--   *=   Dobbel utligger til høyre side i økende km-retning
+--  =*    Dobbel utligger til venstre side i økende km-retning
+--
+-- Kombinasjoner er tillatt - enkel/dobbel til begge sider.
+--
+tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]
+else
+	return "Unrecognized RcType"
+	end
+else
+	return "Unrecognized RcType"
+end
+
+local symbol = "*"
+if m.Variant:match("Henge") ~= nil then 
+	symbol = "X"
+elseif m.Variant:match("GMB") ~= nil then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master. NB! Test på 'GMB' før 'B-mast'  
+	symbol = "G"
+elseif m.Variant:match("B%-mast") ~= nil or Variant:match("H%-mast") ~= nil then 
+	symbol = "O"
+elseif m.Variant:match("Bjelke") ~= nil then 
+	symbol = "8"
+else
+	return "Ukjent Variant ["..Variant.."].",_warning
+end
+if (getCollectionLength(m.Relations["Er kl-mast for utligger"]) == 0) then
+	return symbol,_warning -- Har ikke utligger
+elseif (getCollectionLength(m.Relations["Er kl-mast for utligger"]) == 1) then
+	if (m.DistanceToAlignment - m.Relations["Er kl-mast for utligger"][0].DistanceToAlignment &gt; 0) then
+		return "-"..symbol
+	else 
+		return symbol.."-"
+	end
+elseif (getCollectionLength(m.Relations["Er kl-mast for utligger"]) == 2) then
+	distKL=m.DistanceToAlignment	--KLmast avstand til spor
+	distU1=m.Relations["Er kl-mast for utligger"][0].DistanceToAlignment  	--Utligger1 avstand til spor
+	distU2=m.Relations["Er kl-mast for utligger"][1].DistanceToAlignment	--Utligger2 avstand til spor
+	
+	if distU1 &gt; 0 and distU2 &gt; 0 then
+		return "="..symbol
+	elseif distU1 &lt; 0 and distU2 &lt; 0 then
+		return symbol.."="
+	else 
+		return "-"..symbol.."-"
+	end
+
+elseif (getCollectionLength(m.Relations["Er kl-mast for utligger"]) == 3) then
+	distKL=m.DistanceToAlignment	--KLmast avstand til spor
+	distU1=m.Relations["Er kl-mast for utligger"][0].DistanceToAlignment  	--Cantilever 1 distance to alignment
+	distU2=m.Relations["Er kl-mast for utligger"][1].DistanceToAlignment	--Cantilever 2 distance to alignment
+	distU3=m.Relations["Er kl-mast for utligger"][2].DistanceToAlignment	--Cantilever 3 distance to alignment
+	
+	if 	   distU1 &gt; 0 and distU2 &gt; 0 and distU3 &gt; 0 then 	return "≡"..symbol
+	
+	elseif distU1 &lt; 0 and distU2 &gt; 0 and distU3 &gt; 0 then 	return "="..symbol.."-"
+	elseif distU1 &gt; 0 and distU2 &lt; 0 and distU3 &gt; 0 then 	return "="..symbol.."-"
+	elseif distU1 &gt; 0 and distU2 &gt; 0 and distU3 &lt; 0 then 	return "="..symbol.."-"
+	
+	elseif distU1 &gt; 0 and distU2 &gt; 0 and distU3 &lt; 0 then 	return "-"..symbol.."="
+	elseif distU1 &lt; 0 and distU2 &gt; 0 and distU3 &gt; 0 then 	return "-"..symbol.."="
+	
+	elseif distU1 &lt; 0 and distU2 &lt; 0 and distU3 &lt; 0 then 	return symbol.."≡"
+	
+	else 
+		return "???: "..distU1.."/"..distU2.."/"..distU3.."/".."≡"..symbol --"-"..symbol.."-"
+	end	
+	
+	
+elseif (getCollectionLength(m.Relations["Er kl-mast for utligger"]) == 4) then
+	return "="..symbol.."="
+
+else
+	--Non-standard combinations of four or more:
+	return "Har ikke laget formel for fire utliggere i 1/3 eller 3/1 konfigurasjon (eller fem og fler).",_warning
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>f3d18f52-4971-46a6-a83b-0e834c0ea2f3</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="CL mast\PCL spor\P[m]" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol=0.25
+
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+	return string.format("%.02f",RC__getDistanceToAlignmentFromRelatedObject("Tilhører kl-mast"))
+	
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+		
+	end 
+	return string.format("%.02f",m.DistanceToAlignment)
+else
+	return "Unrecognized RcType"
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>c8b4a51f-3670-449c-8819-a1c47fba8d09</Guid>
+      <Headers>
+        <Header Name="Mast" />
+        <Header Name="Kth\P[m]" />
+      </Headers>
+      <Width>4</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+	  
+if RcType == "JBTEH_UTL Utligger" then
+	return string.format("%.02f",ContactWireHeight)
+
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+		m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+	elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+		m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+	elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+		m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+	elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+		m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	end
+	return Var1
+
+else
+	return "Unrecognized RcType"
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>38e72479-9999-457e-8c95-6620093eb48a</Guid>
+      <Headers>
+        <Header Name="Fundament" />
+        <Header Name="ObjektID" />
+      </Headers>
+      <Width>13</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0].Relations["Har kl-fundament"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0].Relations["Har kl-fundament"][0]		
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0].Relations["Har kl-fundament"][0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0].Relations["Har kl-fundament"][0]		
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0].Relations["Har kl-fundament"][0]			
+	end
+else
+	return "Unrecognized RcType"
+end
+
+return m.BaneNORBaneDataID</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>9c80dade-86df-4959-acd4-cd03be48c176</Guid>
+      <Headers>
+        <Header Name="Fundament" />
+        <Header Name="Type" />
+      </Headers>
+      <Width>17</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>if RcType == "JBTEH_AEH Avspenning" then
+
+  if getNearbyPointObjects2D(0.5,"JBTEH_MAS KL-mast")[0].Relations["Har kl-fundament"][0].Variant == "Boret KL-fundament, Ø555-191x374xM36" then
+return "Boret KL-fund. Ø555"
+end
+
+if getNearbyPointObjects2D(0.5,"JBTEH_MAS KL-mast")[0].Relations["Har kl-fundament"][0].Variant == "Spesial KL-fundament" then
+return "Spesial KL-fund."
+end
+
+elseif RcType == "JBTEH_UTL Utligger" then
+if Relations["Tilhører kl-mast"][0].Relations["Har kl-fundament"][0].Variant == "Boret KL-fundament, Ø555-191x374xM36" then
+return "Boret KL-fund. Ø555"
+end
+if Relations["Tilhører kl-mast"][0].Relations["Har kl-fundament"][0].Variant == "Spesial KL-fundament" then
+return "Spesial KL-fund."
+end
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>94bca7ee-e084-48c4-8129-42573b7b259c</Guid>
+      <Headers>
+        <Header Name="Spor" />
+        <Header Name="Nr" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	return Alignment.name
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+return m.Alignment.name</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>861ae53f-c887-4774-86c2-122e8369dd8c</Guid>
+      <Headers>
+        <Header Name="Spor" />
+        <Header Name="Kurve-\Pradius\P[m]" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+r = m:getAlignmentInfo().CurveRadius
+	if math.abs(r) &gt; 5e5 then 
+		return "RL"
+	else
+		if m:getAlignmentInfo().CurveRotation:upper() == "CCW" then
+			return string.format("%.0f",-r)
+		else
+			return string.format("%.0f",r)
+	end
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>1378d22d-c88d-41c9-a54b-96db95d2d3c4</Guid>
+      <Headers>
+        <Header Name="Spor" />
+        <Header Name="OH\P[mm]" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]		
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+local c = m:getAlignmentInfo().Cant
+
+if (RC__isNan(c)) then
+	return "0"
+else
+	return string.format("%.0f",c)
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>2894213c-f022-4435-8d46-efbcb0bb4b36</Guid>
+      <Headers>
+        <Header Name="Spor" />
+        <Header Name="Ref.spor.\Pnr" />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	return Alignment.name
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+return m.ReferenceAlignment.name</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>f2d682aa-7a03-46f2-9f09-aaa1302771fe</Guid>
+      <Headers>
+        <Header Name="Andre konstruksjoner" />
+        <Header Name="Bardun retn." />
+      </Headers>
+      <Width>8</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+--m=Relations["Tilhører kl-mast"][0] --Do not use this construct here
+if RcType == "JBTEH_UTL Utligger" then
+	m=Relations["Tilhører kl-mast"][0]
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast for bru og tunnel")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS KL-mast")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_MAS Hengemast i åk")[0]	
+elseif getCollectionLength(getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")) &gt; 0.5 then
+m = getNearbyPointObjects2D(tol, "JBTEH_TUF Tunnelfeste")[0]	
+	
+	end
+else
+	return "Unrecognized RcType"
+end
+
+if (m.RcType == "JBTEH_MAS KL-mast"  or m.RcType == "JBTEH_MAS Hengemast for bru og tunnel")
+then
+	vpil = "←" --"\8592"
+	opil = "↑"--"\8593"
+	hpil = "→" --"\8594"
+	npil = "↓"--"\8595"
+	ba = m.getClosestAlignments("JBTEH_BAR Bardun"):
+		filter(function  (x) return x.Variant:lower() == "bardun" and RC__getDistance2D(x.rcalignment.startpoint) &lt; 1.0 end )
+	nb = m.getCollectionLength(ba)
+	--if true then return nb,ba end
+	t = m.getClosestTracks()
+	tgt= m.getAlignmentInfo(t[0].id).tangent
+	--if true then return tgt end
+	sporvinkel = math.atan(tgt.Y, tgt.X) * 180.0/math.pi 
+	--if true then return sporvinkel end
+	first = true
+	for i = 0, nb-1 do
+		s = first and "" or s..", "
+		b = ba[i]
+		pe = b.RcAlignment.EndPoint
+		bf = m.getNearbyPointObjects2D(tol, "JBTEH_BAF Bardunfeste", pe)[0]
+		--if true then return bf end
+		tgb= b.RcAlignment.StartTangent
+		--if true then return tgb end
+		bardunvinkel = math.atan(tgb.Y, tgb.X) * 180.0/math.pi
+		--if true then return bardunvinkel end
+		vinkel = bardunvinkel - sporvinkel
+		if vinkel &lt; -180 then vinkel = vinkel + 360 end
+		if vinkel &gt; 180 then vinkel = vinkel - 360 end
+		hkurve = vinkel &gt; 50 and vinkel &lt; 130
+		vkurve = vinkel &lt; -50 and vinkel &gt; -130
+		medrettet = vinkel &gt; -25 and vinkel &lt; 25
+		motrettet = vinkel &lt; -155 or vinkel &gt; 155
+		--if true then return vinkel,bf.Variant, end
+		--if true then return sporvinkel, bardunvinkel, vinkel, hkurve, vkurve medrettet, motrettet end
+		if (vkurve or hkurve or medrettet or motrettet) == false then 
+			return "Feil, ulovlig bardunvinkel ("..vinkel..")"
+	  	end
+		if hkurve and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..vpil
+		elseif vkurve and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..hpil
+		elseif motrettet and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..opil
+		elseif motrettet and bf.Variant == "Bardunfeste fotplate, dobbel" then s = s..opil..opil
+		elseif medrettet and bf.Variant == "Bardunfeste fotplate, enkel"  then s = s..npil
+		elseif medrettet and bf.Variant == "Bardunfeste fotplate, dobbel" then s = s..npil..npil
+		else
+			return bf.variant --"Feil skal ikke skje" -- Har ingen Bardun
+		end
+		first = false
+	end
+	return s
+end</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>d2a36cb1-b7cb-4c8e-8a87-671ca9cabfe7</Guid>
+      <Headers>
+        <Header Name="Andre konstruksjoner" />
+        <Header Name="Avspenning" />
+      </Headers>
+      <Width>16</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol1 = 1.2 --[m] Enough to find an AutoTransformer conductor being hand-drawn at a distance &lt;= 1.2 from the center of its OCS pole.
+tol2 = 0.5 --[m] Enough to find the OCS mast holding a midpoint anchor at the tip of its cantilever (for DNA version 2021.a).
+dnaIri = DocumentData.DnaIri:match(".+;(.d+.%a)$")
+
+function RC__vectorAdd(u,v) return getPoint3D(u.X+v.X, u.Y+v.Y, u.Z+v.Z) end
+
+if RcType == "JBTEH_AEH Avspenning" then
+	poles = getUnionOfCollections({
+			getNearbyPointObjects2D(tol1,"JBTEH_MAS Hengemast for bru og tunnel"),
+			getNearbyPointObjects2D(tol1,"JBTEH_MAS KL-mast"),
+			getNearbyPointObjects2D(tol1,"JBTEH_MAS Hengemast i åk"),
+			getNearbyPointObjects2D(tol1,"JBTEH_TUF Tunnelfeste")
+		})
+	nPoles = getCollectionLength(poles)
+	if nPoles == 0 then return "No OCS pole found near WTB "..this.code end
+	wtb = getNearbyPointObjects2D(tol,"JBTEH_AEH Avspenning",poles[0])
+
+elseif RcType == "JBTEH_UTL Utligger" then
+	--Look for wire tension balancers at the same OCS pole:
+	rPoles,nPoles = RC__getCollectionOfRelatedObjects("Tilhører kl-mast")
+	wtbs = getNearbyPointObjects2D(tol1,"JBTEH_AEH Avspenning",rPoles[0]) --we know there must be an OCS pole here
+
+	--Look for a midpoint anchor at the extremity of the cantilever:
+	p1 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+	--Add vector from insertion point of cantilever to its tip (as seen in the OCS plan view, i.e. disregarding cant), in WCS coordinates:
+	t = getAlignmentInfo(this.Alignment.id,p1).Tangent
+	tg = math.atan(t.Y,t.X)
+	U = getPoint3D(RC__acsVector2wcsVector(DistanceToAlignment &lt; 0 and CantileverLength or -CantileverLength, 0, tg)) --Vector pointing along the cantilever
+	tipOfCantilever = RC__vectorAdd(p1,U)
+	mpas = getNearbyPointObjects2D(tol2,"JBTEH_AEH Avspenning",tipOfCantilever) --collection of MPA(s), if any
+
+	--Make a joint collection of WTBs plus a potential MPA at the same OCS pole:
+	wtb = getUnionOfCollections({wtbs,mpas})
+
+else
+	return "Unrecognized RcType ["..RcType.."]."
+end
+
+t = ""
+nWtb = getCollectionLength(wtb)
+for i = 0, nWtb-1 do
+	if i == 0 then
+		t = wtb[0].name
+	else
+		t = t..", "..wtb[i].name
+	end
+end
+
+return t</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
+      <Guid>0b9b2747-97b6-46de-ba8b-31d4d400faf9</Guid>
+      <Headers>
+        <Header Name="Merknader" />
+      </Headers>
+      <Width>25</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>tol = 0.25
+if RcType == "JBTEH_UTL Utligger" then
+	m = Relations["Tilhører kl-mast"][0]
+
+elseif RcType == "JBTEH_AEH Avspenning" then
+	if getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_TUF Tunnelfeste")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")[0] == nil 
+		then
+			m = getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast i åk")[0]
+	
+	elseif getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast i åk")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_TUF Tunnelfeste")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")[0] == nil
+		then
+			m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast")[0]
+
+	elseif getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast i åk")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")[0] == nil
+		then
+			m = getNearbyPointObjects2D(tol,"JBTEH_TUF Tunnelfeste")[0]
+		
+	elseif getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast i åk")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast")[0] == nil
+		and getNearbyPointObjects2D(tol,"JBTEH_TUF Tunnelfeste")[0] == nil 
+		then
+			m = getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")[0]	
+	end
+
+else
+	return "Unexpected RcType ["..RcType.."]"
+end
+
+spanner = getClosestAlignments(m,"JBTEH_STR Strever"):filter(
+	function (x)
+		return m:RC__getDistance2D(x.RcAlignment.HorizontalProfile.StartPoint) &lt; tol
+	end)
+nSpanner = getCollectionLength(spanner)
+interrupter = getNearbyPointObjects2D(m,tol,"JBTEH_BRY KL-bryter")
+nInterrupter = getCollectionLength(interrupter)
+
+if m.RcType == "JBTEH_MAS KL-mast" and m.Relations["Er åk-mast for åk"][0] then
+	tPortal = m.Relations["Er åk-mast for åk"][0].name
+elseif m.RcType == "JBTEH_MAS Hengemast i åk" and m.Relations["Er hengemast festet i åk"][0] then
+	tPortal = m.Relations["Er hengemast i åk"][0].name
+else
+	tPortal = ""
+end
+
+tSpanner = ""
+for i = 0,nSpanner-1 do
+	tSpanner = tSpanner..(i == 0 and "Strever " or ", ")..spanner[i].code
+end
+
+tInterrupter = ""
+for i = 0,nInterrupter-1 do
+	tInterrupter = tInterrupter..(i == 0 and "Bryter " or ", ")..interrupter[i].code
+end
+
+if m.Variant:match("eksisterende") then
+	return "Eks. mast "..tPortal.." "..tSpanner.." "..m.Var4..""..tInterrupter
+else
+	return ""..tPortal.." "..tSpanner.." "..m.Var4..""..tInterrupter
+end</Data>
+    </ColumnSpecification>
+  </Columns>
+  <SortOrder>
+    <string>630b8470-4cee-4f85-875f-9634b9076eef</string>
+    <string>71b321ec-4bc3-493d-974b-2b01236d720c</string>
+  </SortOrder>
+  <NewColumnWidth xsi:nil="true" />
+			</TableSpecification>
+		</InsertTable>
+		
+
 		<InsertTable VariantName="Mastetabell 2" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-TABELL-Schematic" >
 			<TableSpecification>
 				<Title>Mastetabell</Title>
@@ -3410,6 +4362,7 @@ end</Data>
 					<Sort />
 					<Alignment>MiddleCenter</Alignment>
 					<Data>
+				tol = 0.25
 				if RcType == "JBTEH_MAS KL-mast" then
 					vpil = "←" --"\8592"
 					opil = "↑"--"\8593"
@@ -3429,7 +4382,7 @@ end</Data>
 						s = first and "" or s..", "
 						b = ba[i]
 						pe = b.RcAlignment.EndPoint
-						bf = getNearbyPointObjects2D(0.25, "JBTEH_BAF Bardunfeste", pe)[0]
+						bf = getNearbyPointObjects2D(tol, "JBTEH_BAF Bardunfeste", pe)[0]
 						--if true then return bf end
 						tgb= b.RcAlignment.StartTangent
 						--if true then return tgb end
