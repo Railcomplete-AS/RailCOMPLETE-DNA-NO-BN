@@ -26,7 +26,7 @@
 	<!-- Note: Functions which are called from 'JBTEH_MAS KL-mast' and 'JBTEH_MAS Hengemast for bru og tunnel' and 'JBTEH_MAS Hengemast i åk': -->
 
 	<LuaFunction Name="_JBTEH_MAS_non_yoke_mast_code()" ReturnType="String"
-		Description="Obtains the code for the OCS mast, as a concatenation of the mast's reference mileage km-value and the current 'seq' local variable." >
+		Description="Obtains the code for the OCS pole, as a concatenation of the mast's reference mileage km-value and the current 'seq' local variable." >
 		<Constructor>String _JBTEH_MAS_non_yoke_mast_code()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_non_yoke_mast_code()
@@ -47,14 +47,14 @@
 				r, n = RC__getCollectionOfRelatedObjects(s)
 				m1 = this
 				if n == 0 then
-					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS mast.")
+					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS pole.")
 				else
 					m2 = r[0]
 					d = distance(m1, m2)
 					if RC__isNan(d) then
-						return 0.0, _error, _info("ERROR - cannot deduce a distance between "..RC__getNameOrCodeorId(m1).." and "..RC__getNameOrCodeorId(m2).." (no path found between masts)")					
+						return 0.0, _error, _info("ERROR - cannot deduce a distance between "..RC__identify(m1).." and "..RC__identify(m2).." (no path found between masts)")					
 					else
-						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__getNameOrCodeorId(m1).." and "..RC__getNameOrCodeorId(m2).." measured in center track.")
+						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(m1).." and "..RC__identify(m2).." measured in center track.")
 					end
 				end
 			end
@@ -134,9 +134,9 @@
 					local m2 = r[1]
 					local d = distance(m1, m2)
 					if RC__isNan(d) then
-						return 0.0, _error, _info("ERROR - cannot deduce a distance between "..RC__getNameOrCodeorId(m1).." and "..RC__getNameOrCodeorId(m2).." (no path found between masts)")					
+						return 0.0, _error, _info("ERROR - cannot deduce a distance between "..RC__identify(m1).." and "..RC__identify(m2).." (no path found between masts)")					
 					else
-						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__getNameOrCodeorId(m1).." and "..RC__getNameOrCodeorId(m2).." measured in center track.")
+						return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(m1).." and "..RC__identify(m2).." measured in center track.")
 					end
 				end
 			end
@@ -330,20 +330,20 @@
 				nYoke = nYoke1 + nYoke2
 				for j = 0,nYoke-1 do
 					table.insert(t,rYoke[j])
-					txt = first and "{"..RC__getNameOrCodeorId(rYoke[j]) or txt..","..RC__getNameOrCodeorId(rYoke[j])
+					txt = first and "{"..RC__identify(rYoke[j]) or txt..","..RC__identify(rYoke[j])
 					first = false
 					rMast,nMast = RC__getCollectionOfRelatedObjects(sMast,rYoke[j])
 					for i = 0, nMast-1 do 
 						if rMast[i].id ~= this.id then
 							table.insert(t,rMast[i])
-							txt = txt..","..RC__getNameOrCodeorId(rMast[i])
+							txt = txt..","..RC__identify(rMast[i])
 						end
 					end
 					rSuspensionMast,nSuspensionMast = RC__getCollectionOfRelatedObjects(sSuspensionMast,rYoke[j])
 					for i = 0, nSuspensionMast-1 do
 						if rSuspensionMast[i].id ~= this.id then
 							table.insert(t,rSuspensionMast[i])
-							txt = txt..","..RC__getNameOrCodeorId(rSuspensionMast[i])
+							txt = txt..","..RC__identify(rSuspensionMast[i])
 						end
 					end
 					n = nMast + nSuspensionMast
@@ -594,7 +594,7 @@
 		<LuaExpression Name="OcsMastHeight" ><Formula>_JBTEH_MAS_OcsMastHeight()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_OcsMastHeight()" ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the height of the OCS mast, possibly adapted to carry a yoke." >
+				Description="Returns the height of the OCS pole, possibly adapted to carry a yoke." >
 			<Constructor>Double _JBTEH_MAS_OcsMastHeight()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_OcsMastHeight()
@@ -644,7 +644,7 @@
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
-			Description="The span length value [m] being displayed close to the OCS mast." />
+			Description="The span length value [m] being displayed close to the OCS pole." />
 		<LuaExpression Name="SpanLengthDisplay" ><Formula>_JBTEH_MAS_SpanLengthDisplay()</Formula></LuaExpression>
         <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
@@ -661,7 +661,7 @@
 			Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength2" ><Formula>_JBTEH_MAS_SpanLength2()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" 
-			Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value." />
+			Description="The span length 2 value [m] being displayed close to the OCS pole, rounded to the closest integer value." />
 		<LuaExpression Name="SpanLengthDisplay2" ><Formula>_JBTEH_MAS_SpanLengthDisplay2()</Formula></LuaExpression>
         <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" 
 				Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
@@ -702,12 +702,12 @@
 				
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
-								_info("ERROR Mast has bad connection to galley '"..RC__getNameOrCodeorId(yoke).."'.")
+								_info("ERROR Mast has bad connection to galley '"..RC__identify(yoke).."'.")
 				
 						elseif n == 1 then
 							--Galley:
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a galley '"..RC__getNameOrCodeorId(yoke)..
+								_info("Mast is connected to a galley '"..RC__identify(yoke)..
 								"' - adjust mast's angular offset manually or change galley into yoke (which has one more yoke support mast).")
 						
 						elseif n == 2 then
@@ -722,14 +722,14 @@
 							local yokeAngle = math.atan(y2-y1,x2-x1) * (180/math.pi) 
 							local tg = getAlignmentInfo().Tangent
 							local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi)
-							local info = "Angular Offset deduced using yoke support masts '"..RC__getNameOrCodeorId(m1).."' and '"..RC__getNameOrCodeorId(m2).."'."
-							return (2*360.0 + RC__getRounded(yokeAngle - (baseAngle-90.0),3)) % 360.0, _info(info)
+							local info = "Angular Offset deduced using yoke support masts '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
+							return (2*360.0 + RC__round(yokeAngle - (baseAngle-90.0),3)) % 360.0, _info(info)
 				
 						else
 							--TODO: Locate the two support masts at each end of yoke, uses this to find angular offset, then turn yourself if you 
 							--are a support mast at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a yoke '"..RC__getNameOrCodeorId(yoke).." with total 3 or more supporting masts"..
+								_info("Mast is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
 								"' - adjust mast's angular offset manually.")
 						end
 					end
@@ -1111,7 +1111,7 @@
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
-			Description="The span length value [m] being displayed close to the OCS mast." />
+			Description="The span length value [m] being displayed close to the OCS pole." />
 		<LuaExpression Name="SpanLengthDisplay" ><Formula>_JBTEH_MAS_SpanLengthDisplay()</Formula></LuaExpression>
         <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
@@ -1128,7 +1128,7 @@
 			Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength2" ><Formula>_JBTEH_MAS_SpanLength2()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" 
-			Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value." />
+			Description="The span length 2 value [m] being displayed close to the OCS pole, rounded to the closest integer value." />
 		<LuaExpression Name="SpanLengthDisplay2" ><Formula>_JBTEH_MAS_SpanLengthDisplay2()</Formula></LuaExpression>
         <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" 
 				Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
@@ -1147,7 +1147,7 @@
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_MAS_tunnel_suspension_mast_RelativeElevation()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_tunnel_suspension_mast_RelativeElevation()" ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the relative elevation for a ocs mast suspended from a yoke, based on the yoke's type and relative elevation." >
+				Description="Returns the relative elevation for a OCS pole suspended from a yoke, based on the yoke's type and relative elevation." >
 			<Constructor>Double _JBTEH_MAS_tunnel_suspension_mast_RelativeElevation()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_tunnel_suspension_mast_RelativeElevation()
@@ -1159,7 +1159,7 @@
 						"UNFINISHED - Relate mast with 'Har kl-fundament' to OCS ceiling bolt group, or delete formula and replace by actual relative height if bolt group is irrelevant.")
 					else
 						-- Has bolt group:
-						return r[0].RelativeElevation, _info("Value obtained from foundation '"..RC__getNameOrCodeorId(r[0]).."'.")
+						return r[0].RelativeElevation, _info("Value obtained from foundation '"..RC__identify(r[0]).."'.")
 					end
 				end
 			</Formula>
@@ -1288,7 +1288,7 @@
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
-			Description="When this OCS suspension mast is refrehsed, then its yoke with other OCS masts are modelchecked as well."
+			Description="When this OCS suspension mast is refrehsed, then its yoke with other OCS poles are modelchecked as well."
 		 />
 		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
@@ -1418,7 +1418,7 @@
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
-			Description="The span length value [m] being displayed close to the OCS mast." />
+			Description="The span length value [m] being displayed close to the OCS pole." />
 		<LuaExpression Name="SpanLengthDisplay" ><Formula>_JBTEH_MAS_SpanLengthDisplay()</Formula></LuaExpression>
         <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
@@ -1435,7 +1435,7 @@
 			Description="The span length 2 (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the second closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
 		<LuaExpression Name="SpanLength2" ><Formula>_JBTEH_MAS_SpanLength2()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanLengthDisplay2" DisplayName="Spennlengde visning 2" DefaultValue="" 
-			Description="The span length 2 value [m] being displayed close to the OCS mast, rounded to the closest integer value." />
+			Description="The span length 2 value [m] being displayed close to the OCS pole, rounded to the closest integer value." />
 		<LuaExpression Name="SpanLengthDisplay2" ><Formula>_JBTEH_MAS_SpanLengthDisplay2()</Formula></LuaExpression>
         <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay2" CadAttributeTag="SPENNLENGDE2" X="15" Y="7" 
 				Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
@@ -1483,14 +1483,14 @@
 					if nYokes == 0 then
 						return "UNFINISHED - Relate with '"..yokeRelation.."'."
 					elseif nYokes &gt; 1 then
-							return _warning, "UNFINISHED - Suspended OCS mast belongs to more than one yoke "
+							return _warning, "UNFINISHED - Suspended OCS pole belongs to more than one yoke "
 									.." - remove unintended relations '"..yokeRelation.."' or adjust the active stage using layer names."
 					else
 						--One yoke:
 						local supportMastRelation = "Er åk holdt oppe av kl-mast"
 						local supportMasts, nSupportMasts = RC__getCollectionOfRelatedObjects(supportMastRelation,yokes[0]) 
 						if nSupportMasts == 0 then 
-							return "UNFINISHED - Cannot deduce suspended OCS mast name since yoke '"..RC__getNameOrCodeorId(yokes[0]).."' has no support mast yet."
+							return "UNFINISHED - Cannot deduce suspended OCS pole name since yoke '"..RC__identify(yokes[0]).."' has no support mast yet."
 						else
 							--Find the reference support mast - being closest to the yoke's own insertion point (there may be many yoke support masts):
 							local i
@@ -1507,7 +1507,7 @@
 							--Start suspended mast's code with support mast's code:
 							local suspendedMastCode = supportMasts[referenceSupportMast].code
 							
-							--Assign sequence number to this suspended OCS mast (counted from the support mast closest to yoke's insertion point):
+							--Assign sequence number to this suspended OCS pole (counted from the support mast closest to yoke's insertion point):
 							local suspendedMastRelation = "Er åk for hengemast - kl-mast"
 							local suspendedMasts, nSuspendedMasts = RC__getCollectionOfRelatedObjects(suspendedMastRelation,yokes[0])
 					
@@ -1541,7 +1541,7 @@
 				
 					elseif yn &gt; 1 then
 						return _error,getPropertyValue("Mileage"),
-							_info("ERROR - Suspension mast is related to more than one yoke ("..RC__getNameOrCodeorId(yr[0])..", "..RC__getNameOrCodeorId(yr[1])..").")
+							_info("ERROR - Suspension mast is related to more than one yoke ("..RC__identify(yr[0])..", "..RC__identify(yr[1])..").")
 						
 					else
 						--yn == 1
@@ -1550,14 +1550,14 @@
 						local r,n = RC__getCollectionOfRelatedObjects(s,yr[0])
 						if n == 0 then
 							return offset + yr[0].mileage,
-								_info("Mileage deduced from yoke/galley lacking support mast(s) '"..RC__getNameOrCodeorId(yr[0]).."'.")
+								_info("Mileage deduced from yoke/galley lacking support mast(s) '"..RC__identify(yr[0]).."'.")
 					
 						elseif n == 1 then 
 							--Galley:
-							return offset + RC__getMileageFromRelatedObject(s,yr[0]), _info("Mileage deduced from support mast '"..RC__getNameOrCodeorId(r[0]).."'.")
+							return offset + RC__getMileageFromRelatedObject(s,yr[0]), _info("Mileage deduced from support mast '"..RC__identify(r[0]).."'.")
 							
 						elseif n &gt;= 2 then
-							--Our mast is suspended from a yoke yr[0] being supported by OCS masts r[0] and r[1]:
+							--Our mast is suspended from a yoke yr[0] being supported by OCS poles r[0] and r[1]:
 							local m1 = r[0]
 							local m2 = r[1]
 							-- Not needed: if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
@@ -1587,7 +1587,7 @@
 		<LuaFunction Name="_JBTEH_MAS_yoke_suspension_mast_RelativeElevation()" 
 				ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the relative elevation for a ocs mast suspended from a yoke, based on the yoke's type and relative elevation." >
+				Description="Returns the relative elevation for a OCS pole suspended from a yoke, based on the yoke's type and relative elevation." >
 			<Constructor>Double _JBTEH_MAS_yoke_suspension_mast_RelativeElevation()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_yoke_suspension_mast_RelativeElevation()
@@ -1604,7 +1604,7 @@
 						elseif v:match("14") then return e + 1.2 + extensionAboveTopOfYoke
 						elseif v:match("40") then return e + 0.4 + extensionAboveTopOfYoke
 						else
-							return 0.0,_error, _info("Bad related OCS yoke '"..RC__getNameOrCodeorId(r[0]).."' Variant: ["..v.."].")
+							return 0.0,_error, _info("Bad related OCS yoke '"..RC__identify(r[0]).."' Variant: ["..v.."].")
 						end
 					end
 				end
@@ -1630,12 +1630,12 @@
 				
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
-								_info("ERROR Mast has bad connection to galley '"..RC__getNameOrCodeorId(yoke).."'.")
+								_info("ERROR Mast has bad connection to galley '"..RC__identify(yoke).."'.")
 				
 						elseif n == 1 then
 							--Galley:
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a galley '"..RC__getNameOrCodeorId(yoke)..
+								_info("Mast is connected to a galley '"..RC__identify(yoke)..
 								"' - adjust mast's angular offset manually or change galley into yoke (which has one more yoke support mast).")
 						
 						elseif n == 2 then
@@ -1650,14 +1650,14 @@
 							local yokeAngle = math.atan(y2-y1,x2-x1) * (180/math.pi) 
 							local tg = getAlignmentInfo().Tangent
 							local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi)
-							local info = "Angular Offset deduced using yoke support masts '"..RC__getNameOrCodeorId(m1).."' and '"..RC__getNameOrCodeorId(m2).."'."
-							return (2*360.0 + RC__getRounded(yokeAngle - (baseAngle-90),3)) % 360.0, _info(info)
+							local info = "Angular Offset deduced using yoke support masts '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
+							return (2*360.0 + RC__round(yokeAngle - (baseAngle-90),3)) % 360.0, _info(info)
 				
 						else
 							--TODO: Locate the two support masts at each end of yoke, uses this to find angular offset, then turn yourself if you 
 							--are a support mast at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a yoke '"..RC__getNameOrCodeorId(yoke).." with total 3 or more supporting masts"..
+								_info("Mast is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
 								"' - adjust mast's angular offset manually.")
 						end
 					end
@@ -1863,14 +1863,14 @@
 					first = true
 					for i = 0, nMast-1 do 
 						table.insert(t,rMast[i])
-						txt = first and "{"..RC__getNameOrCodeorId(rMast[i]) or txt..","..RC__getNameOrCodeorId(rMast[i])
+						txt = first and "{"..RC__identify(rMast[i]) or txt..","..RC__identify(rMast[i])
 						first = false
 					end
 					sSuspensionMast = "Er åk for hengemast - kl-mast"
 					rSuspensionMast,nSuspensionMast = RC__getCollectionOfRelatedObjects(sSuspensionMast)
 					for i = 0, nSuspensionMast-1 do
 						table.insert(t,rSuspensionMast[i])
-						txt = first and "{"..RC__getNameOrCodeorId(rSuspensionMast[i]) or txt..","..RC__getNameOrCodeorId(rSuspensionMast[i])
+						txt = first and "{"..RC__identify(rSuspensionMast[i]) or txt..","..RC__identify(rSuspensionMast[i])
 						first = false
 					end
 					n = nMast + nSuspensionMast
@@ -1919,13 +1919,13 @@
 								elseif (mp == 'Rektangulær, 100x200') then 
 									d = 0.1
 								else
-									return 0,_warning, _info("Bad OCS mast profile ["..mp.."].")
+									return 0,_warning, _info("Bad OCS pole profile ["..mp.."].")
 								end
 							else 
-								return 0,_warning, _info("Bad OCS mast variant ["..mv.."].")
+								return 0,_warning, _info("Bad OCS pole variant ["..mv.."].")
 							end
-							-- OCS mast and yoke may belong to different tracks (when OCS mast is located between tracks):
-							mdist = getAlignmentInfo(alignment.id,mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment --Distance from center closest OCS mast to yoke's alignment
+							-- OCS pole and yoke may belong to different tracks (when OCS pole is located between tracks):
+							mdist = getAlignmentInfo(alignment.id,mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment --Distance from center closest OCS pole to yoke's alignment
 							if (mast.RightSided) then
 								if (mast.Alignment.id == Alignment.id) then return mdist-d else return mdist+d end
 							else
@@ -1939,18 +1939,18 @@
 
 					if n == 0 then
 						if Variant == "Utliggeråk" then
-							return getPropertyValue("DistanceToAlignment"),_warning, _info("UNFINISHED: Relate galley to an OCS mast with relation '"..s.."'.")
+							return getPropertyValue("DistanceToAlignment"),_warning, _info("UNFINISHED: Relate galley to an OCS pole with relation '"..s.."'.")
 						else
 							return getPropertyValue("DistanceToAlignment"),_warning, _info(
-								"UNFINISHED: Relate yoke to OCS mast(s) with relation '"..s.."', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate yoke to OCS pole(s) with relation '"..s.."', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n == 1 then
 						if Variant == "Utliggeråk" then 
-							return _JBTEH_AAK_get_mastDistanceToAlignment(r[0]), _info("Galley yoke (Utliggeråk) extending from mast '"..RC__getNameOrCodeorId(r[0]).."'.")
+							return _JBTEH_AAK_get_mastDistanceToAlignment(r[0]), _info("Galley yoke (Utliggeråk) extending from mast '"..RC__identify(r[0]).."'.")
 						else
 							return getPropertyValue("DistanceToAlignment"),_warning, _info(
-								"UNFINISHED: Relate yoke to one more OCS mast with relation 'Er åk holdt oppe av kl-mast', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate yoke to one more OCS pole with relation 'Er åk holdt oppe av kl-mast', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n &gt;= 2 then 
@@ -1966,7 +1966,7 @@
 						local y2 = m2.geoCoord.Y
 						local x = x1 - (d2/d1)*(x2-x1)
 						local y = y1 - (d2/d1)*(y2-y1)
-						local info = "Distance to alignment deduced through support mast '"..RC__getNameOrCodeorId(m1).."' related by '"..s.."'."
+						local info = "Distance to alignment deduced through support mast '"..RC__identify(m1).."' related by '"..s.."'."
 						return getAlignmentInfo(Alignment.id,x,y).DistanceToAlignment, _info(info)
 					end
 				end
@@ -1990,14 +1990,14 @@
 					if n == 0 then
 						if Variant == "Utliggeråk" then 
 							L = "6m"
-							return L,_warning, _info("UNFINISHED: Relate galley to an OCS mast with relation '"..RelationName.."'.")
+							return L,_warning, _info("UNFINISHED: Relate galley to an OCS pole with relation '"..RelationName.."'.")
 						else
 							if Variant == "Type 12" then L = "11m"
 							elseif Variant == "Type 14" then L = "28m"
 							elseif Variant == "Type 40" then L = "10m"
 							end
 							return L,_warning, _info(
-								"UNFINISHED: Relate yoke to OCS mast(s) with relation '"..RelationName.."', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate yoke to OCS pole(s) with relation '"..RelationName.."', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n == 1 then
@@ -2010,7 +2010,7 @@
 							elseif Variant == "Type 40" then L = "10m"
 							end
 							return L,_warning, _info(
-								"UNFINISHED: Relate yoke to one more OCS mast with relation 'Har åk-mast / kl-mast', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate yoke to one more OCS pole with relation 'Har åk-mast / kl-mast', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n &gt;= 2 then 
@@ -2035,7 +2035,7 @@
 						else
 							return getPropertyValue("Length"),_error, _info("Remove excess yoke support mast(s), or change yoke Variant into Type 12/14/40.")
 						end
-						return L.."m", _info("Length deduced from mast "..m1.code.." and "..m2.code.." ("..RC__getRounded(len,3).." m).")
+						return L.."m", _info("Length deduced from mast "..m1.code.." and "..m2.code.." ("..RC__round(len,3).." m).")
 					end
 				end
 			</Formula>
@@ -2056,8 +2056,8 @@
 
 					elseif n == 1 then 
 						-- Galley "åk-unge", "utliggeråk"
-						-- Assume galley belongs to same alignment as the supporting OCS mast
-						return r[0].AngularOffset, _info("AngularOffset for galley deduced from object '"..RC__getNameOrCodeorId(r[0]).."' related by '"..RelationName.."'.")
+						-- Assume galley belongs to same alignment as the supporting OCS pole
+						return r[0].AngularOffset, _info("AngularOffset for galley deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
 
 					elseif n == 2 then 
 						--Assume that the first two related masts are located at the yoke's extremities:
@@ -2071,14 +2071,14 @@
 						local tg = getAlignmentInfo().Tangent
 						local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi) - RC__getAngleFromDir()
 						local info = "AngularOffset for yoke deduced from support masts '"..
-							RC__getNameOrCodeorId(m1).."' and '"..RC__getNameOrCodeorId(m2).."' related by '"..RelationName.."'."
-						return RC__getRounded((2*360 + yokeAngle - baseAngle) % 360, 3), _info(info)
+							RC__identify(m1).."' and '"..RC__identify(m2).."' related by '"..RelationName.."'."
+						return RC__round((2*360 + yokeAngle - baseAngle) % 360, 3), _info(info)
 
 					else
 						--TODO: Locate the two support masts at each end of yoke, uses thes to find angular offset, then turn yourself if you 
 						--are a support mast at one or the other end, or just adapt if you are in between ends.
 						return getPropertyValue("AngularOffset"),
-							_info("Mast is connected to a yoke '"..RC__getNameOrCodeorId(yoke).." with total 3 or more supporting masts"..
+							_info("Mast is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
 							"' - adjust mast's angular offset manually.")
 					end
 				end
@@ -2099,7 +2099,7 @@
 				
 					elseif n == 1 then 
 						-- Move to related mast (assuming galley (Utliggeråk))
-						return RC__getMileageFromRelatedObject(s), _info("Mileage deduced from support mast '"..RC__getNameOrCodeorId(r[0]).."'.")
+						return RC__getMileageFromRelatedObject(s), _info("Mileage deduced from support mast '"..RC__identify(r[0]).."'.")
 						
 					elseif n &gt;= 2 then
 						local m1 = r[0]
@@ -2114,7 +2114,7 @@
 						local y2 = m2.geoCoord.Y
 						local x = x1 - (d2/d1)*(x2-x1)
 						local y = y1 - (d2/d1)*(y2-y1)
-						local info = "Mileage deduced through support mast '"..RC__getNameOrCodeorId(m1).."' related by '"..s.."'."
+						local info = "Mileage deduced through support mast '"..RC__identify(m1).."' related by '"..s.."'."
 						return getAlignmentInfo(Alignment.id,x,y).Mileage, _info(info)
 					end
 				end
