@@ -669,47 +669,45 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="PushDirection" ><Formula>_JBTEH_UTL_PushDirection()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
 			ReturnType="String"
-			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever." >
+			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever. Direction change angle [DD] and lateral force [N] are shown as tooltip info." >
 			<Constructor>String _JBTEH_UTL_PushDirection()</Constructor>
 			<Formula>
-				function _JBTEH_UTL_PushDirection()
-				--[=[
-					Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever.
-					The trick is to check the sign of the Z component of the cross product of vectors from the middle wire clamp to the prev/next
-					wire clamp (or the prev/next wire tension balancer = OCS pole insertion point). The next/prev vectors are treated in the XY plane.
-					.
-					Find the net force acting on a cantilever, return Push or Pull accordingly.
-					p2 = this cantilever
-					wc = this cantilever's contact wire clamp
-					.
-					(prev)  (this)   (next)
-					p1      p2      p3     Cantilevers (attached to OCS pole). Note: The very first p1 can be a WTB.
-					|       |       |
-					U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
-					---v-------^-------v---  Contact wire
-					wc1     wc2     wc3    Wire clamps
-					.
-					All coordinates are in WCS.
-				--]=]
-					function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Provided for debugging purposes
-					--
+				function JBTEH_UTL_PushDirection()
+					--[=[
+						Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever.
+						The trick is to check the sign of the Z component of the cross product of vectors from the middle wire clamp to the prev/next
+						wire clamp (or the prev/next wire tension balancer = OCS mast insertion point). The next/prev vectors are treated in the XY plane.
+						.
+						Find the net force acting on a cantilever, return Push or Pull accordingly.
+						p2 = this cantilever
+						wc = this cantilever's contact wire clamp
+						.
+						(prev)  (this)   (next)
+						  p1      p2      p3     Cantilevers (attached to OCS mast). Note: The very first p1 can be a WTB.
+						   |       |       |
+						  U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
+						---v-------^-------v---  Contact wire
+						wc1     wc2     wc3    Wire clamps
+						.
+						All coordinates are in WCS.
+					--]=]
+					function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Used for debugging purposes, pretty-print 3D point
+
 					--Previous:
 					s0 = "Forrige utligger/avspenning"
 					r0,n0 = RC__getCollectionOfRelatedObjects(s0)
 					if n0 == 0 then
-						return Stagger &lt; 0 and "Pull" or "Push",_info("UNFINISHED - No preceding cantilever or wire tension balancer")
-					end
-					prev = r0[0]
-					p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
-					if prev.RcType == "JBTEH_AEH Avspenning" then
-						--Use WTB's insertion point:
-						wc1 = p1
+						--Return a best guess Push/Pull...:
+						return Stagger &lt; 0 and "Pull" or "Push",
+							_unfinished,_info("UNFINISHED - Missing previous cantilever or WTB - relate with '"..s0.."'.")
 					else
+						prev = r0[0]
+						p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
 						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 						t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
 						tg = math.atan(t.Y,t.X)
 						U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
-						wc1 = RC__getVectorSum(p1,U)
+						wc1 = getVectorSum(p1,U)
 					end
 					
 					--This:
@@ -718,45 +716,43 @@ positive feeder in AT system				positiv leder i AT-system
 					t = getAlignmentInfo(this.Alignment.id,p2).Tangent
 					tg = math.atan(t.Y,t.X)
 					V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
-					wc2 = RC__getVectorSum(p2,V)
+					wc2 = getVectorSum(p2,V)
 					
 					--Next:
-					s2 = "Neste utligger/avspenning"
+					s2 = "Neste utligger" --Note: NOBN-2021.a does not relate WTB to CL
 					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
 					if n2 == 0 then
-						return Stagger &lt; 0 and "Pull" or "Push", _info("UNFINISHED - No next cantilever or wire tension balancer")
-					end
-					nxt = r2[0]
-					p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
-					if nxt.RcType == "JBTEH_AEH avspenning" then
-						--Use WTB's insertion point:
-						wc3 = p3
+						--Return a best guess Push/Pull...:
+						return Stagger &lt; 0 and "Pull" or "Push",
+							_unfinished,_info("UNFINISHED - Missing next cantilever or WTB - relate with '"..s0.."'.")
 					else
-						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+						nxt = r2[0]
+						p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
 						t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
 						tg = math.atan(t.Y,t.X)
 						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
-						wc3 = RC__getVectorSum(p3,W)
+						wc3 = getVectorSum(p3,W)
 					end
 					
-					toPrev = RC__getVectorDifference(wc1,wc2)
-					toNext = RC__getVectorDifference(wc3,wc2)
-					crossProduct = RC__getVectorCrossProduct(toPrev,toNext)
-					
+					toPrev = getVectorDifference(wc1,wc2)
+					toNext = getVectorDifference(wc3,wc2)
+					crossProduct = getVectorCrossProduct(toPrev,toNext)
+				
 					--Find contact wire lateral force:
-					--Note: The cantilever variants are assumed to be the same as the available WTB OCS systems:
-					contactWireTension = NOBN_ocs_getTensioningStandardValues(this.Variant)["cwtf"] * 1000 --[N] 
-					toPrevForceVector = RC__getVectorScalarProduct(contactWireTension,RC__getVectorNormalized(toPrev))
-					toNextForceVector = RC__getVectorScalarProduct(contactWireTension,RC__getVectorNormalized(toNext))
-					lateralForceVector = RC__getVectorSum(toPrevForceVector,toNextForceVector)
-					lateralForce = RC__getVectorModulus(lateralForceVector)
+					contactWireTension = Variant:match("20") and 10000 or 13000 --System 20 has 10 kN, System 25 has 13 kN
+					toPrevForceVector =  getVectorScalarProduct(contactWireTension,getVectorNormalized(toPrev))
+					toNextForceVector = getVectorScalarProduct(contactWireTension,getVectorNormalized(toNext))
+					lateralForceVector = getVectorSum(toPrevForceVector,toNextForceVector)
+					lateralForce = getVectorModulus(lateralForceVector)
+					directionChangeDD = (crossProduct.Z &gt; 0 and -1 or 1) * getVectorAngleDD(getVectorScalarProduct(-1,toPrev),toNext)
 					forceDirection = (RightSided and crossProduct.Z &gt; 0 or LeftSided and crossProduct.Z &lt; 0) and "Push" or "Pull"
-
+					--if true then return p2s(toPrevForceVector),p2s(toNextForceVector),p2s(lateralForceVector),lateralForce,directionChangeDD end
+				
 					t = string.format("'%s' with lateral force %.01f Newton and direction change %.03f decimal degrees"
 						.." was deduced from previous cantilever/WTB '%s', this cantilever '%s'"
 						.." and next cantilever/WTB '%s'.",
 						forceDirection,lateralForce,directionChangeDD,RC__identify(prev),RC__identify(this),RC__identify(nxt))
-
+											
 					return forceDirection,_info(t)
 				end
 			</Formula>
@@ -849,7 +845,7 @@ positive feeder in AT system				positiv leder i AT-system
 					s = "Er utligger for kontaktledning"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 1 then return 
-						RC__getNameOrCodeorId(r[0])
+						RC__identify(r[0])
 					else
 						return "CW=?"
 					end		
@@ -1195,8 +1191,8 @@ positive feeder in AT system				positiv leder i AT-system
 					rNext,nNext = RC__getCollectionOfRelatedObjects(sNext)
 					if nPrev == 1 and nNext == 1 then
 						return string.format("%d / %d: OK - Preceded by %s '%s' / followed by %s '%s'.", nPrev,nNext,
-								rPrev[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__getNameOrCodeorId(rPrev[0]),
-								rNext[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__getNameOrCodeorId(rNext[0])
+								rPrev[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rPrev[0]),
+								rNext[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rNext[0])
 							),_ok
 					elseif nPrev == 0 and nNext == 0 then
 						return string.format("%d / %d: UNFINISHED - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_warning --TODO: _unfinished
@@ -1246,7 +1242,7 @@ positive feeder in AT system				positiv leder i AT-system
 					end
 			
 					d = RC__getVectorNormalized(RC__getVectorDifference(w,v)) --2D length
-					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__getNameOrCodeorId(this).." and "..RC__getNameOrCodeorId(nextItem).." measured in center track.")
+					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
 				end
 			end
 		</Formula>

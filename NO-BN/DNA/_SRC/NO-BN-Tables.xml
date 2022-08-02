@@ -942,7 +942,7 @@ return string.format("%.03f",g)</Data>
 					<HideColumn>false</HideColumn>
 					<SortOption>Ascending</SortOption>
 					<Alignment>MiddleCenter</Alignment>
-					<Data>RC__getNameOrCodeorId()</Data>
+					<Data>RC__identify()</Data>
 					</ColumnSpecification>
 					<ColumnSpecification>
 					<Guid>71b321ec-4bc3-493d-974b-2b01236d720c</Guid>
@@ -3095,9 +3095,9 @@ end</Data>
 
 --Abbreviations:
 --	cow		contact wire
---	gwy		guy wire (spanner)
+--	gwy		guywire (spanner)
 --	pol		OCS pole (mast), all types
---	fun		OCS pole foundation, guy wire or spanner foundation
+--	fun		OCS pole foundation, guywire or spanner foundation
 --	cnt		cantilever
 --	mal		midpoint anchor line
 --  map		midpoint anchor point
@@ -3867,7 +3867,7 @@ end</Data>
 tol2 = 0.5 --[m] Enough to find the OCS pole holding a midpoint anchor at the tip of its cantilever (for DNA version 2021.a).
 dnaIri = DocumentData.DnaIri:match(".+;(.d+.%a)$")
 
-function RC__vectorAdd(u,v) return getPoint3D(u.X+v.X, u.Y+v.Y, u.Z+v.Z) end
+function getVectorSum(u,v) return getPoint3D(u.X+v.X, u.Y+v.Y, u.Z+v.Z) end
 
 if RcType == "JBTEH_AEH Avspenning" then
 	poles = getUnionOfCollections({
@@ -3890,8 +3890,8 @@ elseif RcType == "JBTEH_UTL Utligger" then
 	--Add vector from insertion point of cantilever to its tip (as seen in the OCS plan view, i.e. disregarding cant), in WCS coordinates:
 	t = getAlignmentInfo(this.Alignment.id,p1).Tangent
 	tg = math.atan(t.Y,t.X)
-	U = getPoint3D(RC__acsVector2wcsVector(DistanceToAlignment &lt; 0 and CantileverLength or -CantileverLength, 0, tg)) --Vector pointing along the cantilever
-	tipOfCantilever = RC__vectorAdd(p1,U)
+	U = getPoint3D(RC__getWcsVectorFromAcsVector(DistanceToAlignment &lt; 0 and CantileverLength or -CantileverLength, 0, tg)) --Vector pointing along the cantilever
+	tipOfCantilever = getVectorSum(p1,U)
 	mpas = getNearbyPointObjects2D(tol2,"JBTEH_AEH Avspenning",tipOfCantilever) --collection of MPA(s), if any
 
 	--Make a joint collection of WTBs plus a potential MPA at the same OCS pole:
@@ -4440,9 +4440,9 @@ end</Data>
 				--fix = getNearbyPointObjects2D(5, "JBTEH_AEH Avspenning")
 				
 				--fix = Relations["Er kl-mast for utligger"][0].Relations["Fikseres av fixline"]
-				ta = avspenning and RC__getNameOrCodeorId(avspenning[0]) or ""
-				ts = strever and RC__getNameOrCodeorId(strever[0]) or ""
-				tf = fix and RC__getNameOrCodeorId(fix[0]) or ""
+				ta = avspenning and RC__identify(avspenning[0]) or ""
+				ts = strever and RC__identify(strever[0]) or ""
+				tf = fix and RC__identify(fix[0]) or ""
 				
 				
 				t = {}
@@ -4528,7 +4528,7 @@ end</Data>
 --Associate each table with the area capturing the objects to be included in the table.
 --
 --This table definition relies on the following Lua functions to be contained in the DNA:
---    RC__getNameOrCodeorId(xyzzy)                        : Returns object xyzzy's  name if present, or code if present, or guid.
+--    RC__identify(xyzzy)                        : Returns object xyzzy's  name if present, or code if present, or guid.
 --    NOBN_trk_toKm(ReferenceMileage)                 : Returns a string with ref. mileage as km with 3 decimals (meter precision).
 --    r,n = RC__getCollectionOfRelatedObjects(s) : Returns Relations[s]:filter(function (x) return x:isVisible() end) and the size of that collection.
 --
@@ -4613,7 +4613,7 @@ elseif EarthingMethod == "Wire" then
 	if EarthingAlignment == nil then
 		return "Missing PE wire"
 	else
-		return RC__getNameOrCodeorId(EarthingAlignment)
+		return RC__identify(EarthingAlignment)
 	end
 
 elseif EarthingMethod == "Rail" or EarthingMethod == "Track" then --(prepared for future change to enum value from 'Rail' to 'Track')
@@ -4627,7 +4627,7 @@ elseif EarthingMethod == "Object" then
 	if EarthingObject == nil then
 		return "Missing PE object"
 	else
-		return RC__getNameOrCodeorId(EarthingObject)
+		return RC__identify(EarthingObject)
 	end
 	
 elseif EarthingMethod == "None" or EarthingMethod == "Unknown" then
@@ -4686,7 +4686,7 @@ end</Data>
       <Width>70</Width>
       <Sort>Ascending</Sort>
       <Alignment>MiddleCenter</Alignment>
-      <Data>RC__getNameOrCodeorId()</Data>
+      <Data>RC__identify()</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>289d4be1-1319-4c1c-a970-dba62aca2493</Guid>
@@ -4698,7 +4698,7 @@ end</Data>
       <Sort />
       <Alignment>MiddleCenter</Alignment>
       <Data>if RcType == "JBTEH_JOR Jordleder" then
-	return "Skinne / "..RC__getNameOrCodeorId()
+	return "Skinne / "..RC__identify()
 else 
 	return EarthingLabelText
 end</Data>
@@ -4779,7 +4779,7 @@ elseif EarthingMethod == "Wire" then
 	return "Direkte til langsgående jordleder"
 
 elseif EarthingMethod == "Object" then
-	return "Jordet via "..RC__getNameOrCodeorId(EarthingObject)
+	return "Jordet via "..RC__identify(EarthingObject)
 
 else
 	return "?"

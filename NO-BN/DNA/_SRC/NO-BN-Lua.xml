@@ -147,11 +147,11 @@
 				dist = distance(closest)
 				t = string.format("%.3f", dist)
 				if dist &lt; errorThreshold then 
-					return string.format("%.03f: ERROR - %s '%s' too close in '%s' direction, outside tolerance %0.3f m.", dist,objectType:sub(10),RC__getNameOrCodeorId(closest),searchDir,errorThreshold),_error
+					return string.format("%.03f: ERROR - %s '%s' too close in '%s' direction, outside tolerance %0.3f m.", dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_error
 				elseif dist &lt; warningThreshold then 
-					return string.format("%.03f: WARNING - %s '%s' close in '%s' direction, but within tolerance %0.3f m.",dist,objectType:sub(10),RC__getNameOrCodeorId(closest),searchDir,errorThreshold),_warning
+					return string.format("%.03f: WARNING - %s '%s' close in '%s' direction, but within tolerance %0.3f m.",dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_warning
 				else
-					return string.format("%.03f: OK - %s '%s' is nearest in '%s' direction, farther away than tolerance %0.3f m.", dist,objectType:sub(10),RC__getNameOrCodeorId(closest),searchDir,errorThreshold),_ok
+					return string.format("%.03f: OK - %s '%s' is nearest in '%s' direction, farther away than tolerance %0.3f m.", dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_ok
 				end
 			end
 		</Formula>
@@ -302,13 +302,13 @@
 				if obj.EarthingMethod == "None" then 
 					return ""
 				elseif obj.EarthingMethod == "Object" then
-					return RC__getNameOrCodeorId(obj.EarthingObject).." / "..RC__getNameOrCodeorId(obj)
+					return RC__identify(obj.EarthingObject).." / "..RC__identify(obj)
 				elseif obj.EarthingMethod == "Wire" then 
-					return RC__getNameOrCodeorId(obj.EarthingAlignment).." / "..RC__getNameOrCodeorId(obj)
+					return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
 				elseif obj.EarthingMethod == "Rail" then 
-					return RC__getNameOrCodeorId(obj.EarthingAlignment).." / "..RC__getNameOrCodeorId(obj)
+					return RC__identify(obj.EarthingAlignment).." / "..RC__identify(obj)
 				elseif obj.EarthingMethod == "Unknown" then 
-					return "(?)".." / "..RC__getNameOrCodeorId(obj)
+					return "(?)".." / "..RC__identify(obj)
 				else
 					return _error, "ERROR - Bad Earthing Method ["..obj.EarthingMethod.."]."
 				end
@@ -552,9 +552,9 @@
 					h = c/1000.0 --[m]
 					if h &gt; cg then 
 						h = cg - 0.001 -- Almost 90 degrees roll...
-						msg = "Cant truncated to max, "..RC__getRounded(1000*h).." mm."
+						msg = "Cant truncated to max, "..RC__round(1000*h).." mm."
 					else
-						msg = RC__getRounded(1000*h).." mm cant."
+						msg = RC__round(1000*h).." mm cant."
 					end
 					railSeparationXY = math.sqrt(cg^2 - h^2)
 					if h == 0.0 then
@@ -811,13 +811,13 @@
 							return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 						else 
 							v = math.max(135,math.min(210,DesignSpeed))
-							return RC__getRounded(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
+							return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 						end
 			
 					elseif DistantSignal == "Ja" then 
 						-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 						v = math.max(40,math.min(130,DesignSpeed))
-						return RC__getRounded(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
+						return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 			
 					elseif HighShuntingSignal ~= "-" then
 						return 50, _info("50 m fixed sighting requirement during shunting movements.")
@@ -833,13 +833,13 @@
 						return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
 					else 
 						v = math.max(135,math.min(210,DesignSpeed))
-						return RC__getRounded(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
+						return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 					end
 			
 				elseif RcType == "SA-SIG PLO-forsignal" then
 					-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 					v = math.max(40,math.min(130,DesignSpeed))
-					return RC__getRounded(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
+					return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 			
 				elseif RcType == "JBTSA_SIG Veisignal" then
 					--Signal mot vei
@@ -1008,7 +1008,7 @@ function NOBN_bnp_getBoardSightingRequirement()
 	then
 		-- Ref TRV Underbygning vedlikehold, 2.1.1 "Sikt til signaler og skilt"
 		v = math.max(40,math.min(130,DesignSpeed))
-		d = RC__getRounded(v/3.6 * 5, 0)
+		d = RC__round(v/3.6 * 5, 0)
 		return d, _info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m.")
 
 	elseif		
@@ -1060,7 +1060,7 @@ end
 			
 				if obj == nil then obj = this end
 				if RcType:match("JBTEH_FUN KL%-fundament") then 
-					return fn(obj,{"JBTEH_MAS KL-mast","JBTEH_MAS Hengemast i åk","JBTEH_MAS Hengemast for bru og tunnel","JBTEH_BAF Bardunfeste","JBTEH_STF Streverfeste"},"UNFINISHED - no visible OCS pole or spanner / stretcher fastener found at foundation.")
+					return fn(obj,{"JBTEH_MAS KL-mast","JBTEH_MAS Hengemast i åk","JBTEH_MAS Hengemast for bru og tunnel","JBTEH_BAF Bardunfeste","JBTEH_STF Streverfeste"},"UNFINISHED - no visible OCS pole or guywire / spanner fastener found at foundation.")
 				elseif RcType:match("JBTKU_FUN Signalfundament") then 
 					return fn(obj,{"JBTSA_SIG Signal"},"UNFINISHED - no visible signal found at foundation.")
 				elseif RcType:match("JBTKU_FUN Apparatskapfundament") then 
