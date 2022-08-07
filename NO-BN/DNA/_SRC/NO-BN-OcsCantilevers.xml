@@ -237,6 +237,28 @@ positive feeder in AT system				positiv leder i AT-system
 
 		<LuaExpression Name="name" ><Formula>Variant</Formula></LuaExpression>
 
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_UTK_Mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTK_Mileage()" 
+				ReturnType="Double"
+				Description="Returns the distance to alignment for this multi-cantilever console, adjusted to the side of its contact wire.
+				\n
+				\n- The cantilevers located on the same side of the OCS pole will modify their insertion points to make space for the console's steel bracket.
+				\n- The console's 'dir' property shall be 'both' when located on the OCS pole side towards the pole's track.
+				\n" >
+			<Constructor>Double _JBTEH_UTK_Mileage()</Constructor>
+			<Formula>
+				function _JBTEH_UTK_Mileage()
+					s = "Tilhører kl-mast"
+					r,n = getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return getPropertyValue("mileage"),_unfinished,_info("UNFINISHED - Relate with '"..s.."'.")
+					else
+						return r[0].mileage
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_UTK_DistanceToAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTK_DistanceToAlignment()" 
 				ReturnType="Double"
@@ -247,24 +269,9 @@ positive feeder in AT system				positiv leder i AT-system
 				\n" >
 			<Constructor>Double _JBTEH_UTK_DistanceToAlignment()</Constructor>
 			<Formula>
-				function _JBTEH_UTK_DistanceToAlignment() 
-					
-					local d
-					if ManholeDiameter &gt; 0 then
-						--Should "touch" MinFreeProfile, insertion point = center manhole at Top-of-rail
-						d = MinFreeProfile + ManholeDiameter/2000.0
-					elseif ManHoleLength &gt; 0 and ManHoleDepth &gt; 0 then
-						--Should "touch" MinFreeProfile, insertion point = midpoint long side towards track at Top-of-rail
-						if dir == "both" then d = MinFreeProfile + 0.0
-						elseif dir == "none" then d = MinFreeProfile + ManholeDepth/1000.0
-						elseif dir == "up" then d = MinFreeProfile + ManholeLength/2000.0
-						elseif dir == "down" then d = MinFreeProfile + ManholeLength/2000.0
-						else return 4e-4, _info("UNFINISHED - Unknown direction") 
-						end
-					else
-						return 4e-4, _info("Variant ["..Variant.."] has not been anticipated yet.")
-					end
-					return RightSided and d or -d, _info("Distance to alignment deduced from direction and from manhole dimensions.")
+				function _JBTEH_UTK_DistanceToAlignment()
+					--Console ends up at a distance to alignment where a single cantilever would have been:
+					return _JBTEH_UTL_DistanceToAlignment()
 				end
 			</Formula>
 		</LuaFunction>
@@ -869,6 +876,48 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
+		<CustomAttribute DataType="Double" Name="CantileverSpanLength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
+			Description="The span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using 'Neste utligger/avspenning'/'Forrige utligger/avspenning'." />
+		<LuaExpression Name="CantileverSpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
+			HideFromUser="false"
+			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
+		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
+		<Formula>
+			function _JBTEH_UTL_SpanLength()
+				--This cantilever:
+				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
+				tg = math.atan(t.Y,t.X)
+				cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
+				v = RC__getVectorSum(vv,cantileverVector)
+				
+				--Next cantilever:
+				s = "Neste utligger/avspenning"
+				r,n = RC__getCollectionOfRelatedObjects(s)
+				if n == 0 then
+					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
+				else
+					nextItem = r[0]
+					ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
+					if nextItem.RcType == "JBTEH_AEH Avspenning" then
+						w = ww
+					else
+						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
+						tg = math.atan(t.Y,t.X)
+						wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
+						w = RC__getVectorSum(ww,wcNext)
+					end
+			
+					d = RC__getVectorNormalized(RC__getVectorDifference(w,v)) --2D length
+					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
+				end
+			end
+		</Formula>
+	</LuaFunction>
+		
+
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
         <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="-6" 
@@ -913,14 +962,14 @@ positive feeder in AT system				positiv leder i AT-system
 					signedStagger = (SideOfAlignment == "Right" and -Stagger or Stagger)
 					if h == 0 then
 						--no cant:
-						return signedStagger
+						return RC__round(signedStagger,3)
 					else
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return ss*ContactWireHeight + cc*signedStagger
+							return RC__round(ss*ContactWireHeight + cc*signedStagger,3)
 						elseif ai.CantRotation == "CCW" then
-							return -ss*ContactWireHeight + cc*signedStagger
+							return RC__round(-ss*ContactWireHeight + cc*signedStagger,3)
 						else
 							return _error,0.999 --hopefully, this is a recognizable error value...
 						end
@@ -943,14 +992,14 @@ positive feeder in AT system				positiv leder i AT-system
 					c = ai.Cant
 					h = RC__isNan(c) and 0 or c/1000.0
 					if h == 0 then 
-						return ContactWireHeight
+						return RC__round(ContactWireHeight,3)
 					else
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return h/2 + cc*ContactWireHeight - ss*Stagger
+							return RC__round(h/2 + cc*ContactWireHeight - ss*Stagger,3)
 						elseif ai.CantRotation == "CCW" then
-							return h/2 + cc*ContactWireHeight + ss*Stagger
+							return RC__round(h/2 + cc*ContactWireHeight + ss*Stagger,3)
 						else
 							return _error,0.999
 						end
@@ -1290,48 +1339,6 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
-			Description="The span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using 'Neste utligger/avspenning'/'Forrige utligger/avspenning'." />
-		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
-			HideFromUser="false"
-			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
-		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
-		<Formula>
-			function _JBTEH_UTL_SpanLength()
-				--This cantilever:
-				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
-				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
-				tg = math.atan(t.Y,t.X)
-				cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
-				v = RC__getVectorSum(vv,cantileverVector)
-				
-				--Next cantilever:
-				s = "Neste utligger/avspenning"
-				r,n = RC__getCollectionOfRelatedObjects(s)
-				if n == 0 then
-					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
-				else
-					nextItem = r[0]
-					ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
-					if nextItem.RcType == "JBTEH_AEH Avspenning" then
-						w = ww
-					else
-						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
-						tg = math.atan(t.Y,t.X)
-						wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
-						w = RC__getVectorSum(ww,wcNext)
-					end
-			
-					d = RC__getVectorNormalized(RC__getVectorDifference(w,v)) --2D length
-					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
-				end
-			end
-		</Formula>
-	</LuaFunction>
-		
-
 		<!-- Extra functions, for use when the wire clamps have been provided based on survey data. -->
 		<!-- Use these functions to compute contact wire height and stagger "backwards". -->
 		<LuaFunction Name="_JBTEH_UTL_getContactWireHeightFromRelatedContactWireClamp()" 
@@ -1487,7 +1494,7 @@ positive feeder in AT system				positiv leder i AT-system
 				{% elsif Variant == 'S35MS' %}35{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
 				{% elsif Variant == 'Cariboni' %}CARIBONI
 				{% elsif Variant == 'TET08' %}TET08
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}
 			</BlockNameFormat>
