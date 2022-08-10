@@ -58,7 +58,10 @@
 				--has been requested or has been granted:
 				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
 
-				if Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
+				if (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
+					return _frames.UNFINISHED[_language]
+
+				elseif Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
 				elseif Derogation == "GRANTED" then return _frames.GRANTED[_language]
 
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then
@@ -67,8 +70,6 @@
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count &gt; 0) then
 					return _frames.WARNING[_language] --Deviating, no derogation requested or granted
 
-				elseif (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
-					return _frames.UNFINISHED[_language]
 				else
 					--do nothing, fall through to next check
 				end
@@ -77,17 +78,17 @@
 				ss = Relations.SourceSpace
 				rel = Relations.ObjectRelations
 				nRel = getCollectionLength(rel)
-			
+
 				for i = 0,nRel-1 do
 					r = rel[i]
 					--[[
-						Example:
+						Example - object is an OCS power switch (Norw: Bryter)
 						r = this.Relations.Objectrelations
 						r.RelationPromptText			"Omstilles av manøvermaskin"
-						r.Relation.RelatesTo.Min
+						r.Relation.RelatesTo.Min		0
 						r.Relations						Collection is empty (no forward relation exists)
 						r.ReverseRelationPromptText		"Omstiller kl-bryter"
-						r.Relation.ReverseRelatesTo.Min
+						r.Relation.ReverseRelatesTo.Min	1
 						r.ReverseRelations				Name-of-related-object(1 reverse relation found)
 					--]]
 					ss1 = ss:gsub("%-","%%-").."/"

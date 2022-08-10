@@ -1206,25 +1206,6 @@
 
 		<SetValue Key="GlobalWidth" Value="0.020" />
 
-		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
-		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
-		<CustomAttribute DataType="Enumeration" Name="GuyWireMaterial" DisplayName="Bardun materiale" DefaultValue="Bz II 50/19" 
-			Description="The overhead catenary system (OCS) guywire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
-			<Value>Bz II 50/19 KHF</Value>
-			<Value>Bz II 50/19 KHF isolert</Value>
-			<Value>Bz II 70/19 KHF</Value>
-		</CustomAttribute>
-		<LuaExpression Name="GuyWireMaterial" ><Formula>_JBTEH_BAR_GuyWireMaterial()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_BAR_GuyWireMaterial()" ReturnType="String"
-			Description="Obtains the standard guywire material according to OCS system." >
-			<Constructor>String _JBTEH_BAR_GuyWireMaterial()</Constructor>
-			<Formula>
-				function _JBTEH_BAR_GuyWireMaterial()
-					return NOBN_ocs_getWireMaterialTable()["gwMat"]
-				end
-			</Formula>
-		</LuaFunction>
-
 		<LuaExpression Name="code" ><Formula>_JBTEH_BAR_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_code()" ReturnType="String"
 			Description="Obtains the code for the OCS catenary wire guywire component, inherited from the associated contact wire, through the 'Er bardun for kontaktledning' relation." >
@@ -1256,6 +1237,59 @@
 			<Formula>
 				function _JBTEH_BAR_name()
 					return "Bar."..code
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
+			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08]." >
+			<Values>
+				<Value>Unknown</Value>
+				<Value>S25</Value>
+				<Value>S20A</Value>
+				<Value>S20AR</Value>
+				<Value>S20B</Value>
+				<Value>S20BR</Value>
+				<Value>S20C1</Value>
+				<Value>S20C2</Value>
+				<Value>S35</Value>
+				<Value>S35MS</Value>
+				<Value>Cariboni</Value>
+				<Value>TET08</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_KTL_OcsSystem()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_OcsSystem()" 
+			ReturnType="Enumeration"
+			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+			<Constructor>Enumeration _JBTEH_KTL_OcsSystem()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_OcsSystem()
+					os = getPropertyValue("OcsSystem")
+					if os == "Unknown" then
+						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
+					else
+						return os
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
+		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
+		<CustomAttribute DataType="Enumeration" Name="GuyWireMaterial" DisplayName="Bardun materiale" DefaultValue="Bz II 50/19" 
+			Description="The overhead catenary system (OCS) guywire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
+			<Value>Bz II 50/19</Value>
+			<Value>Bz II 50/19 isolert</Value>
+			<Value>Bz II 70/19</Value>
+		</CustomAttribute>
+		<LuaExpression Name="GuyWireMaterial" ><Formula>_JBTEH_BAR_GuyWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAR_GuyWireMaterial()" ReturnType="String"
+			Description="Obtains the standard guywire material according to OCS system." >
+			<Constructor>String _JBTEH_BAR_GuyWireMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_BAR_GuyWireMaterial()
+					return NOBN_ocs_getWireMaterialTable()["gwMat"]
 				end
 			</Formula>
 		</LuaFunction>
@@ -2176,7 +2210,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Konsoll på mast for avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING{{SymbolMode}}" 
+		<InsertPointObject VariantName="Konsoll på mast for avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -2227,7 +2261,7 @@
 	HIGH VOLTAGE
 	WIRE TENSION BALANCER (WTB)
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_ocs_geWiretTensioningDataTable()" 
+	<LuaFunction Name="NOBN_ocs_getWiretTensioningDataTable()" 
 		ReturnType="Table[4*Double]"
 		Description="Returns a table with standard tensioning force (tf) values, indexed as follows:
 		\n
@@ -2236,9 +2270,9 @@
 		\n[swtf] Stitch wire tensioning force
 		\n[awtf] Midpoint anchor line (wire) tensioning force
 		\n" >
-		<Constructor>Table[4*Double] NOBN_ocs_geWiretTensioningDataTable(OcsSystem os = Variant)</Constructor>
+		<Constructor>Table[4*Double] NOBN_ocs_getWiretTensioningDataTable(OcsSystem os = OcsSystem)</Constructor>
 		<Formula>
-			function NOBN_ocs_geWiretTensioningDataTable(os)
+			function NOBN_ocs_getWiretTensioningDataTable(os)
 				os = os or OcsSystem
 				local TensioningForces = {
 					["Unknown"] = {cwtf=0, 		mwtf=0.0, 	swtf=0,		awtf=0 },
@@ -2448,10 +2482,10 @@
 				function _JBTEH_AEH_PrimaryTensioningForce()
 					if Variant == "Fastavspenning, enkel" then
 						--Assume that this is a midpoint anchor wire (though it MIGHT be a single, short cw in a tunnel where you would split the WTB into two wall mounts):
-						return NOBN_ocs_geWiretTensioningDataTable(OcsSystem).awtf
+						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).awtf
 					else
 						--Assume that this is the contact wire:
-						return NOBN_ocs_geWiretTensioningDataTable(OcsSystem).cwtf
+						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).cwtf
 					end
 				end
 			</Formula>
@@ -2470,7 +2504,7 @@
 						return 0,_info("No messenger wire present with "..Variant..".")
 					else
 						--Assume that this is a messenger wire:
-						return NOBN_ocs_geWiretTensioningDataTable(OcsSystem).mwtf
+						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).mwtf
 					end
 				end
 			</Formula>
@@ -2492,7 +2526,7 @@
 					if OcsSystem == "Unknown" then
 						return "?/? kN",_info("OcsSystem has not been selected")
 					end
-					tf = NOBN_ocs_geWiretTensioningDataTable(OcsSystem)
+					tf = NOBN_ocs_getWiretTensioningDataTable(OcsSystem)
 					if Variant == "Fastavspenning, enkel" then
 						 --Assume that this is an anchoring wire, for the midpoint anchor (but it MIGHT be a CW or MW in a narrow tunnel):
 						return tf.awtf.." kN (fix)",_info("Midpoint anchor wire")
@@ -2658,30 +2692,6 @@
 			<Variant Name="Fixpunkt" />
 		</Variants>
 		
-        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_FIX_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIX_DistanceToAlignment()" 
-			ReturnType="String"
-			Description="Obtains the DistanceToAlignment for this midpoint anchor, deduced from its cantilever." >
-			<Constructor>String _JBTEH_FIX_DistanceToAlignment()</Constructor>
-			<Formula>
-				function _JBTEH_FIX_DistanceToAlignment()
-					sCnt = "Låser utligger"
-					rCnt,nCnt = RC__getCollectionOfRelatedObjects(sCnt)
-					if nCnt == 0 then
-						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
-					elseif nCnt == 1 then
-						cnt = rCnt[0]
-						return cnt.Stagger,_info("Distance to alignment was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
-					else
-						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
-					end
-
-				end
-			</Formula>
-		</LuaFunction>
-
-        <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-
 		<LuaExpression Name="code" ><Formula>_JBTEH_FIX_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIX_code()" 
 			ReturnType="String"
@@ -2696,11 +2706,12 @@
 					elseif nCnt == 1 then
 						cnt = rCnt[0]
 						sCow = "Fikserer kontaktledning"
-						rCow,nCow = RC__getCollectionOfRelatedObjects(sCow,cnt)
+						rCow,nCow = RC__getCollectionOfRelatedObjects(sCow)
 						if nCow == 0 then
 							return _unfinished,"UNFINISHED - Relate midpoint anchor to its contact wire with '" ..sCow.."'."
 						elseif nCow == 1 then
-							return rCow[0].code,_info("Code was deduced from related contact wire.")
+							cow = rCow[0]
+							return cow.code,_info("Code was deduced from related contact wire "..RC__identify(cow)..".")
 						else
 							return _error,"ERROR - Midpoint anchor is related to more than one visible contact wire."
 						end
@@ -2742,6 +2753,29 @@
 				end
 			</Formula>
 		</LuaFunction>
+
+        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_FIX_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_DistanceToAlignment()" 
+			ReturnType="String"
+			Description="Obtains the DistanceToAlignment for this midpoint anchor, deduced from its cantilever." >
+			<Constructor>String _JBTEH_FIX_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_FIX_DistanceToAlignment()
+					sCnt = "Låser utligger"
+					rCnt,nCnt = RC__getCollectionOfRelatedObjects(sCnt)
+					if nCnt == 0 then
+						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
+					elseif nCnt == 1 then
+						cnt = rCnt[0]
+						return cnt.Stagger,_info("Distance to alignment was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
+					else
+						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 
 		<!-- Model check: That FIX point is as close to the CW midpoint as possible and that is actually needed: -->
 						<!-- if Variant:lower():match("fix") then -->
