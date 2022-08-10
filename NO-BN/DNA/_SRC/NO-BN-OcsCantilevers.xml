@@ -249,13 +249,13 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTK_Mileage()
 					s = "Tilhører kl-mast"
-					r,n = getCollectionOfRelatedObjects(s)
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("mileage"),_unfinished,_info("UNFINISHED - Relate with '"..s.."'.")
 					else
 						return r[0].mileage
 					end
-				end
+		       		end
 			</Formula>
 		</LuaFunction>
 
@@ -282,9 +282,10 @@ positive feeder in AT system				positiv leder i AT-system
 		<!-- TODO Seksjonsutliggerkonsoll skal snappe til mast, og skal selv tilby snapping for utliggere -->
 		<!-- TODO Seksjonsutliggerkonsoll skal bevege seg mot sporet på funksjon av mastens tykkelse (som utliggere) -->
 		<!-- TODO Seksjonsutliggerkonsoll skal finne sin høyde fra utliggernes øvre konsoll (som skal være like) -->
-		<InsertPointObject VariantName="Seksjonsutliggerkonsoll H-300" DisplayBlockName="NO-BN-2D-JBTEH_UTK-KONSOLL-FOR-SEKSJONSUTLIGGER-1440-H-300{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
+		<InsertPointObject VariantName="Seksjonsutliggerkonsoll H-300" DisplayBlockName="NO-BN-2D-JBTEH_UTK-KONSOLL-FOR-SEKSJONSUTLIGGER-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
 				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true" />
 		</InsertPointObject>
 		
 		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="" >
@@ -718,12 +719,13 @@ positive feeder in AT system				positiv leder i AT-system
 			</Values>
 		</CustomAttribute>
 		<LuaExpression Name="PushDirection" ><Formula>_JBTEH_UTL_PushDirection()</Formula></LuaExpression>
+
 		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
 			ReturnType="String"
 			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever. Direction change angle [DD] and lateral force [N] are shown as tooltip info." >
 			<Constructor>String _JBTEH_UTL_PushDirection()</Constructor>
 			<Formula>
-				function JBTEH_UTL_PushDirection()
+				function _JBTEH_UTL_PushDirection()
 					--[=[
 						Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever.
 						The trick is to check the sign of the Z component of the cross product of vectors from the middle wire clamp to the prev/next
@@ -733,17 +735,16 @@ positive feeder in AT system				positiv leder i AT-system
 						p2 = this cantilever
 						wc = this cantilever's contact wire clamp
 						.
-						(prev)  (this)   (next)
-						  p1      p2      p3     Cantilevers (attached to OCS mast). Note: The very first p1 can be a WTB.
-						   |       |       |
-						  U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
-						---v-------^-------v---  Contact wire
-						wc1     wc2     wc3    Wire clamps
+						.   (prev)  (this)   (next)
+						.     p1      p2      p3     Cantilevers (attached to OCS mast). Note: The very first p1 can be a WTB.
+						.      |       |       |
+						.     U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
+						.   ---v-------^-------v---  Contact wire
+						.     wc1     wc2     wc3    Wire clamps
 						.
-						All coordinates are in WCS.
+						.   All coordinates are in WCS.
 					--]=]
 					function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Used for debugging purposes, pretty-print 3D point
-
 					--Previous:
 					s0 = "Forrige utligger/avspenning"
 					r0,n0 = RC__getCollectionOfRelatedObjects(s0)
@@ -754,13 +755,19 @@ positive feeder in AT system				positiv leder i AT-system
 					else
 						prev = r0[0]
 						p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
-						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-						t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
-						tg = math.atan(t.Y,t.X)
-						U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
-						wc1 = getVectorSum(p1,U)
+						if prev.RcType == "JBTEH_AEH Avspenning" then
+							--Preceded by a Wire Tension Balancer.
+							wc1 = p1
+						else
+							--Preceded by a cantilever.
+							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+							t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
+							tg = math.atan(t.Y,t.X)
+							U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+							wc1 = getVectorSum(p1,U)
+						end
 					end
-					
+				
 					--This:
 					p2 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
 					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
@@ -768,9 +775,9 @@ positive feeder in AT system				positiv leder i AT-system
 					tg = math.atan(t.Y,t.X)
 					V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
 					wc2 = getVectorSum(p2,V)
-					
+				
 					--Next:
-					s2 = "Neste utligger" --Note: NOBN-2021.a does not relate WTB to CL
+					s2 = "Neste utligger/avspenning"
 					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
 					if n2 == 0 then
 						--Return a best guess Push/Pull...:
@@ -779,18 +786,25 @@ positive feeder in AT system				positiv leder i AT-system
 					else
 						nxt = r2[0]
 						p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
-						t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
-						tg = math.atan(t.Y,t.X)
-						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
-						wc3 = getVectorSum(p3,W)
+						if nxt.RcType == "JBTEH_AEH Avspenning" then
+							--Followed by a Wire Tension Balancer.
+							wc3 = p3
+						else
+							--Followed by a cantilever.
+							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+							t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
+							tg = math.atan(t.Y,t.X)
+							W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
+							wc3 = getVectorSum(p3,W)
+						end
 					end
-					
+				
 					toPrev = getVectorDifference(wc1,wc2)
 					toNext = getVectorDifference(wc3,wc2)
 					crossProduct = getVectorCrossProduct(toPrev,toNext)
 				
 					--Find contact wire lateral force:
-					contactWireTension = Variant:match("20") and 10000 or 13000 --System 20 has 10 kN, System 25 has 13 kN
+					contactWireTension = NOBN_ocs_getWiretTensioningDataTable(Variant).cwtf
 					toPrevForceVector =  getVectorScalarProduct(contactWireTension,getVectorNormalized(toPrev))
 					toNextForceVector = getVectorScalarProduct(contactWireTension,getVectorNormalized(toNext))
 					lateralForceVector = getVectorSum(toPrevForceVector,toNextForceVector)
@@ -803,7 +817,7 @@ positive feeder in AT system				positiv leder i AT-system
 						.." was deduced from previous cantilever/WTB '%s', this cantilever '%s'"
 						.." and next cantilever/WTB '%s'.",
 						forceDirection,lateralForce,directionChangeDD,RC__identify(prev),RC__identify(this),RC__identify(nxt))
-											
+				
 					return forceDirection,_info(t)
 				end
 			</Formula>
@@ -891,7 +905,7 @@ positive feeder in AT system				positiv leder i AT-system
 				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
 				tg = math.atan(t.Y,t.X)
 				cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
-				v = RC__getVectorSum(vv,cantileverVector)
+				v = getVectorSum(vv,cantileverVector)
 				
 				--Next cantilever:
 				s = "Neste utligger/avspenning"
@@ -907,10 +921,10 @@ positive feeder in AT system				positiv leder i AT-system
 						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
 						tg = math.atan(t.Y,t.X)
 						wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
-						w = RC__getVectorSum(ww,wcNext)
+						w = getVectorSum(ww,wcNext)
 					end
 			
-					d = RC__getVectorNormalized(RC__getVectorDifference(w,v)) --2D length
+					d = getVectorNormalized(getVectorDifference(w,v)) --2D length
 					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
 				end
 			end

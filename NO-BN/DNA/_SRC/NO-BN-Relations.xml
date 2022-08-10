@@ -96,7 +96,27 @@
 	<!-- High Voltage Cables -->
 	<!-- See 'kl-bryter' relations. -->
 
-	<!-- Power switch witn actuator -->
+	<Relations>
+		<SourceSpace>kl-fundament</SourceSpace>
+		<Relation Name="KL-fundamenttilhørighet" AskForRelation="true" AskForReverseRelation="false" Color="254" >
+			<TargetSpace>kl-mast</TargetSpace>
+			<TargetSpace>forankring</TargetSpace>
+			<RelatesTo Prompt="Er kl-fundament for" WarnAtSaturation="true" Min="1" Max="1" />
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="1" />
+		</Relation>
+	</Relations>
+
+	<Relations>
+		<SourceSpace>forankring</SourceSpace>
+		<Relation Name="KL-forankring bardun- og strevertilhørighet" AskForRelation="false" AskForReverseRelation="true" Color="254" >
+			<TargetSpace>kl-bardun</TargetSpace>
+			<TargetSpace>kl-strever</TargetSpace>
+			<RelatesTo Prompt="Forankrer" WarnAtSaturation="true" Min="1" Max="1" />
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="1" Max="1" />
+		</Relation>
+	</Relations>
+
+	<!-- Power switch with its actuator -->
 	<Relations>
 		<SourceSpace>kl-bryter</SourceSpace>
 		<Relation Name="KL-bryteromstilling" AskForRelation="false" AskForReverseRelation="true" Color="32" RelationLineScale="10">
@@ -133,32 +153,61 @@
 		</Relation>
 	</Relations>
 
-	<Relations>
-		<SourceSpace>kontakttrådklemme</SourceSpace>
-		<Relation Name="Kontakttrådklemme ledningstilhørighet" AskForRelation="false" AskForReverseRelation="true" Color="31" >
-			<TargetSpace>kontaktledning</TargetSpace>
-			<RelatesTo Prompt="Er kontakttrådklemme for" Min="0" Max="1" />
-			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="inf" />
-		</Relation>
-	</Relations>
-
 	<!-- Cantilever -->
 	<Relations>
 		<SourceSpace>utligger</SourceSpace>
-		<Relation Name="Utligger mastetilhørighet" AskForRelation="true" Color="200" >
+		<SourceSpace>avspenning</SourceSpace>
+		<Relation Name="Utligger- og avspenningsekvens" AskForRelation="true" AskForReverseRelation="true" Color="30"
+				Description="Forlengs: En utligger/avspenning har ingen eller én påfølgende utligger/avspenning.
+				\nBaklengs: En utligger/avspenning kan ha ingen eller en foregående utligger/avspenning.
+				\n\nMerk: Med korrekt prosjektering så vil én avspenning bare ha en neste eller en forrige, ikke begge, mens en utligger skal alltid ha både en neste og en forrige. Dette blir kontrollert i en modellsjekk i både utligger og i avspenningsobjekt."
+				ForwardLuaName="NOBN_NextCantileverOrWtb"
+				ReverseLuaName="NOBN_PreviousCantileverOrWtb"
+		>
+			<TargetSpace>utligger</TargetSpace>
+			<TargetSpace>avspenning</TargetSpace>
+			<RelatesTo Prompt="Neste" WarnAtSaturation="false" Min="0" Max="1" />
+			<ReverseRelatesTo Prompt="Forrige" WarnAtSaturation="true" Min="0" Max="1" />
+		</Relation>
+	</Relations>
+	
+	<Relations>
+		<SourceSpace>utligger</SourceSpace>
+		<Relation Name="Utligger mastetilhørighet" AskForRelation="true" Color="200"
+				Description="Forlengs: En utligger må tilhøre eksakt én KL-mast.
+				\nBaklengs: En KL-mast kan ha fra ingen til fire utliggere."
+				ForwardLuaName="NOBN_CantileverBelongsToOcsPole"
+				ReverseLuaName="NOBN_OcsPoleHasCantilever"
+		>
 			<TargetSpace>kl-mast</TargetSpace>
 			<RelatesTo Prompt="Tilhører" WarnAtSaturation="true" Min="1" Max="1" />
 			<ReverseRelatesTo Prompt="Er kl-mast for" WarnAtSaturation="true" Min="0" Max="4" />
 		</Relation>
-		<Relation Name="Utligger ledningstilhørighet" AskForRelation="false" Color="20" >
+		<Relation Name="Utligger ledningstilhørighet" AskForRelation="false" Color="20"
+				Description="Forlengs: En utligger må betjene eksakt én kontaktledning.
+				\nBaklengs: En kontaktledning (eller en mindre del av en kontaktledning) kan ha en eller flere utliggere."
+				ForwardLuaName="NOBN_CantileverBelongsToContactWire"
+				ReverseLuaName="NOBN_ContactWireHasCantilever" 
+		>
 			<TargetSpace>kontaktledning</TargetSpace>
 			<RelatesTo Prompt="Er utligger for" WarnAtSaturation="true" Min="1" Max="1" />
 			<ReverseRelatesTo Prompt="Er kontaktledning festet til" Min="0" Max="inf" />
 		</Relation>
-		<Relation Name="Utligger kontakttrådklemme" AskForRelation="false" AskForReverseRelation="true" Color="140" >
-			<TargetSpace>kontakttrådklemme</TargetSpace>
-			<RelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="1" />
-			<ReverseRelatesTo Prompt="Tilhører" WarnAtSaturation="true" Min="1" Max="1" /> 
+	</Relations>
+
+	<Relations>
+		<SourceSpace>kontakttrådklemme</SourceSpace>
+		<Relation Name="Kontakttrådklemme utliggertilhørighet" AskForRelation="true" AskForReverseRelation="false" Color="140" >
+			<TargetSpace>utligger</TargetSpace>
+			<RelatesTo Prompt="Tilhører" WarnAtSaturation="true" Min="1" Max="1" /> 
+			<!-- We allow for modeling without creating the contact wire clamp. It comes -->
+			<!-- in handy when feeding survey data back to the cantilever: -->
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="1" />
+		</Relation>
+		<Relation Name="Kontakttrådklemme ledningstilhørighet" AskForRelation="false" AskForReverseRelation="true" Color="31" >
+			<TargetSpace>kontaktledning</TargetSpace>
+			<RelatesTo Prompt="Er kontakttrådklemme for" Min="0" Max="1" />
+			<ReverseRelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="inf" />
 		</Relation>
 	</Relations>
 	
@@ -168,28 +217,16 @@
 		<Relation Name="Seksjonsutliggerkonsoll mastetilhørighet" AskForRelation="true" Color="140" >
 			<TargetSpace>kl-mast</TargetSpace>
 			<RelatesTo Prompt="Tilhører" WarnAtSaturation="true" Min="1" Max="1" />
-			<ReverseRelatesTo Prompt="Er kl-mast med " WarnAtSaturation="true" Min="0" Max="2" />
+			<ReverseRelatesTo Prompt="Er kl-mast med" WarnAtSaturation="true" Min="0" Max="2" />
 		</Relation>
-		<Relation Name="Seksjonsutliggerkonsoll utliggertilhørighet" AskForRelation="false" Color="142" >
+		<Relation Name="Seksjonsutliggerkonsoll utliggertilhørighet" AskForRelation="true" Color="142" >
 			<TargetSpace>utligger</TargetSpace>
-			<RelatesTo Prompt="Er seksjonsutliggerkonsoll for" WarnAtSaturation="true" Min="1" Max="2" />
+			<RelatesTo Prompt="Er seksjonsutliggerkonsoll for" WarnAtSaturation="true" Min="2" Max="2"NumberOfPromptsDuringInsertion="2" />
 			<ReverseRelatesTo Prompt="Er utligger festet til" WarnAtSaturation="true" Min="0" Max="1" />
 		</Relation>
 	</Relations>
 	
-	<!-- Cantilever / WTB sequence -->
-	<Relations>
-		<SourceSpace>utligger</SourceSpace>
-		<SourceSpace>avspenning</SourceSpace>
-		<Relation Name="Utligger- og avspenningsekvens" AskForRelation="true" AskForReverseRelation="true" Color="30" >
-			<TargetSpace>utligger</TargetSpace>
-			<TargetSpace>avspenning</TargetSpace>
-			<RelatesTo Prompt="Neste" WarnAtSaturation="false" Min="0" Max="1" />
-			<ReverseRelatesTo Prompt="Forrige" WarnAtSaturation="true" Min="0" Max="1" />
-		</Relation>
-	</Relations>
-
-	<!-- Fixpoint -->
+	<!-- Midpoint anchor - Norw.:Fixpoint -->
 	<Relations>
 		<SourceSpace>fixpunkt</SourceSpace>
 		<Relation Name="Fixpunkt utligger-låsing" AskForRelation="true" Color="210" >
@@ -210,16 +247,6 @@
 	</Relations>
 
 	<!-- Catenary support masts -->
-	<Relations>
-		<SourceSpace>kl-mast</SourceSpace>
-		<SourceSpace>forankring</SourceSpace>
-		<Relation Name="KL-mast fundamenttilhørighet" AskForRelation="false" AskForReverseRelation="true" Color="254" >
-			<TargetSpace>kl-fundament</TargetSpace>
-			<RelatesTo Prompt="Har" WarnAtSaturation="true" Min="0" Max="1" />
-			<ReverseRelatesTo Prompt="Er kl-fundament for" WarnAtSaturation="true" Min="0" Max="1" />
-		</Relation>
-	</Relations>
-
 	<Relations>
 		<SourceSpace>kl-mast</SourceSpace>
 		<Relation Name="KL-mast sekvens" AskForRelation="true" AskForReverseRelation="true" Color="120" >
