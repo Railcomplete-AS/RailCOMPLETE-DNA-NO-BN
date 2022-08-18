@@ -159,7 +159,58 @@
 </LuaFunction>
 
 
+<LuaFunction Name="GetChainage()" 
+	ReturnType="String" 
+	Description="Chainage test."
+	HideFromUser="false">
+	<Constructor>String GetChainage(_alignment, _pos)</Constructor>
+	<Formula>
+	function GetChainage(_alignment, _pos)
+		referenceMarkers = _alignment.RcAlignment.Stationing.LinearEvents
+	
+		function getReferenceMarkerBelow(posArg)
+			if referenceMarkers.Count &gt; 0 then
+				for i = referenceMarkers.Count,0,-1 do
+					rf = referenceMarkers[i-1]
+					if rf.Pos &lt;= posArg then
+						return rf
+					end
+				end
+			end
+			return nil
+		end
 
+		rf = getReferenceMarkerBelow(_pos)
+		if rf then
+			station = rf.Station + (_pos - rf.Pos)
+			return rf.Name .. string.format("%03d", math.floor(station + 0.5))
+		else
+			return "No Reference markers"
+		end 
+	end
+	</Formula>
+</LuaFunction>
+
+<LuaFunction Name="GetReferentName()" 
+	ReturnType="String" 
+	Description="Chainage test."
+	HideFromUser="false">
+	<Constructor>String GetReferentName(ReferenceMarker referent)</Constructor>
+	<Formula>
+	function GetReferentName(referent)
+		refVal = (referent.Mileage - referent.Station)/1000
+		refVal = string.format("%01d", math.floor(refVal))
+		if referent.Type == "Milepost" then
+			return "km"..refVal.."+"
+		elseif referent.Type == "Chainbreak" then
+			return "cb"..refVal.."+"
+		else
+			return "Start" .. refVal
+		end
+		
+	end
+	</Formula>
+</LuaFunction>
 
 <!--========================================================================================================
     End of file 
