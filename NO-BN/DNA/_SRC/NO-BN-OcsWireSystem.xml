@@ -10,14 +10,21 @@
 <xpp:bloc>
 
 <!--========================================================================================================
-	Line(ca)	Contents:
-	  25		ANNOTATION OF CONTACT WIRES
-	 140		OVERHEAD CATENARY SYSTEM - CONTACT WIRE
-	 360		CATENARY WIRE SYSTEM (including guywires and spanners)
-	 520		STRECTCHER AND SPANNER FORCE CONVEYOR
-	 785		ANCHORING OF STRETCHERS OR WIRES TO TUNNEL WALL
-	 850		TENSIONING
-	1140		End Of File
+	Contents:
+	ANNOTATION OF CONTACT WIRES (wire change annotations)
+	CONTACT WIRE ALIGNMENT
+	CONDUCTORS / CABLES ALIGNMENT
+	MIDPOINT ANCHOR LINE ALIGNMENT
+	GUYWIRE ALIGNMENT
+	SPANNER ALIGNMENT
+	GUYWIRE ANHCORING
+	SPANNER ANHCORING
+	ANCHORING OF GUYWIRES OR WIRES TO TUNNEL WALL
+	GUYWIRE/TENSIONING WIRE FASTENING TO OCS POLE
+	WIRE TENSION BALANCER (WTB)
+	MIDPOINT ANCHOR - 'FIXPOINT'
+	OCS CONDUCTOR ALIGNMENT CONTINUATIONS
+	OCS CONTACT WIRE ALIGNMENT CONTINUATIONS
 =========================================================================================================-->
 
 
@@ -154,8 +161,49 @@
 
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	OVERHEAD CATENARY SYSTEM - CONTACT WIRE
+	OVERHEAD CATENARY SYSTEM - CONTACT WIRE ALIGNMENT
  =========================================================================================================-->
+	<LuaFunction Name="NOBN_ocs_getWireMaterialTable()" 
+		ReturnType="Table[5*Double]"
+		Description="Returns a table with standard contact / messenger / tensioning / midpoint anchor / guy wire values, indexed as follows:
+			\n
+			\n[cwMat] = Contact wire material
+			\n[mwMat] = Messenger wire material
+			\n[twMat] = Tensioning wire material
+			\n[awMat] = Midpoint anchoring line (wire) material
+			\n[gwMat] = Guywire material
+			\n" >
+		<Constructor>Table[5*Double] NOBN_ocs_getWireMaterialTable(OcsSystem os)</Constructor>
+		<Formula>
+			--This function is declared as global in the DNA, accessible from all object types.
+			function NOBN_ocs_getWireMaterialTable(os)
+				os = os or OcsSystem
+				local ContactWireValues = {
+					--Note: Siemens' catenary wire clamp is about 12 cm high (117mm), above the upper tube
+					["Unknown"]  = {cwMat="",        mwMat="",            twMat="",            awMat="",            gwMat=""           },
+					["S25"]      = {cwMat="RiS 120", mwMat="Bz II 70/19", twMat="Bz II 70/19", awMat="Bz II 70/19", gwMat="Bz II 70/19"},
+					["S20A"]     = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S20AR"]    = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S20B"]     = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S20BR"]    = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S20C1"]    = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S20C2"]    = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S35"]      = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["S35MS"]    = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["Cariboni"] = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"},
+					["TET08"]    = {cwMat="RiS 100", mwMat="Bz II 50/19", twMat="Bz II 50/19", awMat="Bz II 50/19", gwMat="Bz II 50/19"}
+				}
+				if ContactWireValues[os] then
+					return ContactWireValues[os]
+				else
+					return ContactWireValues["Unknown"],_warning, _info("Unknown OCS System for contact wire ["..os.."]. ")
+				end
+			end 
+		</Formula>
+	</LuaFunction>
+		
+
+
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KTL Kontaktledning"
 				Layer="JBTEH_KTL" Color="ByLayer"
 				Group="Kontaktledning/Kontaktledning"
@@ -193,7 +241,7 @@
 
 		<LuaExpression Name="name" ><Formula>_JBTEH_KTL_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_name()" ReturnType="String"
-			Description="Obtains the overhead catenary system wire's name, deduced from its code, which is expected to end with a single letter from a to f.
+			Description="Obtains the overhead catenary system wire's name, deduced from its code, which is expected to end with a single letter from a to e.
 			\n
 			\nThe wire 'code' is expected to conform to the following pattern, where an asterisk means 'zero or more occurrences':
 			\n
@@ -220,9 +268,6 @@
 			\n
 			\ne - Suspension wire (Avspenningsline)
 			\nMulti-stranded steel wire(s) from the second Line Isolator(s) to the end Wire Tension Balancer (for 1 or 2 wires)
-			\n
-			\nf	- Midpoint anchor line (Fixline)
-			\nMulti-stranded steel wire from the start Wire Tension Balancer to the end Wire Tension Balancer
 			\n" >
 			<Constructor>String _JBTEH_KTL_name()</Constructor>
 			<Formula>
@@ -237,12 +282,45 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
-		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue=""
-			Description="The overhead catenary system (OCS) contact wire material or tensioning wire material." 
+		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
+			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08]." >
+			<Values>
+				<Value>Unknown</Value>
+				<Value>S25</Value>
+				<Value>S20A</Value>
+				<Value>S20AR</Value>
+				<Value>S20B</Value>
+				<Value>S20BR</Value>
+				<Value>S20C1</Value>
+				<Value>S20C2</Value>
+				<Value>S35</Value>
+				<Value>S35MS</Value>
+				<Value>Cariboni</Value>
+				<Value>TET08</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_KTL_OcsSystem()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_OcsSystem()" 
+			ReturnType="Enumeration"
+			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+			<Constructor>Enumeration _JBTEH_KTL_OcsSystem()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_OcsSystem()
+					os = getPropertyValue("OcsSystem")
+					if os == "Unknown" then
+						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
+					else
+						return os
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="ContactWireMaterial" DisplayName="Kontaktledning materiale" DefaultValue=""
+			Description="The overhead catenary system (OCS) contact wire material." 
 		>
+			<!-- Ref section 3.2 in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Hard_drawn_bronze_conductors_.28KHF.29 -->
 			<Values Variant="Kontaktledning, kjørbar" >
-				<!-- Ref section 3.2 in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Hard_drawn_bronze_conductors_.28KHF.29 -->
 				<Value Description="EN50149 - AC-100 – Cu-ETP" >Ri 100</Value>
 				<Value Description="EN 50149 – AC-100 – CuAg0,1 ">RiS 100</Value>
 				<Value Description="EN 50149 – AC-120 – Cu-ETP" >Ri 120</Value>
@@ -255,30 +333,80 @@
 				<Value Description= "EN 50149 – AC-120 – CuAg0,1" >RiS 120</Value>
 			</Values>
 			<Values Variant="Kontaktledning, avspenningsline" >
-				<!-- Ref. 3.8 in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Hard_drawn_bronze_conductors_.28KHF.29 -->
+				<Value>N/A</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="ContactWireMaterial" ><Formula>_JBTEH_KTL_ContactWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_ContactWireMaterial()" ReturnType="String"
+			Description="Obtains the standard contact wire material according to OCS system." >
+			<Constructor>String _JBTEH_KTL_ContactWireMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_ContactWireMaterial()
+					return NOBN_ocs_getWireMaterialTable()["cwMat"]
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<CustomAttribute DataType="Enumeration" Name="MessengerWireMaterial" DisplayName="Bæreline materiale" DefaultValue=""
+			Description="The overhead catenary system (OCS) messenger wire material." 
+		>
+			<Values Variant="Kontaktledning, kjørbar" >
+				<Value>Bz II 50/19</Value>
+				<Value>Bz II 50/19 isolert</Value>
+				<Value>Bz II 70/19</Value>
+			</Values>
+			<Values Variant="Kontaktledning, ikke kjørbar" >
+				<Value Description="EN50149 - AC-100 – Cu-ETP" >Ri 100</Value>
+				<Value Description="EN 50149 – AC-100 – CuAg0,1 ">RiS 100</Value>
+				<Value Description="EN 50149 – AC-120 – Cu-ETP" >Ri 120</Value>
+				<Value Description= "EN 50149 – AC-120 – CuAg0,1" >RiS 120</Value>
+			</Values>
+			<Values Variant="Kontaktledning, avspenningsline" >
+				<Value>N/A</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="MessengerWireMaterial" ><Formula>_JBTEH_KTL_MessengerWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_MessengerWireMaterial()" ReturnType="String"
+			Description="Obtains the standard contact wire material according to OCS system." >
+			<Constructor>String _JBTEH_KTL_MessengerWireMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_MessengerWireMaterial()
+					return NOBN_ocs_getWireMaterialTable()["mwMat"]
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="TensioningWireMaterial" DisplayName="Avspenningsline materiale" DefaultValue=""
+			Description="The overhead catenary system (OCS) tensioning wire material." 
+		>
+			<Values Variant="Kontaktledning, kjørbar" >
+				<Value>N/A</Value>
+			</Values>
+			<Values Variant="Kontaktledning, ikke kjørbar" >
+				<Value>N/A</Value>
+			</Values>
+			<Values Variant="Kontaktledning, avspenningsline" >
+				<!-- Steel wires - Ref. 3.8 in https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#Hard_drawn_bronze_conductors_.28KHF.29 -->
 				<Value>50/175 w/bitumen</Value>
 				<Value>60/222 w/bitumen</Value>
 				<Value>16/133</Value>
 				<Value>30/7</Value>
+				<Value>50/19 KHF</Value>
+				<Value>70/19 KHF</Value>
+				<Value>50/19 KHF isolert</Value>
 				<Value>50/19</Value>
 				<Value>70/19</Value>
 				<Value>80/19</Value>
 				<Value>95/19</Value>
 			</Values>
 		</CustomAttribute>
-		<LuaExpression Name="Material" ><Formula>_JBTEH_KTL_Material()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KTL_Material()" ReturnType="String"
-			Description="Obtains the CAD system layer name for the catenary wire, based on its Variant." >
-			<Constructor>String _JBTEH_KTL_Material()</Constructor>
+		<LuaExpression Name="TensioningWireMaterial" ><Formula>_JBTEH_KTL_TensioningWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_TensioningWireMaterial()" ReturnType="String"
+			Description="Obtains the standard tensioning wire material according to OCS system." >
+			<Constructor>String _JBTEH_KTL_TensioningWireMaterial()</Constructor>
 			<Formula>
-				function _JBTEH_KTL_Material()
-					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
-						return "RiS 100" --Default for System 20
-					elseif Variant:match("Kontaktledning, avspenningsline") then
-						return "50/19" --Default for System 20 (50mm2, 19 strands)
-					else
-						return "Bad Variant ["..Variant.."]."
-					end
+				function _JBTEH_KTL_TensioningWireMaterial()
+					return NOBN_ocs_getWireMaterialTable()["twMat"]
 				end
 			</Formula>
 		</LuaFunction>
@@ -459,7 +587,7 @@
 		
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	OVERHEAD CATENARY SYSTEM - CONDUCTOR
+	OVERHEAD CATENARY SYSTEM - CONDUCTOR (CABLE) ALIGNMENT
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_LED Ledning"
 				Layer="JBTEH_LED" Color="ByLayer"
@@ -917,7 +1045,7 @@
 
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	CATENARY WIRE SYSTEM : FIXLINE
+	MIDPOINT ANCHOR LINE
 	Comment: Object type is not known to Bane NOR's Banedata. The FIXLINE appears only as Pset Values to
 	the contact wire EH-KTL object in Banedata.
  =========================================================================================================-->
@@ -947,13 +1075,57 @@
 			<SetValue Key="CustomTransformation" Value="False"/>
 		</SetDynamicProperty>
 
-		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Bz II 50/19" 
-			Description="The overhead catenary system (OCS) fixline wire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
+		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
+			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08]." >
+			<Values>
+				<Value>Unknown</Value>
+				<Value>S25</Value>
+				<Value>S20A</Value>
+				<Value>S20AR</Value>
+				<Value>S20B</Value>
+				<Value>S20BR</Value>
+				<Value>S20C1</Value>
+				<Value>S20C2</Value>
+				<Value>S35</Value>
+				<Value>S35MS</Value>
+				<Value>Cariboni</Value>
+				<Value>TET08</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_FIL_OcsSystem()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIL_OcsSystem()" 
+			ReturnType="Enumeration"
+			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+			<Constructor>Enumeration _JBTEH_FIL_OcsSystem()</Constructor>
+			<Formula>
+				function _JBTEH_FIL_OcsSystem()
+					os = getPropertyValue("OcsSystem")
+					if os == "Unknown" then
+						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
+					else
+						return os
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="AnchoringLineMaterial" DisplayName="Fixline materiale" DefaultValue="Bz II 50/19" 
+			Description="The overhead catenary system (OCS) midpoint anchoring line material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
 			<!-- Fixline materials: See https://trv.banenor.no/app/kg7u5e4fv/67vku51/EH-707195-000_004_002.PDF -->
 			<Value>Bz II 50/19</Value>
-			<Value>Bz II 70/19</Value>
 			<Value>Bz II 50/19 isolert</Value>
+			<Value>Bz II 70/19</Value>
 		</CustomAttribute>
+		<LuaExpression Name="AnchoringLineMaterial" ><Formula>_JBTEH_FIL_AnchoringLineMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIL_AnchoringLineMaterial()" ReturnType="String"
+			Description="Obtains the standard anchoring line (wire) material according to OCS system." >
+			<Constructor>String _JBTEH_FIL_AnchoringLineMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_FIL_AnchoringLineMaterial()
+					return NOBN_ocs_getWireMaterialTable()["awMat"]
+				end
+			</Formula>
+		</LuaFunction>
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_FIL_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIL_code()" ReturnType="String"
@@ -1002,7 +1174,7 @@
 
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	CATENARY WIRE SYSTEM : STRETCHER
+	GUYWIRE ALIGNMENT
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_BAR Bardun"
 				Layer="JBTEH_BAR" Color="ByLayer"
@@ -1033,15 +1205,6 @@
 		</SetDynamicProperty>
 
 		<SetValue Key="GlobalWidth" Value="0.020" />
-
-		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
-		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
-		<CustomAttribute DataType="Enumeration" Name="Material" DisplayName="Ledningsmateriale" DefaultValue="Bz II 50/19" 
-			Description="The overhead catenary system (OCS) guywire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
-			<Value>Bz II 50/19 KHF</Value>
-			<Value>Bz II 70/19 KHF</Value>
-			<Value>Bz II 50/19 KHF isolert</Value>
-		</CustomAttribute>
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_BAR_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_code()" ReturnType="String"
@@ -1078,8 +1241,74 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- TODO Modelchecks. -->
-		<!-- Bardun: Se EH-707162. Vinkel 40-50 grader med vertikalen. Totallengde fra mast til bardunfeste skal være mellom 13 og 18 meter. -->
+		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
+			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08]." >
+			<Values>
+				<Value>Unknown</Value>
+				<Value>S25</Value>
+				<Value>S20A</Value>
+				<Value>S20AR</Value>
+				<Value>S20B</Value>
+				<Value>S20BR</Value>
+				<Value>S20C1</Value>
+				<Value>S20C2</Value>
+				<Value>S35</Value>
+				<Value>S35MS</Value>
+				<Value>Cariboni</Value>
+				<Value>TET08</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_KTL_OcsSystem()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_OcsSystem()" 
+			ReturnType="Enumeration"
+			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+			<Constructor>Enumeration _JBTEH_KTL_OcsSystem()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_OcsSystem()
+					os = getPropertyValue("OcsSystem")
+					if os == "Unknown" then
+						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
+					else
+						return os
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
+		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
+		<CustomAttribute DataType="Enumeration" Name="GuyWireMaterial" DisplayName="Bardun materiale" DefaultValue="Bz II 50/19" 
+			Description="The overhead catenary system (OCS) guywire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert]." >
+			<Value>Bz II 50/19</Value>
+			<Value>Bz II 50/19 isolert</Value>
+			<Value>Bz II 70/19</Value>
+		</CustomAttribute>
+		<LuaExpression Name="GuyWireMaterial" ><Formula>_JBTEH_BAR_GuyWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAR_GuyWireMaterial()" ReturnType="String"
+			Description="Obtains the standard guywire material according to OCS system." >
+			<Constructor>String _JBTEH_BAR_GuyWireMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_BAR_GuyWireMaterial()
+					return NOBN_ocs_getWireMaterialTable()["gwMat"]
+				end
+			</Formula>
+		</LuaFunction>
+
+		<!-- Guywire: See EH-707162. Angle should be 40-50 Decimal Degrees relative to horizon. -->
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_GuyWireAngle" DisplayName="Bardun tegneretning" 
+			Description="Checking that a guywire alignment shall start at its connection to thw wire or object it relieves, and extend to the guywire's base plate or fixation." />
+		<LuaExpression Name="mc_JBTEH_BAR_GuyWireAngle" IsModelCheck="true" ><Formula>_JBTEH_BAR_chkGuyWireAngle()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAR_chkGuyWireAngle()" ReturnType="String"
+			Description = "Checking that a guywire or spanner alignment shall start at an OCS pole's insertion point and extend to the guywire's / spanner's base plate." >
+			<Constructor>String _JBTEH_BAR_chkGuyWireAngle()</Constructor>
+			<Formula>
+				function _JBTEH_BAR_chkGuyWireAngle()
+					if true then -- 2021-03-30 TODO - XXXXXXXXXXXXXXXXXXXXXXXXXXXX code must be written--
+						return "SORRY - Model check for _JBTEH_BAR_chkGuyWireAngle has not been written yet.",_warning
+					end
+				end
+			</Formula>
+		</LuaFunction> 
 			
 		<!-- Asks for relation to its corresponding contact wire, and derives it code from it. -->
 		<PropertyPrompt Key="code" DefaultValue="Bardun" AcceptEmptyValue="false" /> 		
@@ -1093,21 +1322,6 @@
 		<!-- <LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression> -->
 		<!-- <SetValue Key="Model3DOffset" Value="0.0" /> -->
 		
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_GuyWireDirection" DisplayName="Bardun tegneretning" 
-			Description="Checking that a guywire alignment shall start at its connection to thw wire or object it relieves, and extend to the guywire's base plate or fixation." />
-		<LuaExpression Name="mc_JBTEH_BAR_GuyWireDirection" IsModelCheck="true" ><Formula>_JBTEH_BAR_chkGuyWireDirection()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_BAR_chkGuyWireDirection()" ReturnType="String"
-			Description = "Checking that a guywire or spanner alignment shall start at an OCS pole's insertion point and extend to the guywire's / spanner's base plate." >
-			<Constructor>String _JBTEH_BAR_chkGuyWireDirection()</Constructor>
-			<Formula>
-				function _JBTEH_BAR_chkGuyWireDirection()
-					if true then -- 2021-03-30 TODO - XXXXXXXXXXXXXXXXXXXXXXXXXXXX code must be written--
-							return "SORRY - Model check for _JBTEH_BAR_chkGuyWireDirection has not been written yet.",_warning
-					end
-				end
-			</Formula>
-		</LuaFunction> 
-
 		<InsertAlignment VariantName="Bardun" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="SweptModel3D_0.SweepProfile" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
@@ -1119,7 +1333,7 @@
 
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	CATENARY WIRE SYSTEM : SPANNER
+	SPANNER ALIGNMENT
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_STR Strever"
 				Layer="JBTEH_STR" Color="ByLayer"
@@ -1201,21 +1415,6 @@
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="SweptModel3D_0.Roll" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_STR_SpannerDirection" DisplayName="Strever tegneretning" 
-			Description="Checking that a guywire or spanner alignment shall start at an OCS pole's insertion point and extend to the guywire's / spanner's base plate." />
-		<LuaExpression Name="mc_JBTEH_STR_SpannerDirection" IsModelCheck="true" ><Formula>_JBTEH_STR_chkSpannerDirection()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_STR_chkSpannerDirection()" ReturnType="String"
-			Description = "Checking that a guywire or spanner alignment shall start at an OCS pole's insertion point and extend to the guywire's / spanner's base plate." >
-			<Constructor>String _JBTEH_STR_chkSpannerDirection()</Constructor>
-			<Formula>
-				function _JBTEH_STR_chkSpannerDirection()
-					if true then -- 2021-03-30 TODO - XXXXXXXXXXXXXXXXXXXXXXXXXXXX code must be written--
-							return "SORRY - Model check for _JBTEH_STR_chkSpannerDirection has not been written yet.",_warning
-					end
-				end
-			</Formula>
-		</LuaFunction> 
-
 		<InsertAlignment VariantName="Strever" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="SweptModel3D_0.SweepProfile" Value="NO-BN-SWEEP-FE-DIV-STEEL-BEAM-HUP-120-120" />
@@ -1227,8 +1426,7 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	FORCE RELIEF
-	GUY WIRE / SPANNER ANHCORING
+	GUY WIRE ANCHORING
 
 	NB! Covers both guywire anchoring and spanner anchoring, as well as ready-made spanners for attachment to 
 	tunnel roofs, for Ø120 suspension masts. These are the end points for guywires and spanners, these are Note
@@ -1396,7 +1594,7 @@
 				NO-BN-2D-JBTEH_BAF-BARDUNFESTE
 				{% if Variant == 'Bardunfeste fotplate, enkel' %}FOTPLATE-ENKEL
 				{% elsif Variant == 'Bardunfeste fotplate, dobbel' %}FOTPLATE-DOBBEL
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
@@ -1418,7 +1616,6 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	FORCE RELIEF
 	SPANNER ANHCORING
 
 	NB! Covers both guywire anchoring and spanner anchoring, as well as ready-made spanners for attachment to 
@@ -1623,7 +1820,7 @@
 				{% if Variant == 'Streverfeste fotplate (uten streveren)' %}FOTPLATE
 				{% elsif Variant == 'Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast' %}FOTPLATE
 				{% elsif Variant == 'Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel' %}FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
@@ -1712,7 +1909,7 @@
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTEH_TUF
 				{% if Variant == 'Veggfeste for KL-avspenning i tunnel' %}TUNNELFESTE
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
@@ -1729,7 +1926,7 @@
 <!--========================================================================================================
 	HIGH VOLTAGE
 	FORCE RELAY
-	GUYWIRE/TENSIONING FASTENING TO OCS POLE
+	GUYWIRE/TENSIONING WIRE FASTENING TO OCS POLE
 
 	Relays force from a contact wire (or messenger wire or cable) attached using a suitable bracket to
 	a location somewhere around the top of that OCS-pole, towards a guywire which ends up in an anchoring
@@ -1741,7 +1938,7 @@
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KPM Kraftoverføringskonsoll på mast"
 				Layer="JBTEH_KPM" Color="ByLayer"
-				Group="Kontaktledning/Kraftoverføringskonsoll"
+				Group="Kontaktledning/Konsoller"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -1841,7 +2038,7 @@
 						if n1 == 0 then
 							return "UNFINISHED - No incoming or outgoing WTB, guywire or spanner - relate with "..s1.."."
 						elseif n1 == 1 then
-							return "Konsoll "..r[0].code.." : ["..r1[0].."]"
+							return "Konsoll "..r[0].code.." : ["..r1[0].name.."]"
 						else
 							return "Konsoll "..r[0].code.." : ["..r1[0].name.."] &lt;-&gt; ["..r1[1].name.."]"
 						end
@@ -1997,10 +2194,13 @@
 					else
 						a = r[0].OcsMastProfile:match("[HM]EB(%d%d%d)") --'HEB220' etc: Capture three digits.
 						a = a or "240" --Default size if not a HEB or MEB mast...
-						if Variant == "Konsoll på mast for kurvebardun" then
+						if Variant == "Konsoll på mast for avspenning" then
+							--TODO: Make model depend on OCS pole type and WTB type
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-AVSPENNING"
+						elseif Variant == "Konsoll på mast for kurvebardun" then
 							--TODO: Make model depend on OCS pole type
-							return "NO-BN-3D-EH-KPM-KONSOLL-FOR-BARDUN-MOT-MAST"
-						elseif Variant == "Konsoll for streverfeste på mast" then 
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-KURVEBARDUN"
+						elseif Variant == "Konsoll på mast for strever" then 
 							return "NO-BN-3D-EH-STF-STREVERFESTE-KONSOLL-400x300-FOR-HEB"..a
 						else
 							return "Unknown Variant ["..Variant.."]."
@@ -2010,17 +2210,17 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Konsoll på mast for avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Konsoll på mast for avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Konsoll på mast for kurvebardun" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Konsoll på mast for kurvebardun" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-BARDUN-ELLER-STREVER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Konsoll på mast for strever" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Konsoll på mast for strever" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-BARDUN-ELLER-STREVER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -2035,7 +2235,12 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST
+				NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR
+				{% if Variant == 'Konsoll på mast for avspenning' %}AVSPENNING
+				{% elsif Variant == 'Konsoll på mast for kurvebardun' %}BARDUN-ELLER-STREVER
+				{% elsif Variant == 'Konsoll på mast for strever' %}BARDUN-ELLER-STREVER
+				{% else %}BAD_VARIANT
+				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
 		</SymbolDefinition>
@@ -2054,26 +2259,30 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	TENSION BALANCER
+	WIRE TENSION BALANCER (WTB)
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_ocs_getTensioningStandardValues()" 
+	<LuaFunction Name="NOBN_ocs_getWiretTensioningDataTable()" 
 		ReturnType="Table[4*Double]"
-		Description="Returns a standard tensioning force (tf) Values table: [cwtf]=contact wire tf, [mwtf]=catenary tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf. See NO-BN TRV." >
-		<Constructor>Table[4*Double] NOBN_ocs_getTensioningStandardValues([String OcsSystem])</Constructor>
+		Description="Returns a table with standard tensioning force (tf) values, indexed as follows:
+		\n
+		\n[cwtf] Contact wire tensioning force
+		\n[mwtf] Messenger wire tensioning force
+		\n[swtf] Stitch wire tensioning force
+		\n[awtf] Midpoint anchor line (wire) tensioning force
+		\n" >
+		<Constructor>Table[4*Double] NOBN_ocs_getWiretTensioningDataTable(OcsSystem os = OcsSystem)</Constructor>
 		<Formula>
-			function NOBN_ocs_getTensioningStandardValues(os)
+			function NOBN_ocs_getWiretTensioningDataTable(os)
 				os = os or OcsSystem
-				--Note: The OCS system alternatives should be the same as the available cantilever variants. 
-				--[cwtf]=contact wire tf, [mwtf]=messenger wire tf, [swtf]=stitch wire tf, [awtf]=anchor wire tf
 				local TensioningForces = {
-					["Unknown"] = {cwtf=0, 		mwtf=0.0, 	swtf=0,		awtf=0},
+					["Unknown"] = {cwtf=0, 		mwtf=0.0, 	swtf=0,		awtf=0 },
+					["S25"]		= {cwtf=15,		mwtf=15,	swtf=2.8, 	awtf=10},
 					["S20A"]	= {cwtf=10, 	mwtf=10,	swtf=2.3,	awtf=10},
 					["S20AR"]	= {cwtf=7.06,	mwtf=7.06,	swtf=2.3, 	awtf=10},
 					["S20B"]	= {cwtf=10,		mwtf=10,	swtf=0, 	awtf=10},
 					["S20BR"]	= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	awtf=10},
 					["S20C1"]	= {cwtf=13,		mwtf=13,	swtf=2.3, 	awtf=10},
 					["S20C2"]	= {cwtf=13,		mwtf=13,	swtf=2.3, 	awtf=10},
-					["S25"]		= {cwtf=15,		mwtf=15,	swtf=2.8, 	awtf=10},
 					["S35"]		= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	awtf=10},
 					["S35MS"]	= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	awtf=10},
 					["Cariboni"]= {cwtf=13,		mwtf=13,	swtf=0, 	awtf=13},
@@ -2150,7 +2359,7 @@
 		<LuaExpression Name="code" ><Formula>_JBTEH_AEH_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_code()" 
 			ReturnType="String"
-			Description="Obtains the 'code' for this OCS tensioning device, deduced from its own alignment (its contact wire or its fix line) and its position (start/end)." >
+			Description="Obtains the 'code' for this OCS tensioning device, deduced from its own alignment (its contact wire or its midpoint anchoring line) and its position (start/end)." >
 			<Constructor>String _JBTEH_AEH_code()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_code()
@@ -2204,39 +2413,6 @@
 			</Formula>
 		</LuaFunction>
 
-		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="Unknown"
-			Description="The OCS System is one of [Unknown | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S25 | S35 | S35MS | Cariboni | TET08]." >
-			<Values>
-				<Value>Unknown</Value>
-				<Value>S20A</Value>
-				<Value>S20AR</Value>
-				<Value>S20B</Value>
-				<Value>S20BR</Value>
-				<Value>S20C1</Value>
-				<Value>S20C2</Value>
-				<Value>S25</Value>
-				<Value>S35</Value>
-				<Value>S35MS</Value>
-				<Value>Cariboni</Value>
-				<Value>TET08</Value>
-			</Values>
-		</CustomAttribute>
-		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_AEH_OcsSystem()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_AEH_OcsSystem()" 
-			ReturnType="Enumeration"
-			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
-			<Constructor>Enumeration _JBTEH_AEH_OcsSystem()</Constructor>
-			<Formula>
-				function _JBTEH_AEH_OcsSystem()
-					os = getPropertyValue("OcsSystem")
-					if os == "Unknown" then
-						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
-					else
-						return os
-					end
-				end			</Formula>
-		</LuaFunction>
-
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_AEH_RelativeElevation()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_RelativeElevation()" 
 			ReturnType="String"
@@ -2261,6 +2437,40 @@
 			</Formula>
 		</LuaFunction>
 
+		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
+			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08]." >
+			<Values>
+				<Value>Unknown</Value>
+				<Value>S25</Value>
+				<Value>S20A</Value>
+				<Value>S20AR</Value>
+				<Value>S20B</Value>
+				<Value>S20BR</Value>
+				<Value>S20C1</Value>
+				<Value>S20C2</Value>
+				<Value>S35</Value>
+				<Value>S35MS</Value>
+				<Value>Cariboni</Value>
+				<Value>TET08</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_AEH_OcsSystem()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_OcsSystem()" 
+			ReturnType="Enumeration"
+			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+			<Constructor>Enumeration _JBTEH_AEH_OcsSystem()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_OcsSystem()
+					os = getPropertyValue("OcsSystem")
+					if os == "Unknown" then
+						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
+					else
+						return os
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<CustomAttribute DataType="String" Name="PrimaryTensioningForce" DisplayName="Primær strekkraft"
 			Description="The contact wire (or midpoint anchor line) tensioning force [kN]." />
 		<LuaExpression Name="PrimaryTensioningForce" ><Formula>_JBTEH_AEH_PrimaryTensioningForce(OcsSystem)</Formula></LuaExpression>
@@ -2272,10 +2482,10 @@
 				function _JBTEH_AEH_PrimaryTensioningForce()
 					if Variant == "Fastavspenning, enkel" then
 						--Assume that this is a midpoint anchor wire (though it MIGHT be a single, short cw in a tunnel where you would split the WTB into two wall mounts):
-						return NOBN_ocs_getTensioningStandardValues(OcsSystem).awtf
+						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).awtf
 					else
 						--Assume that this is the contact wire:
-						return NOBN_ocs_getTensioningStandardValues(OcsSystem).cwtf
+						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).cwtf
 					end
 				end
 			</Formula>
@@ -2291,10 +2501,10 @@
 			<Formula>
 				function _JBTEH_AEH_SecondaryTensioningForce()
 					if Variant == "Fastavspenning, enkel" or Variant == "Loddavspenning, enkel" or Variant == "Færavspenning, enkel" then
-						return 0 --no wire here
+						return 0,_info("No messenger wire present with "..Variant..".")
 					else
 						--Assume that this is a messenger wire:
-						return NOBN_ocs_getTensioningStandardValues(OcsSystem).mwtf
+						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).mwtf
 					end
 				end
 			</Formula>
@@ -2316,7 +2526,7 @@
 					if OcsSystem == "Unknown" then
 						return "?/? kN",_info("OcsSystem has not been selected")
 					end
-					tf = NOBN_ocs_getTensioningStandardValues(OcsSystem)
+					tf = NOBN_ocs_getWiretTensioningDataTable(OcsSystem)
 					if Variant == "Fastavspenning, enkel" then
 						 --Assume that this is an anchoring wire, for the midpoint anchor (but it MIGHT be a CW or MW in a narrow tunnel):
 						return tf.awtf.." kN (fix)",_info("Midpoint anchor wire")
@@ -2364,7 +2574,7 @@
 			</Formula>
 		</LuaFunction>
 		
-		<!-- Note: They snap to the contact wire or fixline alignment object even if they might actually work on the messenger wire inn the case of a tunnel installation where the "loddsats" are separated -->
+		<!-- Note: They snap to the contact wire or midpoint anchor line alignment object even if they might actually work on the messenger wire inn the case of a tunnel installation where the "loddsats" are separated -->
 		<InsertPointObject VariantName="Fastavspenning, enkel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FAST-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
@@ -2431,7 +2641,7 @@
 				{% elsif Variant == 'Loddavspenning, dobbel' %}LODD-DOBBEL
 				{% elsif Variant == 'Fjæravspenning, enkel' %}FJAER-ENKEL
 				{% elsif Variant == 'Fjæravspenning, dobbel' %}FJAER-DOBBEL
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
@@ -2453,7 +2663,7 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	FIXPOINT
+	MIDPOINT ANCHOR - 'FIXPOINT'
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FIX Fixpunkt"
 				Layer="JBTEH_AEH" Color="ByLayer"
@@ -2482,29 +2692,6 @@
 			<Variant Name="Fixpunkt" />
 		</Variants>
 		
-        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_FIX_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIX_DistanceToAlignment()" 
-			ReturnType="String"
-			Description="Obtains the DistanceToAlignment for this midpoint anchor, deduced from its cantilever." >
-			<Constructor>String _JBTEH_FIX_DistanceToAlignment()</Constructor>
-			<Formula>
-				function _JBTEH_FIX_DistanceToAlignment()
-					s = "Låser utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate midpoint anchor to its cantilever with '"..s.."'."
-					elseif n == 1 then
-						return r[0].Stagger,_info("Distance to alignment was copied from related cantilever's stagger '"..r[0].code.."'.")
-					else
-						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
-					end
-
-				end
-			</Formula>
-		</LuaFunction>
-
-        <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-
 		<LuaExpression Name="code" ><Formula>_JBTEH_FIX_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIX_code()" 
 			ReturnType="String"
@@ -2512,21 +2699,24 @@
 			<Constructor>String _JBTEH_FIX_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIX_code()
-					s = "Låser utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'."
-					elseif n == 1 then
-						s1 = "Er utligger for kontaktledning"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
-						if n1 == 1 then
-							return r1[0].code,_info("Code was deduced from related cantilever's related contact wire.")
+					sCnt = "Låser utligger"
+					rCnt,nCnt = RC__getCollectionOfRelatedObjects(sCnt)
+					if nCnt == 0 then
+						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
+					elseif nCnt == 1 then
+						cnt = rCnt[0]
+						sCow = "Fikserer kontaktledning"
+						rCow,nCow = RC__getCollectionOfRelatedObjects(sCow)
+						if nCow == 0 then
+							return _unfinished,"UNFINISHED - Relate midpoint anchor to its contact wire with '" ..sCow.."'."
+						elseif nCow == 1 then
+							cow = rCow[0]
+							return cow.code,_info("Code was deduced from related contact wire "..RC__identify(cow)..".")
 						else
-							return _error,"ERROR - Fixpoint has zero or more than one related contact wire."
+							return _error,"ERROR - Midpoint anchor is related to more than one visible contact wire."
 						end
-						return r[0].code
 					else
-						return 
+						return _error,"ERROR - Midpoint anchor is related to more than one visible cantilever."
 					end
 				end
 			</Formula>
@@ -2563,6 +2753,29 @@
 				end
 			</Formula>
 		</LuaFunction>
+
+        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_FIX_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_DistanceToAlignment()" 
+			ReturnType="String"
+			Description="Obtains the DistanceToAlignment for this midpoint anchor, deduced from its cantilever." >
+			<Constructor>String _JBTEH_FIX_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_FIX_DistanceToAlignment()
+					sCnt = "Låser utligger"
+					rCnt,nCnt = RC__getCollectionOfRelatedObjects(sCnt)
+					if nCnt == 0 then
+						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
+					elseif nCnt == 1 then
+						cnt = rCnt[0]
+						return cnt.Stagger,_info("Distance to alignment was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
+					else
+						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+        <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 
 		<!-- Model check: That FIX point is as close to the CW midpoint as possible and that is actually needed: -->
 						<!-- if Variant:lower():match("fix") then -->
@@ -2603,7 +2816,7 @@
 
 <!--========================================================================================================
 	OcsWireSystem
-	ALIGNMENT CONTINUATIONS
+	OCS CONDUCTOR ALIGNMENT CONTINUATIONS
 	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
 	<!-- NB: 'EH_LEF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
@@ -2724,7 +2937,7 @@
 
 <!--========================================================================================================
 	OcsWireSystem
-	ALIGNMENT CONTINUATIONS
+	OCS CONTACT WIRE ALIGNMENT CONTINUATIONS
 	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
 	<!-- NB: 'EH_KTF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->

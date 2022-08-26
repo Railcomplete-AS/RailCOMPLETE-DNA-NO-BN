@@ -198,7 +198,7 @@ positive feeder in AT system				positiv leder i AT-system
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_UTK Seksjonsutliggerkonsoll"
 				Layer="JBTEH_UTK" Color="ByLayer"
-				Group="Kontaktledning/Utliggere"
+				Group="Kontaktledning/Konsoller"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -218,31 +218,74 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_PSET_ISY_STK" />
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 
-		<Variants DefaultValue="H-300" >
+		<Variants DefaultValue="Seksjonsutliggerkonsoll H-300" >
 			<!-- The variant's number is the c-c spacing between M20 threaded irons. -->
-			<!-- Note: The H-300 variant is also suitable for HEB masts up to HEB280 -->
-			<Variant Name="B-120" ></Variant>
-			<Variant Name="B-140" ></Variant>
-			<Variant Name="B-160" ></Variant>
-			<Variant Name="B-180" ></Variant>
-			<Variant Name="B-200" ></Variant>
-			<Variant Name="H-270" ></Variant>
-			<Variant Name="H-300" ></Variant>
-			<Variant Name="H-330" ></Variant>
-			<Variant Name="H-360" ></Variant>
-			<Variant Name="H-390" ></Variant>
+			<!-- Note: The 'Seksjonsutliggerkonsoll H-300' variant is also suitable for HEB masts up to HEB280 -->
+			<Variant Name="Seksjonsutliggerkonsoll B-120" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll B-140" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll B-160" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll B-180" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll B-200" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll H-270" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll H-300" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll H-330" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll H-360" ></Variant>
+			<Variant Name="Seksjonsutliggerkonsoll H-390" ></Variant>
 		</Variants>
 		
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
-		<LuaExpression Name="name" ><Formula>"Utliggerkonsoll "..Variant</Formula></LuaExpression>
-		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>"NO-BN-3D-EH-UTK-SEKSJONSUTLIGGERKONSOLL-1440-"..Variant</Formula></LuaExpression>
+		<LuaExpression Name="name" ><Formula>Variant</Formula></LuaExpression>
+
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_UTK_Mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTK_Mileage()" 
+				ReturnType="Double"
+				Description="Returns the distance to alignment for this multi-cantilever console, adjusted to the side of its contact wire.
+				\n
+				\n- The cantilevers located on the same side of the OCS pole will modify their insertion points to make space for the console's steel bracket.
+				\n- The console's 'dir' property shall be 'both' when located on the OCS pole side towards the pole's track.
+				\n" >
+			<Constructor>Double _JBTEH_UTK_Mileage()</Constructor>
+			<Formula>
+				function _JBTEH_UTK_Mileage()
+					s = "Tilhører kl-mast"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n == 0 then
+						return getPropertyValue("mileage"),_unfinished,_info("UNFINISHED - Relate with '"..s.."'.")
+					else
+						return r[0].mileage
+					end
+		       		end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_UTK_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTK_DistanceToAlignment()" 
+				ReturnType="Double"
+				Description="Returns the distance to alignment for this multi-cantilever console, adjusted to the side of its contact wire.
+				\n
+				\n- The cantilevers located on the same side of the OCS pole will modify their insertion points to make space for the console's steel bracket.
+				\n- The console's 'dir' property shall be 'both' when located on the OCS pole side towards the pole's track.
+				\n" >
+			<Constructor>Double _JBTEH_UTK_DistanceToAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_UTK_DistanceToAlignment()
+					--Console ends up at a distance to alignment where a single cantilever would have been:
+					return _JBTEH_UTL_DistanceToAlignment()
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="dir" ><Formula>"Both"</Formula></LuaExpression>
+		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>"NO-BN-3D-EH-UTK-SEKSJONSUTLIGGERKONSOLL-1440-"..Variant:match("%a-([BH]+%-%d+)$")</Formula></LuaExpression>
 
 		<!-- TODO Seksjonsutliggerkonsoll skal snappe til mast, og skal selv tilby snapping for utliggere -->
 		<!-- TODO Seksjonsutliggerkonsoll skal bevege seg mot sporet på funksjon av mastens tykkelse (som utliggere) -->
-		<InsertPointObject VariantName="H-300" DisplayBlockName="NO-BN-2D-JBTEH_UTK-KONSOLL-FOR-SEKSJONSUTLIGGER-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
+		<!-- TODO Seksjonsutliggerkonsoll skal finne sin høyde fra utliggernes øvre konsoll (som skal være like) -->
+		<InsertPointObject VariantName="Seksjonsutliggerkonsoll H-300" DisplayBlockName="NO-BN-2D-JBTEH_UTK-KONSOLL-FOR-SEKSJONSUTLIGGER-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
 				DefaultSnapMode="Point" SnapToAlignment="false" SnapDistance="4.0" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> 
+			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true" />
 		</InsertPointObject>
 		
 		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="" >
@@ -275,29 +318,39 @@ positive feeder in AT system				positiv leder i AT-system
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM CANTILEVER
 =========================================================================================================-->
-	<LuaFunction Name="_JBTEH_UTL_StandardValues()" 
-		ReturnType="Table[6*Double]"
-		Description="Returns standard cantilever values table: [cwh]=contact wire height, [sh]=system height, [shmin]=min. sh, [shmax]=max. sh, [lco]=lower console offset from upper console, [wco]=contact wire clamp offset from upper console." >
-		<Constructor>Table[8*Double] _JBTEH_UTL_StandardValues(String Variant)</Constructor>
+	<LuaFunction Name="NOBN_ocs_getCantileverDataTable()" 
+		ReturnType="Table[8*Double]"
+		Description="Returns a table with standard cantilever values, indexed as follows:
+		\n
+		\n[cwh]   Contact wire height
+		\n[sh]    System height
+		\n[shmin] Minimum system height
+		\n[shmax] Maximum system height
+		\n[lco]   Lower console offset from upper console
+		\n[wco]   Contact wire clamp offset from upper console
+		\n[drMat] Dropper material
+		\n[swMat] Stitch wire material ('None': cantilever has no stitch wire)
+		\n" >
+		<Constructor>Table[8*Double] NOBN_ocs_getCantileverDataTable(OcsSystem os = Variant)</Constructor>
 		<Formula>
-			function _JBTEH_UTL_StandardValues(os)
-				--This function is declared as global in the DNA, accessible from all object types.
-				os = os or Variant --OCS system
+			--This function is declared as global in the DNA, accessible from all object types.
+			function NOBN_ocs_getCantileverDataTable(os)
+				os = os or Variant --The Variant is also the OCS system's name.
 				local CantileverValues = {
 					--Note: Siemens' catenary wire clamp is about 12 cm high (117mm), above the upper tube
-					["Unknown"]  = {cwh=0.00, sh=0.00, shmin=0.00, shmax=0.00, lco=-0.00, wco=-0.00},
-					["S20A"]     = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
-					["S20AR"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
-					["S20B"]     = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
-					["S20BR"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
-					["S20C1"]    = {cwh=5.30, sh=0.75, shmin=0.75, shmax=1.60, lco=-0.95, wco=-0.65},
-					["S20C2"]    = {cwh=5.30, sh=0.75, shmin=0.75, shmax=1.60, lco=-0.95, wco=-0.65},
-					["S25"]      = {cwh=5.10, sh=1.80, shmin=0.70, shmax=1.80, lco=-2.05, wco=-1.70},
-					["S35"]      = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
-					["S35MS"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50},
-					["Cariboni"] = {cwh=5.05, sh=0.60, shmin=0.25, shmax=0.60, lco= 0.00, wco=-0.70}, --Low tunnel
-					["TET08"]    = {cwh=5.05, sh=0.25, shmin=0.10, shmax=0.30, lco= 0.00, wco=-0.075} --Low tunnel
-				}
+					["Unknown"]  = {cwh=0.00, sh=0.00, shmin=0.00, shmax=0.00, lco=-0.00, wco=-0.00,  drMat="",            swMat=""          },
+					["S25"]      = {cwh=5.10, sh=1.80, shmin=0.70, shmax=1.80, lco=-2.05, wco=-1.70,  drMat="Bz II 10/49", swMat="Bz II 35/7"},
+					["S20A"]     = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S20AR"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S20B"]     = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S20BR"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S20C1"]    = {cwh=5.30, sh=0.75, shmin=0.75, shmax=1.60, lco=-0.95, wco=-0.65,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S20C2"]    = {cwh=5.30, sh=0.75, shmin=0.75, shmax=1.60, lco=-0.95, wco=-0.65,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S35"]      = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["S35MS"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["Cariboni"] = {cwh=5.05, sh=0.60, shmin=0.25, shmax=0.60, lco= 0.00, wco=-0.70,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
+					["TET08"]    = {cwh=5.05, sh=0.25, shmin=0.10, shmax=0.30, lco= 0.00, wco=-0.075, drMat="Bz II 10/49", swMat="Bz II 25/7"}
+				} 
 				if CantileverValues[os] then
 					return CantileverValues[os]
 				else
@@ -335,6 +388,9 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_UTL" />
 
 		<Variants DefaultValue="S20A" >
+			<Variant Name="S25"
+				Description="System 25: 250 km/h (1 strømavtager) / 210 km/h (2 strømavtagere). Alle strekninger." >
+			</Variant>
 			<Variant Name="S20A"
 				Description="System 20A: 200 km/h (1 strømavtager) / 160 km/h (2 strømavtagere). Fri strekning." > 
 			</Variant>
@@ -352,9 +408,6 @@ positive feeder in AT system				positiv leder i AT-system
 			</Variant>
 			<Variant Name="S20C2"
 				Description="System 20C2: 160 km/h (1 strømavtager) / 130 km/h (2 strømavtagere). Trang tunnel." >
-			</Variant>
-			<Variant Name="S25"
-				Description="System 25: 250 km/h (1 strømavtager) / 210 km/h (2 strømavtagere). Alle strekninger." >
 			</Variant>
 			<Variant Name="S35"
 				Description="System 35: 150 km/h (1 strømavtager) / 130 km/h (2 strømavtagere). Eldre strekninger. Ved endringer på strekning som har S35 brukes i stedet S20B med redusert innspenningskraft (S20BR)." >
@@ -578,7 +631,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation" ><Formula>ContactWireHeight - _JBTEH_UTL_StandardValues(Variant)["wco"]</Formula></LuaExpression>
+		<LuaExpression Name="RelativeElevation" ><Formula>ContactWireHeight - NOBN_ocs_getCantileverDataTable(Variant)["wco"]</Formula></LuaExpression>
 
 
 		<!-- Primary custom attributes (generally input by hand or script) -->
@@ -590,11 +643,11 @@ positive feeder in AT system				positiv leder i AT-system
 		
 		<CustomAttribute DataType="Double" Name="ContactWireHeight" DisplayName="Kontakttrådhøyde" DefaultValue="5.00" 
 			Description="The contact wire height (cwh) [m] denotes the orthogonal distance from the rolling plane formed by the top-of-rails to the contact wire clamp." />
-		<LuaExpression Name="ContactWireHeight" ><Formula>_JBTEH_UTL_StandardValues(Variant)["cwh"]</Formula></LuaExpression>
+		<LuaExpression Name="ContactWireHeight" ><Formula>NOBN_ocs_getCantileverDataTable(Variant)["cwh"]</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Double" Name="SystemHeight" DisplayName="Systemhøyde" DefaultValue="1.00" 
 			Description="The cantilever system height (sh) [m] denotes the vertical Z coordinate difference from the contact wire clamp to the catenary clamp." />
-		<LuaExpression Name="SystemHeight" ><Formula>_JBTEH_UTL_StandardValues(Variant)["sh"]</Formula></LuaExpression>
+		<LuaExpression Name="SystemHeight" ><Formula>NOBN_ocs_getCantileverDataTable(Variant)["sh"]</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Double" Name="StitchWireLength" DisplayName="Y-line lengde" DefaultValue="0.00" 
 			Description="The stitch wire length (swl) [m] denotes the length, measured as a difference in mileage, from start to end (where it attaches to the catenary wire). Zero length means 'no stitch wire'." />
@@ -665,14 +718,14 @@ positive feeder in AT system				positiv leder i AT-system
 				<Value Description="TET08-utliggeren har ikke justeringsmonn og skal alltid være montert i strekk" >Strekk</Value>
 			</Values>
 		</CustomAttribute>
-		
 		<LuaExpression Name="PushDirection" ><Formula>_JBTEH_UTL_PushDirection()</Formula></LuaExpression>
+
 		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
 			ReturnType="String"
 			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever. Direction change angle [DD] and lateral force [N] are shown as tooltip info." >
 			<Constructor>String _JBTEH_UTL_PushDirection()</Constructor>
 			<Formula>
-				function JBTEH_UTL_PushDirection()
+				function _JBTEH_UTL_PushDirection()
 					--[=[
 						Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever.
 						The trick is to check the sign of the Z component of the cross product of vectors from the middle wire clamp to the prev/next
@@ -682,17 +735,16 @@ positive feeder in AT system				positiv leder i AT-system
 						p2 = this cantilever
 						wc = this cantilever's contact wire clamp
 						.
-						(prev)  (this)   (next)
-						  p1      p2      p3     Cantilevers (attached to OCS mast). Note: The very first p1 can be a WTB.
-						   |       |       |
-						  U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
-						---v-------^-------v---  Contact wire
-						wc1     wc2     wc3    Wire clamps
+						.   (prev)  (this)   (next)
+						.     p1      p2      p3     Cantilevers (attached to OCS mast). Note: The very first p1 can be a WTB.
+						.      |       |       |
+						.     U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
+						.   ---v-------^-------v---  Contact wire
+						.     wc1     wc2     wc3    Wire clamps
 						.
-						All coordinates are in WCS.
+						.   All coordinates are in WCS.
 					--]=]
 					function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Used for debugging purposes, pretty-print 3D point
-
 					--Previous:
 					s0 = "Forrige utligger/avspenning"
 					r0,n0 = RC__getCollectionOfRelatedObjects(s0)
@@ -703,13 +755,19 @@ positive feeder in AT system				positiv leder i AT-system
 					else
 						prev = r0[0]
 						p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
-						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-						t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
-						tg = math.atan(t.Y,t.X)
-						U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
-						wc1 = getVectorSum(p1,U)
+						if prev.RcType == "JBTEH_AEH Avspenning" then
+							--Preceded by a Wire Tension Balancer.
+							wc1 = p1
+						else
+							--Preceded by a cantilever.
+							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+							t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
+							tg = math.atan(t.Y,t.X)
+							U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+							wc1 = getVectorSum(p1,U)
+						end
 					end
-					
+				
 					--This:
 					p2 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
 					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
@@ -717,9 +775,9 @@ positive feeder in AT system				positiv leder i AT-system
 					tg = math.atan(t.Y,t.X)
 					V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
 					wc2 = getVectorSum(p2,V)
-					
+				
 					--Next:
-					s2 = "Neste utligger" --Note: NOBN-2021.a does not relate WTB to CL
+					s2 = "Neste utligger/avspenning"
 					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
 					if n2 == 0 then
 						--Return a best guess Push/Pull...:
@@ -728,18 +786,25 @@ positive feeder in AT system				positiv leder i AT-system
 					else
 						nxt = r2[0]
 						p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
-						t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
-						tg = math.atan(t.Y,t.X)
-						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
-						wc3 = getVectorSum(p3,W)
+						if nxt.RcType == "JBTEH_AEH Avspenning" then
+							--Followed by a Wire Tension Balancer.
+							wc3 = p3
+						else
+							--Followed by a cantilever.
+							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+							t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
+							tg = math.atan(t.Y,t.X)
+							W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
+							wc3 = getVectorSum(p3,W)
+						end
 					end
-					
+				
 					toPrev = getVectorDifference(wc1,wc2)
 					toNext = getVectorDifference(wc3,wc2)
 					crossProduct = getVectorCrossProduct(toPrev,toNext)
 				
 					--Find contact wire lateral force:
-					contactWireTension = Variant:match("20") and 10000 or 13000 --System 20 has 10 kN, System 25 has 13 kN
+					contactWireTension = NOBN_ocs_getWiretTensioningDataTable(Variant).cwtf
 					toPrevForceVector =  getVectorScalarProduct(contactWireTension,getVectorNormalized(toPrev))
 					toNextForceVector = getVectorScalarProduct(contactWireTension,getVectorNormalized(toNext))
 					lateralForceVector = getVectorSum(toPrevForceVector,toNextForceVector)
@@ -752,7 +817,7 @@ positive feeder in AT system				positiv leder i AT-system
 						.." was deduced from previous cantilever/WTB '%s', this cantilever '%s'"
 						.." and next cantilever/WTB '%s'.",
 						forceDirection,lateralForce,directionChangeDD,RC__identify(prev),RC__identify(this),RC__identify(nxt))
-											
+				
 					return forceDirection,_info(t)
 				end
 			</Formula>
@@ -825,6 +890,48 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
+		<CustomAttribute DataType="Double" Name="CantileverSpanLength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
+			Description="The span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using 'Neste utligger/avspenning'/'Forrige utligger/avspenning'." />
+		<LuaExpression Name="CantileverSpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
+			HideFromUser="false"
+			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
+		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
+		<Formula>
+			function _JBTEH_UTL_SpanLength()
+				--This cantilever:
+				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
+				tg = math.atan(t.Y,t.X)
+				cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
+				v = getVectorSum(vv,cantileverVector)
+				
+				--Next cantilever:
+				s = "Neste utligger/avspenning"
+				r,n = RC__getCollectionOfRelatedObjects(s)
+				if n == 0 then
+					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
+				else
+					nextItem = r[0]
+					ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
+					if nextItem.RcType == "JBTEH_AEH Avspenning" then
+						w = ww
+					else
+						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
+						tg = math.atan(t.Y,t.X)
+						wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
+						w = getVectorSum(ww,wcNext)
+					end
+			
+					d = getVectorNormalized(getVectorDifference(w,v)) --2D length
+					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
+				end
+			end
+		</Formula>
+	</LuaFunction>
+		
+
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
 			Description="The cantilever's associated OCS wire." />
         <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="-6" 
@@ -869,14 +976,14 @@ positive feeder in AT system				positiv leder i AT-system
 					signedStagger = (SideOfAlignment == "Right" and -Stagger or Stagger)
 					if h == 0 then
 						--no cant:
-						return signedStagger
+						return RC__round(signedStagger,3)
 					else
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return ss*ContactWireHeight + cc*signedStagger
+							return RC__round(ss*ContactWireHeight + cc*signedStagger,3)
 						elseif ai.CantRotation == "CCW" then
-							return -ss*ContactWireHeight + cc*signedStagger
+							return RC__round(-ss*ContactWireHeight + cc*signedStagger,3)
 						else
 							return _error,0.999 --hopefully, this is a recognizable error value...
 						end
@@ -899,14 +1006,14 @@ positive feeder in AT system				positiv leder i AT-system
 					c = ai.Cant
 					h = RC__isNan(c) and 0 or c/1000.0
 					if h == 0 then 
-						return ContactWireHeight
+						return RC__round(ContactWireHeight,3)
 					else
 						ss = h/Alignment.AlignmentSystem.CantGauge
 						cc = math.sqrt(1 - ss^2)
 						if ai.CantRotation == "CW" then 
-							return h/2 + cc*ContactWireHeight - ss*Stagger
+							return RC__round(h/2 + cc*ContactWireHeight - ss*Stagger,3)
 						elseif ai.CantRotation == "CCW" then
-							return h/2 + cc*ContactWireHeight + ss*Stagger
+							return RC__round(h/2 + cc*ContactWireHeight + ss*Stagger,3)
 						else
 							return _error,0.999
 						end
@@ -941,6 +1048,45 @@ positive feeder in AT system				positiv leder i AT-system
 				function _JBTEH_UTL_CatenaryClampVerticalOffset()
 					--Assume that the catenary/contact wire is a vertical wire suspension system, also for curves with large cant
 					return WireClampVerticalOffset + SystemHeight
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="DropperWireMaterial" DisplayName="Hengetråd materiale" DefaultValue=""
+			Description="The overhead catenary system (OCS) dropper wire material." 
+		>
+			<Values>
+				<Value>None</Value>
+				<Value>Bz II 10/49</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="DropperWireMaterial" ><Formula>_JBTEH_UTL_DropperWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_DropperWireMaterial()" ReturnType="String"
+			Description="Obtains the standard stitch wire material according to OCS system." >
+			<Constructor>String _JBTEH_UTL_DropperWireMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_DropperWireMaterial()
+					return NOBN_ocs_getCantileverDataTable()["drMat"]
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="Enumeration" Name="StitchWireMaterial" DisplayName="Y-line materiale" DefaultValue=""
+			Description="The overhead catenary system (OCS) stitch wire material." 
+		>
+			<Values>
+				<Value>None</Value>
+				<Value>Bz II 25/7</Value>
+				<Value>Bz II 35/7</Value>
+			</Values>
+		</CustomAttribute>
+		<LuaExpression Name="StitchWireMaterial" ><Formula>_JBTEH_UTL_StitchWireMaterial()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_StitchWireMaterial()" ReturnType="String"
+			Description="Obtains the standard stitch wire material according to OCS system." >
+			<Constructor>String _JBTEH_UTL_StitchWireMaterial()</Constructor>
+			<Formula>
+				function _JBTEH_UTL_StitchWireMaterial()
+					return NOBN_ocs_getCantileverDataTable()["swMat"]
 				end
 			</Formula>
 		</LuaFunction>
@@ -1131,8 +1277,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_chkSystemHeight()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_chkSystemHeight()
-					min = _JBTEH_UTL_StandardValues(Variant)["shmin"]
-					max = _JBTEH_UTL_StandardValues(Variant)["shmax"]
+					min = NOBN_ocs_getCantileverDataTable(Variant)["shmin"]
+					max = NOBN_ocs_getCantileverDataTable(Variant)["shmax"]
 					sh = SystemHeight
 					v = Variant
 					if sh &lt; min then
@@ -1195,59 +1341,17 @@ positive feeder in AT system				positiv leder i AT-system
 								rNext[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rNext[0])
 							),_ok
 					elseif nPrev == 0 and nNext == 0 then
-						return string.format("%d / %d: UNFINISHED - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_warning --TODO: _unfinished
+						return string.format("%d / %d: UNFINISHED - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_unfinished --TODO: _unfinished
 					elseif nPrev == 0 and nNext == 1 then
-						return string.format("%d / %d: UNFINISHED - Relate to preceding cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sPrev),_warning --TODO: _unfinished
+						return string.format("%d / %d: UNFINISHED - Relate to preceding cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sPrev),_unfinished --TODO: _unfinished
 					elseif nPrev == 1 and nNext == 0 then
-						return string.format("%d / %d: UNFINISHED - Relate to following cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sNext),_warning --TODO: _unfinished
+						return string.format("%d / %d: UNFINISHED - Relate to following cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sNext),_unfinished --TODO: _unfinished
 					else
 						return string.format("%d / %d: WARNING - Too many related cantilevers (or wire tension balancers), remove the wrong ones or check construction phase settings and refresh the object.", nPrev,nNext),_warning
 					end
 				end
 			</Formula>
 		</LuaFunction>
-
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
-			Description="The span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using 'Neste utligger/avspenning'/'Forrige utligger/avspenning'." />
-		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
-			HideFromUser="false"
-			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
-		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
-		<Formula>
-			function _JBTEH_UTL_SpanLength()
-				--This cantilever:
-				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
-				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
-				tg = math.atan(t.Y,t.X)
-				cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
-				v = RC__getVectorSum(vv,cantileverVector)
-				
-				--Next cantilever:
-				s = "Neste utligger/avspenning"
-				r,n = RC__getCollectionOfRelatedObjects(s)
-				if n == 0 then
-					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
-				else
-					nextItem = r[0]
-					ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
-					if nextItem.RcType == "JBTEH_AEH Avspenning" then
-						w = ww
-					else
-						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
-						tg = math.atan(t.Y,t.X)
-						wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
-						w = RC__getVectorSum(ww,wcNext)
-					end
-			
-					d = RC__getVectorNormalized(RC__getVectorDifference(w,v)) --2D length
-					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
-				end
-			end
-		</Formula>
-	</LuaFunction>
-		
 
 		<!-- Extra functions, for use when the wire clamps have been provided based on survey data. -->
 		<!-- Use these functions to compute contact wire height and stagger "backwards". -->
@@ -1303,6 +1407,13 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
+		<InsertPointObject VariantName="S25" DisplayName="System 25" DisplayBlockName="NO-BN-2D-JBTEH_UTL-UTLIGGER-25-S-4000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true" />
+			<SetValue Key="CantileverLength" Value="4.0" />
+		</InsertPointObject>
+		
 		<InsertPointObject VariantName="S20A" DisplayName="System 20A" DisplayBlockName="NO-BN-2D-JBTEH_UTL-UTLIGGER-20A-S-4000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -1339,13 +1450,6 @@ positive feeder in AT system				positiv leder i AT-system
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="S20C2" DisplayName="System 20C2" DisplayBlockName="NO-BN-2D-JBTEH_UTL-UTLIGGER-20C-S-4000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
-				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4" >
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true" />
-			<SetValue Key="CantileverLength" Value="4.0" />
-		</InsertPointObject>
-		
-		<InsertPointObject VariantName="S25" DisplayName="System 25" DisplayBlockName="NO-BN-2D-JBTEH_UTL-UTLIGGER-25-S-4000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true" />
@@ -1404,7 +1508,7 @@ positive feeder in AT system				positiv leder i AT-system
 				{% elsif Variant == 'S35MS' %}35{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
 				{% elsif Variant == 'Cariboni' %}CARIBONI
 				{% elsif Variant == 'TET08' %}TET08
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}
 			</BlockNameFormat>

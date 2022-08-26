@@ -54,8 +54,66 @@
 					return t
 				end
 			
-				--Scan the modelchecks for unfished items, warnings or errors - but suppress the symbolframe if a derogation
+				--Then scan the modelchecks for unfished items, warnings or errors - but suppress the symbolframe if a derogation
 				--has been requested or has been granted:
+				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
+
+				if (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
+					return _frames.UNFINISHED[_language]
+
+				elseif Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
+				elseif Derogation == "GRANTED" then return _frames.GRANTED[_language]
+
+				elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then
+					return _frames.ERROR[_language] --Deviating, no derogation requested or granted
+
+				elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count &gt; 0) then
+					return _frames.WARNING[_language] --Deviating, no derogation requested or granted
+
+				else
+					--do nothing, fall through to next check
+				end
+			
+				--Then scan the various relations and their cardinalities to check for unsatisfied minimum requirements:
+				ss = Relations.SourceSpace
+				rel = Relations.ObjectRelations
+				nRel = getCollectionLength(rel)
+
+				for i = 0,nRel-1 do
+					r = rel[i]
+					--[[
+						Example - object is an OCS power switch (Norw: Bryter)
+						r = this.Relations.Objectrelations
+						r.RelationPromptText			"Omstilles av manøvermaskin"
+						r.Relation.RelatesTo.Min		0
+						r.Relations						Collection is empty (no forward relation exists)
+						r.ReverseRelationPromptText		"Omstiller kl-bryter"
+						r.Relation.ReverseRelatesTo.Min	1
+						r.ReverseRelations				Name-of-related-object(1 reverse relation found)
+					--]]
+					ss1 = ss:gsub("%-","%%-").."/"
+					ss2 = ss:gsub("%-","%%-").."$"
+					t1 = r.ReverseRelationPromptText:match(ss1) --Look for object's own sourcespace among the first targets mentioned by the reverse relation...
+					t2 = r.ReverseRelationPromptText:match(ss2) --or as the very last target mentioned ('$' is the Lua matching pattern for "end of string")...
+					--if i == 0 then return ss,"a",t1,"b",t2,"c",r.ReverseRelationPromptText:match(string.gsub("kl-bryter","%-","%%-")),"d" end
+					if t1 or t2 then
+						--if true then return i,r.ReverseRelationPromptText,ss, r.ReverseRelationPromptText:match(ss) end
+						nForward = getCollectionLength(r.Relations)
+						minForward = r.Relation.RelatesTo.Min
+						--if true and i == 0 then return nRel,i,"---",nForward,minForward,r.RelationPromptText,"---",nReverse,minReverse,r.ReverseRelationPromptText end
+						if nForward &lt; minForward then return _frames.UNFINISHED[_language] end
+					end
+			
+					t3 = r.RelationPromptText:match(ss1) --Look for object's own sourcespace among the first targets mentioned by the forward relation...
+					t4 = r.RelationPromptText:match(ss2) --or as the very last target mentioned ('$' is the Lua matching pattern for "end of string")...
+					if t3 or t4 then
+						nReverse = getCollectionLength(r.ReverseRelations)
+						minReverse = r.Relation.ReverseRelatesTo.Min
+						if nReverse &lt; minReverse then return _frames.UNFINISHED[_language] end
+					end
+				end
+				
+				--Now, look for derogations or else look for unsatisfied modelchecks:
 				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
 
 				if Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
@@ -70,10 +128,10 @@
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
 					return _frames.UNFINISHED[_language]
 				else
-					--do nothing, fall thorugh to next check
+					--do nothing, fall through to next check
 				end
 			
-				--If no problems remain, go on th show 'normal behaviour' frame for objects that feature a frame:
+				--If no problems remain, go on to show 'normal behaviour' frame for objects that feature a frame:
 				--Deal with axle counter special section objects (the layer name will depend on the DNA in use):
 				if RcType:upper():match(_frames.SECTION_TAG[_language]:upper()) then 
 					return _frames.SECTION[_language]

@@ -69,16 +69,15 @@
 		</CustomAttribute>
 		
 		<CustomAttribute DataType="Enumeration" Name="Motorized" DisplayName="Motorisert" DefaultValue="No"
-			Description="Switch motorization [Yes | No]." >
+			Description="OCS power switch motorization [Yes | No]." >
 			<Values>
 				<Value DisplayName="Ja" >Yes</Value>
 				<Value DisplayName="Nei" >No</Value>
 			</Values>
 		</CustomAttribute>
 		<LuaExpression Name="Motorized" ><Formula>_JBTEH_BRY_getMotorizationFromRelatedActuator()</Formula></LuaExpression>
-		
 		<LuaFunction Name="_JBTEH_BRY_getMotorizationFromRelatedActuator()" ReturnType="String"
-		Description="Checks if there is a related actuator. If there is, returns 'Yes', else returns 'No'." >
+		Description="Checks if the OCS power switch has a related actuator (motor). If there is, returns 'Yes', else returns 'No'." >
 		<Constructor>String _JBTEH_BRY_getMotorizationFromRelatedActuator()</Constructor>
 			<Formula>
 				function _JBTEH_BRY_getMotorizationFromRelatedActuator()
@@ -204,13 +203,14 @@
 				{% elsif Variant == 'Lastskillebryter' %}LASTSKILLEBRYTER
 				{% elsif Variant == 'Jordingsbryter' %}JORDINGSBRYTER
 				{% elsif Variant == 'Effektbryter' %}EFFEKTBRYTER
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{% if Poles == 'Two' %}TOPOLET
 				{% elsif Poles == 'Three' %}TREPOLET
 				{% endif %}
 				{% if NormalPosition == 'Open' %}ÅPEN
-				{% else %}LUKKET
+				{% elsif NormalPosition == 'Closed' %}LUKKET
+				{% else %}BAD_NormalPosition_{{NormalPosition}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
@@ -220,16 +220,17 @@
 
 		<DockPointDefinitions>
 			<SnapPoints>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="bryter" />
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="manøvermaskin" />
 			</SnapPoints>
 		</DockPointDefinitions>
 
 	</ObjectType>
-	
+
+
+
 <!--========================================================================================================
 	HIGH VOLTAGE
-	MANØVERMASKIN
-	Carrying two times the applicable line voltage, feeding between midpoint and alternating poles.
+	OCS POWER SWITCH ACTUATOR
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_MAN Manøvermaskin"
 				Layer="JBTEH_MAN" Color="ByLayer"
@@ -258,17 +259,37 @@
 			<Variant Name="Manøvermaskin" />
 		</Variants>
 
+		<LuaExpression Name="code" ><Formula>_JBTEH_MAN_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAN_code()" ReturnType="String"
+		Description="Obtains its code from its related OCS power switch." >
+		<Constructor>String _JBTEH_MAN_code()</Constructor>
+			<Formula>
+				function _JBTEH_MAN_code()
+					s = "Omstiller kl-bryter"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+					if n &gt; 0 then
+						return r[0].code
+					else
+						return getPropertyValue("code"),_unfinished, _info("UNFINISHED - No related power switch, relate with '"..s.."'.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+
 		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()</Formula></LuaExpression>		
 		<LuaFunction Name="_JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()" ReturnType="String"
-		Description="Gets the DistanceToAlignment of the related switch if there is one." >
+		Description="Obtains the DistanceToAlignmentfrom its related OCS power switch." >
 		<Constructor>String _JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()</Constructor>
 			<Formula>
 				function _JBTEH_MAN_getDistanceToAlignmentFromRelatedSwitch()
-					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					s = "Omstiller kl-bryter"
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n &gt; 0 then
 						return r[0].DistanceToAlignment
 					else
-						return 0/0,_warning, _info("WARNING - No related switch")
+						return getPropertyValue("DistanceToAlignment"),_unfinished, _info("UNFINISHED - No related power switch, relate with '"..s.."'.")
 					end
 				end
 			</Formula>
@@ -276,15 +297,16 @@
 		
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_MAN_getMileageFromRelatedSwitch()</Formula></LuaExpression>		
 		<LuaFunction Name="_JBTEH_MAN_getMileageFromRelatedSwitch()" ReturnType="String"
-		Description="Gets the mileage of the related switch if there is one." >
+		Description="Obtains the mileagefrom its related OCS power switch." >
 		<Constructor>String _JBTEH_MAN_getMileageFromRelatedSwitch()</Constructor>
 			<Formula>
 				function _JBTEH_MAN_getMileageFromRelatedSwitch()
-					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					s = "Omstiller kl-bryter"
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n &gt; 0 then
 						return r[0].Mileage
 					else
-						return 0/0,_warning, _info("WARNING - No related switch")
+						return getPropertyValue("Mileage"),_unfinished, _info("UNFINISHED - No related power switch, relate with '"..s.."'.")
 					end
 				end
 			</Formula>
@@ -292,39 +314,40 @@
 		
 		<LuaExpression Name="dir" ><Formula>_JBTEH_MAN_getDirFromRelatedSwitch()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAN_getDirFromRelatedSwitch()" ReturnType="String"
-		Description="Gets the dir of the related switch if there is one." >
+		Description="Obtains the dirfrom its related OCS power switch." >
 		<Constructor>String _JBTEH_MAN_getDirFromRelatedSwitch()</Constructor>
 			<Formula>
 				function _JBTEH_MAN_getDirFromRelatedSwitch()
-					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					s = "Omstiller kl-bryter"
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n &gt; 0 then
 						return r[0].dir
 					else
-						return nil,_warning, _info("WARNING - No related switch")
+						return getPropertyValue("dir"),_unfinished, _info("UNFINISHED - No related power switch, relate with '"..s.."'.")
 					end
 				end
 			</Formula>
 		</LuaFunction>
 		
-		<CustomAttribute DataType="Enumeration" Name="NormalPosition" DisplayName="Grunnstilling" DefaultValue="Open"
+		<CustomAttribute DataType="Enumeration" Name="NormalPosition" DisplayName="Grunnstilling" DefaultValue="OPEN"
 			Description="Switch circuit normal position [Open | Closed]." >
 			<Values>
-				<Value DisplayName="Åpen" >Open</Value>
-				<Value DisplayName="Lukket" >Closed</Value>
+				<Value DisplayName="Åpen" >OPEN</Value>
+				<Value DisplayName="Lukket" >CLOSED</Value>
 			</Values>
 		</CustomAttribute>
 		<LuaExpression Name="NormalPosition" ><Formula>_JBTEH_MAN_getNormalPositionFromRelatedSwitch()</Formula></LuaExpression>
-		
 		<LuaFunction Name="_JBTEH_MAN_getNormalPositionFromRelatedSwitch()" ReturnType="String"
-		Description="Gets the normal position of the related switch." >
+		Description="Obtains the normal position of the related switch." >
 		<Constructor>String _JBTEH_MAN_getNormalPositionFromRelatedSwitch()</Constructor>
 			<Formula>
 				function _JBTEH_MAN_getNormalPositionFromRelatedSwitch()
-					r,n = RC__getCollectionOfRelatedObjects("Omstiller kl-bryter")
+					s = "Omstiller kl-bryter"
+					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n &gt; 0 then
 						return r[0].NormalPosition
 					else
-						return Open,_warning, _info("WARNING - No related switch")
+						return getPropertyValue("NormalPosition"),_unfinished, _info("UNFINISHED - No related power switch, relate with '"..s.."'.")
 					end
 				end
 			</Formula>
@@ -346,15 +369,16 @@
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTEH_MAN-MANØVERMASKIN
-				{% if NormalPosition == 'Open' %}ÅPEN
-				{% else %}LUKKET
+				{% if NormalPosition == 'OPEN' %}ÅPEN
+				{% elsif NormalPosition == 'CLOSED' %}LUKKET
+				{% else %}BAD_NormalPosition_ {{NormalPosition}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
 		</SymbolDefinition>
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
-
+		
 	</ObjectType>
 
 
@@ -420,7 +444,7 @@
 				NO-BN-2D-JBTEH_SUG
 				{% if Variant == 'Sugetransformator' %}SUGETRANSFORMATOR-I-MAST
 				{% elsif Variant == 'Sugetransformator i kiosk' %}SUGETRANSFORMATOR-I-KIOSK
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
@@ -485,7 +509,7 @@
 			<BlockNameFormat JoinBy="-" >
 				NO-BN-2D-JBTEH_AUT
 				{% if Variant == 'Autotransformator' %}AUTOTRANSFORMATOR
-				{% else %}BAD_Variant
+				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
