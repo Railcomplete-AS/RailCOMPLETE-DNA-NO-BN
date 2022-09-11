@@ -204,12 +204,12 @@ end
 	Begynnelsespunkt / sluttpunkt for tog og skift, viapunkt for togvei og skifteveistilling.
 	Benyttes både i sikringsanlegg, ATC og betjeningsanlegg.
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_FIK Fiktivt punkt"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.FictitiousSignal" LuaName="rctype_FictitiousSignal" Name="JBTSA_FIK Fiktivt punkt"
 				Layer="JBTSA_FIK" Color="ByLayer"
 				Group="Signal/Fiktive punkter"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-				
+
 		<RelationSpace>signal</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
@@ -285,7 +285,7 @@ end
 	<!-- ERTMS markerboards boards with pole. 2D symbols feature the "mast foot". -->
 	<!-- Note: The other ERTMS boards have been classified as 'JBTSA_MSS ERTMS skilt' boards. -->
 	<!-- 2021-01-11 CLFEY TODO Check if Bane NOR decides to use E34 "Location signal" (stedssignal, black arrow on white): -->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" Name="JBTSA_ERT ERTMS-signal"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.EtcsEndOfAuthority" LuaName="rctype_EtcsEoA" Name="JBTSA_ERT ERTMS-signal"
 				Layer="JBTSA_ERT" Color="ByLayer"
 				Group="Signal/Klasse-A signaler (ERTMS)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -366,7 +366,7 @@ end
 			</Variant>
 		</Variants>
 
-<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
 		<SetValue Key="code" Value="Kode?" />
 		
@@ -525,68 +525,68 @@ end
 		Description="Checks whether Returns the formated short name extracted from a main/distant signal's Code, e.g. '4313UL' or 'UL4313' => '4313(UL)'." >
         <Constructor>String NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()</Constructor>
         <Formula>
-function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
-	local tolerance = 6 --Tolerance in meters
-
-	--Preamble - called from a relevant object type?
-	if      RcType ~= "JBTSA_ERT ERTMS-signal"
-		and RcType ~= "JBTSA_SIG Signal"
-		and RcType ~= "JBTSA_SIG Brusignal/Frostportsignal"
-		and RcType ~= "SA-SIG Planovergang"
-		and RcType ~= "JBTSA_SIG Veisignal"
-	then 
-		return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
-	end
-
-	--Check if this test can be omitted (a low signal):
-	local omit = true
-	if Yokemounted then 
-		omit = false
-
-	elseif RcType == "JBTSA_ERT ERTMS-signal" then
-		if Yokemounted then
-			return "WARNING - Check manually that no OCS yoke is within safety distance from markerboard in yoke.",_warning
-		else
-			return "OK - Markerboard on the ground - Safety distance to OCS pole not relevant.",_ok
-		end
-
-	elseif RcType == "JBTSA_SIG Signal" then
-		if HighShuntingSignal == "-" and MainSignal == "-" then 
-			return "OK - Free-standing low signal - Safety distance to OCS pole not relevant.",_ok 
-		end
-
-	elseif RcType == "JBTSA_SIG Togsporsignal" then
-		return "OK - Track signal (togsporsignal) - Safety distance to OCS pole not relevant.",_ok 
-	end
-
-	if not omit then
-		local c1 = getNearbyPointObjects2D("JBTEH_MAS KL-mast", tolerance)
-		local c2 = getNearbyPointObjects2D("JBTEH_MAS Hengemast for bru og tunnel", tolerance)
-		local c3 = getNearbyPointObjects2D("JBTEH_MAS Hengemast i åk", tolerance)
-		local closeObjects = getUnionOfCollections( getCollectionFromTable({c1,c2,c3}) )
-		local count = getCollectionLength(closeObjects)
-		local UpdateObjects = {}
-		if count == 0 then 
-			return "OK - No catenary mast within tolerance "..tolerance.." meters.",_ok
-		else
-			local i = 0
-			local shortestDistance = math.huge
-			local s = ": WARNING - Catenary mast"
-			if (count &gt; 1) then s = s.."s" end
-			s = s.." ["
-			while i ~= count do
-				d = RC__getDistance2D(closeObjects[i]) 
-				if d &lt; shortestDistance then shortestDistance = d end
-				s = s..closeObjects[i].code
-				table.insert(UpdateObjects, closeObjects[i])
-				i = i+1
-				if i ~= count then s = s..", " end
+			function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
+				local tolerance = 6 --Tolerance in meters
+			
+				--Preamble - called from a relevant object type?
+				if      RcType ~= "JBTSA_ERT ERTMS-signal"
+					and RcType ~= "JBTSA_SIG Signal"
+					and RcType ~= "JBTSA_SIG Brusignal/Frostportsignal"
+					and RcType ~= "SA-SIG Planovergang"
+					and RcType ~= "JBTSA_SIG Veisignal"
+				then 
+					return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
+				end
+			
+				--Check if this test can be omitted (a low signal):
+				local omit = true
+				if Yokemounted then 
+					omit = false
+			
+				elseif RcType == "JBTSA_ERT ERTMS-signal" then
+					if Yokemounted then
+						return "WARNING - Check manually that no OCS yoke is within safety distance from markerboard in yoke.",_warning
+					else
+						return "OK - Markerboard on the ground - Safety distance to OCS pole not relevant.",_ok
+					end
+			
+				elseif RcType == "JBTSA_SIG Signal" then
+					if HighShuntingSignal == "-" and MainSignal == "-" then 
+						return "OK - Free-standing low signal - Safety distance to OCS pole not relevant.",_ok 
+					end
+			
+				elseif RcType == "JBTSA_SIG Togsporsignal" then
+					return "OK - Track signal (togsporsignal) - Safety distance to OCS pole not relevant.",_ok 
+				end
+			
+				if not omit then
+					local c1 = getNearbyPointObjects2D("JBTEH_MAS KL-mast", tolerance)
+					local c2 = getNearbyPointObjects2D("JBTEH_MAS Hengemast for bru og tunnel", tolerance)
+					local c3 = getNearbyPointObjects2D("JBTEH_MAS Hengemast i åk", tolerance)
+					local closeObjects = getUnionOfCollections( getCollectionFromTable({c1,c2,c3}) )
+					local count = getCollectionLength(closeObjects)
+					local UpdateObjects = {}
+					if count == 0 then 
+						return "OK - No catenary mast within tolerance "..tolerance.." meters.",_ok
+					else
+						local i = 0
+						local shortestDistance = math.huge
+						local s = ": WARNING - Catenary mast"
+						if (count &gt; 1) then s = s.."s" end
+						s = s.." ["
+						while i ~= count do
+							d = RC__getDistance2D(closeObjects[i]) 
+							if d &lt; shortestDistance then shortestDistance = d end
+							s = s..closeObjects[i].code
+							table.insert(UpdateObjects, closeObjects[i])
+							i = i+1
+							if i ~= count then s = s..", " end
+						end
+						s = s.."]"
+						return string.format("%.03f: %s located inside horizontal tolerance %.3f meters.",shortestDistance,s,tolerance),UpdateObjects,_warning
+					end
+				end
 			end
-			s = s.."]"
-			return string.format("%.03f: %s located inside horizontal tolerance %.3f meters.",shortestDistance,s,tolerance),UpdateObjects,_warning
-		end
-	end
-end
 		</Formula>
      </LuaFunction>
 		
@@ -644,7 +644,8 @@ end
 		
 
 	<!-- Included for backwards compatibility: -->
-	<LuaFunction Name="NOBN_sig_chkLeftSideDistanceFromSignalToTrack()" ReturnType="String" Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages)." HideFromUser="false" >
+	<LuaFunction Name="NOBN_sig_chkLeftSideDistanceFromSignalToTrack()" ReturnType="String"
+			Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages)." HideFromUser="false" >
 		<Constructor>String NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Constructor>
 		<Formula>
 			function NOBN_sig_chkLeftSideDistanceFromSignalToTrack()
@@ -654,7 +655,8 @@ end
 	</LuaFunction>
 	
 	<!-- Included for backwards compatibility: -->
-	<LuaFunction Name="NOBN_sig_chkRightSideDistanceFromSignalToTrack()" ReturnType="String" Description="Checks lateral distance from signal insertion point to closest track on right side (in the direction of increasing mileages)." HideFromUser="false" >
+	<LuaFunction Name="NOBN_sig_chkRightSideDistanceFromSignalToTrack()" ReturnType="String"
+			Description="Checks lateral distance from signal insertion point to closest track on right side (in the direction of increasing mileages)." HideFromUser="false" >
 		<Constructor>String NOBN_sig_chkRightSideDistanceFromSignalToTrack()</Constructor>
 		<Formula>
 			function NOBN_sig_chkRightSideDistanceFromSignalToTrack()
@@ -664,8 +666,7 @@ end
 	</LuaFunction>
 
 
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal"
-				LuaName="rctype_Signal" Name="JBTSA_SIG Signal"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal" LuaName="rctype_Signal" Name="JBTSA_SIG Signal"
 				Layer="JBTSA_SIG" Color="ByLayer"
 				Group="Signal/Klasse-B signaler"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1894,8 +1895,8 @@ end
 	JBTSA_SIG Togsporsignal
 	Togsporsignal på egen mast eller på vegg eller i åk
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal"
-				LuaName="rctype_TrackSignal" Name="JBTSA_SIG Togsporsignal"
+	<!-- TODO: Set Eulynx SignalFunction.Description (String) -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal" LuaName="rctype_TrackSignal" Name="JBTSA_SIG Togsporsignal"
 				Layer="JBTSA_SIG" Color="ByLayer" 
 				Group="Signal/Hjelpesignaler"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2096,8 +2097,8 @@ end
 		Signal 59 To blinkende gule oppe/nede = "Rasfare" - Tog skal stoppe ved rasvarslingsstolpen.
 		Signal 56C Blinkende hvit midtre = "Tog kan passere rasfarestrekningen".
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal"
-				LuaName="rctype_AvalancheSignal" Name="JBTSA_SIG Rasvarslingssignal"
+	<!-- TODO: Set Eulynx SignalFunction.Description (String) -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal" LuaName="rctype_AvalancheSignal" Name="JBTSA_SIG Rasvarslingssignal"
 				Layer="JBTSA_SIG" Color="ByLayer"
 				Group="Signal/Hjelpesignaler"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2182,8 +2183,8 @@ end
 		Signal 20C To blinkende røde øver/nedre = "Stopp" - Tog og skift skal stoppe foran signalet.
 		Signal 56D Blinkende hvit midtre = "Klar linje" - Tog og skift kan passere signalet og kjører over bevegelig bru eller forbi åpen frostport.
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal"
-				LuaName="rctype_BridgeAndFrostDoorSignal" Name="JBTSA_SIG Brusignal/Frostportsignal"
+	<!-- TODO: Set Eulynx SignalFunction.Description (String) -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal" LuaName="rctype_BridgeAndFrostDoorSignal" Name="JBTSA_SIG Brusignal/Frostportsignal"
 				Layer="JBTSA_SIG" Color="ByLayer"
 				Group="Signal/Hjelpesignaler"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2275,8 +2276,8 @@ end
 		PLO-Fs: Signal 56B Hvitt blinkende lys nedre = "«Planovergangssignalet viser at planovergangen kan passeres»"
 			- Toget kan fortsette med største tillatte hastighet. Tilhørende planovergangssignal viser signal 56 «Planovergangen kan passeres».
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal"
-				LuaName="rctype_LevelCrossingSignalTowardsRail" Name="JBTSA_SIG Planovergangssignal"
+	<!-- TODO: Set Eulynx SignalFunction.Description (String) -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal" LuaName="rctype_LevelCrossingSignalTowardsRail" Name="JBTSA_SIG Planovergangssignal"
 				Layer="JBTSA_SIG" Color="ByLayer"
 				Group="Signal/Veibomanlegg"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2387,8 +2388,7 @@ end
 	JBTSA_SIG Veisignal
 	Frittstående, mot biltrafikk
 =========================================================================================================-->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Signal"
-				LuaName="rctype_LevelCrossingSignalTowardsRoad" Name="JBTSA_SIG Veisignal"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.RoadTrafficSign" LuaName="rctype_LevelCrossingSignalTowardsRoad" Name="JBTSA_SIG Veisignal"
 				Layer="JBTSA_SIG" Color="ByLayer"
 				Group="Signal/Veibomanlegg"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"

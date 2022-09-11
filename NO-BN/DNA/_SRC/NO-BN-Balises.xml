@@ -31,7 +31,7 @@
 				--TODO: Replace with a function which finds out where the closest cable duct is, and rotates the balise with the cable towards that duct.
 				balise = balise or this
 				s = balise.RcType:match("ETCS") and "Tilhører ETCS_balisegruppe" or "Tilhører NSS_balisegruppe"
-				r,n = RC__getCollectionOfRelatedObjects(s,balise)
+				r,n = getCollectionOfRelatedObjects(s,balise)
 				if n == 0 then
 					return "unknown", _info("UNFINISHED - Relate balise with '"..s.."' to a balise group to inherit direction.")
 				else
@@ -268,13 +268,13 @@
 					a = "F"
 				elseif Variant == "Repeterbalisegruppe" then
 					local s = "Gjelder for signal/skilt/stolpe/sporveksel"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
+					local r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						-- Balise group has no relation to a signal yet:
 						return "UNFINISHED - Relate with '"..s.."'."
 					else
 						sig = r[0] --should be a signal here, repeater groups don't repeat switches directly
-						bg = RC__getCollectionOfRelatedObjects("Har NSS_balisegruppe",sig)
+						bg = getCollectionOfRelatedObjects("Har NSS_balisegruppe",sig)
 						bg = bg:filter(function (x) return x.Variant == "Repeterbalisegruppe" end)
 						nbg = getCollectionLength(bg)
 						if nbg == 0 then
@@ -321,7 +321,7 @@
 				end
 				ocpMsg = "Create an Operation / Control Point (OCP) area around your object and refresh it to replace '???' with the relevant OCP's codes."
 				if Variant == "Hastighetsbalisegruppe" then
-					r,n = RC__getCollectionOfRelatedObjects("Har bremsekurve målpunkt i balisegruppe")
+					r,n = getCollectionOfRelatedObjects("Har bremsekurve målpunkt i balisegruppe")
 					if n == 0 then
 						--Group is braking curve target:
 						ocp = RC_com_getOcpCode(getObjectFromId(id))
@@ -339,7 +339,7 @@
 					end
 				elseif Variant =="Lenkingsbalisegruppe" or Variant == "Grensebalisegruppe" then
 					s = "Lenker til balisegruppe"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						ocp = RC_com_getOcpCode(getObjectFromId(id))
 					else
@@ -352,7 +352,7 @@
 					end
 				else
 					s = "Gjelder for signal/skilt/stolpe/sporveksel"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."'."
 					else
@@ -380,7 +380,7 @@
         <Formula>
 			function _JBTSA_ATB_code()
 				s = "Tilhører NSS_balisegruppe"
-				r,n = RC__getCollectionOfRelatedObjects(s)
+				r,n = getCollectionOfRelatedObjects(s)
 				if n == 0 then  
 					return "UNFINISHED - Relate with '"..s.."' to balise group.",
 							_info("Balises derive their ID (code property) from their balise group's code, direction, and the balise's relative position within the balise group. The 'A' balise must be related to the balise group using the relation for position defining balise.")
@@ -392,14 +392,14 @@
 				end
 				
 				sq = "Har posisjonsdefinerende NSS_balise"
-				q,nq = RC__getCollectionOfRelatedObjects(sq,bg)
+				q,nq = getCollectionOfRelatedObjects(sq,bg)
 				if nq == 0 then 
 					return "UNFINISHED - No A-balise in balise group - relate to balise group with '"..sq.."'."
 				else
 					Abalise = q[0]
-					qq,nqq = RC__getCollectionOfRelatedObjects("Definerer posisjon for NSS_balisegruppe")
+					qq,nqq = getCollectionOfRelatedObjects("Definerer posisjon for NSS_balisegruppe")
 					isA = (nqq == 1) --it's me...
-					siblings,nsiblings = RC__getCollectionOfRelatedObjects("Inneholder NSS_balise",bg)
+					siblings,nsiblings = getCollectionOfRelatedObjects("Inneholder NSS_balise",bg)
 				end
 			
 				if isA == true then
@@ -463,7 +463,7 @@
         <Formula>
 			function _JBTSA_ATB_TextAbove()
 				s = "Tilhører NSS_balisegruppe"
-				r,n = RC__getCollectionOfRelatedObjects(s)
+				r,n = getCollectionOfRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."' to NSS balise group."
 				else
@@ -514,7 +514,7 @@
         <Constructor>String _JBTSA_ATB_TextBelow()</Constructor>
         <Formula>
 			function _JBTSA_ATB_TextBelow()
-				r,n = RC__getCollectionOfRelatedObjects("Definerer posisjon for balisegruppe")
+				r,n = getCollectionOfRelatedObjects("Definerer posisjon for balisegruppe")
 				if n > 0 then
 					return RC__identify(r[0])
 				else
@@ -535,8 +535,7 @@
 	<!-- Noen tilkobinger arver posisjon fra sin forelder (signal), andre ikke (sporveksel, annen balisegruppe). -->
 	<!-- Lenkingsgrupper: Kobles til annen balisegruppe. -->
 	<!-- Signaler og forsignaler, evt dvergsignaler, fiktive osv: Balisegruppen kobles til signalet. -->
-	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.EtcsBaliseGroup"
-				LuaName="rctype_EtcsBaliseGroup" Name="JBTSA_ETC ETCS balisegruppe" 
+	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.EtcsBaliseGroup" LuaName="rctype_EtcsBaliseGroup" Name="JBTSA_ETC ETCS balisegruppe" 
 				Layer="JBTSA_ETC" Color="ByLayer"
 				Group="Signal/Hastighetskontroll/ETCS"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -615,8 +614,7 @@
 	SIGNALING
 	BALISE - ETCS
 =========================================================================================================-->
-	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.EtcsBalise"
-				LuaName="rctype_EtcsBalise" Name="JBTSA_ETB ETCS balise"
+	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.EtcsBalise" LuaName="rctype_EtcsBalise" Name="JBTSA_ETB ETCS balise"
 				Layer="JBTSA_ETB" Color="ByLayer"
 				Group="Signal/Hastighetskontroll/ETCS"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -806,8 +804,7 @@
 	<!-- Noen tilkobinger arver posisjon fra sin forelder (signal), andre ikke (sporveksel, annen balisegruppe). -->
 	<!-- Lenkingsgrupper: Kobles til annen balisegruppe. -->
 	<!-- Signaler og forsignaler, evt dvergsignaler, fiktive osv: Balisegruppen kobles til signalet. -->
-	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.BaliseGroup"
-				LuaName="rctype_BaliseGroup" Name="JBTSA_ATC NSS balisegruppe" 
+	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.BaliseGroup" LuaName="rctype_BaliseGroup" Name="JBTSA_ATC NSS balisegruppe" 
 				Layer="JBTSA_ATC" Color="ByLayer"
 				Group="Signal/Hastighetskontroll/NSS (ATC2)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -967,8 +964,7 @@
 	<!-- transmission system - therefore all checks on inter-balise distance must treat them both. -->
 	<!-- Legacy system balises transmit either 64=2*(8+3*(4+4)) (net 3*4 bits) telegrams for France and Sweden/Norway, -->
 	<!-- or 255 (net 45*4 bits) telegrams for Portugal/Spain/Italy/Finland/Australia/Malaysia. -->
-	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Balise"
-				LuaName="rctype_Balise" Name="JBTSA_ATB NSS balise"
+	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Balise" LuaName="rctype_Balise" Name="JBTSA_ATB NSS balise"
 				Layer="JBTSA_ATB" Color="ByLayer"
 				Group="Signal/Hastighetskontroll/NSS (ATC2)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"

@@ -1776,8 +1776,8 @@ Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="file
 
 		<LuaExpression Name="FDVBaneData_EHLEDKategori" >			<Formula>NOBN_ocs_FDVBaneData_EHLEDKategoriFromVariant()</Formula></LuaExpression>
 		<LuaExpression Name="FDVBaneData_EHLEDFunksjon" >			<Formula>NOBN_ocs_FDVBaneData_EHLEDFunksjonFromVariant()</Formula></LuaExpression>
-		<LuaExpression Name="FDVBaneData_EHLEDFraObjektObjektnr" >	<Formula>NOBN_ocs_GetClosestMastToPoint(Alignment.StartPoint)</Formula></LuaExpression>
-		<LuaExpression Name="FDVBaneData_EHLEDTilObjektObjektnr" >	<Formula>NOBN_ocs_GetClosestMastToPoint(Alignment.EndPoint)</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneData_EHLEDFraObjektObjektnr" >	<Formula>NOBN_ocs_GetClosestOcsPoleToPoint(Alignment.StartPoint)</Formula></LuaExpression>
+		<LuaExpression Name="FDVBaneData_EHLEDTilObjektObjektnr" >	<Formula>NOBN_ocs_GetClosestOcsPoleToPoint(Alignment.EndPoint)</Formula></LuaExpression>
 		<LuaExpression Name="FDVBaneData_EHLEDBetegnelse" >			<Formula>WireType</Formula></LuaExpression>
 
 
@@ -1863,29 +1863,28 @@ Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="file
 </LuaFunction> 
 
 
-<LuaFunction Name="NOBN_ocs_GetClosestMastToPoint()" ReturnType="String"
+<LuaFunction Name="NOBN_ocs_GetClosestOcsPoleToPoint()" ReturnType="String"
 	Description="Gets closest 'JBTEH_MAS KL-mast' or 'JBTEH_TUF Tunnelfeste' object within MaxDistance of point" >
-	<Constructor>String NOBN_ocs_GetClosestMastToPoint(Point point, [Double MaxDistance = 10])</Constructor>
+	<Constructor>String NOBN_ocs_GetClosestOcsPoleToPoint(Point3D p, [Double MaxDistance = 10])</Constructor>
 	<Formula>
-		function NOBN_ocs_GetClosestMastToPoint(point, MaxDistance)
+		function NOBN_ocs_GetClosestOcsPoleToPoint(point, MaxDistance)
 			local minDistance = MaxDistance or 10
-			local nearby = getNearbyPointObjects2D(point, minDistance)
+			local npo = getNearbyPointObjects2D(point, minDistance)
 			local closest
 
-
-			for i = 0,nearby.count -1 do
-				local obj = nearby[i]
-				local distance = RC__getDistance2D(nearby[i].geoCoord, point)
-				if nearby[i] and nearby[i].RcType == 'JBTEH_MAS KL-mast' and  distance &lt; minDistance then
+			for i = 0,npo.count -1 do
+				local obj = npo[i]
+				local distance = RC__getDistance2D(npo[i].geoCoord, point)
+				if npo[i] and npo[i].RcType == 'JBTEH_MAS KL-mast' and  distance &lt; minDistance then
 					minDistance = distance
 					closest = obj
 				end
 			end
 			if not closest then
-				for i = 0,nearby.count -1 do
-					local obj = nearby[i]
-					local distance = RC__getDistance2D(nearby[i].geoCoord, point)
-					if nearby[i] and nearby[i].RcType == 'JBTEH_TUF Tunnelfeste' and  distance &lt; minDistance then
+				for i = 0,npo.count -1 do
+					local obj = npo[i]
+					local distance = RC__getDistance2D(npo[i].geoCoord, point)
+					if npo[i] and npo[i].RcType == 'JBTEH_TUF Tunnelfeste' and  distance &lt; minDistance then
 						minDistance = distance
 						closest = obj
 				end
