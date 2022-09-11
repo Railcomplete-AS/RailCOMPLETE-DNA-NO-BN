@@ -204,7 +204,8 @@
 		
 
 
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_KTL Kontaktledning"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength"
+				LuaName="rctype_ContactWire" Name="JBTEH_KTL Kontaktledning"
 				Layer="JBTEH_KTL" Color="ByLayer"
 				Group="Kontaktledning/Kontaktledning"
 				>
@@ -342,7 +343,11 @@
 			<Constructor>String _JBTEH_KTL_ContactWireMaterial()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_ContactWireMaterial()
-					return NOBN_ocs_getWireMaterialTable()["cwMat"]
+					if Variant == "Kontaktledning, avspenningsline" then
+						return "N/A"
+					else
+						return NOBN_ocs_getWireMaterialTable()["cwMat"]
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -356,10 +361,9 @@
 				<Value>Bz II 70/19</Value>
 			</Values>
 			<Values Variant="Kontaktledning, ikke kjørbar" >
-				<Value Description="EN50149 - AC-100 – Cu-ETP" >Ri 100</Value>
-				<Value Description="EN 50149 – AC-100 – CuAg0,1 ">RiS 100</Value>
-				<Value Description="EN 50149 – AC-120 – Cu-ETP" >Ri 120</Value>
-				<Value Description= "EN 50149 – AC-120 – CuAg0,1" >RiS 120</Value>
+				<Value>Bz II 50/19</Value>
+				<Value>Bz II 50/19 isolert</Value>
+				<Value>Bz II 70/19</Value>
 			</Values>
 			<Values Variant="Kontaktledning, avspenningsline" >
 				<Value>N/A</Value>
@@ -371,7 +375,11 @@
 			<Constructor>String _JBTEH_KTL_MessengerWireMaterial()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_MessengerWireMaterial()
-					return NOBN_ocs_getWireMaterialTable()["mwMat"]
+					if Variant == "Kontaktledning, avspenningsline" then
+						return "N/A"
+					else
+						return NOBN_ocs_getWireMaterialTable()["mwMat"]
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -391,13 +399,13 @@
 				<Value>60/222 w/bitumen</Value>
 				<Value>16/133</Value>
 				<Value>30/7</Value>
-				<Value>50/19 KHF</Value>
-				<Value>70/19 KHF</Value>
-				<Value>50/19 KHF isolert</Value>
-				<Value>50/19</Value>
-				<Value>70/19</Value>
-				<Value>80/19</Value>
-				<Value>95/19</Value>
+				<Value>Bz II 50/19 KHF</Value>
+				<Value>Bz II 70/19 KHF</Value>
+				<Value>Bz II 50/19 KHF isolert</Value>
+				<Value>Bz II 50/19</Value>
+				<Value>Bz II 70/19</Value>
+				<Value>Bz II 80/19</Value>
+				<Value>Bz II 95/19</Value>
 			</Values>
 		</CustomAttribute>
 		<LuaExpression Name="TensioningWireMaterial" ><Formula>_JBTEH_KTL_TensioningWireMaterial()</Formula></LuaExpression>
@@ -406,7 +414,11 @@
 			<Constructor>String _JBTEH_KTL_TensioningWireMaterial()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_TensioningWireMaterial()
-					return NOBN_ocs_getWireMaterialTable()["twMat"]
+					if Variant == "Kontaktledning, avspenningsline" then
+						return NOBN_ocs_getWireMaterialTable()["twMat"]
+					else
+						return "N/A"
+					end
 				end
 			</Formula>
 		</LuaFunction>
@@ -434,6 +446,13 @@
 			</Values>
 			<Values Variant="Kontaktledning, avspenningsline" >
 				<Value>Gul</Value>
+				<Value>Sort</Value>
+				<Value>Blå</Value>
+				<Value>Lilla</Value>
+				<Value>Rød</Value>
+				<Value>Brun</Value>
+				<Value>Oransje</Value>
+				<Value>Grønn</Value>
 			</Values>
 		</CustomAttribute>
 		<LuaExpression Name="Wire2dColor" ><Formula>_JBTEH_KTL_Wire2dColor()</Formula></LuaExpression>
@@ -551,6 +570,69 @@
 			</Formula>
 		</LuaFunction>
 		
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+			Description="Checks complex requirements on the number of established relations between this object and other objects." />
+		<LuaExpression Name="mc_Relations" IsModelCheck="true" ><Formula>_JBTEH_KTL_chkRelations()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_chkRelations()" ReturnType="String"
+			Description = "A contact wire alignment shall relate to cantilevers, midpoint anchor and WTB, depending on its Variant being Regular CW / Lifted CW / CW tensioning wire." >
+			<Constructor>String _JBTEH_KTL_chkRelations()</Constructor>
+			<Formula>
+				function _JBTEH_KTL_chkRelations()
+					rWtb,nWtb = RC__getCollectionOfRelatedObjects("Er avspent av avspenning")
+					rCnt,nCnt = RC__getCollectionOfRelatedObjects("Er kontaktledning festet til utligger")
+					rMap,nMap = RC__getCollectionOfRelatedObjects("Er kontaktledning fiksert av fixpunkt")
+					
+					--Tensioning wire end of CW:
+					if Variant == "Kontaktledning, avspenningsline" then
+						if nWtb == 1 then
+							if nCnt == 0 and nMap == 0 then
+								return _ok,"OK - CW tensioning wire is related to one WTB, no cantilever, no midpoint anchor."
+							else
+								return _error,"ERROR - CW tensioning wire (between WTB and ISO) shall not be related to cantilever(s) or a midpoint anchor."
+							end
+						else
+							return _unfinished,"UNFINISHED - CW tensioning wire shall be related to a WTB at one end and shall be continued with a continuation object or a line isolator at the other end."
+						end
+
+					--Lifted CW:
+					elseif Variant == "Kontaktledning, ikke kjørbar" then
+						if nWtb == 0 then
+							if nCnt &gt; 0 then
+								if nMap == 0 then
+									return _ok,"OK - Lifted CW is related to at least one cantilever, no WTB, no midpoint anchor."
+								else
+									return _error,"ERROR - Lifted CW shall not relate to a midpoint anchor."
+								end
+							else
+								return _unfinished,"UNFINISHED - Lifted CW (between first ISO and its switchover to a regular CW) shall relate to at least one cantilever."
+							end
+						else
+							return _error,"ERROR - Lifted CW shall not relate to a WTB."
+						end
+					
+					--Regular CW:
+					elseif Variant == "Kontaktledning, kjørbar" then
+						if nWtb == 0 then
+							if nCnt &gt; 0 then
+								if nMap == 0 or nMap == 1 then
+									return _ok,"OK - Regular CW is related to at least one cantilever, to zero or one midpoint anchor, no WTB."
+								else
+									return _error,"ERROR - Lifted CW has too many midpoint anchors."
+								end
+							else
+								return _unfinished,"UNFINISHED - Regular CW shall relate to at least one cantilever."
+							end
+						else
+							return _error,"ERROR - Regular CW shall not relate to a WTB."
+						end
+
+					else
+						return _error,"ERROR - Bad variant '"..Variant.."'."
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+
 		<CustomAttribute DataType="String" Name="mc_OtherObjectsToBeModelchecked" ReadOnly="true" Category="Model check"
 			DisplayName="Andre objekter som modelsjekkes" 
 			Description="When this contact wire is refreshed, then all point objects in 2D closer than 0.1 m from the alignment are modelchecked as well."
@@ -589,7 +671,8 @@
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM - CONDUCTOR (CABLE) ALIGNMENT
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_LED Ledning"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength"
+				LuaName="rctype_HighVoltageCable" Name="JBTEH_LED Ledning"
 				Layer="JBTEH_LED" Color="ByLayer"
 				Group="Kontaktledning/Ledning"
 				>
@@ -1049,7 +1132,8 @@
 	Comment: Object type is not known to Bane NOR's Banedata. The FIXLINE appears only as Pset Values to
 	the contact wire EH-KTL object in Banedata.
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_FIL Fixline"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength"
+				LuaName="rctype_MidpointAnchorLine" Name="JBTEH_FIL Fixline"
 				Layer="JBTEH_FIL" Color="ByLayer"
 				Group="Kontaktledning/Fixline"
 				>
@@ -1133,19 +1217,13 @@
 			<Constructor>String _JBTEH_FIL_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIL_code()
-					sMal = "Fixline avspenner fixpunkt"
+					sMal = "Fixline fastholder fixpunkt"
 					rMal,nMal = RC__getCollectionOfRelatedObjects(sMal)
 					if nMal == 0 then
 						return "UNFINISHED - Relate contact wire midpoint anchoring line with '"..sMal.."' to its midpoint anchor object."
 					elseif nMal == 1 then
 						mal = rMal[0]
-						sCow = "Fikserer kontaktledning"
-						rCow,nCow = RC__getCollectionOfRelatedObjects(sCow,mal)
-						if nCow == 1 then
-							return rCow[0].code,_info("Midpoint anchoring line code was deduced from its midpoint-&gt;cantilever-&gt;contact wire, related with '"..sMal.."'.")
-						else
-							return "UNFINISHED - Related fixpoint "..RC__identify(mal).." is missing relation '"..sCow.."' to its contact wire - cannot deduce midpoint anchoring line's code."
-						end
+						return mal.code,_info("Midpoint anchoring line's code was deduced from its midpoint anchor.")
 					else
 						return _error,"ERROR - Midpoint anchoring line shall relate to just one contact wire midpoint with '"..sMal.."' ("..nMal.." were found)."
 					end
@@ -1176,7 +1254,8 @@
 	HIGH VOLTAGE
 	GUYWIRE ALIGNMENT
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_BAR Bardun"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength"
+				LuaName="rctype_GuyWire" Name="JBTEH_BAR Bardun"
 				Layer="JBTEH_BAR" Color="ByLayer"
 				Group="Kontaktledning/Bardun og strever"
 				>
@@ -1208,22 +1287,56 @@
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_BAR_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_code()" ReturnType="String"
-			Description="Obtains the code for the OCS catenary wire guywire component, inherited from the associated contact wire, through the 'Er bardun for kontaktledning' relation." >
+			Description="Obtains the code for the OCS guywire, inherited from its OCS pole's anchoring device." >
 			<Constructor>String _JBTEH_BAR_code()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_code()
-					local t = "-B"
-					local s = "Har kraftoverføringskonsoll"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then 
-						return "UNFINISHED - No force relay console found at start of guywire alignment - cannot deduce guywire's code."
-					elseif n == 1 then 
-						local s1 = "Er kraftoverføringskonsoll på kl-mast"
-						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
-						return r1[0].code..t
-					else -- Two or more mast consoles were found
-						--TODO 2021-11-22: Accept 2 if they are located at each end of wire???
-						return r[0].code..t, _info("WARNING - Multiple OCS pole consoles related to guywire alignment, cannot deduce guywire's code.")
+					local t
+					--TODO: Take into consideration more than one anchoring device to same OCS pole, add a unique suffix number to the code for all the guywires present.
+					sAnp = "Har forankring_på_mast"
+					rAnp,nAnp = RC__getCollectionOfRelatedObjects(sAnp)
+					if nAnp == 0 then
+						return _unfinished,"UNFINISHED - Relate to its anchoring device on OCS pole."
+					else
+						anp = rAnp[0]
+
+						if anp.Variant == "Forankring på mast for avspenning med bardun" then
+							--guywire to counteract the WTB's forces on OCS pole:
+							t = "-B"
+
+						elseif anp.Variant == "Forankring på mast for kurvebardun" then
+							--One or two guywires to compensate for large lateral forces on OCS pole, e.g., due to track curvature, AT wires changing side-of-track, or other issue:
+							rBar,nBar = RC__getCollectionOfRelatedObjects("Er forankring_på_mast for avspenning/kl-bardun/kl-strever",anp)
+							if nBar == 1 then
+								--The anchor device has at least one guywire (this):
+								t = "-KB"
+							elseif nBar == 2 then
+								if this.id == rBar[0].id then
+									t = "-B1"
+								else
+									t = "-B2"
+								end
+							else
+								t = "-(3 or more - do manual numbering)"
+							end
+
+						elseif anp.Variant == "Forankring på mast for strever" then
+							return _error,"ERROR - Guywire is not compatible with anchoring for spanner."
+						
+						elseif anp.Variant == "Forankring på mast for avspenning med bardun" then
+							return _error,"ERROR - Guywire is not compatible with anchoring-for-WTB-without-guywire."
+
+						else
+							return _error,"ERROR - Unrecognized Variant '"..Variant.."'."
+						end
+
+						sPol = "Er forankring på kl-mast"
+						rPol,nPol = RC__getCollectionOfRelatedObjects(sPol,rAnp[0])
+						if nPol == 0 then
+							return _unfinished,"UNFINISHED - The related anchoring device has no relation to a its OCS pole, cannot deduce guywire's code."
+						else
+							return rPol[0].code..t
+						end
 					end
 				end
 			</Formula>
@@ -1294,12 +1407,19 @@
 			</Formula>
 		</LuaFunction>
 
+		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
+		<LuaExpression Name="SweptModel3D_0.Roll" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
+		
+
+<!-- TODO: chk this . Description = "Checking that a guywire or spanner alignment shall start at an OCS pole's insertion point and extend to the guywire's / spanner's base plate." > -->
+
+
 		<!-- Guywire: See EH-707162. Angle should be 40-50 Decimal Degrees relative to horizon. -->
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_GuyWireAngle" DisplayName="Bardun tegneretning" 
-			Description="Checking that a guywire alignment shall start at its connection to thw wire or object it relieves, and extend to the guywire's base plate or fixation." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_JBTEH_BAR_GuyWireAngle" DisplayName="Bardunvinkel" 
+			Description="Checking that a guywire alignment shall make an angle of 40 to 50 decimal degrees, relative to the Z axis." />
 		<LuaExpression Name="mc_JBTEH_BAR_GuyWireAngle" IsModelCheck="true" ><Formula>_JBTEH_BAR_chkGuyWireAngle()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_chkGuyWireAngle()" ReturnType="String"
-			Description = "Checking that a guywire or spanner alignment shall start at an OCS pole's insertion point and extend to the guywire's / spanner's base plate." >
+			Description = "Checking that a guywire alignment shall make an angle of 40 to 50 decimal degrees, relative to the Z axis." >
 			<Constructor>String _JBTEH_BAR_chkGuyWireAngle()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_chkGuyWireAngle()
@@ -1310,18 +1430,34 @@
 			</Formula>
 		</LuaFunction> 
 			
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+			Description="Checks complex requirements on the number of established relations between this object and other objects." />
+		<LuaExpression Name="mc_Relations" IsModelCheck="true" ><Formula>_JBTEH_BAR_chkRelations()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAR_chkRelations()" ReturnType="String"
+			Description = "A guywire footplate shall relate to a guywire alignment and to its foundation." >
+			<Constructor>String _JBTEH_BAR_chkRelations()</Constructor>
+			<Formula>
+				function _JBTEH_BAR_chkRelations()
+					rAnp,nAnp = RC__getCollectionOfRelatedObjects("Har forankring_på_mast")
+					rAnt,nAnt = RC__getCollectionOfRelatedObjects("Har tunnelfeste")
+					rAng,nAng = RC__getCollectionOfRelatedObjects("Har bardun_fotplate")
+				
+					if (nAnp + nAnt) == 1 and nAng == 1 then
+						return _ok,"OK - Guywire alignment is related to an anchoring device on OCS pole or to a tunnel wall anchor, and to its footplate."
+
+					elseif (nAnp + nAnt) == 0 then
+						return _unfinished,"UNFINISHED - Guywire alignment shall relate to an anchoring device on an OCS pole (JBTEH_FPM) or on a tunnel wall/ceiling (JBTEH_TUF)."
+
+					else 
+						return _unfinished,"UNFINISHED - Guywire alignment shall relate to its footplate."
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+
 		<!-- Asks for relation to its corresponding contact wire, and derives it code from it. -->
 		<PropertyPrompt Key="code" DefaultValue="Bardun" AcceptEmptyValue="false" /> 		
 
-		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
-	
-		<LuaExpression Name="SweptModel3D_0.Roll" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
-		
-		<!-- 2022-02-16 TODO - it is no longer necessary to make the step size fit exactly (RC takes "the last step" for you) -->
-		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
-		<!-- <LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression> -->
-		<!-- <SetValue Key="Model3DOffset" Value="0.0" /> -->
-		
 		<InsertAlignment VariantName="Bardun" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="SweptModel3D_0.SweepProfile" Value="NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-010" />
@@ -1335,7 +1471,8 @@
 	HIGH VOLTAGE
 	SPANNER ALIGNMENT
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTEH_STR Strever"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength"
+				LuaName="rctype_Spanner" Name="JBTEH_STR Strever"
 				Layer="JBTEH_STR" Color="ByLayer"
 				Group="Kontaktledning/Bardun og strever"
 				>
@@ -1374,22 +1511,22 @@
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_STR_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STR_code()" ReturnType="String"
-			Description="Obtains the code for the OCS catenary wire spanner component, inherited from the associated contact wire, through the 'Er strever for kontaktledning' relation." >
+			Description="Obtains the code for the OCS spanner, inherited from its OCS pole's anchoring device." >
 			<Constructor>String _JBTEH_STR_code()</Constructor>
 			<Formula>
 				function _JBTEH_STR_code()
-					local s = "Har kraftoverføringskonsoll"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then 
-						return "UNFINISHED - No force relay console found at start of spanner alignment - cannot deduce spanner's code."
-					elseif n == 1 then 
-						local s1 = "Er kraftoverføringskonsoll på kl-mast"
-						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
-						return r1[0].code
+					sAnp = "Har forankring_på_mast"
+					rAnp,nAnp = RC__getCollectionOfRelatedObjects(sAnp)
+					if nAnp == 0 then
+						return _unfinished,"UNFINISHED - A related anchoring device on OCS pole is missing."
 					else
-						-- Two or more OCS pole force relay consoles were found:
-						--TODO 2021-11-22: Accept 2 if they are located at each end of guywire???
-						return r1[0].code, _info("WARNING - Multiple OCS pole consoles related to spanner alignment, cannot deduce spanner's code.")
+						sPol = "Er forankring på kl-mast"
+						rPol,nPol = RC__getCollectionOfRelatedObjects(sPol,rAnp[0])
+						if nPol == 0 then
+							return _unfinished,"UNFINISHED - The related anchoring device has no relation to a its OCS pole, cannot deduce spanner's code."
+						else
+							return rPol[0].code.."-S"
+						end
 					end
 				end
 			</Formula>
@@ -1415,6 +1552,31 @@
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="SweptModel3D_0.Roll" ><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+			Description="Checks complex requirements on the number of established relations between this object and other objects." />
+		<LuaExpression Name="mc_Relations" IsModelCheck="true" ><Formula>_JBTEH_STR_chkRelations()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STR_chkRelations()" ReturnType="String"
+			Description = "A guywire footplate shall relate to a guywire alignment and to its foundation." >
+			<Constructor>String _JBTEH_STR_chkRelations()</Constructor>
+			<Formula>
+				function _JBTEH_STR_chkRelations()
+					rAnp,nAnp = RC__getCollectionOfRelatedObjects("Har forankring_på_mast")
+					rAnt,nAnt = RC__getCollectionOfRelatedObjects("Har tunnelfeste")
+					rAns,nAns = RC__getCollectionOfRelatedObjects("Har strever_fotplate")
+				
+					if (nAnp + nAnt) == 1 and nAns == 1 then
+						return _ok,"OK - Spanner alignment is related to an anchoring device on OCS pole or to a tunnel wall anchor, and to its footplate."
+
+					elseif (nAnp + nAnt) == 0 then
+						return _unfinished,"UNFINISHED - Spanner alignment shall relate to an anchoring device on an OCS pole (JBTEH_FPM) or on a tunnel wall/ceiling (JBTEH_TUF)."
+
+					else 
+						return _unfinished,"UNFINISHED - Spanner alignment shall relate to its footplate."
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+
 		<InsertAlignment VariantName="Strever" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="SweptModel3D_0.SweepProfile" Value="NO-BN-SWEEP-FE-DIV-STEEL-BEAM-HUP-120-120" />
@@ -1434,19 +1596,19 @@
 	
 	To be inserted with a guywire alignment object as 'own alignment'.
 	
-	Note: An OCS pole may have from 0 to 4 guywires, but never more than 2 for the same force relay console.
+	Note: An OCS pole may have from 0 to 4 guywires, but never more than 2 for the same anchoring device.
 	Note: This is just the 2D symbol - the guywire must be created as separate alignment object.
 	
 	For NO-BN / Bane NOR:
-	See EH-707162 Bardunering, EH-800262 / EH-800263 fotplate for bardunfeste. 
+	See EH-707162 Bardunering, EH-800262 / EH-800263 fotplate for bardun. 
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_BAF Bardunfeste"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_BAF Bardun fotplate"
 				Layer="JBTEH_BAF" Color="ByLayer"
 				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>forankring</RelationSpace>
+		<RelationSpace>bardun_fotplate</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
@@ -1465,60 +1627,36 @@
 		<!-- This object does not have its own Banedata code: -->
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
-		<Variants DefaultValue="Bardunfeste fotplate, enkel" >
-			<Variant Name="Bardunfeste fotplate, enkel" >
+		<Variants DefaultValue="Bardun fotplate, enkel" >
+			<Variant Name="Bardun fotplate, enkel" >
 			</Variant>
-			<Variant Name="Bardunfeste fotplate, dobbel" >
+			<Variant Name="Bardun fotplate, dobbel" >
 			</Variant>
 		</Variants>
 
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 		
-        <LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_BAF_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_BAF_Model3DName()" 
-			ReturnType="String"
-			Description="Obtains the Model 3D Name for this guywire anchoring base." >
-			<Constructor>String _JBTEH_BAF_Model3DName()</Constructor>
-			<Formula>
-				function _JBTEH_BAF_Model3DName()
-					--Look for mast near start of associated wire (alignment).
-					tol = 0.5 --[m]
-					local t
-					if Variant:match("Bardunfeste fotplate, enkel") then 
-						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
-						
-					elseif Variant:match("Bardunfeste fotplate, dobbel") then
-						t = "NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36"
-						
-					else 
-						return "Bad guywire anchoring baseplate Variant ["..Variant.."]."
-					end
-					return t
-				end
-			</Formula>
-		</LuaFunction>
-
         <LuaExpression Name="code" ><Formula>_JBTEH_BAF_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAF_code()" 
 			ReturnType="String"
-			Description="Obtains the code for this guywire anchoring object, deduced from the OCS pole at the start of its guywire alignment." >
+			Description="Obtains the code for this guywire anchoring object, deduced from its guywire alignment." >
 			<Constructor>String _JBTEH_BAF_code()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_code()
 					if Alignment == nil or Alignment.RcType ~= "JBTEH_BAR Bardun" then
 						return "UNFINISHED - Own alignment for guywire anchoring baseplate must be of type 'JBTEH_BAR Bardun'."
 					end
-					local t = "-B"
-					local s = "Har kraftoverføringskonsoll"
-					local r,n = RC__getCollectionOfRelatedObjects(s,Alignment)
-					if n == 0 then 
-						return "UNFINISHED - No force relay console found at start of guywire alignment - cannot deduce guywire's code."
-					elseif n == 1 then 
-						local s1 = "Er kraftoverføringskonsoll på kl-mast"
-						local r1,n1 = RC__getCollectionOfRelatedObjects(s1,r[0])
-						return r1[0].code..t
-					else -- Two or more mast consoles were found
-						return r[0].code..t, _info("WARNING - Multiple OCS pole consoles found at start of guywire alignment, cannot deduce guywire's code uniquely.")
+					local sAng = "Er bardun_fotplate for kl-bardun"
+					local rAng,nAng = RC__getCollectionOfRelatedObjects(sAng)
+					if nAng == 0 then 
+						return _unfinished,"UNFINISHED - Relate guywire to its own alignment '"..Alignment.code.."'."
+					else
+						gwi = rAng[0]
+						--(No need to test for more than 1 related object, this is checked by the SymbolFrame code against the relations' cardinalities).
+						if gwi.id ~= Alignment.id then
+							return _error,"ERROR - Anchoring device's own alignment '"..Alignment.code.."' differs from related alignment '"..gwi.code.."'."
+						end
+						return gwi.code
 					end
 				end
 			</Formula>
@@ -1532,7 +1670,6 @@
 			<Formula>
 				function _JBTEH_BAF_name()
 					return code
-					--OTHER POSSIBILITY: return tostring(code):upper():match("UNFINISHED") and code or ""
 				end
 			</Formula>
 		</LuaFunction>
@@ -1544,7 +1681,7 @@
 			<Constructor>Double _JBTEH_BAF_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_BAF_Mileage()
-					--Assume it runs from 0 (at mast) to L (at anchorage object)
+					--Assume it runs from 0 (at OCS pole's anchoring device) to L (at anchoring device)
 					return Alignment.RcAlignment.HorizontalProfile.Length
 				end
 			</Formula>
@@ -1569,13 +1706,37 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Bardunfeste fotplate, enkel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-ENKEL-{{SymbolMode}}" 
+        <LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_BAF_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAF_Model3DName()" 
+			ReturnType="String"
+			Description="Obtains the Model 3D Name for this guywire anchoring base." >
+			<Constructor>String _JBTEH_BAF_Model3DName()</Constructor>
+			<Formula>
+				function _JBTEH_BAF_Model3DName()
+					--Look for mast near start of associated wire (alignment).
+					tol = 0.5 --[m]
+					local t
+					if Variant:match("Bardun fotplate, enkel") then 
+						t = "NO-BN-3D-EH-BAF-BARDUN-FOTPLATE-191x374xM36"
+						
+					elseif Variant:match("Bardun fotplate, dobbel") then
+						t = "NO-BN-3D-EH-BAF-BARDUN-FOTPLATE-191x374xM36"
+						
+					else 
+						return "Bad guywire anchoring baseplate Variant ["..Variant.."]."
+					end
+					return t
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject VariantName="Bardun fotplate, enkel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUN-FOTPLATE-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 																				
-		<InsertPointObject VariantName="Bardunfeste fotplate, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUNFESTE-FOTPLATE-DOBBEL-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Bardun fotplate, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUN-FOTPLATE-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -1591,9 +1752,9 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_BAF-BARDUNFESTE
-				{% if Variant == 'Bardunfeste fotplate, enkel' %}FOTPLATE-ENKEL
-				{% elsif Variant == 'Bardunfeste fotplate, dobbel' %}FOTPLATE-DOBBEL
+				NO-BN-2D-JBTEH_BAF-BARDUN
+				{% if Variant == 'Bardun fotplate, enkel' %}FOTPLATE-ENKEL
+				{% elsif Variant == 'Bardun fotplate, dobbel' %}FOTPLATE-DOBBEL
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -1624,19 +1785,19 @@
 	
 	To be inserted with a spanner alignment object as its own alignment.
 	
-	Note: An OCS pole may have up to 2 spanners, but never more than 1 for the same force relay console.
+	Note: An OCS pole may have up to 2 spanners, but never more than 1 for the same anchoring device.
 	Note: This is just the 2D symbol - the spanner rod must be created as a separate alignment object.
 	
 	For NO-BN / Bane NOR:
 	See EH-800257 mastefundament / EH-800258 Streverfundament / EH-800242 Strevere (deprecated?). 
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_STF Streverfeste"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_STF Strever fotplate"
 				Layer="JBTEH_STF" Color="ByLayer"
 				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>forankring</RelationSpace>
+		<RelationSpace>strever_fotplate</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
@@ -1654,54 +1815,16 @@
 		<!-- This object does not have its own Banedata code: -->
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_EH_BAR" />
 
-		<Variants DefaultValue="Streverfeste fotplate (uten streveren)" >
-			<Variant Name="Streverfeste fotplate (uten streveren)" >
+		<Variants DefaultValue="Strever fotplate (uten streveren)" >
+			<Variant Name="Strever fotplate (uten streveren)" >
 			</Variant>
-			<Variant Name="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast" >
+			<Variant Name="Strever fotplate og strever, 2.08m fra sidekant KL-mast" >
 			</Variant>
-			<Variant Name="Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel" >
+			<Variant Name="Strever fotplate og strever for Ø120 hengemast for bru og tunnel" >
 			</Variant>
 		</Variants>
 
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
-
-        <LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_STF_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_STF_Model3DName()" 
-			ReturnType="String"
-			Description="Obtains the Model 3D Name for this spanner anchoring baseplate object, deducing its dimensions from its associated OCS pole." >
-			<Constructor>String _JBTEH_STF_Model3DName()</Constructor>
-			<Formula>
-				function _JBTEH_STF_Model3DName()
-					--Look for mast near start of associated wire alignment.
-					tol = 0.5 --[m]
-					local t
-					if Variant == "Streverfeste fotplate (uten streveren)" then
-						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-525x350-191x374xM36"
-						
-					elseif Variant:match("Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast") then 
-						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-MED-STREVER-FOR-BJELKEMAST-L7000-D2080-H6654"
-						
-					elseif Variant:match("Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel") then
-						local m = getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")
-						local n = getCollectionLength(m)
-						if n &gt; 0 then 
-							-- Assume spanner 3D models exist in steps of 500 mm range 500..2500.
-							-- Let default spanner choice be half the height of the supported OCS suspension mast.
-							local h = (math.floor((250 + (OcsMastHeight/2)) / 500)) * 500
-							h = (h &lt; 500) and 500 or h -- At least 500
-							h = (h &gt; 2500) and 2500 or h -- No more than 2500
-							t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-MED-STREVER-FOR-BRU-OG-TUNNEL-Ø120-H"..string.format("%03d",h)
-						else
-							t = "UNIFINSHED: No OCS suspension mast found near spanner, cannot deduce spanner's 3D model name."
-						end
-
-					else 
-						return "Bad spanner fastening Variant ["..Variant.."]."
-					end
-					return t
-				end
-			</Formula>
-		</LuaFunction>
 
         <LuaExpression Name="code" ><Formula>_JBTEH_STF_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STF_code()" 
@@ -1710,22 +1833,20 @@
 			<Constructor>String _JBTEH_STF_code()</Constructor>
 			<Formula>
 				function _JBTEH_STF_code()
-					--Look for mast near start of associated wire (alignment).
-					--Spanner rod / guywire alignments always start at high elevation (top of OCS pole) and extend down to the ground, where the anchoring baseplate is.
-					--Both guywires and spanners require an OCS pole at the START of the wire / the rod. 
-					local tol = 0.25 
-					local t = "-S"
 					if Alignment == nil or Alignment.RcType ~= "JBTEH_STR Strever" then
-						return "UNFINISHED - Attach spanner anchoring baseplate to an alignment of type 'JBTEH_STR Strever'."
+						return "UNFINISHED - Own alignment for spanner anchoring baseplate must be of type 'JBTEH_STR Strever'."
 					end
-					local m = getNearbyPointObjects2D(tol,"JBTEH_MAS KL-mast",Alignment.RcAlignment.StartPoint)
-					local n = getCollectionLength(m)
-					if n == 0 then 
-						return "UNFINISHED - No OCS pole found at start of spanner alignment - cannot deduce spanner's code."
-					elseif n == 1 then 
-						return m[0].code..t
-					else -- Two or more masts were found
-						return m[0].code..t, _info("WARNING - Multiple OCS poles found at start of spanner rod alignment.")
+					local sAns = "Er strever_fotplate for kl-strever"
+					local rAns,nAns = RC__getCollectionOfRelatedObjects(sAns)
+					if nAns == 0 then 
+						return _unfinished,"UNFINISHED - Relate spanner to its own alignment '"..Alignment.code.."'."
+					else
+						spn = rAns[0]
+						--(No need to test for more than 1 related object, this is checked by the SymbolFrame code against the relations' cardinalities).
+						if spn.id ~= Alignment.id then
+							return _error,"ERROR - Anchoring device's own alignment '"..Alignment.code.."' differs from related alignment '"..spn.code.."'."
+						end
+						return spn.code
 					end
 				end
 			</Formula>
@@ -1738,11 +1859,10 @@
 			<Constructor>String _JBTEH_STF_name()</Constructor>
 			<Formula>
 				function _JBTEH_STF_name()
-					return tostring(code):upper():match("UNFINISHED") and code or ""
+					return code
 				end
 			</Formula>
 		</LuaFunction>
-
 
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_STF_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STF_Mileage()" 
@@ -1751,7 +1871,7 @@
 			<Constructor>Double _JBTEH_STF_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_STF_Mileage()
-					--Assume it runs from 0 (at mast) to L (at anchorage object)
+					--Assume it runs from 0 (at mast) to L (at anchoring device)
 					return Alignment.RcAlignment.HorizontalProfile.Length
 				end
 			</Formula>
@@ -1785,22 +1905,60 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Streverfeste fotplate (uten streveren)"
-				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVERFESTE-FOTPLATE-{{SymbolMode}}" 
+        <LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_STF_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STF_Model3DName()" 
+			ReturnType="String"
+			Description="Obtains the Model 3D Name for this spanner anchoring baseplate object, deducing its dimensions from its associated OCS pole." >
+			<Constructor>String _JBTEH_STF_Model3DName()</Constructor>
+			<Formula>
+				function _JBTEH_STF_Model3DName()
+					--Look for mast near start of associated wire alignment.
+					tol = 0.5 --[m]
+					local t
+					if Variant == "Strever fotplate (uten streveren)" then
+						t = "NO-BN-3D-EH-STF-STREVER-FOTPLATE-525x350-191x374xM36"
+						
+					elseif Variant == "Strever fotplate og strever, 2.08m fra sidekant KL-mast" then 
+						t = "NO-BN-3D-EH-STF-STREVER-FOTPLATE-MED-STREVER-FOR-BJELKEMAST-L7000-D2080-H6654"
+						
+					elseif Variant == "Strever fotplate og strever for Ø120 hengemast for bru og tunnel" then
+						local m = getNearbyPointObjects2D(tol,"JBTEH_MAS Hengemast for bru og tunnel")
+						local n = getCollectionLength(m)
+						if n &gt; 0 then 
+							-- Assume spanner 3D models exist in steps of 500 mm range 500..2500.
+							-- Let default spanner choice be half the height of the supported OCS suspension mast.
+							local h = (math.floor((250 + (OcsMastHeight/2)) / 500)) * 500
+							h = (h &lt; 500) and 500 or h -- At least 500
+							h = (h &gt; 2500) and 2500 or h -- No more than 2500
+							t = "NO-BN-3D-EH-STF-STREVER-FOTPLATE-MED-STREVER-FOR-BRU-OG-TUNNEL-Ø120-H"..string.format("%03d",h)
+						else
+							t = "UNIFINSHED: No OCS suspension mast found near spanner, cannot deduce spanner's 3D model name."
+						end
+
+					else 
+						return "Bad spanner fastening Variant ["..Variant.."]."
+					end
+					return t
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject VariantName="Strever fotplate (uten streveren)"
+				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVER-FOTPLATE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast"
-				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVERFESTE-FOTPLATE-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Strever fotplate og strever, 2.08m fra sidekant KL-mast"
+				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVER-FOTPLATE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel"
-				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVERFESTE-FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Strever fotplate og strever for Ø120 hengemast for bru og tunnel"
+				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVER-FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" />
@@ -1816,10 +1974,10 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_STF-STREVERFESTE
-				{% if Variant == 'Streverfeste fotplate (uten streveren)' %}FOTPLATE
-				{% elsif Variant == 'Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast' %}FOTPLATE
-				{% elsif Variant == 'Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel' %}FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120
+				NO-BN-2D-JBTEH_STF-STREVER
+				{% if Variant == 'Strever fotplate (uten streveren)' %}FOTPLATE
+				{% elsif Variant == 'Strever fotplate og strever, 2.08m fra sidekant KL-mast' %}FOTPLATE
+				{% elsif Variant == 'Strever fotplate og strever for Ø120 hengemast for bru og tunnel' %}FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -1854,7 +2012,7 @@
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>forankring</RelationSpace>
+		<RelationSpace>forankring_på_fundament</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
@@ -1884,7 +2042,7 @@
 
 		<!-- TODO Create 3D-object from EH drawing. -->
 		<!-- For now, just use guywire anchoring baseplate: -->
-		<SetValue Key="Model3D_0.Model3DName" Value="NO-BN-3D-EH-BAF-BARDUNFESTE-FOTPLATE-191x374xM36" />
+		<SetValue Key="Model3D_0.Model3DName" Value="NO-BN-3D-EH-BAF-BARDUN-FOTPLATE-191x374xM36" />
 		<SetValue Key="name" Value="KL tunnelfeste" />
 		
 		<!-- Use a guywire baseplate for , turn it to fit against wall and serve the incoming wire: -->
@@ -1936,13 +2094,13 @@
 	See EH-701742 Festejern for fast-, fjær- og loddavspenning på stålmaster
 	TODO: See EX-XXXXXX <festejern for barduner mot KL-mast>
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KPM Kraftoverføringskonsoll på mast"
-				Layer="JBTEH_KPM" Color="ByLayer"
-				Group="Kontaktledning/Konsoller"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FPM Forankring på mast"
+				Layer="JBTEH_FPM" Color="ByLayer"
+				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>kraftoverføringskonsoll</RelationSpace>
+		<RelationSpace>forankring_på_mast</RelationSpace>
 		<!-- <AttachmentCategory Name="kraftoverføring" PassAttachmentToTarget="true" /> -->
 		<!-- <AttachTo Category="kl-mast" DrawTail="false" /> -->
 
@@ -1962,25 +2120,27 @@
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 		<!-- This object does not have a specific Banedata Pset. -->
 		
-		<Variants DefaultValue="Konsoll på mast for avspenning" >
-			<Variant Name="Konsoll på mast for avspenning" >
+		<Variants DefaultValue="Forankring på mast for avspenning med bardun" >
+			<Variant Name="Forankring på mast for avspenning med bardun" >
 			</Variant>
-			<Variant Name="Konsoll på mast for kurvebardun" >
+			<Variant Name="Forankring på mast for avspenning uten bardun" >
 			</Variant>
-			<Variant Name="Konsoll på mast for strever" >
+			<Variant Name="Forankring på mast for kurvebardun" >
+			</Variant>
+			<Variant Name="Forankring på mast for strever" >
 			</Variant>
 		</Variants>
 		
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
-        <LuaExpression Name="mileage" ><Formula>_JBTEH_KPM_mileage()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_mileage()" 
+        <LuaExpression Name="mileage" ><Formula>_JBTEH_FPM_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_mileage()" 
 			ReturnType="String"
-			Description="Returns the dir for this force relay console, deduced from its related OCS pole." >
-			<Constructor>String _JBTEH_KPM_mileage()</Constructor>
+			Description="Returns the dir for this anchoring device, deduced from its related OCS pole." >
+			<Constructor>String _JBTEH_FPM_mileage()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_mileage()
-					local s = "Er kraftoverføringskonsoll på kl-mast"
+				function _JBTEH_FPM_mileage()
+					local s = "Er forankring på kl-mast"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then 
 						return getPropertyValue("mileage"),
@@ -1996,14 +2156,14 @@
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_KPM_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_DistanceToAlignment()" 
+        <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_FPM_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_DistanceToAlignment()" 
 			ReturnType="String"
-			Description="Returns the DistanceToAlignment for this force relay console, deduced from its related OCS pole." >
-			<Constructor>String _JBTEH_KPM_DistanceToAlignment()</Constructor>
+			Description="Returns the DistanceToAlignment for this anchoring device, deduced from its related OCS pole." >
+			<Constructor>String _JBTEH_FPM_DistanceToAlignment()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_DistanceToAlignment()
-					local s = "Er kraftoverføringskonsoll på kl-mast"
+				function _JBTEH_FPM_DistanceToAlignment()
+					local s = "Er forankring på kl-mast"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then 
 						return getPropertyValue("DistanceToAlignment"),
@@ -2019,68 +2179,75 @@
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="code" ><Formula>_JBTEH_KPM_code()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_code()" 
+        <LuaExpression Name="code" ><Formula>_JBTEH_FPM_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_code()" 
 			ReturnType="String"
-			Description="Obtains the code for this force relay console, deduced from its related OCS pole." >
-			<Constructor>String _JBTEH_KPM_code()</Constructor>
+			Description="Obtains the code for this anchoring device, deduced from its related OCS pole." >
+			<Constructor>String _JBTEH_FPM_code()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_code()
-					local s = "Er kraftoverføringskonsoll på kl-mast"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
-					local s1 = "Er kraftoverføringskonsoll for avspenning/kl-bardun/kl-strever"
-					local r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+				function _JBTEH_FPM_code()
+					sPol = "Er forankring på kl-mast"
+					sObj = "Er forankring_på_mast for avspenning/kl-bardun/kl-strever"
+					rPol,nPol = RC__getCollectionOfRelatedObjects(sPol)
+					rObj,nObj = RC__getCollectionOfRelatedObjects(sObj)
 					
-					if n == 0 then 
-						return "UNFINISHED - Relate force relay console to its OCS pole with "..s.."."
-					
-					elseif n == 1 then 
-						if n1 == 0 then
-							return "UNFINISHED - No incoming or outgoing WTB, guywire or spanner - relate with "..s1.."."
-						elseif n1 == 1 then
-							return "Konsoll "..r[0].code.." : ["..r1[0].name.."]"
-						else
-							return "Konsoll "..r[0].code.." : ["..r1[0].name.."] &lt;-&gt; ["..r1[1].name.."]"
-						end
-
+					if nPol == 0 then 
+						return _unfinished,"UNFINISHED - Relate anchoring device to its OCS pole with "..sPol.."."
 					else
-						-- Two or more OCS poles were found:
-						return _warning,"WARNING - Multiple OCS poles found."
+						if nObj == 0 then
+							return _unfinished,"UNFINISHED - No WTB, guywire or spanner - relate with '"..sObj.."'."
+						elseif nObj == 1 then
+							return "Forankring "..rPol[0].code.." : ["..rObj[0].name.."]"
+						else
+							return "Forankring "..rPol[0].code.." : ["..rObj[0].name.."] &lt;-&gt; ["..rObj[1].name.."]"
+						end
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="name" ><Formula>_JBTEH_KPM_name()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_name()" 
+        <LuaExpression Name="name" ><Formula>_JBTEH_FPM_name()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_name()" 
 			ReturnType="String"
-			Description="Returns the name for this force relay console, deduced from its related OCS pole." >
-			<Constructor>String _JBTEH_KPM_name()</Constructor>
+			Description="Returns the name for this anchoring device, deduced from its related OCS pole." >
+			<Constructor>String _JBTEH_FPM_name()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_name()
+				function _JBTEH_FPM_name()
 					return code
 				end
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="dir" ><Formula>_JBTEH_KPM_dir()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_dir()" 
+        <LuaExpression Name="dir" ><Formula>_JBTEH_FPM_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_dir()" 
 			ReturnType="LaxDirection"
-			Description="Returns the dir for this force relay console, deduced from its related OCS pole." >
-			<Constructor>String _JBTEH_KPM_dir()</Constructor>
+			Description="Returns the dir for this anchoring device, deduced from its related OCS pole." >
+			<Constructor>String _JBTEH_FPM_dir()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_dir()
-					local s = "Er kraftoverføringskonsoll på kl-mast"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then 
-						return getPropertyValue("dir"),
-							_info("No related OCS pole, cannot deduce 'dir'.")
-					elseif n == 1 then 
-						return r[0].dir
-					else
-						-- Two or more masts were found:
-						return r[0].dir, _warning,_info("WARNING - Multiple OCS poles found.")
+				function _JBTEH_FPM_dir()
+					tmp,nTmp = RC__getCollectionOfRelatedObjects("Er forankring_på_mast for avspenning/kl-bardun/kl-strever")
+					rWtb = tmp:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+					nWtb = getCollectionLength(rWtb)
+					if nTmp == 0 then
+						return _unfinished,getPropertyValue("dir"),info("No related WTB, guywire or spanner - cannot deduce anchor device's direction.")
 					end
+					if nWtb == 1 then
+						alg = rWtb[0].Alignment
+					else
+						--no wtb, just spanner / guywire alignment as first item:
+						alg = tmp[0]
+					end
+					wireDir = math.deg(math.atan(alg.RcAlignment.StartTangent.Y,alg.RcAlignment.StartTangent.X))
+					trackDir = math.deg(math.atan(getAlignmentInfo().Tangent.Y,getAlignmentInfo().Tangent.X))
+					if RC__getDistance2D(alg.RcAlignment.StartPoint) &lt; RC__getDistance2D(alg.RcAlignment.EndPoint) then
+						angDiff = (360 + wireDir - trackDir) % 360
+					else
+						angDiff = (180 + 360 + wireDir - trackDir) % 360
+					end
+					if 315 &lt; angDiff or  angDiff &lt;= 045 then return "down" end
+					if 045 &lt; angDiff and angDiff &lt;= 135 then return "none" end
+					if 135 &lt; angDiff and angDiff &lt;= 225 then return "up"   end
+					if 225 &lt; angDiff and angDiff &lt;= 315 then return "both" end
 				end
 			</Formula>
 		</LuaFunction>
@@ -2088,21 +2255,21 @@
 		<CustomAttribute DataType="Double" Name="ConsoleHeight" DisplayName="Konsollhøyde over mast innsettingspunkt" DefaultValue="7.1"
 			Description="The console's height [m] above its OCS pole's insertion point." >
 		</CustomAttribute>
-        <LuaExpression Name="ConsoleHeight" ><Formula>_JBTEH_KPM_ConsoleHeight()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_ConsoleHeight()" 
+        <LuaExpression Name="ConsoleHeight" ><Formula>_JBTEH_FPM_AnchoringHeight()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_AnchoringHeight()" 
 			ReturnType="Double"
-			Description="Returns the force relay console's height above its associated OCS pole's insertion point elevation, deduced from its related OCS pole and its elevation relative to TOR." >
-			<Constructor>Double _JBTEH_KPM_ConsoleHeight()</Constructor>
+			Description="Returns the anchoring device's height above its associated OCS pole's insertion point elevation, deduced from its related OCS pole and its elevation relative to TOR." >
+			<Constructor>Double _JBTEH_FPM_AnchoringHeight()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_ConsoleHeight()
-					local s = "Er kraftoverføringskonsoll på kl-mast"
+				function _JBTEH_FPM_AnchoringHeight()
+					local s = "Er forankring på kl-mast"
 					r,n = RC__getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return 0,_unfinished,_info("UNFINISHED - relate with '"..s.."'.")
 					elseif n == 1 then 
-						mas = r[0] --OCS pole (mast)
-						return this.RelativeElevation - mas.RelativeElevation,
-							_info("Console's mounting height on OCS pole "..RC__identify(mas))
+						pol = r[0]
+						return this.RelativeElevation - pol.RelativeElevation,
+							_info("Anchoring device's mounting height on OCS pole "..RC__identify(pol))
 					else
 						-- Two or more OCS poles were found:
 						return this.RelativeElevation - r[0].RelativeElevation, _warning,
@@ -2112,96 +2279,124 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_KPM_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_RelativeElevation()" 
+		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_FPM_RelativeElevation()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_RelativeElevation()" 
 			ReturnType="Double"
-			Description="Returns the relative elevation for this force relay console, deduced from its related OCS pole." >
-			<Constructor>Double _JBTEH_KPM_RelativeElevation()</Constructor>
+			Description="Returns the relative elevation for this anchoring device, deduced from its related OCS pole." >
+			<Constructor>Double _JBTEH_FPM_RelativeElevation()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_RelativeElevation()
-					s = "Er kraftoverføringskonsoll for avspenning/kl-bardun/kl-strever"
-					r,n = RC__getCollectionOfRelatedObjects(s) --all visible related objects...
-					wtb = r:getNearbyPointObjects2D("JBTEH_AEH Avspenning") --WTBs, sorted by proximity...
-					nWtb = getCollectionLength(wtb)
-					if nWtb == 0 then
-						if n == 0 then
-							return 0,_info("UNFINISHED - Relate with '"..s.."'.")
-						else
-							--The related items must be guywire(s) or strecher(s):
-							return 6.5,
-								_info("(estimated value) TODO: The n related items must be guywire(s) or strecher(s) - deduce from cantilever elevation on same OCS pole.")
+				function _JBTEH_FPM_RelativeElevation()
+					defaultGuywireHeight = 6.50 --TODO: Check value
+					defaultSpannerHeight = 4.80 --TODO: Check value
+					
+					s = "Er forankring_på_mast for avspenning/kl-bardun/kl-strever"
+					r,n = RC__getCollectionOfRelatedObjects(s)
+
+					if Variant == "Forankring på mast for avspenning med bardun" or Variant == "Forankring på mast for avspenning uten bardun" then
+						rWtb = r:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+						nWtb = getCollectionLength(rWtb)
+						if nWtb == 0 then
+							return 0,_warning,_info("WARNING - No related WTB")
 						end
-				
-					elseif nWtb == 1 or nWtb == 2 then
-						--The first related WTB (of max 2) is considered the leading one, determining the force relay console's elevation.
-						w = wtb[0]
-						if w.mileage &lt; w.Alignment.RcAlignment.HorizontalProfile.Length/2 then
-							--WTB positioned at start of a tensioned wire, look for next (lifted) cantilever:
-							sCnt = "Neste utligger/avspenning"
-						elseif w.mileage &gt;= w.Alignment.RcAlignment.HorizontalProfile.Length/2 then
-							--WTB at end of wire, look for previous (lifted) cantilever:
-							sCnt = "Forrige utligger/avspenning"
-						else
-							--NaN, probably:
-							return 0,_unfinished,
-								_info("UNFINISHED - No mileage found for WTB "..RC__identify(w)..
-								" - move it until it has a normal projection onto its alignment (its wire).")
+
+						wtb = rWtb[0]
+						sWir = "Er avspenning for kontaktledning/fixline/høyspentledning"
+						rWir,nWir = RC__getCollectionOfRelatedObjects(sWir,wtb)
+						if nWir == 0 then
+							return 0,_warning,_info("WARNING - Related WTB has no related wire")
 						end
-						cnt,nCnt = RC__getCollectionOfRelatedObjects(sCnt,w)
-						if nCnt == 0 then
-							return 0,_unfinished,
-								_info("UNFINISHED - WTB "..RC__identify(w).." is missing a relation to its closest lifted cantilever, relate them with '"..sCnt.."'.")
-						else
+
+						wir = rWir[0]
+						if wir.RcType == "JBTEH_KTL Kontaktledning" then
 							--Ref Bane NOR Elkraftportalen, EH-707469 (S20) or EH-707487 (S25). 
-							--Standard for weighted WTB: 0.235m  = 0.150 + 0.85 (from force relay console's mounting on 
-							--the OCS pole down to the center of the pulley wheel, minus 0.85 radius of small pulley wheel).
+							--Standard for weighted WTB: 0.235m  = 0.150 + 0.085 (from anchoring device's mounting on 
+							--the OCS pole down to the center of the pulley wheel, minus 0.085 radius of small pulley wheel).
 							--Note: The standard pulley wheel has 3:1 gearing. Other gearing numbers are allowed at Bane NOR,
 							--but only subject to derogation acceptance.
-							if w.Variant:match("Lodd") then
+							if wtb.Variant:match("Lodd") then
 								offset = 0.235
-							elseif w.Variant:match("Fjær") then
+							elseif wtb.Variant:match("Fjær") then
 								--TODO: To be verified, that spring WTB shall be mounted on the OCS pole at the same elevation as its tensioned wire:
 								offset = 0.0
-							elseif w.Variant:match("Fast") then
-								--Applies to midpoint anchor lines, single contact wire or messenger wire, suspended cable
+							elseif wtb.Variant:match("Fast") then
+								--Applies to single contact wire or messenger wire:
 								offset = 0.0
 							end
-							wcvo = cnt[0].WireClampVerticalOffset
-							return RC__round(wcvo + offset,2),
-								_info("Deduced from the contact wire clamp relative elevation "..RC__round(wcvo,2).." at cantilever "..RC__identify(cnt[0])..".")
+							
+							--Find associated neighbor cantilever:
+							sCnt1 = "Forrige utligger/avspenning"
+							sCnt2 = "Neste utligger/avspenning"
+							rCnt1,nCnt1 = RC__getCollectionOfRelatedObjects(sCnt1,wtb)
+							rCnt2,nCnt2 = RC__getCollectionOfRelatedObjects(sCnt2,wtb)
+							if nCnt1 + nCnt2 == 0 then
+								return 0,_warning,_info("WARNING - WTB has no neighbour cantilever - cannot deduce anchoring device's height.")
+							else
+								cnt = getUnionOfCollections({rCnt1,rCnt2})[0] --must be one of them
+								wcvo = cnt.WireClampVerticalOffset
+								return RC__round(wcvo + offset,2),
+									_info("Anchoring device's height deduced from contact wire clamp's relative elevation "..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
+							end
+
+						elseif wir.RcType == "JBTEH_FIL Fixline" then
+							--Locate the cantilever at the midopint anchor:
+							mal = rWir[0]
+							sMap = "Fixline fastholder fixpunkt"
+							rMap,nMap = RC__getCollectionOfRelatedObjects(sMap,mal)
+							if nMap == 0 then
+								return 0,_warning,_info("WARNING - Related WTB tensions a midpoint anchor line which has no midpoint anchor (FIXPUNKT)")
+							else
+								map = rMap[0]
+								sCnt = "Er utligger låst av fixpunkt"
+								rCnt,nCnt = RC__getCollectionOfRelatedObjects(sCnt,map)
+								if nCnt == 0 then
+									return 0,_warning,_info("WARNING - Related WTB tensions a midpoint anchor line which at its midpoint anchor has no related cantilever")
+								else
+									cnt = rCnt[0]
+									wcvo = cnt.WireClampVerticalOffset
+									return RC__round(wcvo,2),
+										_info("Anchoring device's height deduced from its midpoint's cantilever's contact wire clamp's relative elevation "
+										..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
+								end
+							end
+						elseif wir.RcType == "JBTEH_LED Ledning" then
+							return 0,_warning,"WARNING - The related WTB tensions a high voltage conductor - delete this formula and define the anchoring device's height manually."
 						end
-				
-					else --nWtb &gt; 2...
-						return 0,_warning,_info("WARNING - Too many WTBs ("..nWtb..") related to this force relay console.")
+						
+					elseif Variant == "Forankring på mast for kurvebardun" then
+						return defaultGuywireHeight,_warning,_info("WARNING - Using default guywire height on OCS pole. Delete this formula and adjust manually.")
+
+					elseif Variant == "Forankring på mast for strever" then
+						return defaultSpannerHeight,_warning,_info("WARNING - Using default spanner height on OCS pole. Delete this formula and adjust manually.")
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_KPM_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KPM_Model3DName()" 
+        <LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_FPM_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_Model3DName()" 
 			ReturnType="String"
-			Description="Obtains the Model 3D Name for this force relay console, deduced from its related OCS pole" >
-			<Constructor>String _JBTEH_KPM_Model3DName()</Constructor>
+			Description="Obtains the Model 3D Name for this anchoring device, deduced from its related OCS pole" >
+			<Constructor>String _JBTEH_FPM_Model3DName()</Constructor>
 			<Formula>
-				function _JBTEH_KPM_Model3DName()
+				function _JBTEH_FPM_Model3DName()
 					--TODO: Model real console in various sizes depending on the type of mast it is mounted on:
-					local s = "Er kraftoverføringskonsoll på kl-mast"
+					--TODO: Include console for fastening to mast as well:
+					local s = "Er forankring på kl-mast"
 					local r,n = RC__getCollectionOfRelatedObjects(s)
 					local a
 					if n == 0 then 
 						return "UNIFINSHED: No OCS pole found, cannot deduce console's 3D model name."
 					else
-						a = r[0].OcsMastProfile:match("[HM]EB(%d%d%d)") --'HEB220' etc: Capture three digits.
-						a = a or "240" --Default size if not a HEB or MEB mast...
-						if Variant == "Konsoll på mast for avspenning" then
+						a = r[0].OcsMastProfile:match("HE[ABM](%d%d%d)") --'HEA220', 'HEB220',  etc: Capture the three digits.
+						a = a or "240" --Default size if not a HEA, HEB or MEB mast...
+						if Variant == "Forankring på mast for avspenning med bardun" then
 							--TODO: Make model depend on OCS pole type and WTB type
-							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-AVSPENNING"
-						elseif Variant == "Konsoll på mast for kurvebardun" then
+							return "NO-BN-3D-EH-FPM-FORANKRING-PÅ-MAST-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
+						elseif Variant == "Forankring på mast for kurvebardun" then
 							--TODO: Make model depend on OCS pole type
-							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-KURVEBARDUN"
-						elseif Variant == "Konsoll på mast for strever" then 
-							return "NO-BN-3D-EH-STF-STREVERFESTE-KONSOLL-400x300-FOR-HEB"..a
+							return "NO-BN-3D-EH-FPM-FORANKRING-PÅ-MAST-FOR-KURVEBARDUN"
+						elseif Variant == "Forankring på mast for strever" then 
+							return "NO-BN-3D-EH-FPM-FORANKRING-PÅ-MAST-FOR-STREVER-400x300-FOR-HEB"..a
 						else
 							return "Unknown Variant ["..Variant.."]."
 						end
@@ -2210,21 +2405,94 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject VariantName="Konsoll på mast for avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-{{SymbolMode}}" 
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+			Description="Checks complex requirements on the number of established relations between this object and other objects." />
+		<LuaExpression Name="mc_Relations" IsModelCheck="true" ><Formula>_JBTEH_FPM_chkRelations()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_chkRelations()" ReturnType="String"
+			Description = "An anchoring device on an OCS pole shall relate to either one Wire Tension Balancer at its extremity (but not at continuation)." >
+			<Constructor>String _JBTEH_FPM_chkRelations()</Constructor>
+			<Formula>
+				function _JBTEH_FPM_chkRelations()
+					rCow,nCow = RC__getCollectionOfRelatedObjects("Er forankring på kl-mast")
+				
+					tmp = RC__getCollectionOfRelatedObjects("Er forankring_på_mast for avspenning/kl-bardun/kl-strever")
+					rWtb = tmp:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+					nWtb = getCollectionLength(rWtb)
+					rGwi = tmp:filter(function (x) return x.RcType:match("JBTEH_BAR") end)
+					nGwi = getCollectionLength(rGwi)
+					rSpn = tmp:filter(function (x) return x.RcType:match("JBTEH_STR") end)
+					nSpn = getCollectionLength(rSpn)
+				
+					if nCow == 0 then
+						return _unfinished,"UNFINISHED - Anchoring device on OCS pole must relate to its OCS upright pole or suspension pole."
+					end
+
+					--Anchoring to OCS pole for WTB and guywire:
+					if Variant == "Forankring på mast for avspenning med bardun" then
+						if nWtb == 1 and nGwi == 1 and nSpn == 0 then
+							return _ok,"OK - Anchoring device on OCS pole is related to one WTB and one guywire, no spanner."
+						else
+							if nWtb ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a WTB (and guywire)." end
+							if nGWi ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a guywire (and WTB)." end
+							if nSpn ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a spanner." end
+						end
+					
+					elseif Variant == "Forankring på mast for avspenning uten bardun" then
+						if nWtb == 1 and nGwi == 0 and nSpn == 0 then
+							return _ok,"OK - Anchoring device on OCS pole is related to just WTB, no guywire or spanner."
+						else
+							if nWtb ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a WTB." end
+							if nGWi ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a guywire." end
+							if nSpn ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a spanner." end
+						end
+
+					--Anchoring to OCS pole for curve guywire (or more guywires):
+					elseif Variant == "Forankring på mast for kurvebardun" then
+						if nWtb == 0 and nGwi > 0 and nSpn == 0 then
+							return _ok,"OK - Anchoring device on OCS pole is related to one or more guywires, no WTB or spanner."
+						else
+							if nWtb ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a WTB." end
+							if nGWi == 0 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to at least one guywire." end
+							if nSpn ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a spanner." end
+						end
+				
+					--Anchoring to OCS pole for spanner:
+					elseif Variant == "Forankring på mast for strever" then
+						if nWtb == 0 and nGwi == 0 and nSpn == 1 then
+							return _ok,"OK - Anchoring device on OCS pole is related to one spanner, no WTB or guywire."
+						else
+							if nWtb ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a WTB." end
+							if nGWi ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a guywire." end
+							if nSpn ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a spanner." end
+						end
+
+					else
+						return _error,"ERROR - Bad variant '"..Variant.."'."
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+
+		<InsertPointObject VariantName="Forankring på mast for avspenning med bardun" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-AVSPENNING-MED-BARDUN-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Konsoll på mast for kurvebardun" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-BARDUN-ELLER-STREVER-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Forankring på mast for avspenning uten bardun" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-AVSPENNING-UTEN-BARDUN-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+
+		<InsertPointObject VariantName="Forankring på mast for kurvebardun" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-KURVEBARDUN-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject VariantName="Konsoll på mast for strever" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-BARDUN-ELLER-STREVER-{{SymbolMode}}" 
+		<InsertPointObject VariantName="Forankring på mast for strever" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-STREVER-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" AskForAttachment="true" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
-		
+
 		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="" >
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
@@ -2235,10 +2503,11 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR
-				{% if Variant == 'Konsoll på mast for avspenning' %}AVSPENNING
-				{% elsif Variant == 'Konsoll på mast for kurvebardun' %}BARDUN-ELLER-STREVER
-				{% elsif Variant == 'Konsoll på mast for strever' %}BARDUN-ELLER-STREVER
+				NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR
+				{% if Variant == 'Forankring på mast for avspenning med bardun' %}AVSPENNING-MED-BARDUN
+				{% elsif Variant == 'Forankring på mast for avspenning uten bardun' %}AVSPENNING-UTEN-BARDUN
+				{% elsif Variant == 'Forankring på mast for kurvebardun' %}KURVEBARDUN
+				{% elsif Variant == 'Forankring på mast for strever' %}STREVER
 				{% else %}BAD_VARIANT
 				{% endif %}
 				{{SymbolMode}}
@@ -2261,7 +2530,7 @@
 	HIGH VOLTAGE
 	WIRE TENSION BALANCER (WTB)
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_ocs_getWiretTensioningDataTable()" 
+	<LuaFunction Name="NOBN_ocs_getWireTensioningDataTable()" 
 		ReturnType="Table[4*Double]"
 		Description="Returns a table with standard tensioning force (tf) values, indexed as follows:
 		\n
@@ -2270,9 +2539,9 @@
 		\n[swtf] Stitch wire tensioning force
 		\n[awtf] Midpoint anchor line (wire) tensioning force
 		\n" >
-		<Constructor>Table[4*Double] NOBN_ocs_getWiretTensioningDataTable(OcsSystem os = OcsSystem)</Constructor>
+		<Constructor>Table[4*Double] NOBN_ocs_getWireTensioningDataTable(OcsSystem os = OcsSystem)</Constructor>
 		<Formula>
-			function NOBN_ocs_getWiretTensioningDataTable(os)
+			function NOBN_ocs_getWireTensioningDataTable(os)
 				os = os or OcsSystem
 				local TensioningForces = {
 					["Unknown"] = {cwtf=0, 		mwtf=0.0, 	swtf=0,		awtf=0 },
@@ -2298,7 +2567,8 @@
 		</Formula>
 	</LuaFunction>
 
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_AEH Avspenning"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject"
+				LuaName="rctype_OcsTensioner" Name="JBTEH_AEH Avspenning"
 				Layer="JBTEH_AEH" Color="ByLayer"
 				Group="Kontaktledning/Avspenning"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2416,7 +2686,7 @@
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_AEH_RelativeElevation()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_RelativeElevation()" 
 			ReturnType="String"
-			Description="Obtains the relative elevation above the wire that will be tensioned. Fixed WTBs and spring WTBs are located at the same zero relative elevation (same height). Weighted WTBs will vary with design. The default Bane NOR weighted WTB has its force relay console insertion point located at 0.235 m above its wire. If the WTB is tensioning two wires (a double WTB), then the wires' default separation is 0.70 m. The reference elevation is the elevation of the contact wire - the messenger wire will be deduced from surrounding object's parameters." >
+			Description="Obtains the relative elevation above the wire that will be tensioned. Fixed WTBs and spring WTBs are located at the same zero relative elevation (same height). Weighted WTBs will vary with design. The default Bane NOR weighted WTB has its anchoring device insertion point located at 0.235 m above its wire. If the WTB is tensioning two wires (a double WTB), then the wires' default separation is 0.70 m. The reference elevation is the elevation of the contact wire - the messenger wire will be deduced from surrounding object's parameters." >
 			<Constructor>String _JBTEH_AEH_RelativeElevation()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_RelativeElevation()
@@ -2424,7 +2694,7 @@
 					if Variant == "Fjæravspenning, enkel" or Variant == "Fjæravspenning, dobbel" or Variant == "Fastavspenning, enkel" or Variant == "Fastavspenning, dobbel" then
 						return 0
 					elseif Variant == "Loddavspenning, enkel" or Variant == "Loddavspenning, dobbel" then
-						--Compute the default Bane NOR force relay console's insertion point on OCS pole for weighted WTB, relative to its (main) wire:
+						--Compute the default Bane NOR anchoring device's insertion point on OCS pole for weighted WTB, relative to its (main) wire:
 						--See standard mechanical solution as per Bane NOR drawing EH-707469 (S20) or EH-707487 (S25):
 						--Force attack is 0.235 = 0.150 + 0.085 above the wire, which enters at the lower side of the small pulley wheel.
 						--If two wires are tensioned, then their standard vertical separation is 0.70 m.
@@ -2482,10 +2752,10 @@
 				function _JBTEH_AEH_PrimaryTensioningForce()
 					if Variant == "Fastavspenning, enkel" then
 						--Assume that this is a midpoint anchor wire (though it MIGHT be a single, short cw in a tunnel where you would split the WTB into two wall mounts):
-						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).awtf
+						return NOBN_ocs_getWireTensioningDataTable(OcsSystem).awtf
 					else
 						--Assume that this is the contact wire:
-						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).cwtf
+						return NOBN_ocs_getWireTensioningDataTable(OcsSystem).cwtf
 					end
 				end
 			</Formula>
@@ -2504,7 +2774,7 @@
 						return 0,_info("No messenger wire present with "..Variant..".")
 					else
 						--Assume that this is a messenger wire:
-						return NOBN_ocs_getWiretTensioningDataTable(OcsSystem).mwtf
+						return NOBN_ocs_getWireTensioningDataTable(OcsSystem).mwtf
 					end
 				end
 			</Formula>
@@ -2526,7 +2796,7 @@
 					if OcsSystem == "Unknown" then
 						return "?/? kN",_info("OcsSystem has not been selected")
 					end
-					tf = NOBN_ocs_getWiretTensioningDataTable(OcsSystem)
+					tf = NOBN_ocs_getWireTensioningDataTable(OcsSystem)
 					if Variant == "Fastavspenning, enkel" then
 						 --Assume that this is an anchoring wire, for the midpoint anchor (but it MIGHT be a CW or MW in a narrow tunnel):
 						return tf.awtf.." kN (fix)",_info("Midpoint anchor wire")
@@ -2569,11 +2839,59 @@
 					end
 					return _info("Bad tensioning device variant ["..Variant.."].")
 				end
-	--TODO: Include console for fastening to mast as well:
-	--elseif Variant == "Konsoll på mast for avspenning" then return "NO-BN-3D-EH-KPM-KONSOLL-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
 			</Formula>
 		</LuaFunction>
 		
+		<CustomAttribute DataType="String" Name="mc_OcsCantileverSequence" DisplayName="Utligger- og avspenningsekvens" 
+			ReadOnly="true" Category="Model check" 
+			Description="Each wire tension balancer shall feature either a preceding cantilever (at lower mileage) or a next cantilever (at higher mileage)."
+		 />
+		<LuaExpression Name="mc_OcsCantileverSequence" IsModelCheck="true" ><Formula>_JBTEH_AEH_chkCantileverSequence()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_chkCantileverSequence()" 
+			ReturnType="String"
+			Description="Checks the WTB/cantilever sequence: WTB preceded by or followed by exactly one cantilever." >
+			<Constructor>String _JBTEH_AEH_chkCantileverSequence()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_chkCantileverSequence()
+					sPrev = "Forrige utligger/avspenning"
+					rPrev,nPrev = RC__getCollectionOfRelatedObjects(sPrev)
+					sNext = "Neste utligger/avspenning"
+					rNext,nNext = RC__getCollectionOfRelatedObjects(sNext)
+					if nPrev == 0 and nNext == 0 then
+						return _unfinished,"UNFINISHED - Relate to preceding / following cantilever"
+					elseif nPrev == 1 and nNext == 0 then
+						if rPrev[0].RcType == this.RcType then return _error,"ERROR - WTB cannot be preceded by WTB." end
+						return _ok,"OK - Preceded by cantilever "..rPrev[0].code
+					elseif nPrev == 0 and nNext == 1 then
+						if rNext[0].RcType == this.RcType then return _error,"ERROR - WTB cannot be preceded by WTB." end
+						return _ok,"OK - Followed by cantilever "..rNext[0].code
+					else
+						return _error,"ERROR - Too many related cantilevers."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+			Description="Checks complex requirements on the number of established relations between this object and other objects." />
+		<LuaExpression Name="mc_Relations" IsModelCheck="true" ><Formula>_JBTEH_AEH_chkRelations()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_chkRelations()" ReturnType="String"
+			Description = "A wire tension balancer (Wtb) shall relate to either an achoring device on OCS pole or on a tunnel wall fitting." >
+			<Constructor>String _JBTEH_AEH_chkRelations()</Constructor>
+			<Formula>
+				function _JBTEH_AEH_chkRelations()
+					r1,n1 = RC__getCollectionOfRelatedObjects("Har tunnelfeste")
+					r2,n2 = RC__getCollectionOfRelatedObjects("Har forankring_på_mast")
+					sum = n1 + n2
+					if sum == 1 then
+						return _ok,"OK - Wire Tension Balancer shall relate to an anchoring device on OCS pole (JBTEH_FPM) or to a tunnel wall/ceiling (JBTEH_TUF)."
+					else
+						return _unfinished,"UNFINISHED - Wire Tension Balancer shall relate to an anchoring device on an OCS pole (JBTEH_FPM) or to a tunnel wall/ceiling (JBTEH_TUF)."
+					end
+				end
+			</Formula>
+		</LuaFunction> 
+
 		<!-- Note: They snap to the contact wire or midpoint anchor line alignment object even if they might actually work on the messenger wire inn the case of a tunnel installation where the "loddsats" are separated -->
 		<InsertPointObject VariantName="Fastavspenning, enkel" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FAST-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4e-4" >
@@ -2649,14 +2967,6 @@
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" />
 
-		<!-- TODO: Kan avspenningene være snappepunkt for ALIGNMENT av type Wire? -->
-		<!-- <DockPointDefinitions> -->
-			<!-- <SnapPoints> -->
-				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="bardunfeste" /> -->
-				<!-- <SnapPoint X="0.0" Y="0.0" TargetSpace="Streverfeste fotplate (uten streveren)" /> -->
-			<!-- </SnapPoints> -->
-		<!-- </DockPointDefinitions> -->
-
 	</ObjectType>
 
 
@@ -2711,7 +3021,9 @@
 							return _unfinished,"UNFINISHED - Relate midpoint anchor to its contact wire with '" ..sCow.."'."
 						elseif nCow == 1 then
 							cow = rCow[0]
-							return cow.code,_info("Code was deduced from related contact wire "..RC__identify(cow)..".")
+							--Filter out the suffix letter 'a'..'e', if present:
+							tmp = cow.code:match("(.-)[abcde]$") and cow.code:sub(1,-2) or cow.code
+							return tmp,_info("Code was deduced from related contact wire "..cow.code..".")
 						else
 							return _error,"ERROR - Midpoint anchor is related to more than one visible contact wire."
 						end
@@ -2729,7 +3041,7 @@
 			<Constructor>String _JBTEH_FIX_name()</Constructor>
 			<Formula>
 				function _JBTEH_FIX_name()
-					return "L"..code .. " - [FIX]"
+					return "L"..code.." - [FIX]"
 				end
 			</Formula>
 		</LuaFunction>
@@ -2860,7 +3172,7 @@
 				function _JBTEH_LEF_code()
 					local first,second
 					if RcType ~= "JBTEH_LEF Ledningfortsettelse" then
-						return _error, "Bad object type ["..RcType.."] - 'JBTEH_LEF Ledningfortsettelse' was expected"
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_LEF Ledningfortsettelse' was expected."
 					else
 						first = Alignment
 						if first == nil then
@@ -2951,6 +3263,7 @@
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT" />
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
@@ -2979,7 +3292,7 @@
 				function _JBTEH_KTF_code()
 					local first,second
 					if RcType ~= "JBTEH_KTF Kontaktledningfortsettelse" then
-						return _error, "Bad object type ["..RcType.."] - 'JBTEH_KTF Kontaktledningfortsettelse' was expected"
+						return _error, "Bad object type ["..RcType.."] - 'JBTEH_KTF Kontaktledningfortsettelse' was expected."
 					else
 						first = Alignment
 						if first == nil then
