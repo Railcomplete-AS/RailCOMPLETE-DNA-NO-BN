@@ -196,7 +196,7 @@ positive feeder in AT system				positiv leder i AT-system
 	OVERHEAD CATENARY SYSTEM
 	CANTILEVER SUPPORT BRACKET FOR MULTIPLE CANTILEVERS
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_UTK Seksjonsutliggerkonsoll"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_MultiCantileverConsole" Name="JBTEH_UTK Seksjonsutliggerkonsoll"
 				Layer="JBTEH_UTK" Color="ByLayer"
 				Group="Kontaktledning/Konsoller"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -240,46 +240,117 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_UTK_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTK_Mileage()" 
 				ReturnType="Double"
-				Description="Returns the distance to alignment for this multi-cantilever console, adjusted to the side of its contact wire.
-				\n
-				\n- The cantilevers located on the same side of the OCS pole will modify their insertion points to make space for the console's steel bracket.
-				\n- The console's 'dir' property shall be 'both' when located on the OCS pole side towards the pole's track.
-				\n" >
+				Description="Returns the mileage for this multi-cantilever console, deduced from its OCS pole." >
 			<Constructor>Double _JBTEH_UTK_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_UTK_Mileage()
-					s = "Tilhører kl-mast"
-					r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return getPropertyValue("mileage"),_unfinished,_info("UNFINISHED - Relate with '"..s.."'.")
-					else
-						return r[0].mileage
-					end
-		       		end
+					return RC__getMileageFromRelatedObject("Er seksjonsutliggerkonsoll på kl-mast")
+	       		end
 			</Formula>
 		</LuaFunction>
 
 		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_UTK_DistanceToAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTK_DistanceToAlignment()" 
 				ReturnType="Double"
-				Description="Returns the distance to alignment for this multi-cantilever console, adjusted to the side of its contact wire.
-				\n
-				\n- The cantilevers located on the same side of the OCS pole will modify their insertion points to make space for the console's steel bracket.
-				\n- The console's 'dir' property shall be 'both' when located on the OCS pole side towards the pole's track.
-				\n" >
+				Description="Returns the distance to alignment for this multi-cantilever console, moved to the same side of its OCS pole as the cantilevers it serves." >
 			<Constructor>Double _JBTEH_UTK_DistanceToAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_UTK_DistanceToAlignment()
-					--Console ends up at a distance to alignment where a single cantilever would have been:
-					return _JBTEH_UTL_DistanceToAlignment()
+					local sPol = "Er seksjonsutliggerkonsoll på kl-mast"
+					local sCnt = "Er seksjonsutliggerkonsoll for utligger"
+					local rPol,nPol = getCollectionOfRelatedObjects(sPol)
+					local rCnt,nCnt = getCollectionOfRelatedObjects(sCnt)
+					if nPol == 0 then
+						return getPropertyValue("DistanceToAlignment")
+					else
+						local pol = rPol[0]
+						if this.Alignment.id ~= pol.Alignment.id then
+							return _error,"ERROR - Multi-cantilever console must belong to the same track ("..pol.Alignment.code..") as its OCS pole."
+						end
+						if nCnt == 0 then
+							--Assume that console will be needed on the track side of its OCS mast (cantilevers will be added afterwards). It may change sides when cantilevers are added.
+							return _JBTEH_UTL_DistanceToAlignment(cnt) - (RightSided and 1 or -1) * defaultConsoleDepth
+						else
+							local cnt = rCnt[0]
+							--Place console on the same side of its OCS pole as the first cantilever being related to the console.
+							--The height-on-pole is decided by the cantilever's relative elevation - which may be relative to another track:
+							--NB We must assume that pole and console have the same own alignment (track).
+							--NB The cantilever may belong to a different track, e.g. at the deviating track in a switch.
+							local dPol = pol.DistanceToAlignment
+							local dCnt = cnt:getAlignmentInfo(pol.Alignment.id).DistanceToAlignment
+							local d = NOBN_ocs_getPoleHalfWidth(pol,this.RelativeElevation)
+							if math.abs(dCnt) &lt; math.abs(dPol) then
+								--Place on front side of its OCS pole (facing the track):
+								return dPol - (RightSided and 1 or -1) * d
+							else
+								--Place on rear side of OCS pole:
+								return dPol + (RightSided and 1 or -1) * d
+							end
+						end
+					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="dir" ><Formula>"Both"</Formula></LuaExpression>
+		<LuaExpression Name="dir" ><Formula>_JBTEH_UTK_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTK_dir()" 
+				ReturnType="Double"
+				Description="Returns the 'dir' for this multi-cantilever console, deduced from its OCS pole and its cantilevers." >
+			<Constructor>Double _JBTEH_UTK_dir()</Constructor>
+			<Formula>
+				function _JBTEH_UTK_dir()
+					local sPol = "Er seksjonsutliggerkonsoll på kl-mast"
+					local sCnt = "Er seksjonsutliggerkonsoll for utligger"
+					local rPol,nPol = getCollectionOfRelatedObjects(sPol)
+					local rCnt,nCnt = getCollectionOfRelatedObjects(sCnt)
+					if nPol == 0 then
+						return getPropertyValue("DistanceToAlignment")
+					else
+						local pol = rPol[0]
+						if this.Alignment.id ~= pol.Alignment.id then
+							return _error,"ERROR - Multi-cantilever console must belong to the same track ("..pol.Alignment.code..") as its OCS pole."
+						end
+						if nCnt == 0 then
+							--Assume that console will be needed on the track side of its OCS mast (cantilevers will be added afterwards).
+							--Note: It may change sides when the cantilevers are related to it.
+							return _JBTEH_UTL_DistanceToAlignment(cnt) - (RightSided and 1 or -1) * defaultConsoleDepth
+						else
+							local cnt = rCnt[0]
+							--Place console on the same side of its OCS pole as the first cantilever being related to the console.
+							--The height-on-pole is decided by the cantilever's relative elevation - which may be relative to another track:
+							--NB We must assume that pole and console have the same own alignment (track).
+							--NB The cantilever may belong to a different track, e.g. at the deviating track in a switch.
+							local dPol = pol.DistanceToAlignment
+							local dCnt = cnt:getAlignmentInfo(pol.Alignment.id).DistanceToAlignment
+							local d = NOBN_ocs_getPoleHalfWidth(pol,this.RelativeElevation)
+							if math.abs(dCnt) &lt; math.abs(dPol) then
+								--Placed on front side of its OCS pole (facing the track):
+								return "both"
+							else
+								--Placed on rear side of OCS pole:
+								return "none"
+							end
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>"NO-BN-3D-EH-UTK-SEKSJONSUTLIGGERKONSOLL-1440-"..Variant:match("%a-([BH]+%-%d+)$")</Formula></LuaExpression>
 
-		<!-- TODO Seksjonsutliggerkonsoll skal snappe til mast, og skal selv tilby snapping for utliggere -->
+		<LuaExpression Name="mc_Alignment" ><Formula>_JBTEH_UTK_chkAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTK_chkAlignment()" 
+				ReturnType="Double"
+				Description="Returns the 'dir' for this multi-cantilever console, deduced from its OCS pole and its cantilevers." >
+			<Constructor>Double _JBTEH_UTK_chkAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_UTK_Mileage()
+					return RC__getMileageFromRelatedObject("Er seksjonsutliggerkonsoll på kl-mast")
+	       		end
+			</Formula>
+		</LuaFunction>
+
+<!-- TODO Seksjonsutliggerkonsoll skal snappe til mast, og skal selv tilby snapping for utliggere -->
 		<!-- TODO Seksjonsutliggerkonsoll skal bevege seg mot sporet på funksjon av mastens tykkelse (som utliggere) -->
 		<!-- TODO Seksjonsutliggerkonsoll skal finne sin høyde fra utliggernes øvre konsoll (som skal være like) -->
 		<InsertPointObject VariantName="Seksjonsutliggerkonsoll H-300" DisplayBlockName="NO-BN-2D-JBTEH_UTK-KONSOLL-FOR-SEKSJONSUTLIGGER-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
@@ -360,8 +431,106 @@ positive feeder in AT system				positiv leder i AT-system
 		</Formula>
 	</LuaFunction>
 
+	<LuaFunction Name="NOBN_ocs_getPoleHalfWidth()"
+		ReturnType="Double"
+		Description="Returns an OCS pole's half width (assuming symmetry around its insertion point), at insertion point level or at a specified height above insertion point." >
+		<Constructor>Double NOBN_ocs_getPoleHalfWidth([ObjRef ocsPole [, Double heightOnPole]])</Constructor>
+		<Formula>
+			function NOBN_ocs_getPoleHalfWidth(ocsPole,height)
+				local pol = ocsPole or this
+				if not pol.RcType:match("JBTEH_MAS") then return 0,_error,_info("ERROR - function works only for OCS poles") end
+				local h = heightOnPole or 0
+				local pv = pol.Variant
+				local pp = pol.OcsMastProfile
+				local d = 0.999 --default value - a sizeable pole diameter...a bad value which is easily recognized as such.
+			
+				if pv == "Bjelkemast" then
+					d = string.sub(pp,4,6)/2 * (1/1000) --[m] Assume pole profile names "HEB200", "HEB220" etc
+		
+				elseif pv == "GMB-mast" then
+					d = string.sub(pp,4,6)/2 * (1/1000) --[m] Assume pole profile names "HEB200", "HEB220" etc TODO: Find the real profiles for for "GMB-mast" poles
+		
+				elseif pv == "H-mast" then
+					d = (pol.OcsMastHeight - h) * (1/50) * (1/1000) --[m] 1:50 approx. angle on side of mast (0.020000)
+		
+				elseif pv == "B-mast" then
+					d = (pol.OcsMastHeight - h) * (1/50) * (1/1000) --[m] 1:50 approx. angle on side of mast (1/44 = 0.023 for B2, but 1/50.5 = 0.0.019789 for B3, B4, B5, B6)
+		
+				elseif pv == "Betongmast" then
+					d = 0.13
+		
+				elseif pv == "Tremast" then
+					d = 0.13
+		
+				elseif pv == "Hengemast for bru og tunnel" then
+					if (pp == 'Sirkulær, Ø120') then 
+						d = 0.06
+					elseif (pp == 'Rektangulær, 100x150') then
+						d = 0.075
+					elseif (pp == 'Rektangulær, 100x200') then 
+						d = 0.10
+					else
+						return 0,_warning, _info("Bad OCS pole profile ["..pp.."].")
+					end
+		
+				elseif pv == "Hengemast i åk type 12" or pv == "Hengemast i åk type 14" or pv == "Hengemast i åk type 40" then
+					if (pp == 'Kvadratisk, 100x100') then 
+						d = 0.05
+					elseif (pp == 'Rektangulær, 100x150') then 
+						d = 0.075
+					end
+		
+				elseif pv == "Hengemast Cariboni" then
+					if (pp == 'Rektangulær, 100x150') then 
+						d = 0.075
+					end
+		
+				elseif pv == "Hengemast TET08" then
+					if (pp == 'U-bjelke') then 
+						d = 0.075
+					end
+	
+				else 
+					return 0,_warning, _info("Bad OCS pole variant ["..pv.."].")
+				end
+				return d
+			end
+		</Formula>
+	</LuaFunction>
+
+	<LuaFunction Name="NOBN_ocs_getWireClampPoint3D()" ReturnType="Point3D" 
+		HideFromUser="false"
+		Description="Returns the World Coordinate System 3D coordinates of a cantilever's contact wire clamp position." >
+	<Constructor>Double NOBN_ocs_getWireClampPoint3D(objRef Cantilever)</Constructor>
+	<Formula>
+			function NOBN_ocs_getWireClampPoint3D(cnt)
+				function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
+				trackId = cnt.Alignment.id
+				ai = getAlignmentInfo(trackId,cnt.geoCoord.X,cnt.geoCoord.Y)
+				sign = cnt.rightsided and -1 or 1
+				cwh = cnt.ContactWireHeight
+				zigzag = cnt.stagger
+				h = ai.cant/1000.0
+				cr = ai.cantrotation
+				theta = math.atan(h/cnt.Alignment.AlignmentSystem.CantGauge)
+				theta = cr and (cr == "CW" and theta or -theta) or 0
+				centreTrack = ai.point  --The point where the cantilever is projected onto its track
+				phi = math.atan(ai.tangent.Y, ai.tangent.X)  --This cantilever's track's tangential direction angle in radians in WCS
+				--(x,0,z) -- No longitudinal wire clamp offset:
+				x = cwh*math.sin(theta) + sign*zigzag*math.cos(theta)
+				y = 0
+				z = h/2 + cwh*math.cos(theta) - sign*zigzag*math.sin(theta)
+				--(X,Y,Z):
+				X,Y = rot(-y,x,phi) -- Adjust for potential cosmetic angular offset (typically adding 17 degrees visually in 2D to better show cantilevers under portals)
+				Z = z
+				return getPoint3D(centreTrack.X + X, centreTrack.Y + Y, centreTrack.Z + Z)
+			end
+		</Formula>
+	</LuaFunction>
+
+
 	<!-- Ref. Bane NOR Teknisk Regelverk, Kontaktledning/Prosjektering og Bygging/Mekanisk utforming -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_UTL Utligger"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_Cantilever" Name="JBTEH_UTL Utligger"
 				Layer="JBTEH_UTL" Color="ByLayer"
 				Group="Kontaktledning/Utliggere"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -428,100 +597,82 @@ positive feeder in AT system				positiv leder i AT-system
 		
 		<SetValue Key="PushDirection" Value="Pull" />
 
-
-
 		<!-- Generic attributes -->
 		<LuaExpression Name="code" ><Formula>_JBTEH_UTL_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_code()" 
 			ReturnType="String"
-			Description="Obtains the 'code' for this OCS cantilever. Uses relation 'Tilhører kl-mast' to access the related object's data." >
+			Description="Obtains the 'code' for this OCS cantilever, consisting of the pole's code slash the contact wire's literal name.
+						\n
+						\nExample:
+						\nPole code	Wire name 	Cantilever code
+						\n71-13		L30-447		71-13/L30-447
+						\n" >
 			<Constructor>String _JBTEH_UTL_code()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_code()
-					sMast = "Tilhører kl-mast"
-					rMasts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
-					if nMasts == 0 then
-						return "UNFINISHED - Relate with '"..sMast.."' to its OCS pole."
-					else
-						mast = rMasts[0]
-						sCantilever = "Er kl-mast for utligger"
-						rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,mast)
-						if nCantilevers == 1 then
-							--If only one single cantilever, then just copy the mast's code as-is:
-							return mast.code --copy the mast's code
-						else
-							--If two or more cantilevers, count them and separate them in left-sided and rightsided, count each side.
-							nRightSided = 0 --Cantilevers placed to the right of its own alignment, regardless of what alignment the OCS pole has.
-							for i = 0,nCantilevers-1 do
-								if rCantilevers[i].RightSided then
-									nRightSided = nRightSided + 1
-								end
-							end
-							--Then assign the mast's code plus suffix: code-1 / code-2 / .. / code-4, left-sided first, then right-sided.
-							index = 1 --Sort the cantilevers on the same side as 'this' cantilever
-							for i = 0,nCantilevers-1 do
-								Cantilever = rCantilevers[i]
-								if (this.id ~= Cantilever.id) and (this.SideOfAlignment == Cantilever.SideOfAlignment) then
-									if this.ReferenceMileage &gt; Cantilever.ReferenceMileage then
-										index = index + 1
-									end
-								end
-							end
-							if this.SideOfAlignment == "Right" then
-								--Rightsided cantilever extends to the left towards its track, use index 1 or 1,2:
-								return mast.code.."-"..index
-							else
-								--Leftsided cantilever extends to the right towards its track, add index to nRightSided:
-								return mast.code.."-"..(nRightSided + index)
-							end
-						end
-					end
+					return 
+						getCollectionOfRelatedObjects(rel_Cantilever_BelongsTo_OcsPole)[0].code
+						.."/"..
+						getCollectionOfRelatedObjects(rel_Cantilever_Holds_ContactWire)[0].name
 				end
 			</Formula>
 		</LuaFunction>
-		
+				<!-- function _JBTEH_UTL_code() -->
+					<!-- rPoles,nPoles = getCollectionOfRelatedObjects(rel_Cantilever_BelongsTo_OcsPole) -->
+					<!-- if nPoles == 0 then -->
+						<!-- return "UNFINISHED - Relate with '"..rel_Cantilever_BelongsTo_OcsPole.."' to its OCS pole." -->
+					<!-- else -->
+						<!-- pol = rPoles[0] -->
+						<!-- rCow,nCow = getCollectionOfRelatedObjects(rel_Cantilever_Holds_ContactWire) -->
+						<!-- if nCow == 0 then  -->
+							<!-- return "UNFINISHED - Relate with '"..rel_Cantilever_Holds_ContactWire .."' to its OCS contact wire." -->
+						<!-- else -->
+							<!-- return pol.code.."/"..rCow[0].name -->
+						<!-- end -->
+					<!-- end -->
+				<!-- end -->
 
 		<!-- Linear address attributes -->
 		<LuaExpression Name="ReferenceMileage" ><Formula>_JBTEH_UTL_ReferenceMileage()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_ReferenceMileage()" ReturnType="Double" Description="Returns cantilever's reference mileage, based on its OCS pole's reference mileage. If more cantilevers are located on noe side of the mast, they will arbitrate positions." HideFromUser="false" >
+		<LuaFunction Name="_JBTEH_UTL_ReferenceMileage()" ReturnType="Double"
+				Description="Returns cantilever's reference mileage, based on its OCS pole's reference mileage. If more cantilevers are located on one side of the mast, they will arbitrate positions."
+				HideFromUser="false" >
 			<Constructor>Double _JBTEH_UTL_ReferenceMileage()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_ReferenceMileage()
-					local StandardCantileverSpacing = 0.60 --60 cm separation to allow cantilevers to swing towards each other with temperature movements
-					local s = "Tilhører kl-mast"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
+					local StandardCantileverSpacing = 1.20 --[m] Separation to allow cantilevers to swing +/- 60 cm towards each other with temperature-induced movement.
+					local sPol = "Tilhører kl-mast"
+					local rPol,nPol = getCollectionOfRelatedObjects(sPol)
+					if nPol == 0 then
 						if (Alignment == nil) then
-							return 0, _info("UNFINISHED - Relate with '"..s.."' to OCS pole and assign cantilever to an aligment.")
+							return 0, _info("UNFINISHED - Relate with '"..sPol.."' to OCS pole and assign cantilever to an aligment.")
 						else
 							return getPropertyValue("ReferenceMileage") == nil and 0 or getPropertyValue("ReferenceMileage"),
-								_info("UNFINISHED - Relate with '"..s.."' to OCS pole.")
+								_info("UNFINISHED - Relate with '"..sPol.."' to OCS pole.")
 						end
 					else
-						local mast = r[0]
-						local sc = "Er kl-mast for utligger"
-						local cantilevers,nc = RC__getCollectionOfRelatedObjects(sc,mast)
+						local pol = rPol[0]
+						local sCnt = "Er kl-mast for utligger"
+						local rCnt,nCnt = getCollectionOfRelatedObjects(sCnt,pol)
 						local me = nil --who am I?
 						local i
-						for i = 0, nc-1 do
-							if id == cantilevers[i].id then
+						for i = 0, nCnt-1 do
+							if id == rCnt[i].id then
 								me = i 
 							end
 						end
 						if me == nil then 
-							return mast.ReferenceMileage,_warning, _info("Corrupt relation '"..sc.."' to OCS pole - cannot compute cantilever position.")
+							return pol.ReferenceMileage,_warning, _info("Corrupt relation '"..sCnt.."' to OCS pole - cannot compute cantilever position.")
 						end
 						--Anyone else on my side of OCS pole?
 						--Note: Cantilevers on same side may serve the same track (change of OCS wire) or different tracks (in a switch)
-						local d1 = getAlignmentInfo(Alignment.id,mast.geoCoord.X,
-													mast.geoCoord.Y).DistanceToAlignment --distance from OCS to my cantilever's alignment
+						local d1 = getAlignmentInfo(Alignment.id,pol.geoCoord.X, pol.geoCoord.Y).DistanceToAlignment --distance from OCS to my cantilever's alignment
 						local myLastPal = nil
 						local nPals = 0
-						for i = 0, nc-1 do
+						for i = 0, nCnt-1 do
 							if i ~= me then
 								--find signed distance from mast to both cantilever's alignments - if same sign, then they are on the same side: 
-								local d2 = getAlignmentInfo(getObjectFromId(cantilevers[i].id).Alignment.id,
-																			mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment
+								local d2 = getAlignmentInfo(getObjectFromId(rCnt[i].id).Alignment.id,pol.geoCoord.X,pol.geoCoord.Y).DistanceToAlignment
 								if d1 * d2 &gt; 0 then
 									--same side
 									myLastPal = i
@@ -530,12 +681,12 @@ positive feeder in AT system				positiv leder i AT-system
 							end
 						end
 						if nPals == 0 then
-							return mast.ReferenceMileage 
+							return pol.ReferenceMileage 
 						elseif nPals == 1 then
 							if me &lt; myLastPal then 
-								return mast.ReferenceMileage - StandardCantileverSpacing
+								return pol.ReferenceMileage - StandardCantileverSpacing/2
 							else
-								return mast.ReferenceMileage + StandardCantileverSpacing
+								return pol.ReferenceMileage + StandardCantileverSpacing/2
 							end
 						else 
 							return mast.ReferenceMileage,_warning, _info("Too many ["..(nPals+1).."] cantilevers on same side of OCS pole.")
@@ -546,81 +697,31 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_UTL_DistanceToAlignment()</Formula></LuaExpression>
-		<!-- TODO: Adjust cantilever position towards track if they should adapt to a bracket holding more cantilevers -->
+<!-- TODO: Adjust cantilever position towards track if they should adapt to a console holding multiple cantilevers -->
 		<LuaFunction Name="_JBTEH_UTL_DistanceToAlignment()" 
 			ReturnType="Double"
 			Description="Returns cantilever's distance to own alignment, based on its OCS pole's type and position. (2020-02-16: Formula does not take into account the angularOffset of the mast.)" >
-			<Constructor>Double _JBTEH_UTL_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTEH_UTL_DistanceToAlignment(ObjRef Cantilever = this)</Constructor>
 			<Formula>
-				function _JBTEH_UTL_DistanceToAlignment()
+				function _JBTEH_UTL_DistanceToAlignment(cnt)
+					local cnt = cnt or this
 					if (Alignment == nil) then 
 						--If cantilever has no alignment, set to 4e-4 (maintain sideOfAlignment)
 						return RightSided and 4e-4 or -4e-4,_warning, _info("Cantilever is not connected to a track (own alignment).")
 					end
-					local s = "Tilhører kl-mast"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return RightSided and 4e-4 or -4e-4,_warning, _info("Cantilever is missing relation '"..s.."' to OCS pole.")
+					local sPol = "Tilhører kl-mast"
+					local rPol,nPol = getCollectionOfRelatedObjects(sPol,cnt)
+					if nPol == 0 then
+						return RightSided and 4e-4 or -4e-4,_warning, _info("Cantilever is missing relation '"..sPol.."' to OCS pole.")
 					else
-						-- Cantilever's OCS pole does not have to be connected a track - this Lua sippet works fine without.
-						local mast = r[0]
-						local mv = mast.Variant
-						local mp = mast.OcsMastProfile
-						local d = 0.500 --default value - a bad value which is easily recognized as such
-						
-						if mv == "Bjelkemast" then
-							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
-		
-						elseif mv == "GMB-mast" then
-							d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
-						
-						elseif mv == "H-mast" then
-							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(1/50000)
-				
-						elseif mv == "B-mast" then
-							d = (r[0].OcsMastHeight - RelativeElevation) * math.tan(23/1000000) --mast is not straight!
-						
-						elseif mv == "Betongmast" then
-							d = 0.13
-		
-						elseif mv == "Tremast" then
-							d = 0.13
-		
-						elseif mv == "Hengemast for bru og tunnel" then
-							if (mp == 'Sirkulær, Ø120') then 
-								d = 0.06
-							elseif (mp == 'Rektangulær, 100x150') then
-								d = 0.075
-							elseif (mp == 'Rektangulær, 100x200') then 
-								d = 0.10
-							else
-								return 0,_warning, _info("Bad OCS pole profile ["..mp.."].")
-							end
-						
-						elseif mv == "Hengemast i åk type 12" or mv == "Hengemast i åk type 14" or mv == "Hengemast i åk type 40" then
-							if (mp == 'Kvadratisk, 100x100') then 
-								d = 0.05
-							elseif (mp == 'Rektangulær, 100x150') then 
-								d = 0.075
-							end
-						
-						elseif mv == "Hengemast Cariboni" then
-							if (mp == 'Rektangulær, 100x150') then 
-								d = 0.075
-							end
-						
-						elseif mv == "Hengemast TET08" then
-							if (mp == 'U-bjelke') then 
-								d = 0.075
-							end
-						
-						else 
-							return 0,_warning, _info("Bad OCS pole variant ["..mv.."].")
-						end
+						-- Cantilever's OCS pole does not have to be connected a track - this Lua snippet works fine without.
+						local pol = rPol[0]
+						local d = NOBN_ocs_getPoleHalfWidth(pol,this.RelativeElevation)
+
 						-- OCS pole and cantilever may belong to different tracks (when OCS pole is located between tracks):
-						mdist = getAlignmentInfo(alignment.id,
-								mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment --Distance from center OCS pole to *cantilever's* alignment
-						if mdist &gt; 0 then 
+						--Distance from center OCS pole to the *cantilever's* alignment:
+						local mdist = getAlignmentInfo(Alignment.id,pol.geoCoord.X,pol.geoCoord.Y).DistanceToAlignment
+						if mdist > 0 then 
 							return mdist - d
 						else
 							return mdist + d
@@ -712,10 +813,10 @@ positive feeder in AT system				positiv leder i AT-system
 				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the mast)" >Push</Value> -->
 			</Values>
 			<Values Variant="Cariboni" >
-				<Value Description="Cariboni-utliggeren har horisontalt justeringsmonn og skal alltid være montert i strekk" >Strekk</Value>
+				<Value DisplayName="Strekk" Description="Cariboni-utliggeren har horisontalt justeringsmonn og skal alltid være montert i strekk" >Pull</Value>
 			</Values>
 			<Values Variant="TET08" >
-				<Value Description="TET08-utliggeren har ikke justeringsmonn og skal alltid være montert i strekk" >Strekk</Value>
+				<Value DisplayName="Strekk" Description="TET08-utliggeren har ikke justeringsmonn og skal alltid være montert i strekk" >Pull</Value>
 			</Values>
 		</CustomAttribute>
 		<LuaExpression Name="PushDirection" ><Formula>_JBTEH_UTL_PushDirection()</Formula></LuaExpression>
@@ -745,27 +846,20 @@ positive feeder in AT system				positiv leder i AT-system
 						.   All coordinates are in WCS.
 					--]=]
 					function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Used for debugging purposes, pretty-print 3D point
+				
 					--Previous:
-					s0 = "Forrige utligger/avspenning"
-					r0,n0 = RC__getCollectionOfRelatedObjects(s0)
-					if n0 == 0 then
-						--Return a best guess Push/Pull...:
-						return Stagger &lt; 0 and "Pull" or "Push",
-							_unfinished,_info("UNFINISHED - Missing previous cantilever or WTB - relate with '"..s0.."'.")
+					prev = getCollectionOfRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
+					p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
+					if prev.RcType == rctype_WireTensioner then
+						--Preceded by a Wire Tension Balancer.
+						wc1 = p1
 					else
-						prev = r0[0]
-						p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
-						if prev.RcType == "JBTEH_AEH Avspenning" then
-							--Preceded by a Wire Tension Balancer.
-							wc1 = p1
-						else
-							--Preceded by a cantilever.
-							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-							t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
-							tg = math.atan(t.Y,t.X)
-							U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
-							wc1 = getVectorSum(p1,U)
-						end
+						--Preceded by a cantilever.
+						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+						t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
+						tg = math.atan(t.Y,t.X)
+						U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+						wc1 = getVectorSum(p1,U)
 					end
 				
 					--This:
@@ -777,26 +871,18 @@ positive feeder in AT system				positiv leder i AT-system
 					wc2 = getVectorSum(p2,V)
 				
 					--Next:
-					s2 = "Neste utligger/avspenning"
-					r2,n2 = RC__getCollectionOfRelatedObjects(s2)
-					if n2 == 0 then
-						--Return a best guess Push/Pull...:
-						return Stagger &lt; 0 and "Pull" or "Push",
-							_unfinished,_info("UNFINISHED - Missing next cantilever or WTB - relate with '"..s0.."'.")
+					nxt = getCollectionOfRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)[0]
+					p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
+					if nxt.RcType == rctype_WireTensioner then
+						--Followed by a Wire Tension Balancer.
+						wc3 = p3
 					else
-						nxt = r2[0]
-						p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
-						if nxt.RcType == "JBTEH_AEH Avspenning" then
-							--Followed by a Wire Tension Balancer.
-							wc3 = p3
-						else
-							--Followed by a cantilever.
-							--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-							t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
-							tg = math.atan(t.Y,t.X)
-							W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
-							wc3 = getVectorSum(p3,W)
-						end
+						--Followed by a cantilever.
+						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+						t = getAlignmentInfo(nxt.Alignment.id,p3).Tangent --local track tangent vector t.XYZ
+						tg = math.atan(t.Y,t.X)
+						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
+						wc3 = getVectorSum(p3,W)
 					end
 				
 					toPrev = getVectorDifference(wc1,wc2)
@@ -804,7 +890,7 @@ positive feeder in AT system				positiv leder i AT-system
 					crossProduct = getVectorCrossProduct(toPrev,toNext)
 				
 					--Find contact wire lateral force:
-					contactWireTension = NOBN_ocs_getWiretTensioningDataTable(Variant).cwtf
+					contactWireTension = NOBN_ocs_getWireTensioningDataTable(Variant).cwtf * 1000 --Table contains kN values
 					toPrevForceVector =  getVectorScalarProduct(contactWireTension,getVectorNormalized(toPrev))
 					toNextForceVector = getVectorScalarProduct(contactWireTension,getVectorNormalized(toNext))
 					lateralForceVector = getVectorSum(toPrevForceVector,toNextForceVector)
@@ -874,7 +960,7 @@ positive feeder in AT system				positiv leder i AT-system
 						return "1200"
 					else
 						--NB! Step size, minimum and maximum lengths must be consistent with the 2D library file:
-						step = 20 --mm 
+						step = 20 --mm (20mm in DNA NO-BN-2022.a, was 50 mm in 2021.a)
 						minL = 1000 --mm
 						maxL = 6000 --mm
 						local L = step * ((1000*CantileverLength + step/2)//step)
@@ -895,41 +981,44 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="CantileverSpanLength" ><Formula>_JBTEH_UTL_SpanLength()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_SpanLength()" ReturnType="Double" 
 			HideFromUser="false"
-			Description="Returns the shortest span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp." >
+			Description="Returns the straight-line 2D distance span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp (this is the wire's 2D length - the 3D length is slightly longer)." >
 		<Constructor>Double _JBTEH_UTL_SpanLength()</Constructor>
 		<Formula>
 			function _JBTEH_UTL_SpanLength()
-				--This cantilever:
-				vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
-				--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-				t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ
-				tg = math.atan(t.Y,t.X)
-				cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg))
-				v = getVectorSum(vv,cantileverVector)
-				
-				--Next cantilever:
-				s = "Neste utligger/avspenning"
-				r,n = RC__getCollectionOfRelatedObjects(s)
-				if n == 0 then
-					return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.")
-				else
-					nextItem = r[0]
-					ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y)
-					if nextItem.RcType == "JBTEH_AEH Avspenning" then
-						w = ww
-					else
-						t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ
-						tg = math.atan(t.Y,t.X)
-						wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg))
-						w = getVectorSum(ww,wcNext)
-					end
-			
-					d = getVectorNormalized(getVectorDifference(w,v)) --2D length
-					return string.format("%.03f",d), _info("Spanlength deduced as distance between "..RC__identify(this).." and "..RC__identify(nextItem).." measured in center track.")
-				end
+				return 34.567
 			end
 		</Formula>
 	</LuaFunction>
+			<!-- LEGACY 2021.a - function _JBTEH_UTL_SpanLength() -->
+				<!-- --This cantilever: -->
+				<!-- vv = getPoint3D(this.geoCoord.X, this.geoCoord.Y, 0) --Ignore the Z coordinate -->
+				<!-- --Add vector from insertion point to contact wire clamp, in WCS coordinates: -->
+				<!-- t = getAlignmentInfo(this.Alignment.id,vv).Tangent --local track tangent vector t.XYZ -->
+				<!-- tg = math.atan(t.Y,t.X) -->
+				<!-- cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0,tg)) -->
+				<!-- v = getVectorSum(vv,cantileverVector) -->
+				
+				<!-- --Next cantilever: -->
+				<!-- s = "Neste utligger/avspenning" -->
+				<!-- r,n = getCollectionOfRelatedObjects(s) -->
+				<!-- if n == 0 then -->
+					<!-- return 0.0, _info("UNFINISHED - Relate with '"..s.."' to next OCS cantilever, otherwise span length cannot be computed.") -->
+				<!-- else -->
+					<!-- nextItem = r[0] -->
+					<!-- ww = getPoint3D(nextItem.geoCoord.X, nextItem.geoCoord.Y) -->
+					<!-- if nextItem.RcType == "JBTEH_AEH Avspenning" then -->
+						<!-- w = ww -->
+					<!-- else -->
+						<!-- t = getAlignmentInfo(nextItem.Alignment.id,ww).Tangent --local track tangent vector t.XYZ -->
+						<!-- tg = math.atan(t.Y,t.X) -->
+						<!-- wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0,tg)) -->
+						<!-- w = getVectorSum(ww,wcNext) -->
+					<!-- end -->
+			
+					<!-- d = getVectorModulus(getVectorDifference(w,v)) --2D length -->
+					<!-- return string.format("%.03f",d), _info("Spanlength deduced as a 2D distance (ignoring Z coordinates) between the wire clamps at cantilevers "..RC__identify(this).." and "..RC__identify(nextItem)..".") -->
+				<!-- end -->
+			<!-- end -->
 		
 
 		<CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" 
@@ -950,7 +1039,7 @@ positive feeder in AT system				positiv leder i AT-system
 						return nil, _info("Unrecognised calling object type ["..cantilever.RcType.."].")
 					end
 					s = "Er utligger for kontaktledning"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 1 then return 
 						RC__identify(r[0])
 					else
@@ -973,20 +1062,12 @@ positive feeder in AT system				positiv leder i AT-system
 					ai = getAlignmentInfo()
 					c = ai.Cant
 					h = RC__isNan(c) and 0 or c/1000.0
-					signedStagger = (SideOfAlignment == "Right" and -Stagger or Stagger)
-					if h == 0 then
-						--no cant:
-						return RC__round(signedStagger,3)
+					if h == 0 then 
+						return (LeftSided and 1 or -1)*Stagger
 					else
-						ss = h/Alignment.AlignmentSystem.CantGauge
-						cc = math.sqrt(1 - ss^2)
-						if ai.CantRotation == "CW" then 
-							return RC__round(ss*ContactWireHeight + cc*signedStagger,3)
-						elseif ai.CantRotation == "CCW" then
-							return RC__round(-ss*ContactWireHeight + cc*signedStagger,3)
-						else
-							return _error,0.999 --hopefully, this is a recognizable error value...
-						end
+						ss = h/Alignment.AlignmentSystem.CantGauge --sin(theta)
+						cc = math.sqrt(1 - ss^2) --cos(theta)
+						return RC__round((ai.CantRotation == "CW" and 1 or -1)*ss*ContactWireHeight + (LeftSided and 1 or -1)*cc*Stagger,3)
 					end
 				end
 			</Formula>
@@ -1008,15 +1089,9 @@ positive feeder in AT system				positiv leder i AT-system
 					if h == 0 then 
 						return RC__round(ContactWireHeight,3)
 					else
-						ss = h/Alignment.AlignmentSystem.CantGauge
-						cc = math.sqrt(1 - ss^2)
-						if ai.CantRotation == "CW" then 
-							return RC__round(h/2 + cc*ContactWireHeight - ss*Stagger,3)
-						elseif ai.CantRotation == "CCW" then
-							return RC__round(h/2 + cc*ContactWireHeight + ss*Stagger,3)
-						else
-							return _error,0.999
-						end
+						ss = h/Alignment.AlignmentSystem.CantGauge --sine
+						cc = math.sqrt(1 - ss^2) --cosine
+						return RC__round(h/2 + cc*ContactWireHeight + (ai.CantRotation == "CW" and -1 or 1)*ss*Stagger,3)
 					end
 				end
 			</Formula>
@@ -1027,11 +1102,10 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="CatenaryClampLateralOffset" ><Formula>_JBTEH_UTL_CatenaryClampLateralOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_CatenaryClampLateralOffset()" 
 			ReturnType="String"
-			Description="Returns the horizontal offset from the track's gradient curve (before cant) to the cantilever's associated OCS catenary wire, assuming that it is situated at the system height, straight above the contact wire clamp." >
+			Description="Returns the horizontal offset from the track's gradient curve (before cant) to the cantilever's associated OCS catenary wire, assuming that it is situated at the system height, straight above the contact wire clamp.\n\nWe assume that the catenary/contact wire is a vertical wire suspension system, also for curves with large cant." >
 			<Constructor>String _JBTEH_UTL_CatenaryClampLateralOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_CatenaryClampLateralOffset()
-					--Assume that the catenary/contact wire is a vertical wire suspension system, also for curves with large cant
 					return WireClampLateralOffset
 				end
 			</Formula>
@@ -1042,11 +1116,10 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="CatenaryClampVerticalOffset" ><Formula>_JBTEH_UTL_CatenaryClampVerticalOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_CatenaryClampVerticalOffset()" 
 			ReturnType="String"
-			Description="Returns the vertical offset from the track's gradient curve (before cant) to the cantilever's associated OCS catenary wire, assuming that it is situated at the system height, straight above the contact wire clamp." >
+			Description="Returns the vertical offset from the track's gradient curve (before cant) to the cantilever's associated OCS catenary wire, assuming that it is situated at the system height, straight above the contact wire clamp.\n\nWe assume that the catenary/contact wire is a vertical wire suspension system, also for curves with large cant." >
 			<Constructor>String _JBTEH_UTL_CatenaryClampVerticalOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_CatenaryClampVerticalOffset()
-					--Assume that the catenary/contact wire is a vertical wire suspension system, also for curves with large cant
 					return WireClampVerticalOffset + SystemHeight
 				end
 			</Formula>
@@ -1101,7 +1174,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_AddVisual2dAngularOffset()
 					s = "Tilhører kl-mast"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, yoke suspension mast or tunnel / bridge suspension mast.")
 					else 
@@ -1109,7 +1182,7 @@ positive feeder in AT system				positiv leder i AT-system
 						--Make cantilever "rod" visible if located under a yoke, by visually adding 17 degrees:
 						m = r[0]
 						s1 = "Er åk-mast for åk"
-						r1,n1 = RC__getCollectionOfRelatedObjects(s1)
+						r1,n1 = getCollectionOfRelatedObjects(s1)
 						if n1 == 0 then 
 							return 0, _info("No visual angular offset added since cantilever is not hidden under a yoke.")
 						else
@@ -1140,9 +1213,9 @@ positive feeder in AT system				positiv leder i AT-system
 					longitudinalOffset = (longitudinalOffset or 0)/scale
 					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS pole: 
 					sMast = "Tilhører kl-mast"
-					rMasts,nMasts = RC__getCollectionOfRelatedObjects(sMast)
+					rMasts,nMasts = getCollectionOfRelatedObjects(sMast)
 					sCantilever = "Er kl-mast for utligger"
-					rCantilevers,nCantilevers = RC__getCollectionOfRelatedObjects(sCantilever,rMasts[0])
+					rCantilevers,nCantilevers = getCollectionOfRelatedObjects(sCantilever,rMasts[0])
 
 					if nCantilevers == 1 then
 						--(it is always at least 1...)
@@ -1320,7 +1393,7 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<CustomAttribute DataType="String" Name="mc_OcsCantileverSequence" DisplayName="Utliggersekvens" 
+		<CustomAttribute DataType="String" Name="mc_OcsCantileverSequence" DisplayName="Utligger- og avspenningsekvens" 
 			ReadOnly="true" Category="Model check" 
 			Description="Each cantilever shall feature exactly one preceding cantilever (but the first one is preceded by a wire tensioning balancer), and shall be followed by exactly one cantilever (but the last one is followed by a wire tensioning balancer)."
 		 />
@@ -1332,22 +1405,22 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_chkCantileverSequence()
 					sPrev = "Forrige utligger/avspenning"
-					rPrev,nPrev = RC__getCollectionOfRelatedObjects(sPrev)
+					rPrev,nPrev = getCollectionOfRelatedObjects(sPrev)
 					sNext = "Neste utligger/avspenning"
-					rNext,nNext = RC__getCollectionOfRelatedObjects(sNext)
+					rNext,nNext = getCollectionOfRelatedObjects(sNext)
 					if nPrev == 1 and nNext == 1 then
 						return string.format("%d / %d: OK - Preceded by %s '%s' / followed by %s '%s'.", nPrev,nNext,
 								rPrev[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rPrev[0]),
 								rNext[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rNext[0])
 							),_ok
 					elseif nPrev == 0 and nNext == 0 then
-						return string.format("%d / %d: UNFINISHED - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.", nPrev,nNext,sPrev,sNext),_unfinished --TODO: _unfinished
+						return _unfinished,string.format("UNFINISHED - Relate to preceding / following cantilever (or wire tension balancer) with '%s' / '%s'.",sPrev,sNext)
 					elseif nPrev == 0 and nNext == 1 then
-						return string.format("%d / %d: UNFINISHED - Relate to preceding cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sPrev),_unfinished --TODO: _unfinished
+						return _unfinished,string.format("UNFINISHED - Relate to preceding cantilever (or wire tension balancer) with '%s'.",sPrev)
 					elseif nPrev == 1 and nNext == 0 then
-						return string.format("%d / %d: UNFINISHED - Relate to following cantilever (or wire tension balancer) with '%s'.", nPrev,nNext,sNext),_unfinished --TODO: _unfinished
+						return _unfinished,string.format("UNFINISHED - Relate to following cantilever (or wire tension balancer) with '%s'.",sNext)
 					else
-						return string.format("%d / %d: WARNING - Too many related cantilevers (or wire tension balancers), remove the wrong ones or check construction phase settings and refresh the object.", nPrev,nNext),_warning
+						return _warning,string.format("%d / %d: ERROR - Too many related cantilevers (or wire tension balancers), remove the wrong ones or check construction phase settings and refresh the object.", nPrev,nNext)
 					end
 				end
 			</Formula>
@@ -1362,7 +1435,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_getContactWireHeightFromRelatedContactWireClamp()
 					s = "Har kontakttrådklemme"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1388,7 +1461,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_getStaggerFromRelatedContactWireClamp()
 					s = "Har kontakttrådklemme"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "INCOMPLET - Relier par '"..s.."' à son armement."
 						--return "UNFINISHED - Relate with '"..s.."' to its cantilever."
@@ -1524,7 +1597,7 @@ positive feeder in AT system				positiv leder i AT-system
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM WIRE CLAMP
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_KLK Kontakttrådklemme"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_ContactWireClamp" Name="JBTEH_KLK Kontakttrådklemme"
 				Layer="JBTEH_KLK" Color="ByLayer"
 				Group="Kontaktledning/Klemmer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1565,7 +1638,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_KLK_code()
 					s = "Tilhører utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1583,7 +1656,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_KLK_Alignment()
 					s = "Tilhører utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1601,7 +1674,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_KLK_Mileage()
 					s = "Tilhører utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return _info("INCOMPLET - Relier par '"..s.."' à son armement.")
 						--return "UNFINISHED - Relate with '"..s.."' to its cantilever."
@@ -1620,7 +1693,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_KLK_DistanceToAlignment()
 					s = "Tilhører utligger"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1638,7 +1711,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_KLK_RelativeElevation()
 					s = "Appartient à armement"
-					r,n = RC__getCollectionOfRelatedObjects(s)
+					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else

@@ -29,7 +29,7 @@
 	<!-- See EH.705338, 900x1400 single screen construction. -->
 	<!-- See EH.704042, 2000x775 double-screen construction. -->
 	<!-- See EH.705339, Utførelse type I, II, III, IV/V - various ways to mount 2 x 900x1400 screens. -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_ASK Avskjerming"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsProtectiveScreen" Name="JBTEH_ASK Avskjerming"
 				Layer="JBTEH_ASK" Color="ByLayer"
 				Group="Kontaktledning/Avskjerming"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -231,7 +231,7 @@
 	HIGH VOLTAGE
 	SECTIONING ISOLATOR
 =========================================================================================================-->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_SIL Seksjonsisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsSectioningIsolator" Name="JBTEH_SIL Seksjonsisolator"
 				Layer="JBTEH_SIL" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -265,13 +265,8 @@
 		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>RC__getTextAttributePositionWcsFromAcs(5,0)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>RC__getTextAttributePositionWcsFromAcs(7,0)</Formula></TextPositionLuaExpression>
 
-		<LuaExpression Name="name" >
-			<Formula>
-				if Variant == "Seksjonsisolator" then return "SI"
-				else return "Unknown section insulator variant ["..Variant.."].",_warning
-				end
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="code" ><Formula>Variant</Formula></LuaExpression>
+		<LuaExpression Name="name" ><Formula>"Seksj.isol."</Formula></LuaExpression>
 
 		<LuaExpression Name="Model3D_0.Model3DName" >
 			<Formula>
@@ -281,6 +276,62 @@
 				end
 			</Formula>
 		</LuaExpression>
+
+		<LuaExpression Name="Alignment" ><Formula>_JBTEH_SIL_Alignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_SIL_Alignment()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_SIL_Alignment()</Constructor>
+			<Formula>
+				function _JBTEH_SIL_Alignment()
+					tol = 1 --[m]
+					closestAlignments = getClosestAlignments(tol,"JBTEH_KTL Kontaktledning")
+					a1 = closestAlignments[0]
+					a2 = closestAlignments[1]
+					if a2 and RC__getDistance2D(a2.RcAlignment.EndPoint) &lt; tol then
+						return a2,_info("Own alignment "..a2.code.." selected as CW, being the closest alignment with an end point within "..tol.." m from this object.")
+					else
+						return a1,_info("Own alignment "..a1.code.." selected as CW.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_SIL_TargetAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_SIL_TargetAlignment()" ReturnType="Double"
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object (this isolator). The isolator is supposed to connect two contact wires. Note that breaking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here." >
+			<Constructor>ObjRef _JBTEH_SIL_TargetAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_SIL_TargetAlignment()
+					tol = 1 --[m]
+					ta = getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
+					if ta and RC__getDistance2D(this,ta.RcAlignment.StartPoint) &lt; tol then
+						return ta,_info("Target alignment "..ta.code.." selected as the closest other CW alignment with a start point within "..tol.." m from this object.")
+					else
+						return nil,_info("No target CW alignment selected - Move within "..tol.." m from a CW start point to snap to start.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+						
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_SIL_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_SIL_mileage()" ReturnType="Double"
+				Description="Returns 'mileage', snapped to a compatible alignment if within 1m from object." >
+			<Constructor>Double _JBTEH_SIL_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_SIL_mileage()
+					tol = 1 --[m] Snap to end point of own alignment if it is used as a connecting object, and if it is already close to its alignment's end point
+					if RC__getDistance2D(Alignment.RcAlignment.EndPoint) &lt; tol then
+						if RC__isNan(getAlignmentInfo().RelativePosition) then
+							return _warning,getPropertyValue("mileage"),_info("No projection onto own alignment: Move object within reach of own alignment to snap to endpoint")
+						else
+							return Alignment.RcAlignment.EndMileage,_info("Snapped to endpoint of own alignment")
+						end
+					else
+						return getPropertyValue("mileage"),_info("No snapping because we are far from own alignment's endpoint")
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
 		<InsertPointObject VariantName="Seksjonsisolator" DisplayBlockName="NO-BN-2D-JBTEH_SIL-ISOLATOR-SEKSJONSISOLATOR-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
@@ -311,7 +362,7 @@
 	CATENARY SUPPORT WIRE ISOLATOR
 	(and for contact wires tensioning wire outside, the pantograph's reach)
 =========================================================================================================-->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISO Lineisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsIsolator" Name="JBTEH_ISO Lineisolator"
 				Layer="JBTEH_ISO" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -367,34 +418,44 @@
 			<Constructor>Double _JBTEH_ISO_Alignment()</Constructor>
 			<Formula>
 				function _JBTEH_ISO_Alignment()
-					return getClosestAlignments():filter(
-						function (x)
-							return RC__isMemberOf({"JBTEH_KTL Kontaktledning","JBTEH_FIL Fixline"},x.RcType) 
-						end)[0]
+					tol = 1 --[m]
+					closestAlignments = getClosestAlignments(tol):filter(function (x) return RC__isMemberOf({"JBTEH_KTL Kontaktledning","JBTEH_FIL Fixline"},x.RcType) end)
+					a1 = closestAlignments[0]
+					a2 = closestAlignments[1]
+					if a1.RcType == "JBTEH_FIL Fixline" then 
+						return a1,_info("Own alignment "..a1.code.." selected as midpoint anchor line.")
+					elseif a1.RcType == "JBTEH_KTL Kontaktledning" then
+						--see if we are close to an end point where two contact wires meet:
+						if a2 and RC__getDistance2D(a2.RcAlignment.EndPoint) &lt; tol then
+							return a2,_info("Own alignment "..a2.code.." selected as CW, being the closest alignment with an end point within "..tol.." m from this object.")
+						else
+							return a1,_info("Own alignment "..a1.code.." selected as CW.")
+						end
+					else
+						return _error,nil,_info("ERROR - Isolator was inserted too far from a compatible alignment - move closer.")
+					end
 				end
 			</Formula>
 		</LuaFunction>
 
 		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_ISO_TargetAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_ISO_TargetAlignment()" ReturnType="Double"
-				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation (isolation) object. The isolator is supposed to connect a contact wire with a contact wire tensioning wire, or to connect two parts of a tensioning wire. Note that breaking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here." >
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object (this isolator). The isolator is supposed to connect a contact wire with a contact wire tensioning wire, or to connect two parts of a tensioning wire. Note that breaking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here." >
 			<Constructor>ObjRef _JBTEH_ISO_TargetAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_ISO_TargetAlignment()
 					tol = 1 --[m]
 					if Alignment.RcType == "JBTEH_KTL Kontaktledning" then
 						ta = getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
-						d1 = RC__getDistance2D(this,ta.RcAlignment.StartPoint)
-						d2 = RC__getDistance2D(this,ta.RcAlignment.EndPoint)
-						if math.min(d1,d2) &lt; tol then
-							return ta,_info("Target alignment is the closest alignment with a start or end point within "..tol.." m from this isolator.")
+						if ta and RC__getDistance2D(this,ta.RcAlignment.StartPoint) &lt; tol then
+							return ta,_info("Target alignment "..ta.code.." selected as the closest other CW alignment with a start point within "..tol.." m from this object.")
 						else
-							return nil,_info("No target alignment found where its start or end is within tolerance "..tol.." m.")
+							return nil,_info("No target CW alignment selected - Move within "..tol.." m from a CW start point to snap to start.")
 						end
 					elseif Alignment.RcType == "JBTEH_FIL Fixline" then
-						return nil,_info("No target alignment selected since fixlines shall not be split in several alignment parts.")
+						return nil,_nosymbol,_info("No target alignment selected since midpoint anchor lines shall not be split in several alignment parts.")
 					else
-						return nil,_info("*** ERROR - Unexpected alignment type '"..Alignment.RcType.."'.")
+						return nil,_error,_info("ERROR - Unexpected alignment type '"..Alignment.RcType.."'.")
 					end
 				end
 			</Formula>
@@ -406,15 +467,15 @@
 			<Constructor>Double _JBTEH_ISO_mileage()</Constructor>
 			<Formula>
 				function _JBTEH_ISO_mileage()
-					tol = 1 --[m] from end-of-wire, snap to start/end point if within this distance from own the alignment's extremity
-					--Manipulate isolator's mileage (position) only if it used as a continuation object and close to the wire's breakpoint.
-					pos = getAlignmentInfo().RelativePosition
-					if RC__isNan(pos) then return nil, _info("Position not found.") end
-					L = Alignment.RcAlignment.HorizontalProfile.Length
-					if TargetAlignment and math.min(pos,L-pos) &lt; tol then
-						return pos &lt; (L-pos) and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
+					tol = 1 --[m] Snap to end point of own alignment if it is used as a connecting object, and if it is already close to its alignment's end point
+					if RC__getDistance2D(Alignment.RcAlignment.EndPoint) &lt; tol then
+						if RC__isNan(getAlignmentInfo().RelativePosition) then
+							return _warning,getPropertyValue("mileage"),_info("No projection onto own alignment: Move object within reach of own alignment to snap to endpoint")
+						else
+							return Alignment.RcAlignment.EndMileage,_info("Snapped to endpoint of own alignment")
+						end
 					else
-						return getPropertyValue("mileage") --read own value without re-evaluating this object
+						return getPropertyValue("mileage"),_info("No snapping because we are far from own alignment's endpoint")
 					end
 				end
 			</Formula>
@@ -450,7 +511,7 @@
 	HIGH VOLTAGE
 	CONTACT WIRE ISOLATOR
 =========================================================================================================-->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" Name="JBTEH_ISS Stavisolator"
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsRodIsolator" Name="JBTEH_ISS Stavisolator"
 				Layer="JBTEH_ISS" Color="ByLayer"
 				Group="Kontaktledning/Isolatorer"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -479,13 +540,8 @@
 
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
-		<LuaExpression Name="name" >
-			<Formula>
-				if Variant == "Stavisolator" then return "Stavisol."
-				else return "Unrecognized variant ["..Variant.."].",_warning
-				end
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="code" ><Formula>Variant</Formula></LuaExpression>
+		<LuaExpression Name="name" ><Formula>"Stavisol."</Formula></LuaExpression>
 
 		<!-- TODO lage 3D for stavisolator -->
 		<LuaExpression Name="Model3D_0.Model3DName" >
@@ -495,6 +551,62 @@
 				end
 			</Formula>
 		</LuaExpression>
+
+		<LuaExpression Name="Alignment" ><Formula>_JBTEH_ISS_Alignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISS_Alignment()" ReturnType="Double"
+				Description="Obtains the mileage from its alignment." >
+			<Constructor>Double _JBTEH_ISS_Alignment()</Constructor>
+			<Formula>
+				function _JBTEH_ISS_Alignment()
+					tol = 1 --[m]
+					closestAlignments = getClosestAlignments(tol,"JBTEH_KTL Kontaktledning")
+					a1 = closestAlignments[0]
+					a2 = closestAlignments[1]
+					if a2 and RC__getDistance2D(a2.RcAlignment.EndPoint) &lt; tol then
+						return a2,_info("Own alignment "..a2.code.." selected as CW, being the closest alignment with an end point within "..tol.." m from this object.")
+					else
+						return a1,_info("Own alignment "..a1.code.." selected as CW.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="TargetAlignment" ><Formula>_JBTEH_ISS_TargetAlignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISS_TargetAlignment()" ReturnType="Double"
+				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object (this isolator). The isolator is supposed to connect two contact wires. Note that breaking the contact wire alignment is only needed if you want the visual 2D linetype to change / to let the 3D expression change automatically here." >
+			<Constructor>ObjRef _JBTEH_ISS_TargetAlignment()</Constructor>
+			<Formula>
+				function _JBTEH_ISS_TargetAlignment()
+					tol = 1 --[m]
+					ta = getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
+					if ta and RC__getDistance2D(this,ta.RcAlignment.StartPoint) &lt; tol then
+						return ta,_info("Target alignment "..ta.code.." selected as the closest other CW alignment with a start point within "..tol.." m from this object.")
+					else
+						return nil,_info("No target CW alignment selected - Move within "..tol.." m from a CW start point to snap to start.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+						
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_ISS_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_ISS_mileage()" ReturnType="Double"
+				Description="Returns 'mileage', snapped to a compatible alignment if within 1m from object." >
+			<Constructor>Double _JBTEH_ISS_mileage()</Constructor>
+			<Formula>
+				function _JBTEH_ISS_mileage()
+					tol = 1 --[m] Snap to end point of own alignment if it is used as a connecting object, and if it is already close to its alignment's end point
+					if RC__getDistance2D(Alignment.RcAlignment.EndPoint) &lt; tol then
+						if RC__isNan(getAlignmentInfo().RelativePosition) then
+							return _warning,getPropertyValue("mileage"),_info("No projection onto own alignment: Move object within reach of own alignment to snap to endpoint")
+						else
+							return Alignment.RcAlignment.EndMileage,_info("Snapped to endpoint of own alignment")
+						end
+					else
+						return getPropertyValue("mileage"),_info("No snapping because we are far from own alignment's endpoint")
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
 		<InsertPointObject VariantName="Stavisolator" DisplayBlockName="NO-BN-2D-JBTEH_ISS-ISOLATOR-STAVISOLATOR-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
@@ -526,7 +638,7 @@
 	(Norwegian: svevende kryss Ref. EH.707403)
 =========================================================================================================-->
 	<!-- TODO: This one may form the connection object between high voltage wires -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_SVE Svevende kryss"
+	<ObjectType DataType="eCrossing" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_FloatingWireCrossing" Name="JBTEH_SVE Svevende kryss"
 				Layer="JBTEH_SVE" Color="ByLayer"
 				Group="Kontaktledning/Svevende kryss"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -555,14 +667,41 @@
 		
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
-		<LuaExpression Name="name" >
+		<SetValue Key="AlignmentRcType" Value="JBTEH_KTL Kontaktledning" />
+
+		<LuaExpression Name="code" ><Formula>_JBTEH_SVE_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_SVE_code()" ReturnType="String"
+			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two contact wires that meet in a floating crossing." >
+			<Constructor>String _JBTEH_SVE_code()</Constructor>
 			<Formula>
-				if Variant == "Svevende kryss" then return "Svevende kryss"
-				else return _error, "Bad OCS crossing lines conncector variant ["..Variant.."]."
+				function _JBTEH_SVE_code()
+					local first,second
+					if RcType ~= "JBTEH_SVE Svevende kryss" then
+						return "Bad object type ["..RcType.."], 'JBTEH_SVE Svevende kryss' was expected."
+					else
+						first = Alignment
+						if first == nil then
+							return "Bad or missing alignment reference",_warning
+						end
+						second = TargetAlignment
+						if second == nil then
+							return "Bad or missing intersecting alignment reference",_warning
+						end
+						if first.id == second.id then
+							return "Alignment and intersecting alignment cannot be the same ["..first.Code.."]"
+						end
+						if KmStigerMotVenstre then
+							first,second = second,first 
+						end
+						return "["..first.Code.."] -X- ["..second.Code.."]"
+					end
 				end
 			</Formula>
-		</LuaExpression>
+		</LuaFunction>
 
+		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
+		<LuaExpression Name="dir" ><Formula>"none"</Formula></LuaExpression>
+		
 		<LuaExpression Name="DistanceToAlignment" ><Formula>0</Formula></LuaExpression>
 
 		<!-- TODO Lage 3D-modeller for svevende kryss osv -->
@@ -590,8 +729,7 @@
 														{% else %}45.0
 														{% endif %}" />	
 			<BlockNameFormat JoinBy="-" >
-				NO-BN-2D-JBTEH_SVE
-				FORBINDELSE
+				NO-BN-2D-JBTEH_SVE-FORBINDELSE
 				{% if Variant == 'Svevende kryss' %}SVEVENDE-KRYSS
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
@@ -614,7 +752,7 @@
 
 	TODO 2020-09-26: Add 3D symbols to the library: Single / double Strømbro
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_FOR Forbindelse, strømbro"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_CurrentBridge" Name="JBTEH_FOR Forbindelse, strømbro"
 				Layer="JBTEH_FOR" Color="ByLayer"
 				Group="Kontaktledning/Forbindelser"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -680,7 +818,7 @@
 	TECHNICAL BUILDING
 =========================================================================================================-->
 	<!-- AT-kiosk. -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_TER Tekniske bygninger og rom"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EuLynxDataType="EULYNX.sig.Building" LuaName="rctype_Building" Name="JBTEH_TER Tekniske bygninger og rom"
 				Layer="JBTEH_TER" Color="ByLayer"
 				Group="Kontaktledning/Tekniske Bygninger"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"

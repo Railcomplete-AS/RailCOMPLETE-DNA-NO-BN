@@ -39,37 +39,36 @@
 				end
 			
 				--Check code and name for keywords:
+				--(inhibit evaluation of 'code' and 'name', since RC will not allow us to nest Lua calls too deep, 5 levels max)
+				local thisCode = getPropertyValue("code")
+				local thisName = getPropertyValue("name")
+				local t
 				t = _frames["UNFINISHED"][_language]
-				if tostring(code):upper():match(t:upper()) or tostring(name):upper():match(t:upper()) then 
+				if tostring(thisCode):upper():match(t:upper()) or tostring(thisName):upper():match(t:upper()) then 
 					return t
 				end
 			
 				t = _frames["WARNING"][_language]
-				if tostring(code):upper():match(t:upper()) or tostring(name):upper():match(t:upper()) then 
+				if tostring(thisCode):upper():match(t:upper()) or tostring(thisName):upper():match(t:upper()) then 
 					return t
 				end
 			
 				t = _frames["ERROR"][_language]
-				if tostring(code):upper():match(t:upper()) or tostring(name):upper():match(t:upper()) then 
+				if tostring(thisCode):upper():match(t:upper()) or tostring(thisName):upper():match(t:upper()) then 
 					return t
 				end
-			
+
 				--Then scan the modelchecks for unfished items, warnings or errors - but suppress the symbolframe if a derogation
 				--has been requested or has been granted:
 				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
-
 				if (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
 					return _frames.UNFINISHED[_language]
-
 				elseif Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
 				elseif Derogation == "GRANTED" then return _frames.GRANTED[_language]
-
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then
 					return _frames.ERROR[_language] --Deviating, no derogation requested or granted
-
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count &gt; 0) then
 					return _frames.WARNING[_language] --Deviating, no derogation requested or granted
-
 				else
 					--do nothing, fall through to next check
 				end
@@ -78,7 +77,6 @@
 				ss = Relations.SourceSpace
 				rel = Relations.ObjectRelations
 				nRel = getCollectionLength(rel)
-
 				for i = 0,nRel-1 do
 					r = rel[i]
 					--[[
@@ -112,19 +110,15 @@
 						if nReverse &lt; minReverse then return _frames.UNFINISHED[_language] end
 					end
 				end
-				
+			
 				--Now, look for derogations or else look for unsatisfied modelchecks:
 				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
-
 				if Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
 				elseif Derogation == "GRANTED" then return _frames.GRANTED[_language]
-
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then
 					return _frames.ERROR[_language] --Deviating, no derogation requested or granted
-
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count &gt; 0) then
 					return _frames.WARNING[_language] --Deviating, no derogation requested or granted
-
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
 					return _frames.UNFINISHED[_language]
 				else
@@ -543,7 +537,7 @@
 			function NOBN_com_getLabelItem2()
 				local r,n,s,i
 				s = "Er etikett for anything"
-				r,n = RC__getCollectionOfRelatedObjects(s)
+				r,n = getCollectionOfRelatedObjects(s)
 				if n == 0 then 
 					return "UNFINISHED - Relate with '"..s.."'."
 				else
@@ -1114,11 +1108,17 @@ end
 					end
 					return errMsg 
 				end
-		
 			
 				if obj == nil then obj = this end
 				if RcType:match("JBTEH_FUN KL%-fundament") then 
-					return fn(obj,{"JBTEH_MAS KL-mast","JBTEH_MAS Hengemast i åk","JBTEH_MAS Hengemast for bru og tunnel","JBTEH_BAF Bardunfeste","JBTEH_STF Streverfeste"},"UNFINISHED - no visible OCS pole or guywire / spanner fastener found at foundation.")
+					return fn(obj,{	"JBTEH_MAS KL-mast",
+									"JBTEH_MAS Hengemast i åk",
+									"JBTEH_MAS Hengemast for bru og tunnel",
+									"JBTEH_BAF Bardun fotplate",
+									"JBTEH_STF Strever fotplate",
+									"JBTEH_TUF Tunnelfeste"
+								},
+								"UNFINISHED - no visible OCS pole or guywire / spanner fastener found at foundation.")
 				elseif RcType:match("JBTKU_FUN Signalfundament") then 
 					return fn(obj,{"JBTSA_SIG Signal"},"UNFINISHED - no visible signal found at foundation.")
 				elseif RcType:match("JBTKU_FUN Apparatskapfundament") then 
