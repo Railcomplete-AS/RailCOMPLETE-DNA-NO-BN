@@ -12,8 +12,10 @@
 <xpp:define name="NOBN_Eulynx_ImportExport_SIGNAL" >
 	<xpp:bloc>
 		<ImportExportScript Format="EULYNX">
-				<ImportScript ObjectTypeName="JBTSA_SIG Signal">
+				<ImportScript >
 					<LuaScript>
+--NB! 'dataPrep' is a hard-coded C# declared identifier name. It will be "softened" with an XML name attribute for the ImportScript element.
+
 rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
 signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
 
@@ -42,15 +44,26 @@ for k, v in pairs(signals) do
 	--write("Pos: "..pos.."\n")
 	
 	
-	local signalRcType = "BTLS_SIG Ks-Signal"
-	local signalVariant = "Ks-Signal Hp-Vr (Bahnhof, Mehrabschnitt-Einfahrtsignal)"
+	--A suitable start value at creation. Modify with MainSignal = {'-' | 'Ja'}, DwarfSignal = {'-' | 'Ja'}
+	local signalRcType = rctype_Signal
+	local signalVariant = "3-lys hovedsignal"
 	
 	if (levelCrossingSignalRelation ~= nil) then
-		signalRcType = "BTLS_UWS Überwachungssignal"
-		signalVariant = "Überwachungssignal"
+		signalRcType = rctype_LevelCrossingSignal
+		signalVariant = "Planovergang, signal"
 	end
 		
-	
+	if (levelCrossingSignalRelation ~= nil) then
+		signalRcType = rctype_TrackSignal
+		signalVariant = "Planovergang, signal"
+--[[
+	TODO: Decipher these variants:
+		"Togsporsignal 1-begrep"
+		"Togsporsignal 1-begrep, sidestilt"
+		"Togsporsignal 2-begrep"
+		"Togsporsignal 2-begrep, sidestilt"
+--]]
+	end
 	
 	local obj = createPointObject(alignment, signalRcType, signalVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and 3.5 or -3.5, true)
 	obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
