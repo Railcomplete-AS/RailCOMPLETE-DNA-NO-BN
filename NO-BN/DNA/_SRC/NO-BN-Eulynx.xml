@@ -21,8 +21,8 @@ rsmSignals = rsmEntities.ownsSignal
 
 signals = table.select(rsmSignals, function(x) return {["rsmSignal"] = x,["eulynxSignal"] = table.firstOrNil(signallingEntities.ownsTrackAsset, function (trackAsset) return trackAsset.refersToRsmSignal.ref == x.id end), ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.locations[0].ref end)} end)
 
---write("Track assets: "..signallingEntities.ownsTrackAsset.count.."\n")
---write("Signals: "..#signals.."\n")
+write("Track assets: "..signallingEntities.ownsTrackAsset.count.."\n")
+write("Signals: "..#signals.."\n")
 for k, v in pairs(signals) do
 	
 	signalType = table.firstOrNil(signallingEntities.ownsSignalType, function (x) return x.appliesToSignal.ref == v.eulynxSignal.id end)
@@ -32,18 +32,18 @@ for k, v in pairs(signals) do
 		goto continue 
 	end
 	
-	--write("Inserting signal: "..v.rsmSignal.name.."\n")
+	write("Inserting signal: "..v.rsmSignal.name.."\n")
 	alignmentId = v.location.associatedNetElements[0].netElement.ref
 	alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
 	local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
 	pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
 	
-	--write("Alignment: "..alignment.code.."\n")
-	--write("Pos: "..pos.."\n")
+	write("Alignment: "..alignment.code.."\n")
+	write("Pos: "..pos.."\n")
 	
 	
-	local signalRcType = "BTLS_SIG Ks-Signal"
-	local signalVariant = "Ks-Signal Hp-Vr (Bahnhof, Mehrabschnitt-Einfahrtsignal)"
+	local signalRcType = "JBTSA_SIG Signal"
+	local signalVariant = "2-lys Rep. hovedsignal"
 	
 	if (levelCrossingSignalRelation ~= nil) then
 		signalRcType = "BTLS_UWS Überwachungssignal"
@@ -58,9 +58,6 @@ for k, v in pairs(signals) do
 	obj:setObjectId(v.eulynxSignal.id)
 	obj.EulynxBaseObject = v.eulynxSignal
 	
-	if (signalType ~= nil) then
-		obj.SignalType = signalType
-	end
 	
 	signalFunction = table.firstOrNil(signallingEntities.ownsSignalFunction, function (x) return x.appliesToSignal.ref == v.eulynxSignal.id end)
 	if (signalFunction ~= nil) then
@@ -73,36 +70,98 @@ for k, v in pairs(signals) do
 	
 	
 	if signalType ~= nil then
-		obj.HauptSignal = (string.match(string.lower(obj.SignalType.isOfSignalTypeType), "main") or string.match(string.lower(obj.SignalType.isOfSignalTypeType), "multisection")) and "Ja" or "-"
-		obj.RangierSignal = string.match(string.lower(obj.SignalType.isOfSignalTypeType), "shunting") and "Ja" or "-"
-		obj.Vorsignal = (string.match(string.lower(obj.SignalType.isOfSignalTypeType), "distant") or string.match(string.lower(obj.SignalType.isOfSignalTypeType), "multisection")) and "Ja" or "-"
-		--write("\n")
+		if (string.match(string.lower(signalType.value), "main") or string.match(string.lower(signalType.value), "multisection")) then
+			local signalFrame = table.firstOrNil(signallingEntities.ownsSignalFrame, function (x) return x.id == table.firstOrNil(v.eulynxSignal.hasSignalFrame).ref end)
+			if signalFrame then
+				write("Located signal frame\n")
+				local aspectCount = signalFrame.hasAspect.Count
+				write("Aspect count:"..aspectCount.."\n")
+				if aspectCount == 1 then
+					obj.MainSignal = "Hs1"
+				elseif aspectCount == 2 then
+					obj.MainSignal = "Hs2"
+				elseif aspectCount == 3 then
+					obj.MainSignal = "Hs3"
+				else
+					obj.MainSignal = "-"
+				end
+			end
+			
+		else
+			obj.MainSignal = "-"
+		end
+		obj.HighShuntingSignal = string.match(string.lower(signalType.value), "shunting") and "Ja" or "-"
+		obj.DistantSignal = (string.match(string.lower(signalType.value), "distant") or string.match(string.lower(signalType.value), "multisection")) and "Ja" or "-"
+		write("\n")
 	end
-	local specialPositionArrangement = table.firstOrNil(signallingEntities.ownsSpecialPositionArrangement, function (x) return x.appliesToSignal.ref == v.eulynxSignal.id end)
 	
-	if specialPositionArrangement == nil then
-		goto continue
-	end
-	
-	-- Insert BTLS_SBT Schachbretttafel object on the other side of the track
-	
-	
-	local schachbretttafel = createPointObject(alignment, "BTLS_SBT Schachbretttafel", "Schachbretttafel", pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and -1.5 or 1.5, true)
-	
-	schachbretttafel.dir = obj.dir
-	schachbretttafel.DistanceToAlignment = "="
-	schachbretttafel.DistanceToAlignment = v.location.associatedNetElements[0].isLocatedToSide == "left" and 1.8 or -1.8
-	
-	local schachbretttafelRelation = "Ist Ks-Signal für Tafel"
-	
-	setRelation(obj, schachbretttafel, schachbretttafelRelation)
-	
-	obj.specialPositionArrangement = specialPositionArrangement
 	
 	::continue::
 end
 					</LuaScript>
 			</ImportScript>
+			<ExportScript ObjectTypeName="JBTSA_SIG Signal">
+					<LuaScript>
+local objectsToReturn = {}
+local filteredObjects = table.where(rcObjects, function (x) return x.rcType == "JBTSA_SIG Signal" end)
+	
+local function AddAspect(sf)
+	local aspect = createEulynxObject("sig.ActiveAspect", {})
+	table.insert(objectsToReturn, aspect)
+	local aspectRef = createEulynxObject("rsmCommon.tElementWithIDref", {aspect.id})
+	local allApects = {}
+	for i = 0 , sf.hasAspect.Count do
+		table.insert(allApects,sf.hasAspect[i])
+	end
+	
+	table.insert(allApects,aspectRef)
+	
+	sf.hasAspect = allApects
+	write("Added aspect to signal frame\n")
+end			
+
+local function SetSignalType(signal)
+	local signalType = createEulynxObject("sig.SignalType", {})
+	signalType.value = "main"
+	table.insert(objectsToReturn, signalType)
+	signalType.appliesToSignal = createEulynxObject("rsmCommon.tElementWithIDref", {signal.id})
+
+	write("Set signal type\n")
+end			
+
+
+for k,v in pairs(filteredObjects) do
+	local obj = v
+	
+	local signalFrame = createEulynxObject("sig.SignalFrame", {})
+	signalFrame.isOfSignalFrameType = "main"
+	signalFrame.isFixed = false
+	table.insert(objectsToReturn, signalFrame)
+	
+	local signalFrameRef = createEulynxObject("rsmCommon.tElementWithIDref", {})
+	signalFrameRef.ref = signalFrame.id
+	obj.EULYNX_hasSignalFrame = {signalFrameRef}
+	
+	if obj.MainSignal:match("1") then
+		 AddAspect(signalFrame)
+		 SetSignalType(obj)
+	end
+	if obj.MainSignal:match("2") then
+		 AddAspect(signalFrame)
+		 AddAspect(signalFrame)
+		 SetSignalType(obj)
+	end
+	if obj.MainSignal:match("3") then
+		 AddAspect(signalFrame)
+		 AddAspect(signalFrame)
+		 AddAspect(signalFrame)
+		 SetSignalType(obj)
+	end
+end
+
+return objectsToReturn
+					</LuaScript>
+			</ExportScript>
 		</ImportExportScript>
 	</xpp:bloc>
 </xpp:define>
