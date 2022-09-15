@@ -114,32 +114,39 @@
 						end
 
 						if signalType ~= nil then
-							if (string.match(string.lower(signalType.value), "main") or string.match(string.lower(signalType.value), "multisection")) then
-								local signalFrame = table.firstOrNil(signallingEntities.ownsSignalFrame, function (x) return x.id == table.firstOrNil(v.eulynxSignal.hasSignalFrame).ref end)
+							local isMain = string.match(string.lower(signalType.value), "main")
+							local isMultiSection = string.match(string.lower(signalType.value), "multisection")
+							local isRepeater = string.match(string.lower(signalType.value), "repeater")
+							local isDistant = string.match(string.lower(signalType.value), "distant")
+							local isDwarf = string.match(string.lower(signalType.value), "shunting")
+							if isMain or isMultiSection or isRepeater then
+								-- find main signal frame.
+								local signalFrame = table.firstOrNil(signallingEntities.ownsSignalFrame, function (x) return x.isOfSignalFrameType == "main" and x.id == table.firstOrNil(v.eulynxSignal.hasSignalFrame).ref end)
 								if signalFrame then
 									write("Located signal frame\n")
 									local aspectCount = signalFrame.hasAspect.Count
 									write("Aspect count:"..aspectCount.."\n")
 									if aspectCount == 1 then
-										obj.MainSignal = "Hs1"
+										obj.MainSignal = isRepeater and "RepHs1" or "Hs1"
 									elseif aspectCount == 2 then
-										obj.MainSignal = "Hs2"
+										obj.MainSignal = isRepeater and "RepHs2" or "Hs2"
 									elseif aspectCount == 3 then
 										obj.MainSignal = "Hs3"
 									else
 										obj.MainSignal = "-"
 									end
 								end
-								
 							else
 								obj.MainSignal = "-"
 							end
---THBEN: HighShuntingSignal ~= DwarfSignal, although both of them are signals for autorising shunting movements:
-							obj.DwarfSignal = string.match(string.lower(signalType.value), "shunting") and "Ja" or "-"
-							obj.DistantSignal = (string.match(string.lower(signalType.value), "distant") or string.match(string.lower(signalType.value), "multisection")) and "Ja" or "-"
-							write("\n")
+								
+							obj.DistantSignal = (isDistant or isMultiSection) and "Ja" or "-"
+							obj.DwarfSignal = isDwarf and "Ja" or "-"
+								
 						end
-
+--THBEN: HighShuntingSignal ~= DwarfSignal, although both of them are signals for autorising shunting movements:
+							write("\n")
+						
 						::continue::
 					end
 				</LuaScript>
@@ -167,7 +174,19 @@
 					
 					local function SetSignalType(signal)
 						local signalType = createEulynxObject("sig.SignalType", {})
-						signalType.value = "main"
+						local signalTypeValue = signal.MainSignal ~= "-" and "main" or nil
+						if signal.MainSignal:match("Rep") then
+							signalTypeValue = "repeater"
+						end
+						if signal.DistantSignal == "Ja" then
+							signalTypeValue = signalTypeValue and signalTypeValue.."Distant" or "distant" 
+						end
+						if signal.DwarfSignal == "Ja" then
+							signalTypeValue = signalTypeValue and signalTypeValue.."Shunting" or "shunting" 
+						end
+						
+		
+						signalType.value = signalTypeValue
 						table.insert(objectsToReturn, signalType)
 						signalType.appliesToSignal = createEulynxObject("rsmCommon.tElementWithIDref", {signal.id})
 					
@@ -186,21 +205,21 @@
 						signalFrameRef.ref = signalFrame.id
 						obj.EULYNX_hasSignalFrame = {signalFrameRef}
 						
-						if obj.MainSignal == "Hs1" then
+						if obj.MainSignal:match("1") then
 							AddAspect(signalFrame)
-							SetSignalType(obj)
 						end
-						if obj.MainSignal == "Hs2" then
+						if obj.MainSignal:match("2") then
 							AddAspect(signalFrame)
 							AddAspect(signalFrame)
-							SetSignalType(obj)
 						end
-						if obj.MainSignal == "Hs3" then
+						if obj.MainSignal:match("3") then
 							AddAspect(signalFrame)
 							AddAspect(signalFrame)
 							AddAspect(signalFrame)
-							SetSignalType(obj)
+							
 						end
+						SetSignalType(obj)
+						
 					end
 					
 					return objectsToReturn
@@ -217,7 +236,7 @@
 		<ImportExportScript Format="EULYNX" >
 			<ImportScript LuaVariableName="dataPrep" >
 				<LuaScript>
-					local defaultVariant = "Togdeteksjonsavsnitt for akseltellere"
+					local defaultVariant = "Tellepunkt"
 					local defaultDist = 0.750
 
 					rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
@@ -229,16 +248,16 @@
 											
 					for k, v in pairs(axleCounters) do
 						
-						--write("Inserting axle counter: "..v.rsmOnTrackSignallingDevice.name.."\n")
+						write("Inserting axle counter: "..v.rsmOnTrackSignallingDevice.name.."\n")
 						alignmentId = v.location.associatedNetElements[0].netElement.ref
 						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
 						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
 						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
 						
-						--write("Alignment: "..alignment.code.."\n")
-						--write("Pos: "..pos.."\n")
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
 						
-						local obj = createPointObject(alignment, rctype_AxleCounter, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						local obj = createPointObject(alignment, rctype_AxleCounterSensor, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
 						obj.dir = "both"  --v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
 						if v.eulynxAxleCountingHead.hasConfiguration ~= nil and v.eulynxAxleCountingHead.hasConfiguration.hasConfigurationProperty.Count > 0 then
 							--write("Setting code to: "..v.eulynxAxleCountingHead.hasConfiguration.hasConfigurationProperty[0].shortNameLayoutPlan.."\n")
@@ -249,14 +268,14 @@
 						obj:setObjectId(v.eulynxAxleCountingHead.id)
 						obj.EulynxBaseObject = v.eulynxAxleCountingHead
 												
-						--write("\n")
+						write("\n")
 						::continue::
 					end
 				</LuaScript>
 			</ImportScript>
 			<ExportScript LuaVariableName="rcObjects" >
 				<LuaScript>
-					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == "BTLS_AZR Achszähler Radsensor" end)
+					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == rctype_AxleCounter end)
 						
 					for k,v in pairs(filteredObjects) do
 						local obj = v
@@ -476,8 +495,8 @@
 							local controlArea = createEulynxObject("sig.ControlArea", {})
 							local configuration = createEulynxObject("generic.Configuration", {})
 							
-							local designation = createEulynxObject("db.Designation", {})
-							designation.localName = "ControlArea for "..(obj.code or obj.RcType)
+							local designation = createEulynxObject("generic.SimpleDesignation", {})
+							designation.name = "ControlArea for "..(obj.code or obj.RcType)
 							controlArea.hasConfiguration = configuration
 							controlArea.hasConfiguration.hasConfigurationProperty = {designation}
 							
@@ -533,16 +552,16 @@
 					
 					for k, v in pairs(sections) do
 						
-						local name = v.tdsSection.hasConfiguration.hasConfigurationProperty[0].hasCodeLetter or v.tdsSection.hasConfiguration.hasConfigurationProperty[0].localName
+						local name = v.tdsSection.hasConfiguration.hasConfigurationProperty[0].hasCodeLetter or v.tdsSection.hasConfiguration.hasConfigurationProperty[0].name
 						
-						--write("Inserting TDS section: "..name.."\n")
+						write("Inserting TDS section: "..name.."\n")
 						alignmentId = v.location.associatedNetElements[0].netElement.ref
 						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
 						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
 						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
 						
-						--write("Alignment: "..alignment.code.."\n")
-						--write("Pos: "..pos.."\n")
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
 						
 						local obj = createPointObject(alignment, rctype_AxleCounterSection, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
 						if name ~= nil then
@@ -554,7 +573,7 @@
 						obj:setObjectId(v.tvpSection.id)
 						obj.EulynxBaseObject = v.tvpSection
 						
-						--write("\n")
+						write("\n")
 						::continue::
 					end
 				</LuaScript>
@@ -571,8 +590,8 @@
 							local axleCountingSection = createEulynxObject("sig.AxleCountingSection", {})
 							
 							local configuration = createEulynxObject("generic.Configuration", {})
-							local designation = createEulynxObject("db.TdsDesignation", {})
-							designation.localName = obj.code
+							local designation = createEulynxObject("generic.SimpleDesignation", {})
+							designation.name = obj.code
 							
 							axleCountingSection.hasConfiguration = configuration
 							
