@@ -318,8 +318,54 @@
 
 	Chainage   Move to another file? 
 =========================================================================================================-->
-	<ChainageLuaFunctionName>GetChainage</ChainageLuaFunctionName>
-	<ReferenceMarkerNameFormatLuaFunctionName>GetReferentName</ReferenceMarkerNameFormatLuaFunctionName>
+	<ChainageGetterLuaFunction>function GetPreviousReferent(pos)
+	for i = RcAlignment.Stationing.LinearEvents.Count-1,0,-1 do
+		rf = RcAlignment.Stationing.LinearEvents[i]
+		if rf.Pos &lt;= pos then
+			return rf
+		end
+	end
+	return nul
+end
+
+rf = GetPreviousReferent(_position.Pos)
+name = rf.Name
+station =  _position.Pos - rf.Pos + rf.Station
+return  name .. string.format("%03d", math.floor(station))
+	</ChainageGetterLuaFunction>
+	
+	<ChainageSetterLuaFunction>name, station =  _Arg1:match('([^+]+)+(.*)$')
+first = table.where(RcAlignment.Stationing.LinearEvents, function(x) return x.Name == name .. "+" end):firstOrNil()
+newStation = getEvaluatedExpression(station)
+stationDiff = newStation - first.Station
+newPos = stationDiff + first.Station
+
+if stationDiff &gt;= 0 then
+	paths = getPathsToDistanceFromPos(getAlignmentPos(this,first.Pos),"up",stationDiff)
+if paths.Count &gt; 0 then
+	return paths[0].End
+end
+	return nil
+end
+
+paths = getPathsToDistanceFromPos(getAlignmentPos(this,first.Pos),"down",-stationDiff)
+if paths.Count &gt; 0 then
+	return paths[0].End
+	end
+return nil
+	</ChainageSetterLuaFunction>
+	
+	<ReferenceMarkerNameFormatLuaFunction>refVal = (Mileage - Station)/1000
+refVal = string.format("%01d", math.floor(refVal + 1E-9))
+
+if Type == "Milepost" then
+	return "km"..refVal.."+"
+elseif Type == "Chainbreak" then
+	return "cb"..refVal.."+"
+else
+	return "Start" .. refVal
+end
+</ReferenceMarkerNameFormatLuaFunction>
 
 
  <PredefinedLandXmlImportExportSetting SettingsName="KakeNavn"/>
