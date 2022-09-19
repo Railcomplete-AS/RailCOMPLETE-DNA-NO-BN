@@ -312,7 +312,7 @@
 
 					etcsBaliseGroups = table.where(signallingEntities.ownsTrackAsset, function (x) return string.match(x:getTableValue():ToString():sub(-19), "sig.EtcsBaliseGroup") end)
 
-				--THBEN: Hjelp - hva er forskjellen på dem? Et datapunkt ER en balisegruppe!					
+				
 					local etcsBaliseGroupsTable = table.select(etcsBaliseGroups, function(x) return {["etcsBaliseGroup"] = x, ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.isLocatedAt.ref end)} end)
 					
 					write("EtcsBaliseGroups: "..#etcsBaliseGroupsTable.."\n")
@@ -327,9 +327,18 @@
 						write("Alignment: "..alignment.code.."\n")
 						write("Pos: "..pos.."\n")
 						
+						local balisesInGroup = table.where(signallingEntities.ownsTrackAsset, function (x) return x.implementsTpsDataTxSystem.ref == v.etcsBaliseGroup.id end)
+						local numberOfBalisesInGroup = #balisesInGroup
+						local baliseGroupVariant = defaultVariant
+						if numberOfBalisesInGroup > 1 then
+							baliseGroupVariant = "ETCS L2 balisegruppe, dobbel"
+						end
+						
+						write("Number of balises in group: "..numberOfBalisesInGroup.."\n")
+						
 				--THBEN: 'left' er vel negativ side?
 				--THBEN: Vi burde hatt LuaName for Variants også!
-						local obj = createPointObject(alignment, rctype_EtcsBaliseGroup, defaultVariant, pos,
+						local obj = createPointObject(alignment, rctype_EtcsBaliseGroup, baliseGroupVariant, pos,
 				--Distance to alignment will be overriden by object's formula anyway, but assign something here which is on the correct side:
 						v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true) 
 						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
@@ -526,9 +535,16 @@
 						write("Alignment: "..alignment.code.."\n")
 						write("Pos: "..pos.."\n")
 
+						local etcsBaliseVariant = defaultVariant
+						
+						if v.balise.isSwitchable then
+							etcsBaliseVariant = "ETCS-balise, styrt"
+						end
+						
+
 				--THBEN: 'left' er vel negativ side?
 				--THBEN: Vi burde hatt LuaName for Variants også!
-						local obj = createPointObject(alignment, rctype_EtcsBalise, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						local obj = createPointObject(alignment, rctype_EtcsBalise, etcsBaliseVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
 						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
 
 						obj.code = "="
