@@ -353,7 +353,7 @@
 		; Text style names, font (shape, SHX) files used by STYLE command and all textual commands
 		_STYLE_										"._STYLE"
 		_rcTextStyle_								"ISO"
-		_defaultFontShx_							(cond ((= _ADM_ _FRSR_) "es_isocp.shx") ((= _ADM_ _NOBN_) "iso3098.shx") (T "iso3098.shx"))	; NB! See loading command in MAIN.
+		_defaultFontShx_							"iso3098.shx"	; NB! See loading command in MAIN.
 		_textStyleAnnotativity_						"_A"
 		_textStyleIsAnnotative_	 					"_Y"
 		_textStyleIsNonAnnotative_					"_Y"

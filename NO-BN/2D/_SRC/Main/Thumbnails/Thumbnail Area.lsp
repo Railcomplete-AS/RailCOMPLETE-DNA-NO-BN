@@ -13,13 +13,7 @@
 ; Thumbnail for area selection (interlocking areas, contract parcels, paperspace layout frames etc)
 
 (defun THUMBNAIL-AREA ( / blockName x y )
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-AREA"		))) 
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-OMRAADE"	))) 
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-REGION"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-REGION"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-AREA"		))) 
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-OMRAADE"	))
 	(setq
 		x 12
 		y 9

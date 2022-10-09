@@ -14,13 +14,7 @@
 ; Norw.: 'Rørpakke'
 
 (defun THUMBNAIL-CABLE-DUCT-CONCRETE-ENCASED ( / blockName x y r )
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-CONCRETE-ENCASED"			)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-OMSTOEPTE-TREKKEROER"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-ENCASTRE-EN-BETON"		)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-BETONVERBUNDENES-ROHR"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-CONCRETE-ENCASED"			)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-OMSTOEPTE-TREKKEROER"		))
 	(setq 
 		y 0.155
 		x 0.45

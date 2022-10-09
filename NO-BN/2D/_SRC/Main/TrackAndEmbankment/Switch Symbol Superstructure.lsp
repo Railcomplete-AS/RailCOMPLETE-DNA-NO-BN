@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Superstructure Switch Symbol.lsp
+; Switch Symbol Superstructure.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -48,7 +48,6 @@
 		switchDiamondType  A B C D E F L R x railProfile ang
 		zeroPad
 	)
-	; TODO Make individual symbols per administration
 	(setq 
 		switchParameters (getSwitchParameters drawingNumber)
 		switchDiamondType	(cadr (assoc "SwitchDiamondType" switchParameters))
@@ -64,18 +63,8 @@
 		railProfile	(cadr (assoc "RailProfile" switchParameters))
 		ang (R->D (atan (/ 1.0 x)))
 	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockName1 (strcat _TRK_ "SWI-" "CONNECTOR-SWITCH"				)))
-		((= _ADM_ _NOBN_) (setq blockName1 (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL"		)))
-		((= _ADM_ _FRSR_) (setq blockName1 (strcat _TRK_ "AIG-" "CONNEXION-AIGUILLAGE"			)))
-		((= _ADM_ _DEDB_) (setq blockName1 (strcat _TRK_ "WEI-" "VERBINDUNG-WEICHE"				)))
-	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq description1 (strcat "SWITCH, TRACK SYMBOL"						)))
-		((= _ADM_ _NOBN_) (setq description1 (strcat "SPORVEKSEL, SPORFAG-SYMBOL"				)))
-		((= _ADM_ _FRSR_) (setq description1 (strcat "AIGUILLAGE, SYMBOLE VOIE ET ABORD"		)))
-		((= _ADM_ _DEDB_) (setq description1 (strcat "WEICHE, GLEISBAU-SYMBOL"					)))
-	)
+	(setq blockName1 (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL"		))
+	(setq description1 (strcat "SPORVEKSEL, SPORFAG-SYMBOL"				))
 
 	(if (< x 10)
 		(setq zeroPad "0") ; Pad with leading zeros

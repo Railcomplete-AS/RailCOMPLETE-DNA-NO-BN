@@ -20,13 +20,7 @@
 
 (defun THUMBNAIL-RAIL-PROFILE ( / blockName ) 
 	; Rail profile. 2D cross-section of a rail.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-RAIL-PROFILE"		)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-SKINNEPROFIL"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-PROFIL-DE-RAIL"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-SCHIENENPROFIL"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-RAIL-PROFILE"		)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-SKINNEPROFIL"		))
 	(command
 		_POLYLINE_ 
 			_origin_ ; Top-of-rail

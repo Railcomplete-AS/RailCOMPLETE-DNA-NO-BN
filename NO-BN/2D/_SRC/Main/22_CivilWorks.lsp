@@ -23,23 +23,9 @@
 	; Implemented for all administrations:
 	(TraceLevel2 "ANYADM-MANHOLE")			(ANYADM-MANHOLE) ; Round, square, etc. - shows external dimensions and location of the lid. Insertion point is the centre top edge of the the lid "sticks up".
 
-	; Implemented only for some administrations:
-	(cond 
-		((= _ADM_ _XXGL_) 
-			; XX-GL actions:
-		)
-		((= _ADM_ _NOBN_) 
-			; NO-BN actions:
-			(TraceLevel2 "NOBN-FUNDAMENT-FOR-SKAP")						(NOBN-FUNDAMENT-FOR-SKAP) 
-			(TraceLevel2 "NOBN-FUNDAMENT-FOR-MAST")						(NOBN-FUNDAMENT-FOR-MAST) ; Signal masts and KL masts, stretcher or spanner foundations - large, which requires tamping of tracks after installation
-			(TraceLevel2 "NOBN-LITE-MONTASJEELEMENT")					(NOBN-LITE-MONTASJEELEMENT) ; Smaller fittings, under 100 kg, which can be dug by hand without destabilising the track
-			(TraceLevel2 "NOBN-FUNDAMENT-FOR-TELEINSTALLASJON")			(NOBN-FUNDAMENT-FOR-TELEINSTALLASJON) ; Various foundations for tele-objects (monitor stand, ticket machine, etc.)
-		)
-		((= _ADM_ _FRSR_) 
-			; FR-SR actions:
-		)
-		((= _ADM_ _DEDB_) 
-			; DE-DB actions:
-		)
-	)
+	; Specific to this administration:
+	(TraceLevel2 "NOBN-FUNDAMENT-FOR-SKAP")				(NOBN-FUNDAMENT-FOR-SKAP) 
+	(TraceLevel2 "NOBN-FUNDAMENT-FOR-MAST")				(NOBN-FUNDAMENT-FOR-MAST) 		; Signal masts and OCS masts, guywire or spanner foundations - large, requires tamping after installation
+	(TraceLevel2 "NOBN-LITE-MONTASJEELEMENT")			(NOBN-LITE-MONTASJEELEMENT) 	; Smaller fittings, under 100 kg, which can be dug by hand without destabilising the track
+	(TraceLevel2 "NOBN-FUNDAMENT-FOR-TELEINSTALLASJON")	(NOBN-FUNDAMENT-FOR-TELEINSTALLASJON) ; Various foundations for tele-objects (monitor stand, ticket machine, etc.)
 )

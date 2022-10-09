@@ -28,20 +28,7 @@
 	(TraceLevel2 "CONNECTOR-CROSSINGS")				(CONNECTOR-CROSSINGS)
 	(TraceLevel2 "CONNECTOR-SWITCHES")				(CONNECTOR-SWITCHES)
 
-	; Implemented only for some administrations:
-	(cond 
-		((= _ADM_ _XXGL_) 
-		)
-		((= _ADM_ _NOBN_) 
-			(TraceLevel2 "SWITCH-TONGUE")			(SWITCH-TONGUE)
-			(TraceLevel2 "DEFLECTION-BAR")			(DEFLECTION-BAR)
-		)
-		((= _ADM_ _FRSR_) 
-		)
-		((= _ADM_ _DEDB_) 
-			(TraceLevel2 "DEFLECTION-BAR")			(DEFLECTION-BAR)
-		)
-		((= _ADM_ _JPTX_) 
-		)
-	)
+	; Specific to this administration:
+	(TraceLevel2 "SWITCH-TONGUE")					(SWITCH-TONGUE)
+	(TraceLevel2 "DEFLECTION-BAR")					(DEFLECTION-BAR)
 )

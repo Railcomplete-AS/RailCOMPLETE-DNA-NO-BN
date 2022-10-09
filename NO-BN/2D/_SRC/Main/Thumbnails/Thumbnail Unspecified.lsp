@@ -20,13 +20,7 @@
 
 (defun THUMBNAIL-UNSPECIFIED ( / blockName ) 
 	; A rectangle, a circle and a triangle - to be used as proxy symbols for anything that lacks a suitable symbol.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-UNSPECIFIED"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-USPESIFISERT"	)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-NON-SPECIFIE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-UNSPEZIFISCH"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-UNSPECIFIED"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-USPESIFISERT"	))
 	(command 
 		_RECTANGLE_ "0,-3" "4,1"
 		_CIRCLE_ "-1,-1" "3"

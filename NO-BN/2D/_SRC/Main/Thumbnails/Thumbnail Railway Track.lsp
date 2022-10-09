@@ -18,13 +18,7 @@
 
 (defun THUMBNAIL-RAILWAY-TRACK ( / blockName trackLength railFoot railHead sleeperWidth sleeperLength sleeperSeparation sleeperGap trackLengthBeforeFirstSleeper centerTrack ) 
 	; A piece of track viewed from above, featuring the two rails and five sleepers.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-RAILWAY-TRACK"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-JERNBANESPOR"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-VOIE-FERROVIAIRE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-EISENBAHN-GLEIS"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-RAILWAY-TRACK"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-JERNBANESPOR"		))
 	(setq
 		trackLength 1800
 		railFoot 150

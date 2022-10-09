@@ -22,7 +22,7 @@
 	(setq 
 		blockName (strcat _SIG_ "SIG-" "SIGNAL-SPORSPERRESIGNAL")
 		description "SPORSPERRESIGNAL"
-		r (NOBN_GetLargeLanternRadius)
+		r 	1.5
 		p1 (list 0 (+ r)) 
 		p2 (list 0 (- r))
 	)

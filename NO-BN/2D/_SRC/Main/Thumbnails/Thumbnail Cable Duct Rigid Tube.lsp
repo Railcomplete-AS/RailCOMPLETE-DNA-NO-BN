@@ -20,13 +20,7 @@
 
 
 (defun THUMBNAIL-CABLE-DUCT-RIGID-TUBE ( / blockName r1 r2 r3 r4 p1 p2 p3 p4 p5 )
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-RIGID-TUBE"				)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-PRESSROER"				)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-TUBE-RIGIDE"		)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-STEIFES-ROHR"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-RIGID-TUBE"				)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-PRESSROER"				))
 	(setq 
 		; Rigid outer Ø160 tube:
 		r1 0.160	; outer diameter outer tube

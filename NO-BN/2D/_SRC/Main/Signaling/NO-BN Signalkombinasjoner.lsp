@@ -7,7 +7,8 @@
 ;
 ; Change log:
 ; 2020-07-30 CLFEY Adjusted all mainPole sizes. Use floating point numbers to avoid possible later mistakes with integer division. Sorted and deleted duplicates.
-; 2020-08-01 CLFEY New LISP code for ALL 'plain' symbols, allowing for use of nested loops and 'combinatorial computations' to ensure that all combinations are covered. Some might not be very meaningful, though.
+; 2020-08-01 CLFEY New LISP code for ALL 'plain' symbols, allowing for use of nested loops and 'combinatorial computations' to ensure that all combinations
+;                  are covered. Some might not be very meaningful, though.
 ; 2020-09-02 CLFEY Added NOBN_AddMb function / ERTMS markerboards
 ; ==========
 ;
@@ -457,10 +458,7 @@
 
 (defun AddMissingSymbol ( / )
 	(ShiftSignalItemsUp 3.5) ; Update globals - make space for two lines of 1.25 height text plus line spacing
-	(if (= _ADM_ _XXGL_)	(AddMText layDef_Zero _th125_ (* 90 _th125_) _origin_ "MISSING SYMBOL"))
-	(if (= _ADM_ _NOBN_)	(AddMText layDef_Zero _th125_ (* 90 _th125_) _origin_ "MANGLER SYMBOL"))
-	(if (= _ADM_ _FRSR_)	(AddMText layDef_Zero _th125_ (* 90 _th125_) _origin_ "SYMBOLE MANQUANT"))
-	(if (= _ADM_ _DEDB_)	(AddMText layDef_Zero _th125_ (* 90 _th125_) _origin_ "FEHLENDE SYMBOL"))
+	(AddMText layDef_Zero _th125_ (* 90 _th125_) _origin_ "MANGLER SYMBOL")
 )
 
 

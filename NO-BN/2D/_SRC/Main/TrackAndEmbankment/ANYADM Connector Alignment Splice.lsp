@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; ANYADM Connector Alignment Splice.lsp
+; Connector Alignment Splice.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -32,20 +32,8 @@
 	)
 	(foreach leftArrow '(0 1)
 		(foreach rightArrow '(0 1)
-			(cond 
-				((= _ADM_ _XXGL_) (setq blockName (strcat _TRK_ "SPL-" "CONNECTOR-SPLICE-" 					(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _NOBN_) (setq blockName (strcat _TRK_ "SPF-" "FORBINDELSE-FORTSETTELSE-"			(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _FRSR_) (setq blockName (strcat _TRK_ "PRO-" "CONNEXION-PROLONGATION-"			(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _DEDB_) (setq blockName (strcat _TRK_ "AFO-" "VERBINDUNG-ACHSEN-FORTSETZUNG-"		(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _JPTX_) (setq blockName (strcat _TRK_ "SPL-" "CONNECTOR-SPLICE-" 					(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-			)
-			(cond 
-				((= _ADM_ _XXGL_) (setq description (strcat "CONNECTION SPLICE "		(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _NOBN_) (setq description (strcat "SPORFORTSETTELSE "			(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _FRSR_) (setq description (strcat "CONNEXION PROLONGATION "	(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _DEDB_) (setq description (strcat "ACHSEN-FORTSETZUNG "		(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _JPTX_) (setq description (strcat "CONNECTION SPLICE "		(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-			)
+			(setq blockName (strcat _TRK_ "SPF-" "FORBINDELSE-FORTSETTELSE-"	(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	))
+			(setq description (strcat "SPORFORTSETTELSE "			(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	)
 			(DrawContinuation x y leftArrow rightArrow)
 			(AddDescriptionBelowOrigin description y)
 			(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -63,20 +51,8 @@
 	)
 	(foreach leftArrow '(0 1)
 		(foreach rightArrow '(0 1)
-			(cond 
-				((= _ADM_ _XXGL_) (setq blockName (strcat _OCS_ "CSP-" "CABLE-SPLICE-" 						(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _NOBN_) (setq blockName (strcat _OCS_ "LEF-" "LEDNINGFORTSETTELSE-"				(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _FRSR_) (setq blockName (strcat _OCS_ "CPC-" "CONNEXION-PROLONGATION-CABLE"		(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _DEDB_) (setq blockName (strcat _OCS_ "VKF-" "VERBINDUNG-KABEL-FORTSETZUNG-"		(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _JPTX_) (setq blockName (strcat _OCS_ "CSP-" "CABLE-SPLICE-" 						(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-			)
-			(cond 
-				((= _ADM_ _XXGL_) (setq description (strcat "CABLE SPLICE "				(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _NOBN_) (setq description (strcat "LEDNINGFORTSETTELSE "		(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _FRSR_) (setq description (strcat "PROLONGATION DE CABLE "	(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _DEDB_) (setq description (strcat "KABEL-FORTSETZUNG "		(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _JPTX_) (setq description (strcat "CABLE SPLICE "				(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-			)
+			(setq blockName (strcat _OCS_ "LEF-" "LEDNINGFORTSETTELSE-"		(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	))
+			(setq description (strcat "LEDNINGFORTSETTELSE "		(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	)
 			(DrawContinuation x y leftArrow rightArrow)
 			(AddDescriptionBelowOrigin description y)
 			(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -94,20 +70,8 @@
 	)
 	(foreach leftArrow '(0 1)
 		(foreach rightArrow '(0 1)
-			(cond 
-				((= _ADM_ _XXGL_) (setq blockName (strcat _OCS_ "WSP-" "CONTACT-WIRE-SPLICE-" 					(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _NOBN_) (setq blockName (strcat _OCS_ "KTF-" "KONTAKTLEDNING-FORTSETTELSE-"			(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _FRSR_) (setq blockName (strcat _OCS_ "CPF-" "CONNEXION-PROLONGATION-FIL-DE-CONTACT"	(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _DEDB_) (setq blockName (strcat _OCS_ "AFO-" "VERBINDUNG-KONTAKTLEITUNG-FORTSETZUNG-"	(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-				((= _ADM_ _JPTX_) (setq blockName (strcat _OCS_ "WSP-" "CONTACT-WIRE-SPLICE-" 					(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	)))
-			)
-			(cond 
-				((= _ADM_ _XXGL_) (setq description (strcat "CONTACT WIRE SPLICE "			(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _NOBN_) (setq description (strcat "KONTAKTLEDNINGFORTSETTELSE "	(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _FRSR_) (setq description (strcat "PROLONGATION FIL-DE-CONTACT "	(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _DEDB_) (setq description (strcat "KONTAKTLEITUNG-FORTSETZUNG "	(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-				((= _ADM_ _JPTX_) (setq description (strcat "CONTACT WIRE SPLICE "			(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	))
-			)
+			(setq blockName (strcat _OCS_ "KTF-" "KONTAKTLEDNING-FORTSETTELSE-"		(rtos leftArrow 2 0) "-" (rtos rightArrow 2 0)	))
+			(setq description (strcat "KONTAKTLEDNINGFORTSETTELSE "	(if (= leftArrow 0) "> " "< ") (if (= rightArrow 0) ">" "<"))	)
 			(DrawContinuation x y leftArrow rightArrow)
 			(AddDescriptionBelowOrigin description y)
 			(CreateSchematicBlockFromCurrentGraphics blockName)

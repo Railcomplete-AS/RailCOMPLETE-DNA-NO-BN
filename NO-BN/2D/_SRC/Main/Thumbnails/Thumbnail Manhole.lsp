@@ -34,13 +34,7 @@
 	; 1        9
 	;  \2345678/		Four arcs
 	;
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-MANHOLE-ROUND"		)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-TREKKEKUM-RUND"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-REGARD-CIRCULAIRE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-SCHACHT-RUND"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-MANHOLE-ROUND"		)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-TREKKEKUM-RUND"		))
 	(setq
 		p1  '(  0    0.0)
 		p2  '(  6  -10.0)
@@ -95,13 +89,7 @@
 	; |        |/
 	; 1--------2
 	;
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-MANHOLE-RECTANGULAR"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-TREKKEKUM-REKTANGULAER"	)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-REGARD-RECTANGULAIRE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-SCHACHT-REKTANGULAER"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-MANHOLE-RECTANGULAR"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-TREKKEKUM-REKTANGULAER"	))
 	(setq
 		p1  '(  0    0)
 		p2  '( 99  -12)

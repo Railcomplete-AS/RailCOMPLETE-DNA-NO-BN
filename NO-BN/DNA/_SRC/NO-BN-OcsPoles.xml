@@ -39,21 +39,11 @@
 	<LuaFunction Name="_JBTEH_MAS_Spanlength()" ReturnType="Double" 
 			HideFromUser="false"
 			Description="Returns the shortest span length [m] between this catenary mast and its related next mast." >
-		<Constructor>Double _JBTEH_MAS_SpanLength()</Constructor>
+		<Constructor>Double _JBTEH_MAS_Spanlength()</Constructor>
 		<Formula>
 			--[[
 				_JBTEH_MAS_Spanlength.lua
-				2022-06-09_000 SinBre
-					Fjernet at man ser etter a, b, c, osv. bak ledningsnavnet, da vi bare bruker det på koden, ikke 
-					på navnet på ledningen. Lagt inn filter slik at man ikke returnerer spennlengder for fixliner.
-					Dette skjedde da ledningen har samme navn som kjørbar ledning. Lagt til formel nederst på arket
-					for å ta med spennlengde fra avspenning til utligger ved start av ledning, selv om masten også
-					har en utligger for en annen ledning. Dette ble ikke med før. Dette kan nok integreres i for-
-					løkkene, men fungerer tilsynelatende greit slik det ble gjort nå også.
-				2022-06-15_001 CLFEY Wrapped code in a function call. Refactored code / better identifier names.
-				2022-06-16_002 SinBre Created "for-loop" for identifying several wtbs at poles which also contains
-					cantilevers. Added possibility of several wtbs at pole without cantilevers
-				2022-09-11_003 CLFEY Re-written to fit DNA NO-BN 2022.a where wtb and cnt are chained. Also handles 
+				2022-10-09_003 CLFEY Re-written to fit DNA NO-BN 2022.a where wtb and cnt are chained. Also handles 
 					wtb mounted on a tunnel wall baseplate. uses new system with global lua names for RcType and 
 					relation forward / reverse names.
 					Revised method:
@@ -61,43 +51,54 @@
 							and find its wtb.
 						-	Iterate over all such objects found, locate the next cantilever or wtb in sequence
 						-	For each next object, store next object's contact wire name and the 
-							straight-line 2D distance in the XY plane from wireclamp/wtb to wireclamp/wtb.
+							straight-line 2D distance in the XY plane from CW wireclamp/wtb to CW wireclamp/wtb.
+					Return value: 	A collection of collections, each containing the 'name' of a contact wire and the
+									straight-line 2D distance to next item.
 			--]]
 			function _JBTEH_MAS_Spanlength()
 				local tol = 1.0 --[m] Tolerance when searching for wire tension balancers at an OCS pole
 				local result = {}
-				
-				--Find all cantilevers and WTBs at this OCS pole, but skip WTBs serving midpoint anchor lines:
-				local rCnt = getCollectionOfRelatedObjects(rel_OcsPole_Has_Cantilever)
+			
+				--Find all cantilevers and WTBs at this OCS pole, but skip WTBs serving midpoint anchor lines or AT conductors, earthing wires etc:
+				local rCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
 				local rWtb = getNearbyPointObjects2D(tol,rctype_WireTensioner)
-								:filter(function (x) return x.Alignment ~= rctype_MidpointAnchorLine end)
+								:filter(function (x) return x.Alignment == rctype_ContactWire end)
 				local items = getUnionOfCollections({rCnt,rWtb})
 				local nItems = getCollectionLength(items)
 				local i
 			
 				if nItems == 0 then
 					--Poles for supporting OCS portals will exist, with neither wtbs nor cantilevers at the pole.
-					return {{"No spanlengths",0}}
+					return {{"No spanlengths",0}},info("No spanlengths")
 				else
 					for i = 0, nItems-1 do
 						local thisItem = items[i]
-						local nextItems,nNextItems = thisItem:getCollectionOfRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)
-						--A WTB might be the terminal for a contact wire (at a buffer stop etc). Treat those who possess a successor:
+						local cowName
+						local p1
+						if thisItem.RcType == rctype_WireTensioner then
+							p1 = thisItem:getPoint3D()
+							cowName = thisItem.Alignment.name
+						else
+							--thisItem.RcType == rctype_Cantilever:
+							p1 = thisItem:NOBN_ocs_getWireClampPoint3D()
+							cowName = thisItem:getRelatedObjects(rel_Cantilever_Holds_ContactWire)[0].name
+						end
+						local nextItems,nNextItems = thisItem:getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)
+						--A WTB might be the terminal for a contact wire (at a buffer stop etc). Treat only those who possess a successor:
 						if nNextItems &gt; 0 then
-							nextItem = nextItems[i]
-							local startPoint,endPoint
-							if thisItem.RcType == rctype_WireTensioner then
-								startPoint = thisItem:getPoint3D()
+							nextItem = nextItems[0]
+							if nextItem.RcType == rctype_WireTensioner then
+								p2 = nextItem:getPoint3D()
 							else
-								startPoint = thisItem:NOBN_ocs_getWireClampPoint3D()
+								--nextItem.RcType == rctype_Cantilever:
+								p2 = nextItem:NOBN_ocs_getWireClampPoint3D()
 							end
-							cowName = thisItem:getCollectionOfRelatedObjects(rel_Cantilever_Holds_ContactWire)[0].name
 							distance2D = RC__getDistance2D(p1,p2)
 							table.insert(result,{cowName,RC__round(distance2D,1)})
 						end
 					end
 				end
-				return result,_info(getCollectionLength(result).." spanlengths")
+				return result,_info(getCollectionLength(result).." spanlength(s)")
 			end
 		</Formula>
 	</LuaFunction>
@@ -109,60 +110,59 @@
 		<Formula>
 			--[[
 				_JBTEH_MAS_SpanlengthDisplay.lua
-				2022-06-09_000 SinBre Created
-				2022-06-15_001 CLFEY  Wrapped function as a function call, refactored the code, don't show "-0.0-".
-				
-				It is assumed that SpanLength holds either a plain number [Double], or a collection of
+				2022-10-09_002 CLFEY  Wrapped function as a function call, refactored the code, don't show "-0.0-".
+			
+				It is assumed that Spanlength holds either a plain number [Double], or a collection of
 				collections holding each one contact wire name [String] and its corresponding spanlength [Double].
-				
+			
 				The return value has format:
-				
-				Show this:								...if property SpanLength is:
+			
+				Show this:								...if property Spanlength is:
 				=================================		=========================================================
 				""										...the number 0
 				"-36.7-"								...a non-zero number (e.g. 36.7)
 				"L30-515 -57.8-"						...a collection of just one collection {{string,double}}
 				"L30-536 -52.6- / L30-537 -37.8-"		...a collection of several collections {{string,double},...,{string,double}}
-				
-				Note: If the SpanLength property contains several pairs of {wireName,spanlength} then the OCS pole number is shown first.
+			
+				Note: If the Spanlength property contains several pairs of {wireName,spanlength} then the OCS pole number is shown first.
 			
 			--]]
 			function _JBTEH_MAS_SpanlengthDisplay()
-				if type(SpanLength) == "number" then
-					--SpanLength holds just a plain number (most OCS poles have just one spanlength):
-					return SpanLength == 0 and "" or string.format("-%.01f-",SpanLength)
-				elseif type(SpanLength) == "table" then
+				if type(Spanlength) == "number" then
+					--Spanlength holds just a plain number (most OCS poles have just one spanlength):
+					return Spanlength == 0 and "" or string.format("-%.01f-",Spanlength)
+				elseif type(Spanlength) == "table" then
 					--[[
-						The SpanLength property holds a collection of N collections as shown in this example: 
-						{{WireName1,SpanLength1},{WireName2,SpanLength2}, ... , {WireNameN,SpanLengthN}}
-						where WireNameX is the contact wire's name property [string], and SpanLengthX is
+						The Spanlength property holds a collection of N collections as shown in this example: 
+						{{WireName1,Spanlength1},{WireName2,Spanlength2}, ... , {WireNameN,SpanlengthN}}
+						where WireNameX is the contact wire's name property [string], and SpanlengthX is
 						the corresponding spanlength [Double].
 					--]]
-					SpanLengths = getCollectionFromTable(SpanLength)
-					nSpanLengths = getCollectionLength(SpanLength)
-					for i = 0,nSpanLengths-1 do
-						distance2D = SpanLengths[i][1]
+					Spanlengths = getCollectionFromTable(Spanlength)
+					nSpanlengths = getCollectionLength(Spanlength)
+					for i = 0,nSpanlengths-1 do
+						distance2D = Spanlengths[i][1]
 						if i == 0 then
 							--First spanlength:
-							s = distance2D == 0 and "" or string.format("%s -%.01f-",SpanLengths[i][0],SpanLengths[i][1]) --wireName,spanlength
+							s = distance2D == 0 and "" or string.format("%s -%.01f-",Spanlengths[i][0],Spanlengths[i][1]) --wireName,spanlength
 						else
-							s = s..string.format(" / %s -%.01f-",SpanLengths[i][0],SpanLengths[i][1])
+							s = s..string.format(" / %s -%.01f-",Spanlengths[i][0],Spanlengths[i][1])
 						end
 					end
 				else
-					return "Unexpected SpanLength type ["..type(SpanLength).."]."
+					return "Unexpected Spanlength type ["..type(Spanlength).."]."
 				end
 				return s
 			end
 		</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextPosition()" ReturnType="Vector2D" 
+	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
 			Description="Returns a World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point to halfway between the concerned masts' display points. Optionally, specify offsets as [lateralOffset [,longitudinalOffset]])." >
-		<Constructor>{Double,Double} _JBTEH_MAS_SpanLengthTextPosition([Double offsetLateral [,Double offsetAlong]])</Constructor>
+		<Constructor>{Double,Double} _JBTEH_MAS_SpanlengthTextPosition([Double offsetLateral [,Double offsetAlong]])</Constructor>
 		<Formula>
-			function _JBTEH_MAS_SpanLengthTextPosition(offsetLateral,offsetAlong)
+			function _JBTEH_MAS_SpanlengthTextPosition(offsetLateral,offsetAlong)
 				scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
 				offsetLateral = (offsetLateral or 0)/scale
 				offsetAlong = (offsetAlong or 0)/scale
@@ -185,12 +185,12 @@
 		</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_SpanLengthTextRotation()" ReturnType="Double" 
+	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextRotation()" ReturnType="Double" 
 			HideFromUser="false" 
 			Description="Returns the text attribute's rotation [DD] for the shortest span length custom text attribute, to place the text nicely between its two masts' display points." >
-		<Constructor>Double _JBTEH_MAS_SpanLengthTextRotation()</Constructor>
+		<Constructor>Double _JBTEH_MAS_SpanlengthTextRotation()</Constructor>
 		<Formula>
-			function _JBTEH_MAS_SpanLengthTextRotation()
+			function _JBTEH_MAS_SpanlengthTextRotation()
 				local r,n = getCollectionOfRelatedObjects("Neste kl-mast")
 				if n == 0 then 
 					return AlignmentTangent
@@ -536,21 +536,21 @@
 		</CustomAttribute>
 
 		<!-- Span length -->
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="0.0" 
+		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0" 
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
-		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
-		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
+		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
+		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
 			Description="The span length value [m] being displayed close to the OCS pole." />
-		<LuaExpression Name="SpanLengthDisplay" ><Formula>_JBTEH_MAS_SpanLengthDisplay()</Formula></LuaExpression>
-        <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+		<LuaExpression Name="SpanlengthDisplay" ><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
+        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 			Invisible="false" Lock="false" MText="false" /> 
-		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
-		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextPosition(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
-		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<CustomAttribute DataType="Boolean" Name="HasSpire" DisplayName="Har spir" DefaultValue="false"
 			Description="Does the overhead catenary system (OCS) mast have a spire [True | False]." />
@@ -855,21 +855,21 @@
 		</CustomAttribute>
 
 		<!-- Span length -->
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" 
+		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="30" 
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
-		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
-		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
+		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
+		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
 			Description="The span length value [m] being displayed close to the OCS pole." />
-		<LuaExpression Name="SpanLengthDisplay" ><Formula>_JBTEH_MAS_SpanLengthDisplay()</Formula></LuaExpression>
-        <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+		<LuaExpression Name="SpanlengthDisplay" ><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
+        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 			Invisible="false" Lock="false" MText="false" /> 
-		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
-		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextPosition(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
-		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_non_yoke_mast_code()</Formula></LuaExpression>
@@ -1094,21 +1094,21 @@
 		</CustomAttribute>
 		
 		<!-- Span length -->
-		<CustomAttribute DataType="Double" Name="SpanLength" DisplayName="Spennlengde" DefaultValue="30" 
+		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="30" 
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
-		<LuaExpression Name="SpanLength" ><Formula>_JBTEH_MAS_SpanLength()</Formula></LuaExpression>
-		<CustomAttribute DataType="String" Name="SpanLengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
+		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
+		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
 			Description="The span length value [m] being displayed close to the OCS pole." />
-		<LuaExpression Name="SpanLengthDisplay" ><Formula>_JBTEH_MAS_SpanLengthDisplay()</Formula></LuaExpression>
-        <TextAttribute Annotative="true" BindingProperty="SpanLengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+		<LuaExpression Name="SpanlengthDisplay" ><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
+        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 			Invisible="false" Lock="false" MText="false" /> 
-		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
-		<CustomAttribute DataType="Double" Name="SpanLengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextPosition(SpanLengthTextOffsetLateral,SpanLengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
-		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanLengthTextRotation()</Formula></TextRotationLuaExpression>
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 	

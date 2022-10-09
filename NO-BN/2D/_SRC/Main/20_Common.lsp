@@ -10,7 +10,7 @@
 ;
 ;=========================================================================================================================
 
-; ANYADM objects top-level LISP routine
+; objects top-level LISP routine
 
 (setq f (strcat rootFolder "\\Main\\Common"))
 (princ (vl-directory-files (findfile f)))
@@ -29,18 +29,5 @@
 	(TraceLevel2 "WATCHES")				(WATCHES)
 	(TraceLevel2 "ANNOTATION TEXTS")	(ANNOTATION-TEXTS)
 
-	; Specific to one administration:
-	(cond 
-		((= _ADM_ _XXGL_)
-		)
-		((= _ADM_ _NOBN_) 
-		)
-		((= _ADM_ _FRSR_)
-		)
-		((= _ADM_ _DEDB_)
-			(TraceLevel2 "DEDB-POSITIONS-AND-DISTANCES")				(DEDB-POSITIONS-AND-DISTANCES)
-		)
-		((= _ADM_ _JPTX_)
-		)
-	)
+	; Specific to this administration:
 )

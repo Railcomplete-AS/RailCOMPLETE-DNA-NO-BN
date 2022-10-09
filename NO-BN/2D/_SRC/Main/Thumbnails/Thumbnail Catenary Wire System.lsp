@@ -32,13 +32,7 @@
 	; 0  ----d12-------d22-------d32-------d42-------d52-------d62---
 	;  
 	;   0    5 7       15        25        35        45      5355   60
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CATENARY-WIRE-SYSTEM"		)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KONTAKTLEDNINGSOPPHENG"	)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-PORTEE-CATENAIRE"		)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-OBERLEITUNG-AUFHANG"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CATENARY-WIRE-SYSTEM"		)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KONTAKTLEDNINGSOPPHENG"	))
 	(setq
 		; spanLength 60
 		; stitchWireLength 14

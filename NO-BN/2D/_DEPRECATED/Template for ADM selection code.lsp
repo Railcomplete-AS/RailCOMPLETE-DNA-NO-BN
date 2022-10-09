@@ -25,7 +25,7 @@
 	; Implemented for all administrations:
 	; (nothing)
 
-	; Implemented only for some administrations:
+	; Specific to this administration:
 	(cond 
 		((= _ADM_ _XXGL_) 
 			; XX-GL actions:
@@ -43,7 +43,7 @@
 
 	; Example - set blockName and description:
 	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _OCS_ "MAS-" "CATENARY-MAST-HEB-NOBN-OCS-H-BEAM-MAST"			)))
+		((= _ADM_ _XXGL_) (setq blockName (strcat _OCS_ "MAS-" "CATENARY-MAST-HEB-NOBN-OCS-H-BEAM-POLE"			)))
 		((= _ADM_ _NOBN_) (setq blockName (strcat _OCS_ "MAS-" "BJELKEMAST"								)))
 		((= _ADM_ _FRSR_) (setq blockName (strcat _OCS_ "SUP-" "SUPPORT-CATENAIRE-POUTRE-HEB-EN-ACIER"	)))
 		((= _ADM_ _DEDB_) (setq blockName (strcat _OCS_ "MAS-" "OBERLEITUNGSMAST-HEB-STAHLTRAEGER"		)))

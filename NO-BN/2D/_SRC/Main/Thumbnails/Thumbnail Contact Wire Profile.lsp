@@ -18,13 +18,7 @@
 
 (defun THUMBNAIL-CONTACT-WIRE-PROFILE ( / blockName radiusWire radiusSmall radiusLarge ) 
 	; 2D cross-section of a contact wire
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CONTACT-WIRE"		)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KONTAKTTRAAD"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-FIL-DE-CONTACT"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KONTAKTLEITER"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CONTACT-WIRE"		)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KONTAKTTRAAD"		))
 	(setq
 		radiusWire 6.0
 		radiusSmall 0.3

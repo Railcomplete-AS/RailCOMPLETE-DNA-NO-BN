@@ -13,13 +13,7 @@
 ; Thumbnail for bicycle lane alignment selection
 
 (defun THUMBNAIL-BICYCLE-LANE ( / blockName ) 
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-BICYCLE-LANE"		)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-SYKKELSTI"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-PISTE-CYCLABLE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-FAHRRADWEG"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-BICYCLE-LANE"		)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-SYKKELSTI"		))
 	(command _POLYLINE_ _origin_ (list 6 10) (list 19 10) (list 11 0) _closedPolyline_
 		_LINE_ (list 11 0) (list 5.25 11.5) _ENTER_
 		_LINE_ (list 4.25 11.5) (list 7.25 11.5) _ENTER_

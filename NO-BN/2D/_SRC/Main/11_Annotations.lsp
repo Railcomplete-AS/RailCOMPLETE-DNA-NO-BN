@@ -24,22 +24,5 @@
 	; Implemented for all administrations:
 	(TraceLevel2 "ANYADM-ANNOTATION-CHAINBREAK")	(ANYADM-ANNOTATION-CHAINBREAK)
 
-	; Implemented only for some administrations:
-	(cond 
-		((= _ADM_ _XXGL_) 
-			; XX-GL actions:
-		)
-		((= _ADM_ _NOBN_) 
-			; NO-BN actions:
-		)
-		((= _ADM_ _FRSR_) 
-			; FR-SR actions:
-		)
-		((= _ADM_ _DEDB_) 
-			; DE-DB actions:
-		)
-		((= _ADM_ _JPTX_) 
-			; DE-DB actions:
-		)
-	)
+	; Specific to this administration:
 )

@@ -25,13 +25,7 @@
 	(SetCadSystemDefaults)
 
 	; Implemented for all administrations:
-	(cond
-		((= _ADM_ _XXGL_) (setq thumbnailInfix (strcat "THUMBNAIL"			))) 
-		((= _ADM_ _NOBN_) (setq thumbnailInfix (strcat "THUMBNAIL"			))) 
-		((= _ADM_ _FRSR_) (setq thumbnailInfix (strcat "VIGNETTE"			)))
-		((= _ADM_ _DEDB_) (setq thumbnailInfix (strcat "MINIATURANSICHT"	)))
-		((= _ADM_ _JPTX_) (setq thumbnailInfix (strcat "THUMBNAIL"			))) 
-	)
+	(setq thumbnailInfix (strcat "THUMBNAIL"			))
 	(TraceLevel2 "THUMBNAIL-UNSPECIFIED")					(THUMBNAIL-UNSPECIFIED)
 	(TraceLevel2 "THUMBNAIL-TABLE")							(THUMBNAIL-TABLE)
 	(TraceLevel2 "THUMBNAIL-AREA")							(THUMBNAIL-AREA)
@@ -53,6 +47,6 @@
 	; Cleanup temp globals
 	(setq thumbnailInfix nil)
 
-	; Implemented only for some administrations:
+	; Specific to this administration:
 	; (nothing)
 )

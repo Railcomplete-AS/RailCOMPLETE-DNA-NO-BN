@@ -20,13 +20,7 @@
 
 (defun THUMBNAIL-ESCAPE-ROUTE ( / blockName ) 
 	; Pictogram featuring a running adult and an escape route doorway passage.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-ESCAPE-ROUTE"		)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-ROEMNINGSVEI"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-GUIDANCE-EVASION"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-FLUCHTWEG"			)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-ESCAPE-ROUTE"		)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-ROEMNINGSVEI"		))
 	(command 
 		; PERSON:
 		_POLYLINE_ 

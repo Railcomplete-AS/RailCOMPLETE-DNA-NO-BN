@@ -19,13 +19,7 @@
 
 
 (defun THUMBNAIL-TABLE (/ blockName x y) 
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-TABLE"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-TABELL"	)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-TABLEAU"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-TABELLE"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-TABLE"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-TABELL"	))
 	(setq 
 		x (/ 5.0 2)
 		y (/ 3.0 2)

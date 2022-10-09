@@ -26,13 +26,7 @@
 ; 1-løps skal ha 50 mm lokk, 2- og 3-løps har 70 mm lokk. Overkant lokk bygges normalt på SOK-10 cm. Innsettingspunkt for kanaler er senter underkant kanal.
 
 (defun THUMBNAIL-CABLE-DUCT-OPEN-1-CHAMBER-300 ( / blockName ) 
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-1-CHAMBER-300"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-1-LOEPS-300"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-COUVERT"	"-1-CHAMBRE-300"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-KABELKANAL"	"-1-KAMMER-300"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-1-CHAMBER-300"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-1-LOEPS-300"		))
 	(command 
 		_POLYLINE_ 
 			_origin_ 
@@ -56,13 +50,7 @@
   
   
 (defun THUMBNAIL-CABLE-DUCT-OPEN-1-CHAMBER-400 ( / blockName ) 
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-1-CHAMBER-400"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-1-LOEPS-400"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-COUVERT"	"-1-CHAMBRE-400"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-KABELKANAL"	"-1-KAMMER-400"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-1-CHAMBER-400"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-1-LOEPS-400"		))
 	(command 
 		_POLYLINE_ 
 			_origin_ 
@@ -86,13 +74,7 @@
   
   
 (defun THUMBNAIL-CABLE-DUCT-OPEN-2-CHAMBER-620 ( / blockName ) 
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-2-CHAMBER-620"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-2-LOEPS-620"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-COUVERT"	"-2-CHAMBRE-620"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-KABELKANAL"	"-2-KAMMER-620"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-2-CHAMBER-620"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-2-LOEPS-620"		))
 	(command 
 		_POLYLINE_ 
 			_origin_ 
@@ -122,13 +104,7 @@
   
   
 (defun THUMBNAIL-CABLE-DUCT-OPEN-3-CHAMBER-620 ( / blockName ) 
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-3-CHAMBER-620"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-3-LOEPS-620"		)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-COUVERT"	"-3-CHAMBRE-620"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-KABELKANAL"	"-3-KAMMER-620"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-OPEN"			"-3-CHAMBER-620"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-KABELKANAL"	"-3-LOEPS-620"		))
 	(command 
 		_POLYLINE_ 
 			_origin_ 

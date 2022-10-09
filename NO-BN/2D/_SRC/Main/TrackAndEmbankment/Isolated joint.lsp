@@ -2,8 +2,6 @@
 ;
 ; Isolated joint.lsp
 ;
-; NB! Kan ikke ha æøå i filnavn som skal loades av LISP.
-;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
@@ -75,20 +73,8 @@
 	; The geo symbols support all three views mentioned above, but adapted to normal gauge distance between rails in 2-line track view mode.
 	; You can toggle between 1-line and 2-line mode in RailCOMPLETE using the command RC-ShowTwoRails.
 	;
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockName1 (strcat _TRK_ "JOI-" "RAIL-JOINT"		)))
-		((= _ADM_ _NOBN_) (setq blockName1 (strcat _TRK_ "SKJ-" "SKINNESKJOET"		)))
-		((= _ADM_ _FRSR_) (setq blockName1 (strcat _TRK_ "JOI-" "JOINT-RAIL"		)))
-		((= _ADM_ _DEDB_) (setq blockName1 (strcat _TRK_ "IST-" "ISOLIERSTOSS"		)))
-		((= _ADM_ _JPTX_) (setq blockName1 (strcat _TRK_ "JOI-" "RAIL-JOINT"		)))
-	)                                                                               
-	(cond                                                                           
-		((= _ADM_ _XXGL_) (setq description1 (strcat "RAIL JOINT"					)))
-		((= _ADM_ _NOBN_) (setq description1 (strcat "SKINNESKJ" _uOSLASH_ "T"		)))
-		((= _ADM_ _FRSR_) (setq description1 (strcat "JOINT EN FIL DE RAIL"			)))
-		((= _ADM_ _DEDB_) (setq description1 (strcat "ISOLIERSTOSS" 				)))
-		((= _ADM_ _JPTX_) (setq description1 (strcat "RAIL JOINT"					)))
-	)
+	(setq blockName1 (strcat _TRK_ "SKJ-" "SKINNESKJOET"		))
+	(setq description1 (strcat "SKINNESKJ" _uOSLASH_ "T"		))
 	(setq
 		blockName	(strcat blockName1 "-" (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))
 		description (strcat description1 ", QUADRANT IV-III-II-I = " (rtos q4 2 0) "-" (rtos q3 2 0) "-" (rtos q2 2 0) "-" (rtos q1 2 0))

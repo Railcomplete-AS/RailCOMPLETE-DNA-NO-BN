@@ -30,20 +30,8 @@
 	;        |
 	;        A    
 	;
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockName (strcat _TRK_ "CRO-" "CONNECTION-CROSSING"			)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _TRK_ "SPV-" "FORBINDELSE-SPORKRYSS"			)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _TRK_ "TOB-" "CONNEXION-TRAVERSEE-OBLIQUE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _TRK_ "KRZ-" "VERBINDUNG-KREUZUNG"			)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _TRK_ "CRO-" "CONNECTION-CROSSING"			)))
-	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq description (strcat "CONNECTOR, CROSSING"						)))
-		((= _ADM_ _NOBN_) (setq description (strcat "FORBINDELSE, SPORKRYSS"					)))
-		((= _ADM_ _FRSR_) (setq description (strcat "CONNEXION, TRAVERSEE OBLIQUE"				))) ; Trouble again with accents...
-		((= _ADM_ _DEDB_) (setq description (strcat "VERBINDUNG, KREUZUNG"						)))
-		((= _ADM_ _JPTX_) (setq description (strcat "CONNECTOR, CROSSING"						)))
-	)
+	(setq blockName (strcat _TRK_ "SPV-" "FORBINDELSE-SPORKRYSS"	))
+	(setq description (strcat "FORBINDELSE, SPORKRYSS"				))
 	(setq
 		r 0.5 ; r of 180 deg half-circle arc, to be shown at the ends of a long horizontal and short vertical line meeting at the crossing
 	)

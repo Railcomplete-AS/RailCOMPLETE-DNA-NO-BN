@@ -71,7 +71,7 @@
 		;;_whiteHatch_					Do not hatch
 	)
 
-	; ANYADM stuff, but railway specific:
+	; stuff, but railway specific:
 	(setq
 		_freeStanding_ 	"FREESTANDING"	; True: 	Free-standing board or signal (it has its one pole, being an object in its own right)
 		_onSignalMast_	nil				; False: 	Not free-standing, mounted on a signal's mast and considered to be a part of the signal object)

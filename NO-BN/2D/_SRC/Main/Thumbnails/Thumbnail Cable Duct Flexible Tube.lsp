@@ -14,13 +14,7 @@
 
 (defun THUMBNAIL-CABLE-DUCT-FLEXIBLE-TUBE ( / blockName r1 r2)
 	; Flexible tubing. Three rounds of coiled-up flexible tube.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-FLEXIBLE-TUBE"			)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-TREKKEROER"			)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-CONDUIT-DE-CABLE-TUYAU-FLEXIBLE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-KABELVERLEGUNG-FLEXIBLER-SLAUCH"	)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-CABLE-DUCT-FLEXIBLE-TUBE"			)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-KABELFOERING-TREKKEROER"			))
 	(setq 
 		r1 0.5
 		r2 0.45

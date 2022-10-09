@@ -42,18 +42,8 @@
 		railProfile			(cadr (assoc "RailProfile" switchParameters))
 		ang	  				(R->D (atan (/ 1.0 x))) ; sporvekselsymbol
 	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockName1 (strcat _OCS_ "SWI-" "CONNECTOR-SWITCH"				)))
-		((= _ADM_ _NOBN_) (setq blockName1 (strcat _OCS_ "SPV-" "FORBINDELSE-SPORVEKSEL"			)))
-		((= _ADM_ _FRSR_) (setq blockName1 (strcat _OCS_ "AIG-" "CONNEXION-AIGUILLAGE"			)))
-		((= _ADM_ _DEDB_) (setq blockName1 (strcat _OCS_ "WEI-" "VERBINDUNG-WEICHE"				)))
-	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq description1 (strcat "SWITCH, HIGH VOLTAGE SYMBOL"				)))
-		((= _ADM_ _NOBN_) (setq description1 (strcat "SPORVEKSEL, KL-SYMBOL"						)))
-		((= _ADM_ _FRSR_) (setq description1 (strcat "AIGUILLAGE, SYMBOLE TRACTION ELECTRIQUE"	)))
-		((= _ADM_ _DEDB_) (setq description1 (strcat "WEICHE, OBERLEITUNG-SYMBOL"					)))
-	)
+	(setq blockName1 (strcat _OCS_ "SPV-" "FORBINDELSE-SPORVEKSEL"			))
+	(setq description1 (strcat "SPORVEKSEL, KL-SYMBOL"						))
 
 	(if (< x 10)
 		(setq zeroPad "0") ; Pad with leading zeros

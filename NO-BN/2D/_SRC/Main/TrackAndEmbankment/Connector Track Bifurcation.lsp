@@ -44,49 +44,26 @@
 
 
 (defun CONNECTOR-SWITCH-ANONYMOUS ( / blockName u currentBlockName q )
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockName (strcat _TRK_ "SWI-" "CONNECTOR-SWITCH-GENERAL"			)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL-GENERELL"	)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _TRK_ "AIG-" "CONNEXION-AIGUILLAGE-GENERAL"		)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _TRK_ "WEI-" "VERBINDUNG-WEICHE-GENERELLE"		)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _TRK_ "SWI-" "CONNECTOR-SWITCH-GENERAL"			)))
-	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq description (strcat "CONNECTOR, SWITCH, GENERAL"				)))
-		((= _ADM_ _NOBN_) (setq description (strcat "FORBINDELSE, SPORVEKSEL, GENERELL"			)))
-		((= _ADM_ _FRSR_) (setq description (strcat "CONNEXION, AIGUILLAGE, GENERAL"			)))
-		((= _ADM_ _DEDB_) (setq description (strcat "VERBINDUNG, WEICHE, GENERELLE"				)))
-		((= _ADM_ _JPTX_) (setq description (strcat "CONNECTOR, SWITCH, GENERAL"				)))
-	)
+	; Triangular arrowhead with 'stock rail joint line' across the track at the SRJ:
+	;
+	;   2       4
+	;   |  ___/*|
+	;   ./------+	Arrow head with solid hatch
+	;   |        
+	;   1        
+	;              
+	(setq blockName (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL-GENERELL"	))
+	(setq description (strcat "FORBINDELSE, SPORVEKSEL, GENERELL"			))
 	(setq
 		u 1.0 ; unit
 	)
 	(TraceLevel2 (strcat "SWITCH: GENERAL"))
 	(SetLayer layDef_Zero)
-	(cond 
-		(
-			(or
-			(= _ADM_ _XXGL_)
-			(= _ADM_ _NOBN_)
-			(= _ADM_ _FRSR_)
-			(= _ADM_ _DEDB_)
-			(= _ADM_ _JPTX_)
-			)
-			; Triangular arrowhead with 'stock rail joint line' across the track at the SRJ:
-			;
-			;   2       4
-			;   |  ___/*|
-			;   ./------+	Arrow head with solid hatch
-			;   |        
-			;   1        
-			;              
-			(command 
-				_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _closedPolyline_ ; Stock rail joint
-				_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origin_ _closedPolyline_
-			)
-			(DrawHatchAtPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) _angle15_ _offsetZero_)
-		)
+	(command 
+		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _closedPolyline_ ; Stock rail joint
+		_POLYLINE_ (list (* 2 u) 0) (list (* 4 u) (* 2 u)) (list (* 4 u) 0) _origin_ _closedPolyline_
 	)
+	(DrawHatchAtPoint _denseHatch_ (list (* 3 u) (* 0.5 u)) _angle15_ _offsetZero_)
 	(AddDescriptionBelowOrigin description _one_)
 	(CreateSchematicBlockFromCurrentGraphics "tmp")
 
@@ -111,77 +88,51 @@
 (defun CONNECTOR-SWITCH-WITH-GEOMETRY ( / switchDrawingList itemNumber drawingNumber quadrant )
 	; Ref: Bane NOR standard tegninger for sporveksler (tegningsnummer KO.nnnnnn)
 	; TODO: Include details on guard rails, tongue hinge / swivel point etc.
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockNameSig (strcat _SIG_ "SWI-" "CONNECTOR-SWITCH"				)))
-		((= _ADM_ _NOBN_) (setq blockNameSig (strcat _SIG_ "SPV-" "FORBINDELSE-SPORVEKSEL"			)))
-		((= _ADM_ _FRSR_) (setq blockNameSig (strcat _SIG_ "AIG-" "CONNEXION-AIGUILLAGE"			)))
-		((= _ADM_ _DEDB_) (setq blockNameSig (strcat _SIG_ "WEI-" "VERBINDUNG-WEICHE"				)))
-		((= _ADM_ _JPTX_) (setq blockNameSig (strcat _SIG_ "SWI-" "CONNECTOR-SWITCH"				)))
-	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq descriptionSig (strcat "SWITCH, SIGNALING SYMBOL"					)))
-		((= _ADM_ _NOBN_) (setq descriptionSig (strcat "SPORVEKSEL, SIGNALSYMBOL"					)))
-		((= _ADM_ _FRSR_) (setq descriptionSig (strcat "AIGUILLAGE, SYMBOLE SIGNALISATION"			)))
-		((= _ADM_ _DEDB_) (setq descriptionSig (strcat "WEICHE, LST-SYMBOL"							)))
-		((= _ADM_ _JPTX_) (setq descriptionSig (strcat "SWITCH, SIGNALING SYMBOL"					)))
-	)
+	(setq blockNameSig (strcat _SIG_ "SPV-" "FORBINDELSE-SPORVEKSEL"	))
+	(setq descriptionSig (strcat "SPORVEKSEL, SIGNALSYMBOL"				))
 	(TraceLevel2 "Switches:")
-	(cond 
-		((= _ADM_ _XXGL_)
-		)
-		((or (= _ADM_ _NOBN_) (= _ADM_ _JPTX_))
-			; TODO Replace copy-of-NOBN with real JPTX symbols. Many switches have similar geometry, though.
-			(setq
-				switchDrawingList (list
-					; Enkel 54E3
-					"KO-800157" 	;1:7 R190 mangler tegning
-					"KO-701334" 	;1:9 R190
-					
-					; Fast kryss 54E3 (fixed diamond)
-					"KO-701287" 	;1:9 R300
-					"KO-701306" 	;1:12 R500
-					"KO-701319" 	;1:14 R760
+	(setq
+		switchDrawingList (list
+			; Enkel 54E3
+			"KO-800157" 	;1:7 R190 mangler tegning
+			"KO-701334" 	;1:9 R190
 			
-					; Fast kryss 60E1 (fixed diamond)
-					"KO-701409" 	;1:9 R300
-					"KO-800068" 	;1:12 R500
-					"KO-800068-2" 	;1:11.66 R500
-					"KO-701372" 	;1:14 R760
-					"KO-701382" 	;1:15 R760
-					
-					; Bevegelig kryss 60E1 (switchable diamond)
-					"KO-800099" 	;1:9 R300
-					"KO-065306" 	;1:8.21 R300
-					"KO-800090" 	;1:12 R500
-					"KO-800108" 	;1:14 R760
-					"KO-800164" 	;1:15 R760
-					"KO-800081" 	;1:18,4 R12001 klotoideveksel
-					"KO-701399" 	;1:26,1 R25001 klotoideveksel
-				)
-			)
-			(SWITCH-SYMBOL-SIGNALING-KEYLOCKED blockNameSig)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
-			(setq itemNumber 0)
-			(repeat (length switchDrawingList)
-				(setq drawingNumber (nth itemNumber switchDrawingList))
-				(setq quadrant 1)
-				(SWITCH-SYMBOL-SIGNALING-CIRCLE-AT-TANGENT-INTERSECTION drawingNumber blockNameSig) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
-				(TraceLevel3 (strcat "SWITCH: " drawingNumber))
-				(repeat 4
-					(SWITCH-SYMBOL-SIGNALING quadrant drawingNumber blockNameSig descriptionSig) ; Signaling discipline symbols in switch object
-					(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant drawingNumber) ; Track discipline symbols in switch object
-					(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant drawingNumber) ; Catenary discipline symbols in switch object
-					(setq quadrant (+ 1 quadrant))
-				)
-				(setq itemNumber (+ 1 itemNumber))
-			)
+			; Fast kryss 54E3 (fixed diamond)
+			"KO-701287" 	;1:9 R300
+			"KO-701306" 	;1:12 R500
+			"KO-701319" 	;1:14 R760
+	
+			; Fast kryss 60E1 (fixed diamond)
+			"KO-701409" 	;1:9 R300
+			"KO-800068" 	;1:12 R500
+			"KO-800068-2" 	;1:11.66 R500
+			"KO-701372" 	;1:14 R760
+			"KO-701382" 	;1:15 R760
+			
+			; Bevegelig kryss 60E1 (switchable diamond)
+			"KO-800099" 	;1:9 R300
+			"KO-065306" 	;1:8.21 R300
+			"KO-800090" 	;1:12 R500
+			"KO-800108" 	;1:14 R760
+			"KO-800164" 	;1:15 R760
+			"KO-800081" 	;1:18,4 R12001 klotoideveksel
+			"KO-701399" 	;1:26,1 R25001 klotoideveksel
 		)
-		((= _ADM_ _FRSR_)
-			; No geographical symbols available yet. Anyway, they allow circular bending of switches, which generates a need for more flexible geo symbols.
-			; No symbol available for High Voltage or for Track, for now.
+	)
+	(SWITCH-SYMBOL-SIGNALING-KEYLOCKED blockNameSig)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
+	(setq itemNumber 0)
+	(repeat (length switchDrawingList)
+		(setq drawingNumber (nth itemNumber switchDrawingList))
+		(setq quadrant 1)
+		(SWITCH-SYMBOL-SIGNALING-CIRCLE-AT-TANGENT-INTERSECTION drawingNumber blockNameSig) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
+		(TraceLevel3 (strcat "SWITCH: " drawingNumber))
+		(repeat 4
+			(SWITCH-SYMBOL-SIGNALING quadrant drawingNumber blockNameSig descriptionSig) ; Signaling discipline symbols in switch object
+			(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant drawingNumber) ; Track discipline symbols in switch object
+			(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant drawingNumber) ; Catenary discipline symbols in switch object
+			(setq quadrant (+ 1 quadrant))
 		)
-		((= _ADM_ _DEDB_) )
-			; No geographical symbols available yet. Anyway, they allow circular bending of switches, which generates a need for more flexible geo symbols.
-			; No symbol available for High Voltage or for Track, for now.
+		(setq itemNumber (+ 1 itemNumber))
 	)
 )
 

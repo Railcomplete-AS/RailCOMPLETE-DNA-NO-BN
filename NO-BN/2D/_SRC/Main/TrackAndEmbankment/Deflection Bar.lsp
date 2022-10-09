@@ -13,24 +13,14 @@
 ; Deflection bar (for installation in the track, to protect axle counter sensors from snow-clearing equipment in winter time)
 
 (defun DEFLECTION-BAR ()
-	(OPPKJOERSBJELKE)
+	(SNOW-CLEARING-PROTECTION)
 )
 
 
 
-(defun OPPKJOERSBJELKE ( / blockName description fotX fotY bjelkeX bjelkeY )
-	(cond 
-		((= _ADM_ _XXGL_) (setq blockName (strcat _TRK_ "DFL-" "DEFLECTION-BAR"						)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _TRK_ "MVS-" "OPPKJOERSBJELKE"					)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _TRK_ "BPR-" "BARRE-DE-DEFLECTION"				)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _TRK_ "SPS-" "SCHNEEPFLUGSCHUTZ"					)))
-	)
-	(cond 
-		((= _ADM_ _XXGL_) (setq description (strcat "PROTECTION BAR FOR AXLE COUNTERS"				)))
-		((= _ADM_ _NOBN_) (setq description (strcat "OPPKJ" _uOSLASH_ "RSBJELKE"					)))
-		((= _ADM_ _FRSR_) (setq description (strcat "BARRE DE DEFLECTION POUR COMPTEURS D'ESSIEUX"	)))
-		((= _ADM_ _DEDB_) (setq description (strcat "SCHNEEPFLUGSCHUTZ"								)))
-	)
+(defun SNOW-CLEARING-PROTECTION ( / blockName description fotX fotY bjelkeX bjelkeY )
+	(setq blockName (strcat _TRK_ "MVS-" "OPPKJOERSBJELKE"					))
+	(setq description (strcat "OPPKJ" _uOSLASH_ "RSBJELKE"					))
 	(setq
 		fotX (/ 0.16 2)
 		fotY (/ 0.8 2)

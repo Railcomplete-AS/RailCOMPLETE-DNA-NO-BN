@@ -20,13 +20,7 @@
 
 (defun THUMBNAIL-ROAD ( / blockName ) 
 	; A piece of two-lane road seen in perspective in the direction of driving.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-ROAD"				)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-BILVEI"			)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-VOIE-DE-VOITURE"	)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-STRASSE"			)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-ROAD"				)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-BILVEI"			))
 	(command 
 		_LINE_ _origin_ (list 0 1) _ENTER_
 		_LINE_ (list 0 1.4) (list 0 2) _ENTER_

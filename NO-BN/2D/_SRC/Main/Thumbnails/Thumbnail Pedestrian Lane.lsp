@@ -21,13 +21,7 @@
 (defun THUMBNAIL-PEDESTRIAN-LANE ( / blockName ) 
 	; Start drawing child, then draw adult, then scale down and reposition.
 	; Polyline starts at center neck and continues clockwise.
-	(cond
-		((= _ADM_ _XXGL_) (setq blockName (strcat _RC_ thumbnailInfix "-PEDESTRIAN-LANE"	)))
-		((= _ADM_ _NOBN_) (setq blockName (strcat _RC_ thumbnailInfix "-GANGVEI"			)))
-		((= _ADM_ _FRSR_) (setq blockName (strcat _RC_ thumbnailInfix "-VOIE-PIETONNE"		)))
-		((= _ADM_ _DEDB_) (setq blockName (strcat _RC_ thumbnailInfix "-GEHWEG"				)))
-		((= _ADM_ _JPTX_) (setq blockName (strcat _RC_ thumbnailInfix "-PEDESTRIAN-LANE"	)))
-	)
+	(setq blockName (strcat _RC_ thumbnailInfix "-GANGVEI"			))
 	(command 
 		; CHILD:
 		_POLYLINE_ 
