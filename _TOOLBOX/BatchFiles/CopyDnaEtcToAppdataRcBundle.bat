@@ -94,7 +94,7 @@ if "%COPY3D%" neq "yes" goto Continue2
 	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\AutoCAD"
 
 	@echo.
-	@echo - DNA, style definitions, switches and DNA mappings:
+	@echo - DNA, switches and DNA mappings:
 	@echo.
 	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
 

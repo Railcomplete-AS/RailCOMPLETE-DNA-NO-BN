@@ -64,7 +64,7 @@ if "%ADM%" equ "" (
 	for /f "tokens=3 delims=><  " %%a in ('type .\_SRC\%ADM%-RootFile.xml ^| FIND "<VersionNumber>"') do set versionNumber=%%a
 	set fileNameForReleaseCandidate=%ADM%-!versionNumber!-DNA
 	if "!fileNameForReleaseCandidate!" NEQ "%ADM%-%RELEASE%-DNA" (
-		echo         *** WARNING: Caller's release name does not match DNA IRI VersionNumber: Caller:%RELEASE% / DNA:!versionNumber!
+		echo         *** WARNING: Caller's release name '%RELEASE%' from DefineDnaVersion.bat does not match DNA source rootfile's DNA IRI VersionNumber '!versionNumber!'
 		echo         DNA file name will be: !fileNameForReleaseCandidate!.xml
 		pause 
 		exit
@@ -75,7 +75,7 @@ if "%ADM%" equ "" (
 	cd _SRC
 	rem dir
 	rem pause
-		rem A copy of xppq.exe, xppq.xcfg and xppq.xlcl can be found in the \Github\RailCOMPLETE\Customization\_TOOLBOX\XPPq folder.
+		rem A copy of xppq.exe, xppq.xcfg and xppq.xlcl can be found in the \Github\RailCOMPLETE\Customization\_TOOLBOX\XPPq folder as well as documentation and source code.
 		rem These three files must be present in the folder from which xppq is run:
 		xppq.exe "%ADM%-RootFile.xml" > ..\%ADM%-%RELEASE%-DNA.xml
 		cd ..
