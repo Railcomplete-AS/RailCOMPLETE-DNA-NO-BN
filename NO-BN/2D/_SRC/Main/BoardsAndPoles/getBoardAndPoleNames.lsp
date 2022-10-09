@@ -55,7 +55,6 @@
 			"Skilt Bevegelig kryss"
 			"Skilt Driftsbanegaard" "Skilt Driftsbanegaard slutter"
 			"Skilt Fritekst" "Skilt Fritekst slutter"
-			"Skilt Roemningsavstand H" "Skilt Roemningsavstand V" "Skilt Roemningsavstand VH"
 			"Skilt Sidespor"
 			"Skilt Spornummer"
 			"Skilt Stopp se og lytt"

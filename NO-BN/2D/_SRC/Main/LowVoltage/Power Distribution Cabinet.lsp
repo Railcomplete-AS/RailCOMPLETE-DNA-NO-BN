@@ -64,7 +64,7 @@
 
 
 
-(defun GRUPPESKAP ( / blockName description x y y2 p1 p2 p3 p4 p5 )
+(defun GRUPPESKAP ( / blockName description x y p1 p2 p3 p4 gx gy )
 	; Same graphics as FORDELINGSSKAP
 	(setq 
 		blockName	(strcat _POW_ "SVG-" "SKAP-GRUPPESKAP")
@@ -82,7 +82,7 @@
 	; Schematic symbol
 	(DrawBox layDef_Zero x y _noWipeout_)
 	(DrawBottomEmphasis layDef_Zero x y)
-	(command _POLYLINE_ p1 p3 p4 p5 _openPolyline_)
+	(command _POLYLINE_ p1 p2 p3 p4 _openPolyline_)
 	(AddDescriptionBelowOrigin description (HalfOf y))
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 

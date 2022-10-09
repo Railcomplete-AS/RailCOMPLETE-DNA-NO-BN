@@ -49,7 +49,7 @@
 
 
 
-(defun APPARATSKAP-STORT ( door / blockName description gText x y gx gy )
+(defun APPARATSKAP-STORT ( door / blockName description x y gx gy gText )
 	; Object:		Large interlocking / ATC cabinet.
 	; Usage:		Cable distribution cabinet for interlocking or ATC.
 	; Mounting:		To be mounted on a suitable foundation.
@@ -57,8 +57,8 @@
 	; Insertion:	Shown as '.' in the illustration below.
 	;
 	;             TL-------------TR
-	;             |  \        /   |
-	;             |       .       |  ; . = origin
+	;             |  \  "AS"  /   |
+	;             |       .       |
 	;             |  /        \   |
 	;       hinge BL-----BC------BR lock ; left-hinged large door is shown. Can be left / right / double door.
 	; \            \\            /  
@@ -103,7 +103,7 @@
 
 
 
-(defun APPARATSKAP-LITE-PAA-STOLPE ( door / blockName description gText x y gx gy )
+(defun APPARATSKAP-LITE-PAA-STOLPE ( door / blockName description x y gx gy gText )
 	; Object:		Small interlocking / ATC cabinet.
 	; Usage:		Cable distribution cabinet for interlocking or ATC.
 	; Mounting:		To be mounted on a pole or wall, typically being alone on its pole (no controlled object there).
@@ -151,7 +151,7 @@
 
 
 
-(defun NOEKKELSKAP ( door / blockName description gText x y gx gy )
+(defun NOEKKELSKAP ( door / blockName description x y gx gy gText )
 	; Object:		Work-area keylock cabinet
 	; Usage:		Holds one key for blocking a work area.
 	; Mounting:		To be mounted on a pole or wall.
@@ -160,7 +160,7 @@
 	;
 	;     TL---.---TR
 	;     |  \   /  |
-	;     |   "NS"  |   
+	;     |  "NS"   |
 	;     |  /   \  |
 	;     BL-------BR
 	;       \     // 
@@ -199,7 +199,7 @@
 
 
 
-(defun SVEIVSKAP ( door / blockName description gText x y gx gy )
+(defun SVEIVSKAP ( door / blockName description x y gx gy gText )
 	; Object:		Crank cabinet
 	; Usage:		Holds one ore more cranks for manual throwing of points with compatible point machines.
 	; Mounting:		To be mounted on a pole or wall.
@@ -208,7 +208,7 @@
 	;
 	;     TL---.---TR
 	;     |  \   /  |
-	;     |   "SV"  |   
+	;     |  "SV"   |
 	;     |  /   \  |
 	;     BL-------BR
 	;       \     // 
@@ -247,7 +247,7 @@
 
 
 
-(defun KABELBOKS ( door / blockName description gText x y gx gy )
+(defun KABELBOKS ( door / blockName description x y gx gy gText )
 	; Object:		Small cable box
 	; Usage:		Connection box between object cable and the object's internal wiring. 
 	; Mounting:		To be mounted on a pole below an object (signal or other).
@@ -295,7 +295,7 @@
 
 
 
-(defun S-LAAS ( / blockName description gText description x y gx gy )
+(defun S-LAAS ( / blockName description x y b gx gy gb )
 	; Object:		S-lock
 	; Reference:	S.000537, ...
 	; Mounting:		To be mounted on a specialized pole (S.018812) or wall. The pole will feature a baseplate for one or baseplate for two S-locks.

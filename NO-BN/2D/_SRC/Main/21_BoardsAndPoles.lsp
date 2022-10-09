@@ -22,7 +22,8 @@
 	(SetCadSystemDefaults)
 
 	; Implemented for all administrations:
-	(TraceLevel3 "ANYADM-DISTRESS-CALL-TELEPHONE")			 	(ANYADM-DISTRESS-CALL-TELEPHONE)
+	(TraceLevel3 "ANYADM-BOARD-DISTRESS-CALL-TELEPHONE")		(ANYADM-BOARD-DISTRESS-CALL-TELEPHONE)
+	(TraceLevel2 "ANYADM-BOARD-EVACUATION-DISTANCE")		 	(ANYADM-BOARD-EVACUATION-DISTANCE)
 	
 	; Specific to this administration:
 	(TraceLevel2 "GetBoardAndPoleNames...")

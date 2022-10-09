@@ -24,7 +24,7 @@
 	(TraceLevel2 "ANYADM-AXLE-COUNTER-SYSTEM")						(ANYADM-AXLE-COUNTER-SYSTEM)
 	(TraceLevel2 "ANYADM-BALISE-SYSTEM") 							(ANYADM-BALISE-SYSTEM)
 	(TraceLevel2 "ANYADM-TECHNICAL-BUILDING")						(ANYADM-TECHNICAL-BUILDING)
-	(TraceLevel2 "NOBN-APPARATSKAP-OG-BOKSER-FOR-SIGNAL") 			(ANYADM-CABINETS-AND-DISTRIBUTION-BOXES)
+	(TraceLevel2 "ANYADM-CABINETS-AND-DISTRIBUTION-BOXES") 			(ANYADM-CABINETS-AND-DISTRIBUTION-BOXES)
 	; Local control panel, point machine, derailer point machines. And may be level crossing boom machines:
 	(TraceLevel2 "ANYADM-SWITCH-CONTROL-EQUIPMENT")					(ANYADM-SWITCH-CONTROL-EQUIPMENT)
 	; Derailer is a signaling object, because it controls flank protection and front / rear collisions:
