@@ -17,14 +17,14 @@
 
 	; Specific to this administration:
 	;2D layer/symbol: JBTEH_Komponenter / EH_Sugetrafo
-	(TraceLevel3 "NOBN-OCS-BOOSTER-LOCATED-IN-MAST")	(NOBN-OCS-BOOSTER-LOCATED-IN-MAST 4 1.25)	;Default insertion direction is "both" in track alignment, rotates with side of track.
+	(TraceLevel3 "NOBN-OCS-BOOSTER-LOCATED-ON-OCS-POLE")(NOBN-OCS-BOOSTER-LOCATED-ON-OCS-POLE 4 1.25)	;Default insertion direction is "both" in track alignment, rotates with side of track.
 	(TraceLevel3 "NOBN-OCS-BOOSTER-LOCATED-IN-HOUSING")	(NOBN-OCS-BOOSTER-LOCATED-IN-HOUSING 4 1.25)	;Default insertion direction is "both" in track alignment, rotates with side of track.
 	(TraceLevel3 "NOBN-OCS-AUTOTRANSFORMER")			(NOBN-OCS-AUTOTRANSFORMER 3 1.25)
 )
 
 
 
-(defun NOBN-OCS-BOOSTER-LOCATED-IN-MAST ( len r / blockName description )
+(defun NOBN-OCS-BOOSTER-LOCATED-ON-OCS-POLE ( len r / blockName description )
 	(setq
 		blockName	"NO-BN-2D-JBTEH_SUG-SUGETRANSFORMATOR-I-MAST"
 		description	(strcat "KL SUGETRANSFORMATOR I MAST")

@@ -101,8 +101,18 @@
 
 
 (defun ANYADM-EARTHING-POTENTIAL-AT-RAIL ( / blockName description )
+	;
+	;       ( ) 
+	;        |
+	; .------+
+	;        |
+	;     +--+--+
+	;     |  *  |
+	;     +--+--+
+	;
 	(setq blockName (strcat _OCS_ "JOF-" "JORDING-SKINNEJORD"	))
 	(setq description (strcat "SKINNEJORDPOTENSIAL"				))
+
 	; Schematic symbol
 	(DrawRailEarthPotential nil)
 	(AddDescriptionBelowOrigin description 0)

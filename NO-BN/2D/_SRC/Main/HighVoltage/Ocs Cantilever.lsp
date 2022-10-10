@@ -53,6 +53,7 @@
 	
 	; TET08 (Thor Egil Thoresen...) for narrow / low tunnels
 	(TraceLevel3 "NOBN-CANTILEVER-TET08")	(NOBN-CANTILEVER-TET08)
+
 	(setq
 		; Remove temporary globals:
 		minLen nil
@@ -64,7 +65,7 @@
 
 
 (defun ANYADM-BRACKET-FOR-MULTIPLE-CANTILEVERS ( / blockName description p1 p2 )
-	; Console for fitting of two cantievers or more to the same cateanry support mast.
+	; Console for fitting of two cantievers or more to the same catenary support mast.
 	;
 	;              (*)               <-- The OCS pole (*)
 	;  1-----5   7--.--8   6-----4   <-- The insertion point '.' shall snap to outside of OCS pole
@@ -85,7 +86,7 @@
 	; angitte spennlengder, korrigeres i seksjons- og vekslingsfelter med størrelsen på vinklingen, slik at man automatisk 
 	; får en spennlengde som vil være fra utligger til utligger. Vinkling har standardverdi 0,65 m, som er en halv konsollengde.
 	; Gjelder ikke for sporsløyfer.
-	; NB! Bane NOR says elsewhere that spacing bwtween dual cantilevers shall be 1,20 m.
+	; NB! Bane NOR says elsewhere that spacing between dual cantilevers shall be 1,20 m.
 	(setq
 		p1	'(-0.72  0.000)	
 		p2	'(-0.72 -0.055)

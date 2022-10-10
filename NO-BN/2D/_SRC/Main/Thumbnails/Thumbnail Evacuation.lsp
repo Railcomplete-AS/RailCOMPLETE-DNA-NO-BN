@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Thumbnail Escape Route.lsp
+; Thumbnail Evacuation.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
