@@ -163,11 +163,11 @@
 		</CustomAttribute>
 		
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" >
-				<SetValue Key="CustomTransformation" Value="False"/>
+			<SetValue Key="CustomTransformation" Value="False"/>
 		</SetDynamicProperty>
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedModel3D" >
-				<SetValue Key="RotationBeforeOffset" Value="True"/>
-				<SetValue Key="CustomTransformation" Value="False"/>
+			<SetValue Key="RotationBeforeOffset" Value="True"/>
+			<SetValue Key="CustomTransformation" Value="False"/>
 		</SetDynamicProperty>
 		
 		<Variants DefaultValue="Enkle skinner og sviller" >
@@ -373,8 +373,8 @@
 	May be created through import av LandXML or DWG, converted fra 2D/3D polyline (or drawn from scratch), but
 	will mainly be created as offsets with track gauge 1435/2 (0.717 m) from a track.
 	Usage: 
-	1) First place an insulated joint railML element ('JBTKO_SKJ Skinneskjøt') in the associated track
-	2) Use RC-BreakAlignment and break rails according to the insulated joint objects in the assoc. track. 
+	1) First place an isolated joint railML element ('JBTKO_SKJ Skinneskjøt') in the associated track
+	2) Use RC-BreakAlignment and break rails according to the isolated joint objects in the assoc. track. 
 	3) The rails will automatically search for insulation joint objects at their alignment start, and
 	   will set their own code, color and linewidth to reflect the rail's insulation from that point an on,
 	   the railML property 'insulatedRail' then being one of 'left', 'right', 'both' or 'none'. 
@@ -425,19 +425,23 @@
 			</Variant>
 		</Variants>
 		
-		<SetValue Key="Sweep3D" Value="true" />
-		<SetValue Key="QuickMode3D" Value="true" />
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" />
+
 		<LuaExpression Name="Model3DName" >
 			<Formula>
-				--NB! See SNCF for ideas...
-				if Color:upper() == "RED" then
-					--Visualize un-insulated (pure return current) rail:
+				local iso = getDownObject("JBTKO_SKJ Skinneskjøt")
+				if not iso then
+					--Unknown isolation state:
+					return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-005"
+				elseif Color:upper() == "RED" then
+					--Visualize non-isolated (pure return current) rail:
 					return "NO-BN-SWEEP-FE-WIR-WIRE-RØD-DIAMETER-050"
 				elseif Color:upper() == "GREEN" then
-					--Visualize insulated (signal) rail:
+					--Visualize isolated (signal) rail:
 					return "NO-BN-SWEEP-FE-WIR-WIRE-GRØNN-DIAMETER-050"
 				else
-					return "NO-BN-SWEEP-FE-WIR-WIRE-GRÅ-DIAMETER-005"
+					--unknown color code:
+					return "NO-BN-SWEEP-FE-WIR-WIRE-"..iso.color.."-DIAMETER-050"
 				end
 			</Formula>
 		</LuaExpression>
