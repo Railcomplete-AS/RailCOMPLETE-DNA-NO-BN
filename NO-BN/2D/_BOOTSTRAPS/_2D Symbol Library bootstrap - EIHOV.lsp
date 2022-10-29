@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; 2D Symbol Library bootstrap - NNNNN.lsp
+; 2D Symbol Library bootstrap - EIHOV.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -24,12 +24,11 @@
 (princ "\n================================= 2D Symbol Library Commands.lsp =================================") (prin1)
 (setq 
 	adm			"NO-BN"
-	github		"C:\\Users\\Claus Feyling\\Documents\\GitHub"
+	github		"C:\\Users\\railcomplete\\Documents\\GitHub"
 )
 (vl-load-com) ; Load AutoCAD's Visual LISP environment (if not already loaded)
 (setq rootFolder (strcat github "\\RailCOMPLETE-DNA-" adm "\\" adm "\\2D\\_SRC"))
-(load (findfile (strcat github "\\RailCOMPLETE-DNA-" adm "\\" adm "\\2D\\_2D Symbol Library Commands.lsp")))
-; Garbage collection:
+(load (findfile (strcat github "\\RailCOMPLETE-DNA-" adm "\\" adm "\\2D\\_BOOTSTRAPS\\_2D Symbol Library Commands.lsp"))); Garbage collection:
 (setq 
 	adm nil
 	github nil
