@@ -2154,7 +2154,7 @@ end	</Data>
   <ColumnSelectionFromMasterTable>false</ColumnSelectionFromMasterTable>
   <LuaPreviewAutoExecute>false</LuaPreviewAutoExecute>
   <LuaPreviewRowSelectionSearchFilter />
-  <Title>Brukerdefinert - Drawing3</Title>
+  <Title>Horisontaltrasétabell - 2022-10-28_000 KO-HOT og KO-VET tabeller</Title>
   <IncludeTitle>true</IncludeTitle>
   <ShowInvisibleObjects>false</ShowInvisibleObjects>
   <ObjectManagerFilter />
@@ -2202,7 +2202,7 @@ end	</Data>
       <Headers>
         <Header Name="Objekt" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2213,22 +2213,20 @@ end	</Data>
       <Headers>
         <Header Name="Beskrivelse" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>str = "Horisontaltrasé, " .. (name ~= "" and name or "(Linje start/slutt)")
-						if ocpRef then
-							str = str .. ", " .. getObjectFromId(ocpRef).name
-						end
-						return str</Data>
+      <Data>str = "Horisontaltrasé, " .. (Name == "_" and "Start/Slutt")
+if ocpRef then str = str .. ", " .. getObjectFromId(ocpRef).name end
+return str</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>044b867a-6d52-4df6-891b-fda8ab99697a</Guid>
       <Headers>
         <Header Name="Tilhører objekt" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>Ascending</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2239,7 +2237,7 @@ end	</Data>
       <Headers>
         <Header Name="Tilhører lokasjon" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2250,40 +2248,59 @@ end	</Data>
       <Headers>
         <Header Name="Navn/nr" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>name ~= "" and name or "(Linje start/slutt)"</Data>
+      <Data>if Variant == "(Linje start/slutt)" then
+	if pos &lt;= Alignment.RcAlignment.HorizontalProfile.Length/2 then
+		return "RL start"
+	else
+		return "RL slutt"
+	end
+else
+	return name
+end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>0deca630-a561-414b-8d7b-21caffb5b285</Guid>
       <Headers>
         <Header Name="Idriftssatt dato" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>"TODO"</Data>
     </ColumnSpecification>
     <ColumnSpecification>
+      <Guid>1e743431-5cf0-47b9-b23e-4aba12d5654b</Guid>
+      <Headers>
+        <Header Name="Profil(fra) [km]" />
+      </Headers>
+      <Width>40</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>string.format("%.06f",Mileage/1000)</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
       <Guid>10272f0b-a413-49f6-bd6a-b520ea345d97</Guid>
       <Headers>
-        <Header Name="Km(fra)" />
+        <Header Name="Km(fra) [km]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>Ascending</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("Km.%.03f",Mileage/1000)</Data>
+      <Data>string.format("%.03f",ReferenceMileage/1000)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>76d50cbf-7dde-41dc-9485-2de6e15df812</Guid>
       <Headers>
         <Header Name="Side(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2294,15 +2311,15 @@ end	</Data>
       <Headers>
         <Header Name="Sportype(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>trackUsages = RcSection:filter(function(x) return x.RcType == "FE%-DIV Sporbruk" end)
-if getCollectionLength(trackUsages) &gt; 0 then
-	return trackUsages[0].Variant
+      <Data>s = RcSection:filter(function(x) return x.RcType == "FE%-DIV Sporbruk" end)
+if getCollectionLength(s) == 0 then
+	return "Ukjent"
 else
-	return "Ikke prosjektert"
+	return s[0].Variant
 end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
@@ -2310,23 +2327,18 @@ end</Data>
       <Headers>
         <Header Name="Spornr(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>sec = RcSection:filter(function(x) return x.RcType == "Spornr" end)
-if getCollectionLength(sec) &gt; 0 then
-	return sec[0].Code
-else
-	return "Ikke prosjektert"
-end</Data>
+      <Data>Alignment.code</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>5e8302d5-af4c-4446-aea4-143f4d648e36</Guid>
       <Headers>
         <Header Name="Avst/Spormidt(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2337,7 +2349,7 @@ end</Data>
       <Headers>
         <Header Name="Eier" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2348,40 +2360,40 @@ end</Data>
       <Headers>
         <Header Name="Nord(fra)" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("%.3f",geoCoord.Y)</Data>
+      <Data>string.format("%.03f",geoCoord.Y)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>8df53a42-bed9-4667-a761-440c46a5197b</Guid>
       <Headers>
         <Header Name="Øst(fra)" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("%.3f",geoCoord.X)</Data>
+      <Data>string.format("%.03f",geoCoord.X)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>5f2711e2-0b3c-485f-8ea0-376ab81cef28</Guid>
       <Headers>
         <Header Name="Høyde(fra)" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("%.3f",geoCoord.Z)</Data>
+      <Data>string.format("%.03f",geoCoord.Z)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>2e3d26fe-2da8-4495-9570-06159653e2af</Guid>
       <Headers>
         <Header Name="Dokumentreferanse" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2392,7 +2404,7 @@ end</Data>
       <Headers>
         <Header Name="Serienr." />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2403,61 +2415,74 @@ end</Data>
       <Headers>
         <Header Name="Trasépunkt" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>name ~= "" and name or "(Linje start/slutt)"</Data>
+      <Data>if Variant == "(Linje start/slutt)" then
+	if pos &lt;= Alignment.RcAlignment.HorizontalProfile.Length/2 then
+		return "RL start"
+	else
+		return "RL slutt"
+	end
+else
+	return name
+end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>3b27856d-3955-4cb8-b54e-9d43504244fb</Guid>
       <Headers>
-        <Header Name="Kurveradius(m)" />
+        <Header Name="Kurveradius [m]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>ai = getAlignmentInfo()
 if ai.Segment.Type ~= "Curve" then
-	return ""
+	return "-"
 else
-	return ai.CurveRadius == math.huge and ai.CurveRadius or string.format("%.03f", ai.CurveRadius)
+	return ai.CurveRadius == math.huge and ai.CurveRadius or string.format("%.03f", ai.CurveRadius) --CurveRadius is unsigned
 end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>ef6c1bb3-82c0-40aa-b3a7-9291375d5a15</Guid>
       <Headers>
-        <Header Name="Overhøyde[mm]" />
+        <Header Name="Overhøyde [mm]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("%.01f", RC__isNan(getAlignmentInfo().Cant) and 0 or getAlignmentInfo().Cant)</Data>
+      <Data>string.format("%.0f", RC__isNan(getAlignmentInfo().Cant) and 0 or getAlignmentInfo().Cant)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>5035e780-fad1-4702-b9ad-511753fa60ef</Guid>
       <Headers>
-        <Header Name="Overgangskurvens lengde" />
+        <Header Name="Overgangskurvens lengde [m]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>if Variant ~= "OB" then
-	return ""
-else
-	ai = getAlignmentInfo()
-	return ai and ai.NearestHorizontalVertex and string.format("%.03f", ai.NearestHorizontalVertex.Item2.Length)
+      <Data>if Variant ~= "OB" then return "-" end
+ai = getAlignmentInfo()
+if ai and ai.NearestHorizontalVertex then
+	if ai.NearestHorizontalVertex.Item1.Type == "Clothoid" then
+		return string.format("%.03f", ai.NearestHorizontalVertex.Item1.Length)
+	elseif ai.NearestHorizontalVertex.Item2.Type == "Clothoid" then
+		return string.format("%.03f", ai.NearestHorizontalVertex.Item2.Length)
+	else
+		return "?"
+	end
 end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>d26d4f01-0cef-4c8d-bd72-ecadde152216</Guid>
       <Headers>
-        <Header Name="Høyde (m)" />
+        <Header Name="Høyde [m]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2469,7 +2494,7 @@ end</Data>
     <string>10272f0b-a413-49f6-bd6a-b520ea345d97</string>
   </SortOrder>
   <NewColumnWidth xsi:nil="true" />
- 			</TableSpecification>		
+ 			</TableSpecification>
 		</InsertTable>		
 	</ObjectType>
 
@@ -2504,7 +2529,7 @@ end</Data>
   <ColumnSelectionFromMasterTable>false</ColumnSelectionFromMasterTable>
   <LuaPreviewAutoExecute>false</LuaPreviewAutoExecute>
   <LuaPreviewRowSelectionSearchFilter />
-  <Title>Vertikaltrasétabell</Title>
+  <Title>Brukerdefinert - 2022-10-28_000 KO-HOT og KO-VET tabeller</Title>
   <IncludeTitle>true</IncludeTitle>
   <ShowInvisibleObjects>false</ShowInvisibleObjects>
   <ObjectManagerFilter />
@@ -2552,7 +2577,7 @@ end</Data>
       <Headers>
         <Header Name="Objekt" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2563,11 +2588,11 @@ end</Data>
       <Headers>
         <Header Name="Beskrivelse" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>str = "Vertikaltrase, " .. (name ~= "" and name or "(Linje start/slutt)")
+      <Data>str = "Vertikaltrase, " .. (name ~= "" and name or "Start/Sutt)")
 if ocpRef then
 	str = str .. ", " .. getObjectFromId(ocpRef).name
 end
@@ -2578,7 +2603,7 @@ return str</Data>
       <Headers>
         <Header Name="Tilhører objekt" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>Ascending</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2589,7 +2614,7 @@ return str</Data>
       <Headers>
         <Header Name="Tilhører lokasjon" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2600,40 +2625,61 @@ return str</Data>
       <Headers>
         <Header Name="Navn/nr" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>name ~= "" and name or "(Linje start/slutt)"</Data>
+      <Data>if name == "(Linje start/slutt)" then
+	if pos &lt;= Alignment.RcAlignment.HorizontalProfile.Length/2 then
+		return "Linje start"
+	else
+		return "Linje slutt"
+	end
+else
+	return name
+end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>ac22abc1-b59e-4457-825b-896afd9a7a46</Guid>
       <Headers>
         <Header Name="Idriftssatt dato" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>"TODO"</Data>
     </ColumnSpecification>
     <ColumnSpecification>
+      <Guid>7169b1a9-7a4a-4f4c-ad7f-4c2cd78542f8</Guid>
+      <Headers>
+        <Header Name="Profil(fra) [km]" />
+      </Headers>
+      <Width>40</Width>
+      <HideColumn>false</HideColumn>
+      <SortOption>None</SortOption>
+      <Alignment>MiddleCenter</Alignment>
+      <Data>return string.format("%.06f",Mileage/1000)</Data>
+    </ColumnSpecification>
+    <ColumnSpecification>
       <Guid>10272f0b-a413-49f6-bd6a-b520ea345d97</Guid>
       <Headers>
-        <Header Name="Km(fra)" />
+        <Header Name="Km(fra) [km]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>Ascending</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("Km.%.03f",VerticalTransitionStart.Mileage/1000)</Data>
+      <Data>refId = getAlignmentInfo().ReferenceAlignmentId
+rm = getAlignmentInfo(refId).Mileage
+return rm and string.format("%.03f",rm/1000) or ""</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>76d50cbf-7dde-41dc-9485-2de6e15df812</Guid>
       <Headers>
         <Header Name="Side(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2644,7 +2690,7 @@ return str</Data>
       <Headers>
         <Header Name="Sportype(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2652,7 +2698,7 @@ return str</Data>
 if getCollectionLength(trackUsages) &gt; 0 then
 	return trackUsages[0].Variant
 else
-	return "Ikke prosjektert"
+	return "Ukjent"
 end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
@@ -2660,23 +2706,18 @@ end</Data>
       <Headers>
         <Header Name="Spornr(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>sec = RcSection:filter(function(x) return x.RcType == "Spornr" end)
-if getCollectionLength(sec) &gt; 0 then
-	return sec[0].Code
-else
-	return "Ikke prosjektert"
-end</Data>
+      <Data>Alignment.code</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>5e8302d5-af4c-4446-aea4-143f4d648e36</Guid>
       <Headers>
         <Header Name="Avst/Spormidt(fra)" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2687,7 +2728,7 @@ end</Data>
       <Headers>
         <Header Name="Eier" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2698,7 +2739,7 @@ end</Data>
       <Headers>
         <Header Name="Nord(fra)" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2709,7 +2750,7 @@ end</Data>
       <Headers>
         <Header Name="Øst(fra)" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2720,23 +2761,18 @@ end</Data>
       <Headers>
         <Header Name="Høyde(fra)" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>ai = getAlignmentInfo()
-if ai.NearestVerticalVertex and ai.NearestVerticalVertex.VerticalCurveStart and ai.NearestVerticalVertex.VerticalCurveStart.Elevation then
-	return string.format("%.03f",ai.NearestVerticalVertex.VerticalCurveStart.Elevation)
-else
-	return "?"
-end</Data>
+      <Data>string.format("%.03f",geoCoord.Z)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>2e3d26fe-2da8-4495-9570-06159653e2af</Guid>
       <Headers>
         <Header Name="Dokumentreferanse" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2747,7 +2783,7 @@ end</Data>
       <Headers>
         <Header Name="Serienr." />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2758,34 +2794,37 @@ end</Data>
       <Headers>
         <Header Name="Trasépunkt" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>name ~= "" and name or "Endebutt/Sporfortsettelse"</Data>
+      <Data>if name == "(Linje start/slutt)" then
+	if pos &lt;= Alignment.RcAlignment.HorizontalProfile.Length/2 then
+		return "Linje start"
+	else
+		return "Linje slutt"
+	end
+else
+	return name
+end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>3b27856d-3955-4cb8-b54e-9d43504244fb</Guid>
       <Headers>
-        <Header Name="Kurveradius(m)" />
+        <Header Name="Kurveradius [m]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>ai = getAlignmentInfo()
-if ai.Segment.Type ~= "Curve" then
-	return ""
-else
-	return ai.CurveRadius == math.huge and ai.CurveRadius or string.format("%.03f", ai.CurveRadius)
-end</Data>
+      <Data>string.format("%.03f", getAlignmentInfo().NearestVerticalVertex.Radius)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>ef6c1bb3-82c0-40aa-b3a7-9291375d5a15</Guid>
       <Headers>
-        <Header Name="Tangentlengde (m)" />
+        <Header Name="Tangentlengde [m]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2794,20 +2833,22 @@ end</Data>
     <ColumnSpecification>
       <Guid>5035e780-fad1-4702-b9ad-511753fa60ef</Guid>
       <Headers>
-        <Header Name="Tangenthøyde (m)" />
+        <Header Name="Tangenthøyde [m]" />
       </Headers>
       <Width>50</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("%.03f",getAlignmentInfo().NearestVerticalVertex.VerticalCurveEnd.Elevation-getAlignmentInfo().NearestVerticalVertex.VerticalCurveStart.Elevation)</Data>
+      <Data>string.format("%.03f",
+	getAlignmentInfo().NearestVerticalVertex.VerticalCurveEnd.Elevation
+	- getAlignmentInfo().NearestVerticalVertex.VerticalCurveStart.Elevation)</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>5057f2f8-f3a1-4088-b09d-e771854752e8</Guid>
       <Headers>
         <Header Name="Nord" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2818,7 +2859,7 @@ end</Data>
       <Headers>
         <Header Name="Øst" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
@@ -2827,26 +2868,32 @@ end</Data>
     <ColumnSpecification>
       <Guid>69e97ff0-6a59-49ff-aad9-128da3a2f848</Guid>
       <Headers>
-        <Header Name="Høyde (m)" />
+        <Header Name="Høyde [m]" />
       </Headers>
-      <Width>30</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
-      <Data>string.format("%.03f",getAlignmentInfo().NearestVerticalVertex.Elevation)</Data>
+      <Data>if Variant == "SE1" then
+	return string.format("%.03f",getAlignmentInfo().NearestVerticalVertex.VerticalCurveStart.Elevation)
+elseif Variant == "SE2" then
+	return string.format("%.03f",getAlignmentInfo().NearestVerticalVertex.VerticalCurveEnd.Elevation)
+else
+	return ""
+end</Data>
     </ColumnSpecification>
     <ColumnSpecification>
       <Guid>d26d4f01-0cef-4c8d-bd72-ecadde152216</Guid>
       <Headers>
-        <Header Name="SE 1 Km" />
+        <Header Name="Profil SE1 [Km]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>ai = getAlignmentInfo()
 if ai.NearestVerticalVertex.VerticalCurveStart.Mileage then
-	return string.format("%.03f",ai.NearestVerticalVertex.VerticalCurveStart.Mileage / 1000)
+	return string.format("%.06f",ai.NearestVerticalVertex.VerticalCurveStart.Mileage / 1000)
 else
 	return ""
 end</Data>
@@ -2854,15 +2901,15 @@ end</Data>
     <ColumnSpecification>
       <Guid>8157325e-542a-4044-b254-e21d5229adaa</Guid>
       <Headers>
-        <Header Name="SE 1 Stigning (prom)" />
+        <Header Name="SE 1 Stigning  [o/oo]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>ai = getAlignmentInfo()
 if ai.NearestVerticalVertex.VerticalCurveStart.Gradient and not RC__isNan(ai.NearestVerticalVertex.VerticalCurveStart.Gradient) then
-	return string.format("%.03f",ai.NearestVerticalVertex.VerticalCurveStart.Gradient * 1000)
+	return string.format("%.02f",ai.NearestVerticalVertex.VerticalCurveStart.Gradient)
 else
 	return ""
 end</Data>
@@ -2870,15 +2917,15 @@ end</Data>
     <ColumnSpecification>
       <Guid>68515a3a-70d2-408b-8acb-d2191ca1f040</Guid>
       <Headers>
-        <Header Name="SE 2 Km" />
+        <Header Name="Profil SE2 [Km]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>ai = getAlignmentInfo()
 if ai.NearestVerticalVertex.VerticalCurveEnd.Mileage then
-	return string.format("%.03f",ai.NearestVerticalVertex.VerticalCurveEnd.Mileage / 1000)
+	return string.format("%.06f",ai.NearestVerticalVertex.VerticalCurveEnd.Mileage / 1000)
 else
 	return ""
 end</Data>
@@ -2886,15 +2933,15 @@ end</Data>
     <ColumnSpecification>
       <Guid>90f19c72-7061-4e9a-9e72-601e9124d9bc</Guid>
       <Headers>
-        <Header Name="SE 2 Stigning (prom)" />
+        <Header Name="SE 2 Stigning [o/oo]" />
       </Headers>
-      <Width>50</Width>
+      <Width>40</Width>
       <HideColumn>false</HideColumn>
       <SortOption>None</SortOption>
       <Alignment>MiddleCenter</Alignment>
       <Data>ai = getAlignmentInfo()
 if ai.NearestVerticalVertex.VerticalCurveEnd.Gradient and not RC__isNan(ai.NearestVerticalVertex.VerticalCurveEnd.Gradient) then
-	return string.format("%.03f",ai.NearestVerticalVertex.VerticalCurveEnd.Gradient * 1000)
+	return string.format("%.02f",ai.NearestVerticalVertex.VerticalCurveEnd.Gradient)
 else
 	return ""
 end</Data>
@@ -2905,8 +2952,8 @@ end</Data>
     <string>10272f0b-a413-49f6-bd6a-b520ea345d97</string>
   </SortOrder>
   <NewColumnWidth xsi:nil="true" />
-			</TableSpecification>			
-		</InsertTable>		
+			</TableSpecification>
+		</InsertTable>
 	</ObjectType>
 
 
