@@ -250,6 +250,40 @@
 		</Formula>
 	</LuaFunction> 
 
+<!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
+<xpp:define name="_JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING" >
+	<xpp:bloc>
+		<CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
+			Description="The overhead catenary system (OCS) mast's age [Ny | Eksisterende]." >
+			<Value>Ny</Value>
+			<Value>Eksisterende</Value>
+		</CustomAttribute>
+	</xpp:bloc>
+</xpp:define>
+
+<!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
+<xpp:define name="_JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH" >
+	<xpp:bloc>
+		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0" 
+			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
+		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
+		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
+			Description="The span length value [m] being displayed close to the OCS pole." />
+		<LuaExpression Name="SpanlengthDisplay" ><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
+        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
+			Invisible="false" Lock="false" MText="false" /> 
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
+			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
+		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
+			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
+		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
+		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsPole" Name="JBTEH_MAS KL-mast" 
 				Layer="JBTEH_MAS" Color="ByLayer"
 				Group="Kontaktledning/Master"
@@ -279,51 +313,53 @@
 
 		<Variants DefaultValue="Bjelkemast" >
 			<Variant Name="Bjelkemast" >
-				<SetValue Key="OcsMastProfile" Value="HEB240" />
-				<SetValue Key="OcsMastHeight" Value="10000" />
+				<SetValue Key="OcsCrossSection" Value="HEB240" />
+				<SetValue Key="OcsPoleHeight" Value="10000" />
 			</Variant>
 			<!-- TODO: Få ekte data for GMB-mastene -->
 			<Variant Name="GMB-mast" >
-				<SetValue Key="OcsMastProfile" Value="HEB240" />
-				<SetValue Key="OcsMastHeight" Value="7500" />
+				<SetValue Key="OcsCrossSection" Value="HEB240" />
+				<SetValue Key="OcsPoleHeight" Value="7500" />
 			</Variant>
 			<Variant Name="H-mast" >
-				<SetValue Key="OcsMastProfile" Value="H3" />
-				<SetValue Key="OcsMastHeight" Value="7500" />
+				<SetValue Key="OcsCrossSection" Value="H3" />
+				<SetValue Key="OcsPoleHeight" Value="7500" />
 			</Variant>
 			<Variant Name="B-mast" >
-				<SetValue Key="OcsMastProfile" Value="B3" />
-				<SetValue Key="OcsMastHeight" Value="7500" />
+				<SetValue Key="OcsCrossSection" Value="B3" />
+				<SetValue Key="OcsPoleHeight" Value="7500" />
 			</Variant>
 			<Variant Name="Betongmast" >
 				<!-- Assuming that masts always extend 2m under ground -->
 				<!-- See EH.800065 (EK.800065), concrete masts & load computations -->
 				<!-- TODO 2021-03-14 Produce all concrete masts. At present, only the "13" and the "13S" series exist in 3D. -->
-				<SetValue Key="OcsMastProfile" Value="13" />  
-				<SetValue Key="OcsMastDepth" Value="2000" />
-				<SetValue Key="OcsMastHeight" Value="8000" />
+				<SetValue Key="OcsCrossSection" Value="13" />  
+				<SetValue Key="OcsPoleDepth" Value="2000" />
+				<SetValue Key="OcsPoleHeight" Value="8000" />
 			</Variant>
 			<Variant Name="Tremast" >
-				<SetValue Key="OcsMastProfile" Value="Ø260" />
-				<SetValue Key="OcsMastDepth" Value="1600" />
-				<SetValue Key="OcsMastHeight" Value="7500" />
+				<SetValue Key="OcsCrossSection" Value="Ø260" />
+				<SetValue Key="OcsPoleDepth" Value="1600" />
+				<SetValue Key="OcsPoleHeight" Value="7500" />
 			</Variant>
 		</Variants>
-		
+
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 		
+		<xpp:expand select="_JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING" />
+
 		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>RC__TextAttributePosition(20,0)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>RC__TextAttributePosition(22,0)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>RC__TextAttributePosition(24,0)</Formula></TextPositionLuaExpression>
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
-			Description="If this mast supports a yoke, then the yoke with more masts are modelchecked as well."
+			Description="If this OCS pole supports a yoke, then the yoke with more poles / drop arms are modelchecked as well."
 		 />
 		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
 
-		<CustomAttribute DataType="Enumeration" Name="OcsMastProfile" DisplayName="Masteprofil"
+		<CustomAttribute DataType="Enumeration" Name="OcsCrossSection" DisplayName="Masteprofil"
 			Description="The overhead catenary system (OCS) mast profile (omp) [HEB200..280 | H3..H6 | B2..B6 | 240x240 | Ø260]." >
 			<Values Variant="Bjelkemast" >
 				<Value>HEB280</Value>
@@ -390,7 +426,7 @@
 			</Values>
 		</CustomAttribute>
 		
-		<CustomAttribute DataType="Enumeration" Name="OcsMastHeight" DisplayName="Mastehøyde" DefaultValue="7000"
+		<CustomAttribute DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Mastehøyde" DefaultValue="7000"
 			Description="The overhead catenary system (OCS) mast height (omh) [mm], given in predefined lengths in 100 millimeter steps." >
 			<Values Variant="Bjelkemast" >
 				<Value>13000</Value>
@@ -487,13 +523,13 @@
 				<Value>6000</Value>
 			</Values>
 		</CustomAttribute>
-		<LuaExpression Name="OcsMastHeight" ><Formula>_JBTEH_MAS_OcsMastHeight()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_OcsMastHeight()" ReturnType="Double"
+		<LuaExpression Name="OcsPoleHeight" ><Formula>_JBTEH_MAS_OcsPoleHeight()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_OcsPoleHeight()" ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the height of the OCS pole, possibly adapted to carry a yoke." >
-			<Constructor>Double _JBTEH_MAS_OcsMastHeight()</Constructor>
+			<Constructor>Double _JBTEH_MAS_OcsPoleHeight()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_OcsMastHeight()
+				function _JBTEH_MAS_OcsPoleHeight()
 					r,n = getCollectionOfRelatedObjects("Er åk-mast for åk")
 					if n &gt; 0 then
 						return string.format("%.0f", 500 * ((r[0].RelativeElevation + 1.0) // 0.5)) --[mm]
@@ -505,7 +541,7 @@
 			</Formula>
 		</LuaFunction>
 		
-		<CustomAttribute DataType="Enumeration" Name="OcsMastDepth" DisplayName="Mastedybde" DefaultValue="0"
+		<CustomAttribute DataType="Enumeration" Name="OcsPoleDepth" DisplayName="Mastedybde" DefaultValue="0"
 			Description="Only applicable to wooden and concrete masts. The overhead catenary system (OCS) mast depth below ground reference level (omd) [mm]." >
 			<Values Variant="GMB-mast" >
 				<Value>0</Value>
@@ -527,36 +563,11 @@
 			</Values>
 		</CustomAttribute>
 		
-		<CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
-			Description="The overhead catenary system (OCS) mast's age [Ny | Eksisterende] (New/Existing)." >
-			<Value >Ny</Value>
-			<Value >Eksisterende</Value>
-			<!-- <Value DisplayName="新" >Ny</Value> -->
-			<!-- <Value DisplayName="既存" >Eksisterende</Value> -->
-		</CustomAttribute>
-
 		<!-- Span length -->
-		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0" 
-			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using 'Neste kl-mast'/'Forrige kl-mast'." />
-		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
-		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
-			Description="The span length value [m] being displayed close to the OCS pole." />
-		<LuaExpression Name="SpanlengthDisplay" ><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
-        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
-			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
-			Invisible="false" Lock="false" MText="false" /> 
-		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
-		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
-		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
-		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
+		<xpp:expand select="_JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH" />
 
-		<CustomAttribute DataType="Boolean" Name="HasSpire" DisplayName="Har spir" DefaultValue="false"
-			Description="Does the overhead catenary system (OCS) mast have a spire [True | False]." />
-
-		<CustomAttribute DataType="Boolean" Name="HasATTraverse" DisplayName="Har AT-travers" DefaultValue="false"
-			Description="Does the overhead catenary system (OCS) mast have an AT traverse [True | False]." />
+		<CustomAttribute DataType="Boolean" Name="SupportArm" DisplayName="Support arm" DefaultValue="false"
+			Description="True if the OCS pole features a support arm holding autotransformer conductors [True | False]." />
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_non_yoke_mast_code()</Formula></LuaExpression>
@@ -581,28 +592,28 @@
 			<Constructor>Double _JBTEH_MAS_mast_AngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_mast_AngularOffset()
-					local yRelationName = "Er åk-mast for åk"
+					local yRelationName = rel_OcsPole_Supports_OcsPortal
 					yr,yn = getCollectionOfRelatedObjects(yRelationName)
 					if yn == 0 then
-						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually or relate with '"..yRelationName.."' to a yoke (which has second support mast).")
+						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually or relate with '"..yRelationName.."' to a yoke (which has second support pole).")
 				
 					else
 						local yoke = yr[0]
-						local s = "Er åk holdt oppe av kl-mast"
+						local s = rel_OcsPortal_IsSupportedBy_OcsPole
 						local r,n = getCollectionOfRelatedObjects(s,yoke)
 				
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
-								_info("ERROR Mast has bad connection to galley '"..RC__identify(yoke).."'.")
+								_info("ERROR OCS pole has bad connection to galley '"..RC__identify(yoke).."'.")
 				
 						elseif n == 1 then
 							--Galley:
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a galley '"..RC__identify(yoke)..
-								"' - adjust mast's angular offset manually or change galley into yoke (which has one more yoke support mast).")
+								_info("OCS pole is connected to a galley '"..RC__identify(yoke)..
+								"' - adjust pole's angular offset manually or change galley into yoke (which has one more yoke support poles).")
 						
 						elseif n == 2 then
-							--Assume that the first two related masts are located at the yoke's extremities:
+							--Assume that the first two related poles are located at the yoke's extremities:
 							local m1 = r[0]
 							local m2 = r[1]
 							if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
@@ -613,15 +624,15 @@
 							local yokeAngle = math.atan(y2-y1,x2-x1) * (180/math.pi) 
 							local tg = getAlignmentInfo().Tangent
 							local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi)
-							local info = "Angular Offset deduced using yoke support masts '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
+							local info = "Angular Offset deduced using yoke support poles '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
 							return (2*360.0 + RC__round(yokeAngle - (baseAngle-90.0),3)) % 360.0, _info(info)
 				
 						else
-							--TODO: Locate the two support masts at each end of yoke, uses this to find angular offset, then turn yourself if you 
-							--are a support mast at one or the other end, or just adapt if you are in between ends.
+							--TODO: Locate the two support poles at each end of yoke, use this to find angular offset, then turn yourself if you 
+							--are a support pole at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
-								"' - adjust mast's angular offset manually.")
+								_info("OCS pole is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
+								"' - adjust pole's angular offset manually.")
 						end
 					end
 				end
@@ -637,20 +648,20 @@
 			<Formula>
 				function _JBTEH_MAS_KlMast_Model3DName()
 					if Variant == "Bjelkemast" then
-						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsMastProfile .."-191x374xM36-"..OcsMastHeight
+						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsCrossSection .."-191x374xM36-"..OcsPoleHeight
 					elseif Variant == "GMB-mast" then
 						--TODO: Få ekte data for GMB-mastene, Lage 3D GMB-master
-						return "NO-BN-3D-EH-MAS-GMBMAST-" ..OcsMastProfile .."-" ..OcsMastHeight
+						return "NO-BN-3D-EH-MAS-GMBMAST-" ..OcsCrossSection .."-" ..OcsPoleHeight
 					elseif Variant == "H-mast" then
 						--Assume the 191x374 modern type:
-						return "NO-BN-3D-EH-MAS-GITTERMAST-" ..OcsMastProfile .."-191x374xM36-"..OcsMastHeight
+						return "NO-BN-3D-EH-MAS-GITTERMAST-" ..OcsCrossSection .."-191x374xM36-"..OcsPoleHeight
 					elseif Variant == "B-mast" then
 						--Assume the 191x374 modern type:
-						return "NO-BN-3D-EH-MAS-GITTERMAST-" ..OcsMastProfile .."-191x374xM36-"..OcsMastHeight
+						return "NO-BN-3D-EH-MAS-GITTERMAST-" ..OcsCrossSection .."-191x374xM36-"..OcsPoleHeight
 					elseif Variant == "Betongmast" then
-						return "NO-BN-3D-EH-MAS-BETONGMAST-" ..OcsMastProfile .."-"..OcsMastDepth.."-"..OcsMastHeight
+						return "NO-BN-3D-EH-MAS-BETONGMAST-" ..OcsCrossSection .."-"..OcsPoleDepth.."-"..OcsPoleHeight
 					elseif Variant == "Tremast" then
-						return "NO-BN-3D-EH-MAS-TREMAST-" ..OcsMastProfile .."-"..OcsMastDepth.."-"..OcsMastHeight
+						return "NO-BN-3D-EH-MAS-TREMAST-" ..OcsCrossSection .."-"..OcsPoleDepth.."-"..OcsPoleHeight
 					else
 						return "Ukjent Variant ["..Variant.."]",_warning
 					end
@@ -745,9 +756,9 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	CATENARY MASTS UNDER BRIDGE OR TUNNEL CEILING
+	CATENARY DROP ARM FOR BRIDGE OR TUNNEL CEILING
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsPoleForBridgeOrTunnel" Name="JBTEH_MAS Hengemast for bru og tunnel"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsDropArmPoleForBridgeOrTunnel" Name="JBTEH_MAS Hengemast for bru og tunnel"
 				Layer="JBTEH_MAS_HGM_TUNNEL" Color="ByLayer"
 				Group="Kontaktledning/Master"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -772,12 +783,12 @@
  		
 		<Variants DefaultValue="Hengemast for bru og tunnel" >
 			<Variant Name="Hengemast for bru og tunnel" >
-				<SetValue Key="OcsMastProfile" Value="Sirkulær, Ø120" />
-				<SetValue Key="OcsMastHeight" Value="3100" />
+				<SetValue Key="OcsCrossSection" Value="Sirkulær, Ø120" />
+				<SetValue Key="OcsPoleHeight" Value="3100" />
 			</Variant>
 			<Variant Name="Hengemast Cariboni" >
-				<SetValue Key="OcsMastProfile" Value="Rektangulær, 100x150" />
-				<SetValue Key="OcsMastHeight" Value="3100" />
+				<SetValue Key="OcsCrossSection" Value="Rektangulær, 100x150" />
+				<SetValue Key="OcsPoleHeight" Value="3100" />
 			</Variant>
 		</Variants>
 		
@@ -788,8 +799,8 @@
 		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>RC__TextAttributePosition(24,0)</Formula></TextPositionLuaExpression>
 
 		<!-- TODO: 100x100 suspension masts - Description="The overhead catenary system (OCS) suspension mast profile (smp) [Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200]." > -->
-		<CustomAttribute DataType="Enumeration" Name="OcsMastProfile" DisplayName="Masteprofil" DefaultValue="Sirkulær, Ø120"
-			Description="The overhead catenary system (OCS) suspension mast profile (smp) [ Sirkulær, Ø120 | Rektangulær, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
+		<CustomAttribute DataType="Enumeration" Name="OcsCrossSection" DisplayName="Masteprofil" DefaultValue="Sirkulær, Ø120"
+			Description="The overhead catenary system (OCS) suspension mast profile (smp) [ Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
 			<Values Variant="Hengemast for bru og tunnel" >
 				<Value>Sirkulær, Ø120</Value>
 				<Value>Kvadratisk, 100x100</Value>
@@ -802,7 +813,7 @@
 			</Values>
 		</CustomAttribute>
 		
-		<CustomAttribute DataType="Enumeration" Name="OcsMastHeight" DisplayName="Høyde" DefaultValue="3600" 
+		<CustomAttribute DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Høyde" DefaultValue="3600" 
 			Description="The overhead catenary system (OCS) suspension mast height (smh) [mm], given in predefined lengths 0.5m - 5.0m in 50 millimeter steps." >
 			<Values Variant="Hengemast for bru og tunnel" >	
 				<Value>5000</Value>
@@ -903,23 +914,23 @@
 			<Constructor>String _JBTEH_MAS_tunnel_mast_Model3DName()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_tunnel_mast_Model3DName()
-					local h = (math.floor((250/2 + OcsMastHeight) / 250)) * 250 -- Assume 3D models in steps of 250 mm
+					local h = (math.floor((250/2 + OcsPoleHeight) / 250)) * 250 -- Assume 3D models in steps of 250 mm
 					if Variant == "Hengemast for bru og tunnel" then
-						if (OcsMastProfile == "Sirkulær, Ø120") then
+						if (OcsCrossSection == "Sirkulær, Ø120") then
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-Ø120-"..h
 				
-						elseif (OcsMastProfile == "Kvadratisk, 100x100") then 
+						elseif (OcsCrossSection == "Kvadratisk, 100x100") then 
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x100-"..h
 				
-						elseif (OcsMastProfile == "Rektangulær, 100x150") then 
+						elseif (OcsCrossSection == "Rektangulær, 100x150") then 
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x150-"..h
 				
-						elseif (OcsMastProfile == "Rektangulær, 100x200") then
+						elseif (OcsCrossSection == "Rektangulær, 100x200") then
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x200-"..h
 						end
 				
 					elseif Variant:match("Hengemast Cariboni") then
-						if (OcsMastProfile == "Rektangulær, 100x150") then 
+						if (OcsCrossSection == "Rektangulær, 100x150") then 
 							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x150-"..h
 						end
 					else 
@@ -982,9 +993,9 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	CATENARY MASTS SUSPENDED FROM YOKE (OR FROM GALLEY)
+	CATENARY DROP ARM FROM PORTAL (OR FROM GALLEY)
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsPoleSuspendedUnderPortal" Name="JBTEH_MAS Hengemast i åk"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsDropArmForPortal" Name="JBTEH_MAS Hengemast i åk"
 				Layer="JBTEH_MAS_HGM_ÅK" Color="ByLayer"
 				Group="Kontaktledning/Master"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1009,8 +1020,8 @@
  		
 		<Variants DefaultValue="Hengemast i åk" >
 			<Variant Name="Hengemast i åk" >
-				<SetValue Key="OcsMastProfile" Value="Rektangulær, 100x150" />
-				<SetValue Key="OcsMastHeight" Value="3100" />
+				<SetValue Key="OcsCrossSection" Value="Rektangulær, 100x150" />
+				<SetValue Key="OcsPoleHeight" Value="3100" />
 			</Variant>
 		</Variants>
 		
@@ -1022,18 +1033,14 @@
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
-			Description="When this OCS suspension mast is refrehsed, then its yoke with other OCS poles are modelchecked as well."
+			Description="When this OCS drop arm is refreshed, then its yoke with other OCS poles are modelchecked as well."
 		 />
 		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
 
-		<CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
-			Description="The overhead catenary system (OCS) mast's age [Ny | Eksisterende]." >
-			<Value>Ny</Value>
-			<Value>Eksisterende</Value>
-		</CustomAttribute>
+		<xpp:expand select="_JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING" />
 
-		<CustomAttribute DataType="Enumeration" Name="OcsMastProfile" DisplayName="Masteprofil" DefaultValue="Rektangulær, 100x150"
+		<CustomAttribute DataType="Enumeration" Name="OcsCrossSection" DisplayName="Masteprofil" DefaultValue="Rektangulær, 100x150"
 			Description="The overhead catenary system (OCS) suspension mast profile (smp) [ Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
 			<Values >
 				<Value>Kvadratisk, 100x100</Value>
@@ -1042,8 +1049,8 @@
 			</Values>
 		</CustomAttribute>
 		
-		<CustomAttribute DataType="Enumeration" Name="OcsMastHeight" DisplayName="Høyde" DefaultValue="3100"
-			Description="The overhead catenary system (OCS) suspension mast height (smh) [mm], given in predefined lengths 0.5m - 5.0m in 50 millimeter steps." >
+		<CustomAttribute DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Høyde" DefaultValue="3100"
+			Description="The overhead catenary system (OCS) drop arm height, given in predefined lengths 1.0 - 5.0 m in 100 millimeter steps." >
 			<Values >
 				<Value>5000</Value>
 				<Value>4900</Value>
@@ -1089,8 +1096,8 @@
 			</Values>
         </CustomAttribute>
 		
-		<CustomAttribute DataType="Double" Name="SupspensionMastAlongOffset" DisplayName="Hengemast offset langs egen akse" DefaultValue="0"
-			Description="The suspension mast's offset from center of yoke, colinear to the suspension mast's own alignments' tangent direction." >
+		<CustomAttribute DataType="Double" Name="DropArmAlongOffset" DisplayName="Hengemast offset langs egen akse" DefaultValue="0"
+			Description="The drop arm's offset from center of portal, colinear to the drop arm's own alignments' tangent direction." >
 		</CustomAttribute>
 		
 		<!-- Span length -->
@@ -1168,7 +1175,7 @@
 
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 
-		<LuaExpression Name="Mileage" ><Formula>_JBTEH_MAS_yoke_suspension_mast_Mileage(SupspensionMastAlongOffset)</Formula></LuaExpression>
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_MAS_yoke_suspension_mast_Mileage(DropArmAlongOffset)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_yoke_suspension_mast_Mileage()" ReturnType="Double"
 			Description="Deduces the yoke suspension mast's mileage, based on its relation to a yoke/galley and this one's support mast(s). If provided, the offset is added to the computed mileage." >
 			<Constructor>Double _JBTEH_MAS_yoke_suspension_mast_Mileage([Double offset])</Constructor>
@@ -1234,9 +1241,9 @@
 				function _JBTEH_MAS_yoke_suspension_mast_RelativeElevation()
 					local s,r,n,e,v
 					local extensionAboveTopOfYoke = 0.10
-					local r,n = getRelatedObjects(rel_OcsPole_IsSuspendedUnder_OcsPortal)
+					local r,n = getRelatedObjects(rel_OcsPole_IsDropArmFor_OcsPortal)
 					if n == 0 then
-						return 0.0, _info("UNFINISHED - Relate with '"..rel_OcsPole_IsSuspendedUnder_OcsPortal.."' to its OCS yoke.") 
+						return 0.0, _info("UNFINISHED - Relate with '"..rel_OcsPole_IsDropArmFor_OcsPortal.."' to its OCS yoke.") 
 					else 
 						local e = (r[0].geoCoord.Z - getAlignmentInfo().Elevation) --Yoke's elevation above this susp. mast's own alignment
 						local v = r[0].Variant
@@ -1313,7 +1320,7 @@
 			<Constructor>String _JBTEH_MAS_yoke_suspension_mast_Model3DName()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_yoke_suspension_mast_Model3DName()
-					return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-HUP-"..(OcsMastProfile:match("(%d+x%d+)")).."-"..OcsMastHeight
+					return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-HUP-"..(OcsCrossSection:match("(%d+x%d+)")).."-"..OcsPoleHeight
 				end
 			</Formula>
 		</LuaFunction>
@@ -1517,16 +1524,16 @@
 							return RightSided and 4e-4 or -4e-4,_warning, _info("Closest OCS support mast is not connected to a track (own alignment).")
 						else
 							local mv = mast.Variant
-							local mp = mast.OcsMastProfile
+							local mp = mast.OcsCrossSection
 							local d
 							if mv:match("Bjelkemast") then
 								d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
 							elseif mv:match("GMB%-mast") then
 								d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
 							elseif mv:match("B%-mast") then
-								d = (mast.OcsMastHeight - RelativeElevation) * math.tan(23/1000000)
+								d = (mast.OcsPoleHeight - RelativeElevation) * math.tan(23/1000000)
 							elseif mv:match("H%-mast") then
-								d = (mast.OcsMastHeight - RelativeElevation) * math.tan(1/50000)
+								d = (mast.OcsPoleHeight - RelativeElevation) * math.tan(1/50000)
 							elseif mv:lower():match("hengemast") then
 								if (mp == 'Sirkulær, Ø120') then 
 									d = 0.06

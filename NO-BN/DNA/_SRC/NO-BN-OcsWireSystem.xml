@@ -71,7 +71,7 @@
 				function _JBTEH_LBA_ocs_annotation_name()
 					local RelationName = "Er KL-annotering for kontaktledning"
 					local r,n = getCollectionOfRelatedObjects(RelationName)
-					if Variant:match("felt") then 
+					if Variant ~= "Fritekst annotering" then
 						if n == 0 then 
 							return "UNFINISHED - Relate OCS contact wire change annotation to its two catenary wire alignments with '"..RelationName.."'."
 						elseif n == 1 then
@@ -93,7 +93,7 @@
 							return _warning, "Too many ["..n.."] related items - relate OCS contact wire change annotation to exactly two catenary wire alignments with '"
 								..RelationName.."', or adjust stage settings using layer names."
 						end
-					elseif Variant:lower():match("fritekst") then 
+					elseif Variant == "Fritekst annotering" then 
 						if code and code ~= "" then 
 							return code
 						else
@@ -163,7 +163,7 @@
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM - CONDUCTOR (CABLE) ALIGNMENT
  =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength" LuaName="rctype_HighVoltageCable" Name="JBTEH_LED Ledning"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength" LuaName="rctype_HvConductor" Name="JBTEH_LED Ledning"
 				Layer="JBTEH_LED" Color="ByLayer"
 				Group="Kontaktledning/Ledning"
 				>
@@ -1911,7 +1911,7 @@
 						if n &gt; 0 then 
 							-- Assume spanner 3D models exist in steps of 500 mm range 500..2500.
 							-- Let default spanner choice be half the height of the supported OCS suspension mast.
-							local h = (math.floor((250 + (OcsMastHeight/2)) / 500)) * 500
+							local h = (math.floor((250 + (OcsPoleHeight/2)) / 500)) * 500
 							h = (h &lt; 500) and 500 or h -- At least 500
 							h = (h &gt; 2500) and 2500 or h -- No more than 2500
 							t = "NO-BN-3D-EH-STF-STREVER-FOTPLATE-MED-STREVER-FOR-BRU-OG-TUNNEL-Ø120-H"..string.format("%03d",h)
@@ -1996,7 +1996,7 @@
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>forankring_på_fundament</RelationSpace>
+		<RelationSpace>tunnelfeste</RelationSpace>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
@@ -2067,7 +2067,7 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	FORCE RELAY
+	FORCE RELAY CONSOLE
 	GUYWIRE/SPANNER/TENSIONING DEVICE FASTENING TO OCS POLE
 
 	Relays force from a contact wire (or messenger wire or cable) attached using a suitable console to
@@ -2079,7 +2079,7 @@
 	See EH-701742 Festejern for fast-, fjær- og loddavspenning på stålmaster
 	TODO: See EX-XXXXXX <festejern for barduner mot KL-mast>
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_AnchoringConsole" Name="JBTEH_FPM Forankring på mast"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_AnchoringToOcsPole" Name="JBTEH_FPM Forankring på mast"
 				Layer="JBTEH_FPM" Color="ByLayer"
 				Group="Kontaktledning/Forankring"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -2125,7 +2125,7 @@
 			<Constructor>String _JBTEH_FPM_mileage()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_mileage()
-					local s = "Er forankring på kl-mast"
+					local s = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
 					local r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then 
 						return getPropertyValue("mileage"),
@@ -2148,7 +2148,7 @@
 			<Constructor>String _JBTEH_FPM_DistanceToAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_DistanceToAlignment()
-					local s = "Er forankring på kl-mast"
+					local s = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
 					local r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then 
 						return getPropertyValue("DistanceToAlignment"),
@@ -2171,8 +2171,8 @@
 			<Constructor>String _JBTEH_FPM_code()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_code()
-					sPol = "Er forankring på kl-mast"
-					sObj = "Er forankring_på_mast for avspenning/kl-bardun/kl-strever"
+					sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
+					sObj = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
 					rPol,nPol = getCollectionOfRelatedObjects(sPol)
 					rObj,nObj = getCollectionOfRelatedObjects(sObj)
 					
@@ -2210,8 +2210,9 @@
 			<Constructor>String _JBTEH_FPM_dir()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_dir()
-					tmp,nTmp = getCollectionOfRelatedObjects("Er forankring_på_mast for avspenning/kl-bardun/kl-strever")
-					rWtb = tmp:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+					local s = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
+					tmp,nTmp = getCollectionOfRelatedObjects(s)
+					rWtb = tmp:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
 					nWtb = getCollectionLength(rWtb)
 					if nTmp == 0 then
 						return _unfinished,getPropertyValue("dir"),info("No related WTB, guywire or spanner - cannot deduce anchor device's direction.")
@@ -2247,8 +2248,8 @@
 			<Constructor>Double _JBTEH_FPM_AnchoringHeight()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_AnchoringHeight()
-					local s = "Er forankring på kl-mast"
-					r,n = getCollectionOfRelatedObjects(s)
+					local s = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
+					local r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
 						return 0,_unfinished,_info("UNFINISHED - relate with '"..s.."'.")
 					elseif n == 1 then 
@@ -2292,7 +2293,7 @@
 						end
 
 						wir = rWir[0]
-						if wir.RcType == "JBTEH_KTL Kontaktledning" then
+						if wir.RcType == rctype_ContactWire then
 							--Ref Bane NOR Elkraftportalen, EH-707469 (S20) or EH-707487 (S25). 
 							--Standard for weighted WTB: 0.235m  = 0.150 + 0.085 (from anchoring device's mounting on 
 							--the OCS pole down to the center of the pulley wheel, minus 0.085 radius of small pulley wheel).
@@ -2372,7 +2373,7 @@
 					if n == 0 then 
 						return "UNIFINSHED: No OCS pole found, cannot deduce console's 3D model name."
 					else
-						a = r[0].OcsMastProfile:match("HE[ABM](%d%d%d)") --'HEA220', 'HEB220',  etc: Capture the three digits.
+						a = r[0].OcsCrossSection:match("HE[ABM](%d%d%d)") --'HEA220', 'HEB220',  etc: Capture the three digits.
 						a = a or "240" --Default size if not a HEA, HEB or MEB mast...
 						if Variant == "Forankring på mast for avspenning med bardun" then
 							--TODO: Make model depend on OCS pole type and WTB type
@@ -3266,7 +3267,7 @@
 			</Variant>
 		</Variants>
 		
-		<SetValue Key="ConnectedAlignmentType" Value="JBTEH_KTL Kontaktledning" />
+		<SetValue Key="ConnectedAlignmentType" Value="{{rctype_ContactWire}}" />
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_KTF_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTF_code()" ReturnType="String"
@@ -3281,13 +3282,13 @@
 						first = Alignment
 						if first == nil then
 							return "Bad or missing alignment reference",_warning
-						elseif Alignment.RcType ~= "JBTEH_KTL Kontaktledning" then
+						elseif Alignment.RcType ~= rctype_ContactWire then
 							return "Cannot connect to alignments of type '"..Alignment.RcType.."'.",_warning
 						end
 						second = TargetAlignment
 						if second == nil then
 							return "Bad or missing continuing alignment reference",_warning
-						elseif TargetAlignment.RcType ~= "JBTEH_KTL Kontaktledning" then
+						elseif TargetAlignment.RcType ~= rctype_ContactWire then
 							return "Cannot connect to alignments of type '"..Alignment.RcType.."'.",_warning
 						end
 						if first.id == second.id then
@@ -3321,7 +3322,7 @@
 			<Constructor>ObjRef _JBTEH_KTF_Alignment()</Constructor>
 			<Formula>
 				function _JBTEH_KTF_Alignment()
-					return getClosestAlignments():filter(function (x) return x.RcType == "JBTEH_KTL Kontaktledning" end)[0]
+					return getClosestAlignments():filter(function (x) return x.RcType == rctype_ContactWire end)[0]
 				end
 			</Formula>
 		</LuaFunction>
@@ -3333,7 +3334,7 @@
 			<Formula>
 				function _JBTEH_KTF_TargetAlignment()
 					tol = 1 --[m]
-					ta = getClosestAlignments("JBTEH_KTL Kontaktledning"):filter(function (x) return x.id ~= Alignment.id end)[0]
+					ta = getClosestAlignments(rctype_ContactWire):filter(function (x) return x.id ~= Alignment.id end)[0]
 					d1 = RC__getDistance2D(this,ta.RcAlignment.StartPoint)
 					d2 = RC__getDistance2D(this,ta.RcAlignment.EndPoint)
 					if math.min(d1,d2) &lt; tol then

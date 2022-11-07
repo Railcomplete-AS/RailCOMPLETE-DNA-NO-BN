@@ -24,7 +24,7 @@
 	
 <!--========================================================================================================
 	HIGH VOLTAGE
-	PROTECTION SCREEN AGAINST OVERVOLTAGE
+	PROTECTION SCREEN AGAINST HIGH VOLTAGE
 =========================================================================================================-->
 	<!-- See EH.705338, 900x1400 single screen construction. -->
 	<!-- See EH.704042, 2000x775 double-screen construction. -->
@@ -284,7 +284,7 @@
 			<Formula>
 				function _JBTEH_SIL_Alignment()
 					tol = 1 --[m]
-					closestAlignments = getClosestAlignments(tol,"JBTEH_KTL Kontaktledning")
+					closestAlignments = getClosestAlignments(tol,rctype_ContactWire)
 					a1 = closestAlignments[0]
 					a2 = closestAlignments[1]
 					if a2 and RC__getDistance2D(a2.RcAlignment.EndPoint) &lt; tol then
@@ -419,12 +419,12 @@
 			<Formula>
 				function _JBTEH_ISO_Alignment()
 					tol = 1 --[m]
-					closestAlignments = getClosestAlignments(tol):filter(function (x) return RC__isMemberOf({"JBTEH_KTL Kontaktledning","JBTEH_FIL Fixline"},x.RcType) end)
+					closestAlignments = getClosestAlignments(tol):filter(function (x) return RC__isMemberOf({rctype_ContactWire,"JBTEH_FIL Fixline"},x.RcType) end)
 					a1 = closestAlignments[0]
 					a2 = closestAlignments[1]
 					if a1.RcType == "JBTEH_FIL Fixline" then 
 						return a1,_info("Own alignment "..a1.code.." selected as midpoint anchor line.")
-					elseif a1.RcType == "JBTEH_KTL Kontaktledning" then
+					elseif a1.RcType == rctype_ContactWire then
 						--see if we are close to an end point where two contact wires meet:
 						if a2 and RC__getDistance2D(a2.RcAlignment.EndPoint) &lt; tol then
 							return a2,_info("Own alignment "..a2.code.." selected as CW, being the closest alignment with an end point within "..tol.." m from this object.")
@@ -445,7 +445,7 @@
 			<Formula>
 				function _JBTEH_ISO_TargetAlignment()
 					tol = 1 --[m]
-					if Alignment.RcType == "JBTEH_KTL Kontaktledning" then
+					if Alignment.RcType == rctype_ContactWire then
 						ta = getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
 						if ta and RC__getDistance2D(this,ta.RcAlignment.StartPoint) &lt; tol then
 							return ta,_info("Target alignment "..ta.code.." selected as the closest other CW alignment with a start point within "..tol.." m from this object.")
@@ -559,7 +559,7 @@
 			<Formula>
 				function _JBTEH_ISS_Alignment()
 					tol = 1 --[m]
-					closestAlignments = getClosestAlignments(tol,"JBTEH_KTL Kontaktledning")
+					closestAlignments = getClosestAlignments(tol,rctype_ContactWire)
 					a1 = closestAlignments[0]
 					a2 = closestAlignments[1]
 					if a2 and RC__getDistance2D(a2.RcAlignment.EndPoint) &lt; tol then
@@ -667,7 +667,7 @@
 		
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
-		<SetValue Key="AlignmentRcType" Value="JBTEH_KTL Kontaktledning" />
+		<SetValue Key="AlignmentRcType" Value="{{rctype_ContactWire}}" />
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_SVE_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_SVE_code()" ReturnType="String"
@@ -814,7 +814,7 @@
 			
 
 <!--========================================================================================================
-	SIGNALING
+	SIGNALLING
 	TECHNICAL BUILDING
 =========================================================================================================-->
 	<!-- AT-kiosk. -->
