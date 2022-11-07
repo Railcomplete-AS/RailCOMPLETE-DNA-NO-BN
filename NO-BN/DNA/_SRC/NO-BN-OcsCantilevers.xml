@@ -389,7 +389,8 @@ positive feeder in AT system				positiv leder i AT-system
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM CANTILEVER
 =========================================================================================================-->
-	<LuaFunction Name="NOBN_ocs_getCantileverDataTable()" 
+	<!-- Note: Function declared globally in DNA, so it is accessible from scripts. -->
+	<LuaFunction Name="NOBN_ocs_getCantileverStandardValues()" 
 		ReturnType="Table[8*Double]"
 		Description="Returns a table with standard cantilever values, indexed as follows:
 		\n
@@ -402,10 +403,10 @@ positive feeder in AT system				positiv leder i AT-system
 		\n[drMat] Dropper material
 		\n[swMat] Stitch wire material ('None': cantilever has no stitch wire)
 		\n" >
-		<Constructor>Table[8*Double] NOBN_ocs_getCantileverDataTable(OcsSystem os = Variant)</Constructor>
+		<Constructor>Table[8*Double] NOBN_ocs_getCantileverStandardValues(OcsSystem os = Variant)</Constructor>
 		<Formula>
-			--This function is declared as global in the DNA, accessible from all object types.
-			function NOBN_ocs_getCantileverDataTable(os)
+			function NOBN_ocs_getCantileverStandardValues(os)
+				--This function is declared as global in the DNA, accessible from all object types and scripts.
 				os = os or Variant --The Variant is also the OCS system's name.
 				local CantileverValues = {
 					--Note: Siemens' catenary wire clamp is about 12 cm high (117mm), above the upper tube
@@ -422,11 +423,7 @@ positive feeder in AT system				positiv leder i AT-system
 					["Cariboni"] = {cwh=5.05, sh=0.60, shmin=0.25, shmax=0.60, lco= 0.00, wco=-0.70,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
 					["TET08"]    = {cwh=5.05, sh=0.25, shmin=0.10, shmax=0.30, lco= 0.00, wco=-0.075, drMat="Bz II 10/49", swMat="Bz II 25/7"}
 				} 
-				if CantileverValues[os] then
-					return CantileverValues[os]
-				else
-					return CantileverValues["Unknown"],_warning, _info("Unknown OCS System for cantilever ["..os.."]. ")
-				end
+				return CantileverValues[os]
 			end 
 		</Formula>
 	</LuaFunction>
@@ -438,10 +435,10 @@ positive feeder in AT system				positiv leder i AT-system
 		<Formula>
 			function NOBN_ocs_getPoleHalfWidth(ocsPole,height)
 				local pol = ocsPole or this
-				if not pol.RcType:match("JBTEH_MAS") then return 0,_error,_info("ERROR - function works only for OCS poles") end
+				if not pol.RcType:match("JBTEH_MAS") then return 0,_error,_info("ERROR - function works only for OCS poles or drop arms") end
 				local h = heightOnPole or 0
 				local pv = pol.Variant
-				local pp = pol.OcsMastProfile
+				local pp = pol.OcsCrossSection
 				local d = 0.999 --default value - a sizeable pole diameter...a bad value which is easily recognized as such.
 			
 				if pv == "Bjelkemast" then
@@ -451,10 +448,10 @@ positive feeder in AT system				positiv leder i AT-system
 					d = string.sub(pp,4,6)/2 * (1/1000) --[m] Assume pole profile names "HEB200", "HEB220" etc TODO: Find the real profiles for for "GMB-mast" poles
 		
 				elseif pv == "H-mast" then
-					d = (pol.OcsMastHeight - h) * (1/50) * (1/1000) --[m] 1:50 approx. angle on side of mast (0.020000)
+					d = (pol.OcsPoleHeight - h) * (1/50) * (1/1000) --[m] 1:50 approx. angle on side of mast (0.020000)
 		
 				elseif pv == "B-mast" then
-					d = (pol.OcsMastHeight - h) * (1/50) * (1/1000) --[m] 1:50 approx. angle on side of mast (1/44 = 0.023 for B2, but 1/50.5 = 0.0.019789 for B3, B4, B5, B6)
+					d = (pol.OcsPoleHeight - h) * (1/50) * (1/1000) --[m] 1:50 approx. angle on side of mast (1/44 = 0.023 for B2, but 1/50.5 = 0.0.019789 for B3, B4, B5, B6)
 		
 				elseif pv == "Betongmast" then
 					d = 0.13
@@ -463,34 +460,34 @@ positive feeder in AT system				positiv leder i AT-system
 					d = 0.13
 		
 				elseif pv == "Hengemast for bru og tunnel" then
-					if (pp == 'Sirkulær, Ø120') then 
+					if (pp == "Sirkulær, Ø120") then 
 						d = 0.060
-					elseif (pp == 'Rektangulær, 100x100') then
+					elseif (pp == "Kvadratisk, 100x100") then
 						d = 0.050
-					elseif (pp == 'Rektangulær, 100x150') then
+					elseif (pp == "Rektangulær, 100x150"') then
 						d = 0.075
-					elseif (pp == 'Rektangulær, 100x200') then 
+					elseif (pp == "Rektangulær, 100x200") then 
 						d = 0.100
 					else
 						return 0,_warning, _info("Bad OCS pole profile ["..pp.."].")
 					end
 		
 				elseif pv == "Hengemast i åk" then
-					if (pp == 'Kvadratisk, 100x100') then 
+					if (pp == "Kvadratisk, 100x100") then 
 						d = 0.05
-					elseif (pp == 'Rektangulær, 100x150') then 
+					elseif (pp == "Rektangulær, 100x150") then 
 						d = 0.075
-					elseif (pp == 'Rektangulær, 100x200') then 
+					elseif (pp == "Rektangulær, 100x200") then 
 						d = 0.100
 					end
 		
 				elseif pv == "Hengemast Cariboni" then
-					if (pp == 'Rektangulær, 100x150') then 
+					if (pp == "Rektangulær, 100x150") then 
 						d = 0.075
 					end
 		
 				elseif pv == "Hengemast TET08" then
-					if (pp == 'U-bjelke') then 
+					if (pp == "U-bjelke") then 
 						d = 0.075
 					end
 	
@@ -563,6 +560,9 @@ positive feeder in AT system				positiv leder i AT-system
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 		
 		<Variants DefaultValue="S20A" >
+			<Variant Name="Unknown"
+				Description="System-type har ikke blitt definert." >
+			</Variant>
 			<Variant Name="S25"
 				Description="System 25: 250 km/h (1 strømavtager) / 210 km/h (2 strømavtagere). Alle strekninger." >
 			</Variant>
@@ -595,11 +595,11 @@ positive feeder in AT system				positiv leder i AT-system
 			</Variant>
 			<Variant Name="TET08"
 				Description="TET-08: 200 km/h (1 strømavtager) / 160 km/h (2 strømavtagere). Tunnel." >
-				<SetValue Key="PushDirection" Value="Pull" />
+				<SetValue Key="PushDirection" Value="PULL" />
 			</Variant>
 		</Variants>
 		
-		<SetValue Key="PushDirection" Value="Pull" />
+		<SetValue Key="PushDirection" Value="PULL" />
 
 		<!-- Generic attributes -->
 		<LuaExpression Name="code" ><Formula>_JBTEH_UTL_code()</Formula></LuaExpression>
@@ -736,7 +736,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation" ><Formula>ContactWireHeight - NOBN_ocs_getCantileverDataTable(Variant)["wco"]</Formula></LuaExpression>
+		<LuaExpression Name="RelativeElevation" ><Formula>ContactWireHeight - NOBN_ocs_getCantileverStandardValues(Variant)["wco"]</Formula></LuaExpression>
 
 
 		<!-- Primary custom attributes (generally input by hand or script) -->
@@ -748,11 +748,11 @@ positive feeder in AT system				positiv leder i AT-system
 		
 		<CustomAttribute DataType="Double" Name="ContactWireHeight" DisplayName="Kontakttrådhøyde" DefaultValue="5.00" 
 			Description="The contact wire height (cwh) [m] denotes the orthogonal distance from the rolling plane formed by the top-of-rails to the contact wire clamp." />
-		<LuaExpression Name="ContactWireHeight" ><Formula>NOBN_ocs_getCantileverDataTable(Variant)["cwh"]</Formula></LuaExpression>
+		<LuaExpression Name="ContactWireHeight" ><Formula>NOBN_ocs_getCantileverStandardValues(Variant)["cwh"]</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Double" Name="SystemHeight" DisplayName="Systemhøyde" DefaultValue="1.00" 
 			Description="The cantilever system height (sh) [m] denotes the vertical Z coordinate difference from the contact wire clamp to the catenary clamp." />
-		<LuaExpression Name="SystemHeight" ><Formula>NOBN_ocs_getCantileverDataTable(Variant)["sh"]</Formula></LuaExpression>
+		<LuaExpression Name="SystemHeight" ><Formula>NOBN_ocs_getCantileverStandardValues(Variant)["sh"]</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Double" Name="StitchWireLength" DisplayName="Y-line lengde" DefaultValue="0.00" 
 			Description="The stitch wire length (swl) [m] denotes the length, measured as a difference in mileage, from start to end (where it attaches to the catenary wire). Zero length means 'no stitch wire'." />
@@ -1143,7 +1143,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_DropperWireMaterial()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_DropperWireMaterial()
-					return NOBN_ocs_getCantileverDataTable()["drMat"]
+					return NOBN_ocs_getCantileverStandardValues()["drMat"]
 				end
 			</Formula>
 		</LuaFunction>
@@ -1163,7 +1163,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_StitchWireMaterial()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_StitchWireMaterial()
-					return NOBN_ocs_getCantileverDataTable()["swMat"]
+					return NOBN_ocs_getCantileverStandardValues()["swMat"]
 				end
 			</Formula>
 		</LuaFunction>
@@ -1180,7 +1180,7 @@ positive feeder in AT system				positiv leder i AT-system
 					s = "Tilhører kl-mast"
 					r,n = getCollectionOfRelatedObjects(s)
 					if n == 0 then
-						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, yoke suspension mast or tunnel / bridge suspension mast.")
+						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal drop arm or tunnel / bridge drop arm.")
 					else 
 						--Cantilever mounted under yoke?
 						--Make cantilever "rod" visible if located under a yoke, by visually adding 17 degrees:
@@ -1354,8 +1354,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_chkSystemHeight()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_chkSystemHeight()
-					min = NOBN_ocs_getCantileverDataTable(Variant)["shmin"]
-					max = NOBN_ocs_getCantileverDataTable(Variant)["shmax"]
+					min = NOBN_ocs_getCantileverStandardValues(Variant)["shmin"]
+					max = NOBN_ocs_getCantileverStandardValues(Variant)["shmax"]
 					sh = SystemHeight
 					v = Variant
 					if sh &lt; min then
