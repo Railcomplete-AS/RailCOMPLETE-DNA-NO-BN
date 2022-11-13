@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Switch Symbol Signaling.Lsp
+; Switch Symbol Signalling.Lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -11,7 +11,7 @@
 ;=========================================================================================================================
 ; See Bane NOR, TRV, Signal, sporvekselsymboler
 
-; Signaling discipline's graphics for inclusion in turnout symbols
+; Signalling discipline's graphics for inclusion in switch symbols
 
 ;-------------------------------------------------------------------------------------------------------------------------
 ;
@@ -28,7 +28,7 @@
 ;
 ; Filled circle*	Push-button electrically locally operated (German: Elektrisches Ortsgestellte Weiche - EOW).
 ; Empty circle		Hand-thrown (manually), or centrally controlled and interlocked point machine.
-; 					*): This symbolism has been introduced by RailCOMPLETE and is not regulated by Bane NOR.
+; 					*): This symbolism has been introduced by RailCOMPLETE.
 ;
 ;-------------------------------------------------------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@
 
 
 
-(defun SWITCH-SYMBOL-SIGNALING-KEYLOCKED ( blockName1 / blockName variation )
+(defun SWITCH-SYMBOL-SIGNALLING-KEYLOCKED ( blockName1 / blockName variation )
 	; Key locked tongues in position LEFT, RIGHT or BOTH - show a rectangle symoblizing the lock(s)
 	(foreach variation '("LEFT" "RIGHT" "BOTH")
 		(setq
@@ -60,7 +60,7 @@
 
 
 
-(defun SWITCH-SYMBOL-SIGNALING-CIRCLE-AT-TANGENT-INTERSECTION ( drawingNumber blockName1 / blockName switchParameters A radius )
+(defun SWITCH-SYMBOL-SIGNALLING-CIRCLE-AT-TANGENT-INTERSECTION ( drawingNumber blockName1 / blockName switchParameters A radius )
 	; Generate symbol for filled circle at theoretical crossing in switch - used to signify "motorized hand-thrown with push-button operation"
 	; German: "Elektrisch Ortsgestellte Weichen", EOW.
 	(setq
@@ -79,7 +79,7 @@
 
 
 
-(defun SWITCH-SYMBOL-SIGNALING ( quadrant drawingNumber blockName1 description1
+(defun SWITCH-SYMBOL-SIGNALLING ( quadrant drawingNumber blockName1 description1
 	/	blockName
 		description
 		switchParameters
@@ -115,7 +115,7 @@
 			_LINE_ _origin_ (list (- A radius) 0) _ENTER_
 			_CIRCLE_ (list A 0) radius
 		)
-		; Switch symbol - from the Signaling discipline's viewpoint:
+		; Switch symbol - from the Signalling discipline's viewpoint:
 		(command 
 			_POLYLINE_
 				(list (+ A radius) 0)
@@ -138,14 +138,14 @@
 		(DrawWipedOutCircle drawingNumber) 
 		; Mirror 0x, 1x or 2x to correct quadrant:
 		(MoveToQuadrant quadrant _selectAll_)
-		(AddDescriptionBelowOrigin description _one_)
+		(AddDescriptionBelowOrigin description _three_)
 		(CreateMetricBlockFromCurrentGraphics blockName)
 	)
 )
 
 
 
-(defun FRSR-SWITCH-SYMBOL-SIGNALING ( quadrant blockName1 description1
+(defun FRSR-SWITCH-SYMBOL-SIGNALLING ( quadrant blockName1 description1
 	/	blockName
 		description
 		variation
@@ -163,7 +163,7 @@
 			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
 			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
 		)
-		; Switch symbol - from the Signaling discipline's viewpoint:
+		; Switch symbol - from the Signalling discipline's viewpoint:
 		(command 
 			_POLYLINE_
 				(list (+ A radius) 0)
@@ -186,7 +186,7 @@
 		(DrawWipedOutCircle drawingNumber) 
 		; Mirror 0x, 1x or 2x to correct quadrant:
 		(MoveToQuadrant quadrant _selectAll_)
-		(AddDescriptionBelowOrigin description _one_)
+		(AddDescriptionBelowOrigin description _three_)
 		(CreateMetricBlockFromCurrentGraphics blockName)
 	)
 )
@@ -201,5 +201,5 @@
 		radius	0.75
 	)
 	(command _POLYGON_ 16 (list A 0) _inscribedPolygon_ radius)
-	(AddWipeoutToLastClosedPolyline layDef_Turnout_SigCircle_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_Switch_SigCircle_Wipeout _eraseWipeoutSource_)
 )

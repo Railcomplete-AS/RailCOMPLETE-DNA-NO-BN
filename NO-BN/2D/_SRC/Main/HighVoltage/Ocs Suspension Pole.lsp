@@ -12,7 +12,7 @@
 
 ; Suspension mast - from yoke, under bridge or from tunnel ceiling
 
-(defun ANYADM-OCS-SUSPENSION-POLE ( / )
+(defun OCS-SUSPENSION-POLE ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:

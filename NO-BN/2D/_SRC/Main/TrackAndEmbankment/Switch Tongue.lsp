@@ -12,36 +12,52 @@
 
 ; Switch tongues
 
-(defun SWITCH-TONGUE ( / )
+(defun SWITCH-TONGUES ( / )
 	(SetCadSystemDefaults)  
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R190" "0.6490,0.75" "H" 9.8740)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R300" "0.8030,0.75" "H" 15.8120)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-11.66-R500" "0.8030,0.75" "H" 20.0)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-12-R500" "0.8030,0.75" "H" 20.0)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-14-R760" "0.8030,0.75" "H" 26.305)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-15-R760" "0.8030,0.75" "H" 24.502)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-18.4-R1200" "0.8030,0.75" "H" 32.026)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-26.1-R2500" "0.8030,0.75" "H" 47.306)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R190" "0.6490,-0.75" "V" 9.8740)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R300" "0.8030,-0.75" "V" 15.8120)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-11.66-R500" "0.8030,-0.75" "V" 20.0)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-12-R500" "0.8030,-0.75" "V" 20.0)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-14-R760" "0.8030,-0.75" "V" 26.305)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-15-R760" "0.8030,-0.75" "V" 24.502)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-18.4-R1200" "0.8030,-0.75" "V" 32.026)
-	(DrawSwitchTongue "NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-26.1-R2500" "0.8030,-0.75" "V" 47.306)
+
+	; R190
+	(SWITCH-TONGUE "07-R190"		"0.6490,0.75" _right_ 9.8740)
+	(SWITCH-TONGUE "07-R190"		"0.6490,-0.75" _left_ 9.8740)
+	(SWITCH-TONGUE "09-R190"		"0.6490,0.75" _right_ 9.8740)
+	(SWITCH-TONGUE "09-R190"		"0.6490,-0.75" _left_ 9.8740)
+
+	; R300
+	(SWITCH-TONGUE "08.21-R300"	"0.8030,0.75" _right_ 15.8120)
+	(SWITCH-TONGUE "08.21-R300"	"0.8030,-0.75" _left_ 15.8120)
+	(SWITCH-TONGUE "09-R300"		"0.8030,0.75" _right_ 15.8120)
+	(SWITCH-TONGUE "09-R300"		"0.8030,-0.75" _left_ 15.8120)
+
+	; R500
+	(SWITCH-TONGUE "11.66-R500"	"0.8030,0.75" _right_ 20.0)
+	(SWITCH-TONGUE "11.66-R500"	"0.8030,-0.75" _left_ 20.0)
+	(SWITCH-TONGUE "12-R500"		"0.8030,0.75" _right_ 20.0)
+	(SWITCH-TONGUE "12-R500"		"0.8030,-0.75" _left_ 20.0)
+
+	; R760
+	(SWITCH-TONGUE "14-R760"		"0.8030,0.75" _right_ 26.305)
+	(SWITCH-TONGUE "14-R760"		"0.8030,-0.75" _left_ 26.305)
+	(SWITCH-TONGUE "15-R760"		"0.8030,0.75" _right_ 24.502)
+	(SWITCH-TONGUE "15-R760"		"0.8030,-0.75" _left_ 24.502)
+
+	; R1200
+	(SWITCH-TONGUE "18.4-R1200"	"0.8030,0.75" _right_ 32.026)
+	(SWITCH-TONGUE "18.4-R1200"	"0.8030,-0.75" _left_ 32.026)
+
+	; R2500
+	(SWITCH-TONGUE "26.1-R2500"	"0.8030,0.75" _right_ 47.306)
+	(SWITCH-TONGUE "26.1-R2500"	"0.8030,-0.75" _left_ 47.306)
 )
 
 
 
-(defun DrawSwitchTongue ( blockName toungePos side toungeLen / )
+(defun SWITCH-TONGUE ( geometry toungePos leftOrRight toungeLen / side )
 	(setq 
-		description (strcat "SPORVEKSELTUNGE 1:" (substr blockName 32) " " side)
+		side		(cond ((= leftOrRight _left_) "V") ((= leftOrRight _right_) "H") (T "?"))
+		blockName	(strcat _TRK_ "TNG-" "SPORVEKSELTUNGER-" geometry "-" side)
+		description (strcat "SPORVEKSELTUNGER 1:" geometry " " side)
 	)
-	(setvar 'ATTDIA 0)
-	(setvar 'ATTREQ 0)
 	(SetLayer layDef_Zero)
     (command _LINE_ toungePos (strcat "@" (rtos toungeLen) ",0") _ENTER_)
-	(AddDescriptionBelowOrigin description -1.0)
-	(CreateMetricBlockFromCurrentGraphics (strcat blockName "-" side))
+	(AddDescriptionBelowOrigin description (cond ((= leftOrRight _left_) 0.25) ((= leftOrRight _right_) (- 1.0))))
+	(CreateMetricBlockFromCurrentGraphics blockName)
 )

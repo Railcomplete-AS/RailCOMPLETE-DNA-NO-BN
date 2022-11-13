@@ -12,7 +12,7 @@
 
 ; Actuator for OCS power switch / interrupter, manual or machine-powered
 
-(defun ANYADM-OCS-SWITCH-ACTUATOR ( / blockNameRoot description)
+(defun OCS-SWITCH-ACTUATOR ( / blockNameRoot description)
 	(setq blockNameRoot (strcat _OCS_ "MAN-" "MAN" _uOSLASH_ "VERMASKIN"	))
 	(setq description (strcat "KL MAN" _uOSLASH_ "VERMASKIN"				))
 	(setq tOpen	(strcat _uARING_ "PEN")		tClosed (strcat "LUKKET")		)

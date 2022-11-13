@@ -12,7 +12,7 @@
 
 ; Telephone
 
-(defun ANYADM-WAYSIDE-TELEPHONE ( / blockName description x y gx gy )
+(defun WAYSIDE-TELEPHONE ( / blockName description x y gx gy )
 	; Box (geo with text "T"), centre top is insertion point.
 	;
 	;  TL--.--TR

@@ -45,7 +45,7 @@
 			"E204"
 			"E205"
 			"E206"
-			; "ANYADM-ANNOTATION-CHAINBREAK" 2020-07-26 CLFEY: Moved to "Annotation Chainbreak.lsp" since annotations shall scale with CAD zoom level, not with drawing size.
+			; "-ANNOTATION-CHAINBREAK" 2020-07-26 CLFEY: Moved to "Annotation Chainbreak.lsp" since annotations shall scale with CAD zoom level, not with drawing size.
 	
 			; Skilt uten signalnummer:
 			"Skilt Anleggsomraade begynner" "Skilt Anleggsomraade slutter"

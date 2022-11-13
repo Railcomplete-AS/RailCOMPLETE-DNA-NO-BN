@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Connector Alignment Splice.lsp
+; Connector Continuation.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -14,18 +14,18 @@
 
 ; Concerns schematic symbols that scale with paperspace drawing scale.
 
-(defun ANYADM-CONNECTOR-SPLICE ( / )
+(defun CONNECTOR-CONTINUATIONS ( / )
 	; Connects an alignment to another alignment when it has been recognized as a valid extension of the first alignment.
 	; The symbols look like this: [>>], [><], [<>], and [<<]. The arrows represent each alignment's direction of increasing mileages.
 	(SetCadSystemDefaults)  
-	(TraceLevel3 "ANYADM-TRACK-CONTINUATION")				(ANYADM-TRACK-CONTINUATION)
-	(TraceLevel3 "ANYADM-HIGH-VOLTAGE-CABLE-CONTINUATION")	(ANYADM-HIGH-VOLTAGE-CABLE-CONTINUATION)
-	(TraceLevel3 "ANYADM-CONTACT-WIRE-CONTINUATION")		(ANYADM-CONTACT-WIRE-CONTINUATION)
+	(TraceLevel3 "TRACK-CONTINUATION")					(TRACK-CONTINUATION)
+	(TraceLevel3 "HIGH-VOLTAGE-CONDUCTOR-CONTINUATION")	(HIGH-VOLTAGE-CONDUCTOR-CONTINUATION)
+	(TraceLevel3 "CONTACT-WIRE-CONTINUATION")			(CONTACT-WIRE-CONTINUATION)
 )
 
 
 
-(defun ANYADM-TRACK-CONTINUATION ( / blockName description x y leftArrow rightArrow )
+(defun TRACK-CONTINUATION ( / blockName description x y leftArrow rightArrow )
 	(setq
 		x	3.0
 		y	1.0
@@ -44,7 +44,7 @@
 
 
 
-(defun ANYADM-HIGH-VOLTAGE-CABLE-CONTINUATION ( / blockName description x y leftArrow rightArrow )
+(defun HIGH-VOLTAGE-CONDUCTOR-CONTINUATION ( / blockName description x y leftArrow rightArrow )
 	(setq
 		x	3.0
 		y	1.0
@@ -63,7 +63,7 @@
 
 
 
-(defun ANYADM-CONTACT-WIRE-CONTINUATION ( / blockName description x y leftArrow rightArrow )
+(defun CONTACT-WIRE-CONTINUATION ( / blockName description x y leftArrow rightArrow )
 	(setq
 		x	3.0
 		y	1.0

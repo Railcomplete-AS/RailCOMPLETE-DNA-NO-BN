@@ -13,7 +13,7 @@
 
 ; Force uptake (guywires and spanners)
 
-(defun ANYADM-OCS-WIRE-TENSIONING-ANCHOR ( / )
+(defun OCS-WIRE-TENSIONING-ANCHOR ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:
@@ -21,16 +21,16 @@
 	(TraceLevel3 "NOBN-BARDUN-FOTPLATE-DOBBEL")							(NOBN-BARDUN-FOTPLATE-DOBBEL)							; Bracket which is screwed onto a foundation for two OCS wire guywires (going to the same OCS mast) (e.g., bardunfundament boret 2500mm)
 	(TraceLevel3 "NOBN-STREVER-FOTPLATE")								(NOBN-STREVER-FOTPLATE)									; Bracket which is screwed onto a foundation for a OCS wire spanners (e.g., bardunfundament boret 2500mm)
 	(TraceLevel3 "NOBN-STREVER-FOTPLATE-TUNNEL-120")					(NOBN-STREVER-FOTPLATE-TUNNEL-120)						; Bracket which is fastened to tunnel roof / under bridge which clamps with two arms to an Ø120 bridge / tunnel mast
-	(TraceLevel3 "ANYADM-ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE")		(ANYADM-ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE)			; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for WTB and guywire
-	(TraceLevel3 "ANYADM-ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE")	(ANYADM-ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE)		; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for WTB with no guywire (may have spanner)
-	(TraceLevel3 "ANYADM-ANCHORING-TO-POLE-FOR-GUYWIRE")				(ANYADM-ANCHORING-TO-POLE-FOR-GUYWIRE)					; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for guywire or spanner
-	(TraceLevel3 "ANYADM-ANCHORING-TO-POLE-FOR-SPANNER")				(ANYADM-ANCHORING-TO-POLE-FOR-SPANNER)					; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for guywire or spanner
+	(TraceLevel3 "ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE")		(ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE)			; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for WTB and guywire
+	(TraceLevel3 "ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE")	(ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE)		; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for WTB with no guywire (may have spanner)
+	(TraceLevel3 "ANCHORING-TO-POLE-FOR-GUYWIRE")				(ANCHORING-TO-POLE-FOR-GUYWIRE)					; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for guywire or spanner
+	(TraceLevel3 "ANCHORING-TO-POLE-FOR-SPANNER")				(ANCHORING-TO-POLE-FOR-SPANNER)					; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for guywire or spanner
 	(TraceLevel3 "NOBN-TUNNELFESTE")									(NOBN-TUNNELFESTE)										; Bolts to tunnel wall, holding a bracket which holds a cantilever, or a rod terminated in a ring where the OCS wire guywire is to be fastened. See EH-702679.
 )
 
 
 
-(defun ANYADM-ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE ( / blockName description x y r1 p1 p2 p3 p4 )
+(defun ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE ( / blockName description x y r1 p1 p2 p3 p4 )
 	; Anchoring device on OCS pole.
 	; Connects a WTB (and potential guywire) to an OCS mast.
 	; This symbol has no equivalent in the Bane NOR symbol library.
@@ -69,7 +69,7 @@
 
 
 
-(defun ANYADM-ANCHORING-TO-POLE-FOR-GUYWIRE ( / blockName description x y p2 p3 p4 )
+(defun ANCHORING-TO-POLE-FOR-GUYWIRE ( / blockName description x y p2 p3 p4 )
 	; Anchoring device on OCS pole.
 	; Connects a WTB to an OCS mast, no guywire at the same anchoring device. There may be a spanner, but it shall have its own anchoring device 
 	; due to different Z coordinate on the OCS pole.
@@ -105,7 +105,7 @@
 
 
 
-(defun ANYADM-ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE ( / blockName description x y r5 p5 )
+(defun ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE ( / blockName description x y r5 p5 )
 	; Anchoring device on OCS pole.
 	; Connects one guywire (or more) to an OCS mast, to counteract large lateral forces due to track curvature etc.
 	; This symbol has no equivalent in the Bane NOR symbol library.
@@ -136,7 +136,7 @@
 
 
 
-(defun ANYADM-ANCHORING-TO-POLE-FOR-SPANNER ( / blockName description x y p6 p7 p8 )
+(defun ANCHORING-TO-POLE-FOR-SPANNER ( / blockName description x y p6 p7 p8 )
 	; Anchoring device on OCS pole.
 	; Connects one spanner to an OCS mast, to counteract large lateral forces, typically when terminating a CW in a narrow yard.
 	; This symbol has no equivalent in the Bane NOR symbol library.

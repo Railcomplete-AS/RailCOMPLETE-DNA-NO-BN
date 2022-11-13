@@ -22,7 +22,7 @@
 	(SetCadSystemDefaults)
 
 	; Implemented for all administrations:
-	(TraceLevel2 "ANYADM-ANNOTATION-CHAINBREAK")	(ANYADM-ANNOTATION-CHAINBREAK)
+	(TraceLevel2 "ANNOTATION-CHAINBREAK")	(ANNOTATION-CHAINBREAK)
 
 	; Specific to this administration:
 )

@@ -10,17 +10,17 @@
 ;
 ;=========================================================================================================================
 
-; Turnout, derailer and level crossing boom operation (point machine, derailer machine, boom machine)
+; Switch, derailer and level crossing boom operation (point machine, derailer machine, boom machine)
 
-(defun ANYADM-SWITCH-CONTROL-EQUIPMENT ( / )
-	(TraceLevel3 "ANYADM-POINT-MACHINE")		(ANYADM-POINT-MACHINE)
-	(TraceLevel3 "ANYADM-DERAILER-MACHINE")		(ANYADM-DERAILER-MACHINE)
-	(TraceLevel3 "ANYADM-LOCAL-CONTROL-PANEL")	(ANYADM-LOCAL-CONTROL-PANEL)
+(defun SWITCH-CONTROL-EQUIPMENT ( / )
+	(TraceLevel3 "POINT-MACHINE")		(POINT-MACHINE)
+	(TraceLevel3 "DERAILER-MACHINE")		(DERAILER-MACHINE)
+	(TraceLevel3 "LOCAL-CONTROL-PANEL")	(LOCAL-CONTROL-PANEL)
 )
 
 
 
-(defun ANYADM-POINT-MACHINE ( / blockName description r1 r2 )
+(defun POINT-MACHINE ( / blockName description r1 r2 )
 	;    _____
 	;   /  _  \
 	;  | ( . ) |
@@ -43,7 +43,7 @@
 
 
 
-(defun ANYADM-DERAILER-MACHINE ( / blockName description r1 r2 )
+(defun DERAILER-MACHINE ( / blockName description r1 r2 )
 	;    _____
 	;   /  _  \
 	;  | ( . ) |		; Same as switch point machine
@@ -66,7 +66,7 @@
 
 
 
-(defun ANYADM-LOCAL-CONTROL-PANEL ( / blockName description r1 r2 )
+(defun LOCAL-CONTROL-PANEL ( / blockName description r1 r2 )
 	;    _____
 	;   /  _  \
 	;  | (*.*) |	Dense hatch in inner circle

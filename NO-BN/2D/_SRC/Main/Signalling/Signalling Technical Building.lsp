@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Signaling Technical building.lsp
+; Signalling Technical building.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -12,7 +12,7 @@
 
 ; Relay room (interlocking's technical equipment room)
 
-(defun ANYADM-TECHNICAL-BUILDING ( / )
+(defun TECHNICAL-BUILDING ( / )
 	(setq blockName (strcat _SIG_ "TER-" "TEKNISK-BEBYGGELSE-RELEROM"	))
 	(setq description (strcat "TEKNISK BEBYGGELSE RELEROM"				))
 

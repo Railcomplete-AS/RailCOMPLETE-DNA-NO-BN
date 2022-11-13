@@ -13,7 +13,7 @@
 ; Cabinets and cable distribution boxes for signaling
 ; Let doors be drawn towards the lower part of each 2D symbol - towards the observer.
 
-(defun ANYADM-CABINETS-AND-DISTRIBUTION-BOXES ( / )
+(defun CABINETS-AND-DISTRIBUTION-BOXES ( / )
 	(NOBN-APPARATSKAP-OG-BOKSER-FOR-SIGNAL)
 )
 

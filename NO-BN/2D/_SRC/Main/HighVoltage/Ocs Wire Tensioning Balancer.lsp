@@ -14,7 +14,7 @@
 ;
 ; See Bane NOR Elkraftportalen: EH.707487 - Contact wire tensioning device (2xLodd)
 
- (defun ANYADM-OCS-WIRE-TENSIONING-BALANCER ( / )
+ (defun OCS-WIRE-TENSIONING-BALANCER ( / )
  	; Implemented for all administrations:
 
 	; Specific to this administration:

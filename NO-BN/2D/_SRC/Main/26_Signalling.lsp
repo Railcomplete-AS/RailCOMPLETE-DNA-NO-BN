@@ -1,6 +1,6 @@
 ﻿;=========================================================================================================================
 ;
-; 26_Signaling.lsp
+; 26_Signalling.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved. 
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -10,26 +10,26 @@
 ;
 ;=========================================================================================================================
 
-; Signaling objects top-level LISP routine
+; Signalling objects top-level LISP routine
 
-(setq f (strcat rootFolder "\\Main\\Signaling"))
+(setq f (strcat rootFolder "\\Main\\Signalling"))
 (princ (vl-directory-files (findfile f)))
 (princ "\n")
 (LoadFolder f)
 
-(defun 26_GENERATE-SIGNALING-OBJECTS ( / )
+(defun 26_GENERATE-SIGNALLING-OBJECTS ( / )
 	(SetCadSystemDefaults)
 
 	; Implemented for all administrations:
-	(TraceLevel2 "ANYADM-AXLE-COUNTER-SYSTEM")						(ANYADM-AXLE-COUNTER-SYSTEM)
-	(TraceLevel2 "ANYADM-BALISE-SYSTEM") 							(ANYADM-BALISE-SYSTEM)
-	(TraceLevel2 "ANYADM-TECHNICAL-BUILDING")						(ANYADM-TECHNICAL-BUILDING)
-	(TraceLevel2 "ANYADM-CABINETS-AND-DISTRIBUTION-BOXES") 			(ANYADM-CABINETS-AND-DISTRIBUTION-BOXES)
+	(TraceLevel2 "AXLE-COUNTER-SYSTEM")								(AXLE-COUNTER-SYSTEM)
+	(TraceLevel2 "BALISE-SYSTEM") 									(BALISE-SYSTEM)
+	(TraceLevel2 "TECHNICAL-BUILDING")								(TECHNICAL-BUILDING)
+	(TraceLevel2 "CABINETS-AND-DISTRIBUTION-BOXES") 				(CABINETS-AND-DISTRIBUTION-BOXES)
 	; Local control panel, point machine, derailer point machines. And may be level crossing boom machines:
-	(TraceLevel2 "ANYADM-SWITCH-CONTROL-EQUIPMENT")					(ANYADM-SWITCH-CONTROL-EQUIPMENT)
+	(TraceLevel2 "SWITCH-CONTROL-EQUIPMENT")						(SWITCH-CONTROL-EQUIPMENT)
 	; Derailer is a signaling object, because it controls flank protection and front / rear collisions:
-	(TraceLevel2 "ANYADM-DERAILER") 								(ANYADM-DERAILER)
-	(TraceLevel2 "ANYADM-VIRTUAL-SIGNAL")							(ANYADM-VIRTUAL-SIGNAL)
+	(TraceLevel2 "DERAILER") 										(DERAILER)
+	(TraceLevel2 "VIRTUAL-SIGNAL")									(VIRTUAL-SIGNAL)
 
 	; Specific to this administration:
 	(TraceLevel2 "NOBN-AVSPORINGSINDIKATOR") 						(NOBN-AVSPORINGSINDIKATOR)

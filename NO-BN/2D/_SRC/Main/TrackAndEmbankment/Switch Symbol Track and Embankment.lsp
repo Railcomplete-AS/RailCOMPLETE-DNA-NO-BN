@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Switch Symbol Superstructure.lsp
+; Switch Symbol Track and Embankment.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -16,7 +16,7 @@
 ;=========================================================================================================================
 ; See Bane NOR, TRV, Overbygning, sporvekselsymboler
 
-; Superstructure (track and embankment) discipline's graphics for inclusion into turnout symbol
+; Superstructure (track and embankment) discipline's graphics for inclusion into switch symbol
 
 ;-------------------------------------------------------------------------------------------------------------------------
 ;
@@ -29,8 +29,8 @@
 ; for files with name such as 'NO-BN switches.xlsx' in the RailCOMPLETE 2D symbol creation source code folders. The exact
 ; XY-plane geometry is captured to the millimeter.
 ;
-; Immediately after the rear-of-switch ('Norw: 'bakkant sporveksel, BK'), there is a strech of long sleepers. The long
-; sleepers are in use until the two track's rails have separated enough that there is space enough for using individual
+; Immediately after the rear-of-switch ('Norw: 'bakkant sporveksel, BK'), there is a stretch of long sleepers. The long
+; sleepers are in use until the two tracks' rails have separated enough that there is space enough for using individual
 ; short sleepers for each track. This is the 'short sleeper' area, after the 'long sleeper' area.
 ; We have added a dividing line through the short sleeper area, as a visual reminder that there are individual sleepers here.
 ;
@@ -45,12 +45,12 @@
 	/ 	blockName
 		description
 		switchParameters
-		switchDiamondType  A B C D E F L R x railProfile ang
+		switchCrossingType  A B C D E F L R x railType ang
 		zeroPad
 	)
 	(setq 
 		switchParameters (getSwitchParameters drawingNumber)
-		switchDiamondType	(cadr (assoc "SwitchDiamondType" switchParameters))
+		switchCrossingType	(cadr (assoc "SwitchCrossingType" switchParameters))
 		A			(/ (cadr (assoc "A" switchParameters)) 1000.0)
 		B			(/ (cadr (assoc "B" switchParameters)) 1000.0)
 		C			(/ (cadr (assoc "C" switchParameters)) 1000.0)
@@ -60,7 +60,7 @@
 		L			(/ (cadr (assoc "L" switchParameters)) 1000.0)
 		R			(cadr (assoc "R" switchParameters))
 		x			(cadr (assoc "x" switchParameters))
-		railProfile	(cadr (assoc "RailProfile" switchParameters))
+		railType	(cadr (assoc "RailType" switchParameters))
 		ang (R->D (atan (/ 1.0 x)))
 	)
 	(setq blockName1 (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL"		))
@@ -72,8 +72,8 @@
 		(setq zeroPad _emptyString_)
 	)
 	(setq 
-		blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" (rtos quadrant 2 0))
-		description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" (rtos quadrant 2 0))
+		blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railType "-" switchCrossingType "-" (rtos quadrant 2 0))
+		description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railType "-" switchCrossingType "-" (rtos quadrant 2 0))
 	)
 	(SetLayer layDef_Zero)
  	(command
@@ -109,7 +109,7 @@
 	(DrawHatch _sparseHatch_)
 
 	; Deviating track / geometry axis
-	(SetLayer layDef_Turnout_Geometry)
+	(SetLayer layDef_Switch_Geometry)
 	(command
 		_POLYLINE_ 
 			_origin_
@@ -125,7 +125,7 @@
 	) 
   
 	; Show long-sleepers area outside rear end of switch
-	(SetLayer layDef_Turnout_LongSleepers)
+	(SetLayer layDef_Switch_LongSleepers)
 	(command 
 		_POLYLINE_
 			(list L 0)
@@ -142,7 +142,7 @@
 	)
 
 	; Show short-sleepers area outside rear end of switch, after the long-sleeper area (if any)
-	(SetLayer layDef_Turnout_ShortSleepers)
+	(SetLayer layDef_Switch_ShortSleepers)
 	(command
 		_POLYLINE_
 			(list (+ L E) 0)
@@ -155,12 +155,12 @@
 			_setPolylineLineMode_
 			_closedPolyline_
     )
-	; Add 'division line' to illustrate that there are now one set of sleepers for each turnout leg:
+	; Add 'division line' to illustrate that there are now one set of sleepers for each switch leg:
 	(command
 		_LINE_ (list (+ A (* (+ B E) (DDcos (/ ang 2.0)))) (* (+ B E) (DDsin (/ ang 2.0)))) (strcat "@" (rtos F) "<" (rtos (/ ang 2.0))) _ENTER_
 	)
 
 	(MoveToQuadrant quadrant _selectAll_)
-	(AddDescriptionBelowOrigin description 1.0)
+	(AddDescriptionBelowOrigin description _one_)
 	(CreateMetricBlockFromCurrentGraphics blockName)
 )

@@ -13,7 +13,7 @@
 
 ; Chain break symbol, scalable inside RailCOMPLETE (as you zoom in and out)
 
-(defun ANYADM-ANNOTATION-CHAINBREAK ( / blockName description )
+(defun ANNOTATION-CHAINBREAK ( / blockName description )
 	;
 	;                Jump
 	;      +------------------------+

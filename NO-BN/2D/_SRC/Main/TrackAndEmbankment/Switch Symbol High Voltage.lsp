@@ -11,7 +11,7 @@
 ;=========================================================================================================================
 ; See Bane NOR, TRV, Elektro/Høyspent, sporvekselsymboler
 
-; Catenary system / line electrification discipline's graphics for inclusion in turnout symbols
+; Catenary system / line electrification discipline's graphics for inclusion in switch symbols
 
 ;-------------------------------------------------------------------------------------------------------------------------
 ;
@@ -28,18 +28,18 @@
 	/ 	blockName 
 		description 
 		switchParameters 
-		switchDiamondType  A B C D E F L R x railProfile ang
+		switchCrossingType  A B C D E F L R x railType ang
 		zeroPad
 		variation
 	)
 	(setq
 		switchParameters	(getSwitchParameters drawingNumber)
-		switchDiamondType	(cadr (assoc "SwitchDiamondType" switchParameters))
+		switchCrossingType	(cadr (assoc "SwitchCrossingType" switchParameters))
 		A					(/ (cadr (assoc "A" switchParameters)) 1000.0)
 		B					(/ (cadr (assoc "B" switchParameters)) 1000.0)
 		R 					(cadr (assoc "R" switchParameters))
 		x					(cadr (assoc "x" switchParameters))
-		railProfile			(cadr (assoc "RailProfile" switchParameters))
+		railType			(cadr (assoc "RailType" switchParameters))
 		ang	  				(R->D (atan (/ 1.0 x))) ; sporvekselsymbol
 	)
 	(setq blockName1 (strcat _OCS_ "SPV-" "FORBINDELSE-SPORVEKSEL"			))
@@ -52,8 +52,8 @@
 	)
 	(foreach variation '("BOTH_LEGS_ELECTRIFIED" "ONE_LEG_ELECTRIFIED" "UNKNOWN_ELECTRIFICATION")
 		(setq
-			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
-			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
+			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railType "-" switchCrossingType "-" variation "-" (rtos quadrant 2 0))
+			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railType "-" switchCrossingType "-" variation "-" (rtos quadrant 2 0))
 		)
 		(SetLayer layDef_Zero)
 		(cond

@@ -12,7 +12,7 @@
 
 ; Derailer
 
-(defun ANYADM-DERAILER ( / singleOrDouble activeOrInactive nSignals operation quadrant )
+(defun DERAILER ( / singleOrDouble activeOrInactive nSignals operation quadrant )
 
 	(SetCadSystemDefaults)  
 	(foreach singleOrDouble (list _single_ _double_)

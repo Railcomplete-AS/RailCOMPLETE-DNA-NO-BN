@@ -12,7 +12,7 @@
 
 ; OCS in/out interrupters, to be mounted on top of OCS masts
 
-(defun ANYADM-TRACTION-POWER-INTERRUPTER ( / )
+(defun TRACTION-POWER-INTERRUPTER ( / )
  	; Implemented for all administrations:
 
 	; Specific to this administration:

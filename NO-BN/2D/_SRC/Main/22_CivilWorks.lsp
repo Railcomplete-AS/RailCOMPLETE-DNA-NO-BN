@@ -21,7 +21,7 @@
 	(SetCadSystemDefaults)
 
 	; Implemented for all administrations:
-	(TraceLevel2 "ANYADM-MANHOLE")			(ANYADM-MANHOLE) ; Round, square, etc. - shows external dimensions and location of the lid. Insertion point is the centre top edge of the the lid "sticks up".
+	(TraceLevel2 "MANHOLE")			(MANHOLE) ; Round, square, etc. - shows external dimensions and location of the lid. Insertion point is the centre top edge of the the lid "sticks up".
 
 	; Specific to this administration:
 	(TraceLevel2 "NOBN-FUNDAMENT-FOR-SKAP")				(NOBN-FUNDAMENT-FOR-SKAP) 

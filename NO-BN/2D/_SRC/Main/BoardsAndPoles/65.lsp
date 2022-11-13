@@ -403,7 +403,7 @@
 		g 0.62
 	)
 	(setq
-		offsetX (+ (-(HalfOf W)) B e (HalfOf f))
+		offsetX (+ ((HalfOf W)) B e (HalfOf f))
 		offsetY (HalfOf (+ c g))
 	)
 	(DrawBox layDef_Zero W H layDef_BoardOrPole_Wipeout) 
