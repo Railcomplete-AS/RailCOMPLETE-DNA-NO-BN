@@ -11,19 +11,20 @@
 ;=========================================================================================================================
 
 ; Electrical connection (between contact wires and / or catenary wires)
+; Floating crossing in switches.
 
-(defun ANYADM-OCS-HIGH-VOLTAGE-WIRE-CONNECTOR ( / )
+(defun OCS-HIGH-VOLTAGE-WIRE-CONNECTOR ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:
-	(TraceLevel3 "NOBN-STROEMBRO-H")		(NOBN-STROEMBRO "H") ; "C-Pacman" moving right C
-	(TraceLevel3 "NOBN-STROEMBRO-V")		(NOBN-STROEMBRO "V") ; "C-Pacman" moving left  )
-	(TraceLevel3 "NOBN-SVEVENDE-KRYSS")		(NOBN-SVEVENDE-KRYSS) ; Floating crossing (where wires cross in a turnout/point/switch)
+	(TraceLevel3 "KL-STROEMBRO-H")		(KL-STROEMBRO "H") ; "C-Pacman" moving right C
+	(TraceLevel3 "KL-STROEMBRO-V")		(KL-STROEMBRO "V") ; "C-Pacman" moving left  )
+	(TraceLevel3 "KL-SVEVENDE-KRYSS")	(KL-SVEVENDE-KRYSS) ; Floating crossing (where wires cross in a turnout/point/switch)
 )
 
 
 
-(defun NOBN-STROEMBRO ( dir / blockName description r startAngle endAngle arrowLength arrowWidth p1 p2 p3 p4 p5 )
+(defun KL-STROEMBRO ( dir / blockName description r startAngle endAngle arrowLength arrowWidth p1 p2 p3 p4 p5 )
 	; See EH.705051 'Strømbro i avspenningsfelt'. Strømbro mellom to ledninger i et vekslingsfelt.
 	; Symbol: A "C" with an arrow at each tip, which shall touch two catenary / contact wire alignments exactly.
 	; Insertion direction is "both" in one of the wires (own Alignment).
@@ -41,8 +42,8 @@
 	;   \_____/
 	;
 	(setq
-		blockName (strcat "NO-BN-2D-JBTEH_FOR-FORBINDELSE-STROEMBRO" "-" dir)
-		description (strcat "KL FORBINDELSE, STROEMBRO " dir)
+		blockName	(strcat _OCS_ "FOR-" "FORBINDELSE-STROEMBRO" "-" dir)
+		description	(strcat "KL FORBINDELSE, STROEMBRO " dir)
 		r 2.5
 		startAngle	25.0
 		endAngle	(- 25.0)
@@ -83,7 +84,7 @@
 
 
 
-(defun NOBN-SVEVENDE-KRYSS ( / blockName description x y  )
+(defun KL-SVEVENDE-KRYSS ( / blockName description x y  )
 	; EH.707403 'Svevende kontakttrådkryss for 12 mm2 kontakttråd'. 2500mm tråd med hengetrådklemme i hver ende.
 	; Strømper på bærelinene om nødvendig.
 	; Symbol: A 90 degrees "X" at the apparent intersection between two contact wire alignments.
@@ -98,7 +99,7 @@
 	; BL   BR
 	;
 	(setq
-		blockName "NO-BN-2D-JBTEH_SVE-FORBINDELSE-SVEVENDE-KRYSS"
+		blockName	(strcat _OCS_ "SVE-" "FORBINDELSE-SVEVENDE-KRYSS")
 		description "KL SVEVENDE KRYSS"
 		x	(* (sqrt 0.5) 3.0)
 		y	(* (sqrt 0.5) 3.0)

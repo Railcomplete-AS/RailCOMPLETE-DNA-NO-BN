@@ -12,7 +12,7 @@
 
 ; Overhead Catenary System pole
 
-(defun ANYADM-OCS-UPRIGHT-POLE ( / )
+(defun OCS-UPRIGHT-POLE ( / )
 
 	; Implemented for all administrations:
 

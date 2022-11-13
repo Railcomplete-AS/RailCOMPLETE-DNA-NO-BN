@@ -12,7 +12,7 @@
 
 ; Fictitous signal marker (start / end of train route, via point)
 
-(defun ANYADM-VIRTUAL-SIGNAL ( / )
+(defun VIRTUAL-SIGNAL ( / )
 	(VIRTUAL-SIGNAL-VIAPOINT)
 	(VIRTUAL-SIGNAL-ENDPOINT)
 )

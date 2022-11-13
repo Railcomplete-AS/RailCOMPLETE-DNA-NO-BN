@@ -10,7 +10,7 @@
 ;
 ;=========================================================================================================================
 
-; Signaling cabinet foundation
+; Signalling cabinet foundation
 
 ; For debugging:
 ; 

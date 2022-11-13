@@ -12,7 +12,7 @@
 
 ; Axle counter sensor and axle counter tuning unit
 
-(defun ANYADM-AXLE-COUNTER-SYSTEM ( / )
+(defun AXLE-COUNTER-SYSTEM ( / )
 	(TraceLevel3 "AXLE-COUNTER-SENSOR")	(AXLE-COUNTER-SENSOR)
 	(TraceLevel3 "AXLE-COUNTER-TUNER")	(AXLE-COUNTER-TUNER)
 )

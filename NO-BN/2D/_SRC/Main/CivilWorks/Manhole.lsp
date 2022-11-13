@@ -12,29 +12,29 @@
 
 ; Manhole
 
-(defun ANYADM-MANHOLE ( / )
+(defun MANHOLE ( / )
 	; Manhole radius, manholeLength and manholeDepth are given in mm, the others in meters.
 
 	; Diameter, cover diameter, cover offset X and Y
-	(ANYADM-MANHOLE-CIRCULAR "1400" 0.700 0.126 0.137) ; Top left placement of cover
+	(MANHOLE-CIRCULAR "1400" 0.700 0.126 0.137) ; Top left placement of cover
 	;(MANHOLE-CIRCULAR "1400" 0.700 0.000 0.186)  ; Middle top placement of cover
 
 	; Length (mm along track), depth [mm] (across track), cover diameter [m]  (or zero), cover length [m] (or don't care) 
 	; cover depth [m] (or don't care), cover offset X and Y [m]
-	(ANYADM-MANHOLE-RECTANGULAR "1600"  "900" 0 1.32 0.68  0.000 0.450) ; radius=0 ==> rectangular cover size (1.32 0.68) at (0 .450)
+	(MANHOLE-RECTANGULAR "1600"  "900" 0 1.32 0.68  0.000 0.450) ; radius=0 ==> rectangular cover size (1.32 0.68) at (0 .450)
 	
 	; Length [mm] (along track), depth [mm] (across track), cover diameter [m] (or zero), cover length [m] (or don't care) 
 	; cover depth [m] (or don't care), cover offset X and Y [m]
-	(ANYADM-MANHOLE-RECTANGULAR "1400" "1400" 0.660 0 0 -0.225 0.925)
+	(MANHOLE-RECTANGULAR "1400" "1400" 0.660 0 0 -0.225 0.925)
 	
 	; Length [mm] (along track), depth [mm] (across track), cover diameter [m] (or zero), cover length [m] (or don't care) 
 	; cover depth [m] (or don't care), cover offset X and Y [m]	
-	(ANYADM-MANHOLE-RECTANGULAR "2300" "2300" 0.660 0 0 -0.625 1.775)
+	(MANHOLE-RECTANGULAR "2300" "2300" 0.660 0 0 -0.625 1.775)
 )
 
 
 	
-(defun ANYADM-MANHOLE-CIRCULAR ( manholeDiameter coverDiameter coverOffsetX coverOffsetY / blockName description mr cr p1 )
+(defun MANHOLE-CIRCULAR ( manholeDiameter coverDiameter coverOffsetX coverOffsetY / blockName description mr cr p1 )
 	; Manholeradius is given in mm, the others in meters.
 	;   _____
 	;  /  (1)\
@@ -62,7 +62,7 @@
 
 
 
-(defun ANYADM-MANHOLE-RECTANGULAR ( manholeLength manholeDepth coverDiameter coverLength coverDepth coverOffsetX coverOffsetY / blockName description x y cr p1 )
+(defun MANHOLE-RECTANGULAR ( manholeLength manholeDepth coverDiameter coverLength coverDepth coverOffsetX coverOffsetY / blockName description x y cr p1 )
 	; ManholeLength and manholeDepth are given in mm, the others in meters.
 	; Interpreted as inside measures (open to debate...)
 	;

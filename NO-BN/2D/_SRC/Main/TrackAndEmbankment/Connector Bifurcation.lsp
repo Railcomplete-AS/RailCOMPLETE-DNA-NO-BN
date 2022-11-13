@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Connector Track Bifurcation.lsp
+; Connector Bifurcation.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -10,7 +10,7 @@
 ;
 ;=========================================================================================================================
 
-; Symbols for switches (turnouts), with graphics from Superstructure / Catenary / Signaling.
+; Symbols for switches (turnouts), with graphics from Superstructure / Catenary / Signalling.
 
 ;-------------------------------------------------------------------------------------------------------------------------
 ;
@@ -21,7 +21,7 @@
 ;
 ; SWITCH-SYMBOL-SUPERSTRUCTURE	The track and embankment's viewpoint (concerning geometry, sleepers, forbidden sensor area etc)
 ; SWITCH-SYMBOL-HIGH-VOLTAGE	The high voltage viewpoint (concerning electrification of one or both tracks)
-; SWITCH-SYMBOL-SIGNALING		The signaling viewpoint (throwing actuator type and interlocking control type)
+; SWITCH-SYMBOL-SIGNALLING		The signaling viewpoint (throwing actuator type and interlocking control type)
 ;
 ; Elements from all disciplines are assembled by the switch object's DNA type declaration, using <SymbolDefinition> XML 
 ; declarations. The difference discipline's graphics will be switched on or off using the RC-ShowLayer tool, which manipulates
@@ -35,15 +35,15 @@
 ;
 ;-------------------------------------------------------------------------------------------------------------------------
 
-(defun CONNECTOR-SWITCHES ( / )
+(defun CONNECTOR-BIFURCATIONS ( / )
 	(SetCadSystemDefaults)  
-	(CONNECTOR-SWITCH-ANONYMOUS) 		; Schematic symbol for unknown geometry (fixed 1:1 scale)
-	(CONNECTOR-SWITCH-WITH-GEOMETRY) 	; Turnout - switch - point with recognized geometry (fixed 1:1 scale)
+	(CONNECTOR-SWITCH-GENERAL) 				; Schematic symbol for unknown geometry (fixed 1:1 scale)
+	(CONNECTOR-SWITCH-WITH-GEOMETRY) 			; Switch - turnout - point with recognized geometry (fixed 1:1 scale)
 )
 
 
 
-(defun CONNECTOR-SWITCH-ANONYMOUS ( / blockName u currentBlockName q )
+(defun CONNECTOR-SWITCH-GENERAL ( / blockName u currentBlockName q )
 	; Triangular arrowhead with 'stock rail joint line' across the track at the SRJ:
 	;
 	;   2       4
@@ -57,7 +57,7 @@
 	(setq
 		u 1.0 ; unit
 	)
-	(TraceLevel2 (strcat "SWITCH: GENERAL"))
+	(TraceLevel2 (strcat "...SWITCH: GENERAL"))
 	(SetLayer layDef_Zero)
 	(command 
 		_POLYLINE_ (list 0 u) (list 0 (* -1 u)) _closedPolyline_ ; Stock rail joint
@@ -90,7 +90,7 @@
 	; TODO: Include details on guard rails, tongue hinge / swivel point etc.
 	(setq blockNameSig (strcat _SIG_ "SPV-" "FORBINDELSE-SPORVEKSEL"	))
 	(setq descriptionSig (strcat "SPORVEKSEL, SIGNALSYMBOL"				))
-	(TraceLevel2 "Switches:")
+	(TraceLevel2 "...SWITCH: WITH TRUE GEOMETRY")
 	(setq
 		switchDrawingList (list
 			; Enkel 54E3
@@ -119,15 +119,15 @@
 			"KO-701399" 	;1:26,1 R25001 klotoideveksel
 		)
 	)
-	(SWITCH-SYMBOL-SIGNALING-KEYLOCKED blockNameSig)		; Turnout - switch - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
+	(SWITCH-SYMBOL-SIGNALLING-KEYLOCKED blockNameSig)		; Switch - turnout - right side, left side or both sides key-locked control position symbols (3 symbols generates here)
 	(setq itemNumber 0)
 	(repeat (length switchDrawingList)
 		(setq drawingNumber (nth itemNumber switchDrawingList))
 		(setq quadrant 1)
-		(SWITCH-SYMBOL-SIGNALING-CIRCLE-AT-TANGENT-INTERSECTION drawingNumber blockNameSig) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
-		(TraceLevel3 (strcat "SWITCH: " drawingNumber))
+		(SWITCH-SYMBOL-SIGNALLING-CIRCLE-AT-TANGENT-INTERSECTION drawingNumber blockNameSig) ; Used in the signaling symbols (same for all variants fylt/tom/lett per switch type)
+		(TraceLevel3 (strcat "...SWITCH DRAWING #: " drawingNumber))
 		(repeat 4
-			(SWITCH-SYMBOL-SIGNALING quadrant drawingNumber blockNameSig descriptionSig) ; Signaling discipline symbols in switch object
+			(SWITCH-SYMBOL-SIGNALLING quadrant drawingNumber blockNameSig descriptionSig) ; Signalling discipline symbols in switch object
 			(SWITCH-SYMBOL-SUPERSTRUCTURE quadrant drawingNumber) ; Track discipline symbols in switch object
 			(SWITCH-SYMBOL-HIGH-VOLTAGE quadrant drawingNumber) ; Catenary discipline symbols in switch object
 			(setq quadrant (+ 1 quadrant))
@@ -140,7 +140,7 @@
 
 (defun getSwitchParameters ( switchDrawingNumber / )
 	; Concerning Bane NOR (Norway):
-	; Inserted from Excel file Sporveksler.xlsx. 
+	; Source: Excel file NO-BN Switches.xlsx.
 	; Basic information was extracted from Bane NOR TRV (Technical Regulations), 'Overbygning/Prosjektering/Sporveksler/4. Hovedmål/4. Enkel sporveksel'.
 	;
 	; 4.1 Enkle sporveksler
@@ -160,16 +160,16 @@
 	; **: Dense hatch pattern
 	; //: Sparse hatch pattern
 	; SS: stokkskinneskjøt / stock rail joint
-	; BK: bakkant sporveksel / rear end of turnout
+	; BK: bakkant sporveksel / rear end of switch
 	; R2: sirkelkurvens endepunkt i avvik / circular arc's end in the deviating track
 	; TK: teoretisk kryss / Theoretical Crossing = point of tangent intersections from rear ends of straight and deviating tracks
 	; L: byggelengde / Constructive length
 	; A: tangentlengde/lengde i X-retning før teoretisk kryss / Tangent line from Stock rail joint to TK
-	;  tangentlengde til sirkelkurven etter teoretisk kryss / Tangent line from rear end of deviating track's circular arc part
-	; D: rettlinjet parti i avvik / straight part in deviating track, after the circular arc part, up to the end of the factory-delivered constructive length
+	;  tangentlengde til sirkelkurven etter teoretisk kryss / Tangent line from rear end of deviating track's circular arc section
+	; D: rettlinjet parti i avvik / straight section in deviating track, after the circular arc section, up to the end of the factory-delivered constructive length
 	; B: lengde i X-retning av C + D / Sum of C and D
-	; E: lengde av parti med langsviller utenfor BK / Part with long sleepers (both tracks on same sleeper) after turnout's constructive end
-	; F: lengde av parti med kortviller utenfor BK	/ Part with shortened sleepers up to the point where normal sleepers can be used (with enough track separation)
+	; E: lengde av parti med langsviller utenfor BK / Section with long sleepers (both tracks on same sleeper) after switch's constructive end
+	; F: lengde av parti med kortviller utenfor BK	/ Section with shortened sleepers up to the point where normal sleepers can be used (with enough track separation)
 	;
 	; Tabell 1: Enkel sporveksel for spor uten persontrafikk i avvik, hovedmål
 	; ------------------------------------------------------------------------
@@ -214,27 +214,27 @@
 	(cadr
 		(assoc switchDrawingNumber ; list was copied from Bane NOR TRV. See data source in Excel file "NO-BN Switches.xlsx" located close to this LISP source file.
 			(list	                  
-				;     Drawing number            Rail Head Profile              Sleeper Type
-				(list "KO-800157"   (list '("RailProfile" "54E3") '("SleeperType" Concrete) '("x" 7    ) '("R" 190 ) '("A" 13503 ) '("B" 13503) '("C" 13503	) '("D" 0   ) '("L" 27006 ) '("E" 3654 ) '("F" 2375) '("SwitchDiamondType" "FX")))
-				(list "KO-701334"   (list '("RailProfile" "54E3") '("SleeperType" Concrete) '("x" 9    ) '("R" 190 ) '("A" 10523 ) '("B" 16616) '("C" 10523	) '("D" 6093) '("L" 27139 ) '("E" 3000 ) '("F" 3575) '("SwitchDiamondType" "FX")))
+				;     Drawing number            Rail Type              Sleeper Type
+				(list "KO-800157"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 7    ) '("R" 190 ) '("A" 13503 ) '("B" 13503) '("C" 13503	) '("D" 0   ) '("L" 27006 ) '("E" 3654 ) '("F" 2375) '("SwitchCrossingType" "FX")))
+				(list "KO-701334"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 9    ) '("R" 190 ) '("A" 10523 ) '("B" 16616) '("C" 10523	) '("D" 6093) '("L" 27139 ) '("E" 3000 ) '("F" 3575) '("SwitchCrossingType" "FX")))
 																																																				
-				(list "KO-701287"   (list '("RailProfile" "54E3") '("SleeperType" Concrete) '("x" 9    ) '("R" 300 ) '("A" 16616 ) '("B" 16616) '("C" 16616	) '("D" 0   ) '("L" 33231 ) '("E" 3575 ) '("F" 3000) '("SwitchDiamondType" "FX")))
-				(list "KO-701306"   (list '("RailProfile" "54E3") '("SleeperType" Concrete) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 20797) '("C" 20797	) '("D" 0   ) '("L" 41594 ) '("E" 5835 ) '("F" 4775) '("SwitchDiamondType" "FX")))
-				(list "KO-701319"   (list '("RailProfile" "54E3") '("SleeperType" Concrete) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 3900 ) '("F" 5375) '("SwitchDiamondType" "FX")))
+				(list "KO-701287"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16616 ) '("B" 16616) '("C" 16616	) '("D" 0   ) '("L" 33231 ) '("E" 3575 ) '("F" 3000) '("SwitchCrossingType" "FX")))
+				(list "KO-701306"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 20797) '("C" 20797	) '("D" 0   ) '("L" 41594 ) '("E" 5835 ) '("F" 4775) '("SwitchCrossingType" "FX")))
+				(list "KO-701319"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 3900 ) '("F" 5375) '("SwitchCrossingType" "FX")))
 																																																				
-				(list "KO-701409"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 16615) '("C" 16615	) '("D" 0   ) '("L" 33230 ) '("E" 5400 ) '("F" 2350) '("SwitchDiamondType" "FX")))
-				(list "KO-800068-2" (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 11.66) '("R" 500 ) '("A" 21393 ) '("B" 21391) '("C" 21393	) '("D" 0   ) '("L" 42783 ) '("E" 7314 ) '("F" 2400) '("SwitchDiamondType" "FX")))
-				(list "KO-800068"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 21985) '("C" 20797	) '("D" 1188) '("L" 42783 ) '("E" 7200 ) '("F" 3600) '("SwitchDiamondType" "FX")))
-				(list "KO-701372"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 7200 ) '("F" 9000) '("SwitchDiamondType" "FX")))
-				(list "KO-701382"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 7200 ) '("F" 9600) '("SwitchDiamondType" "FX")))
+				(list "KO-701409"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 16615) '("C" 16615	) '("D" 0   ) '("L" 33230 ) '("E" 5400 ) '("F" 2350) '("SwitchCrossingType" "FX")))
+				(list "KO-800068-2" (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 11.66) '("R" 500 ) '("A" 21393 ) '("B" 21391) '("C" 21393	) '("D" 0   ) '("L" 42783 ) '("E" 7314 ) '("F" 2400) '("SwitchCrossingType" "FX")))
+				(list "KO-800068"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 21985) '("C" 20797	) '("D" 1188) '("L" 42783 ) '("E" 7200 ) '("F" 3600) '("SwitchCrossingType" "FX")))
+				(list "KO-701372"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 7200 ) '("F" 9000) '("SwitchCrossingType" "FX")))
+				(list "KO-701382"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 7200 ) '("F" 9600) '("SwitchCrossingType" "FX")))
 																																																				
-				(list "KO-800099"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 19760) '("C" 16615	) '("D" 3145) '("L" 36375 ) '("E" 1750 ) '("F" 2950) '("SwitchDiamondType" "BX")))
-				(list "KO-065306"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 8.21 ) '("R" 300 ) '("A" 18188 ) '("B" 18188) '("C" 18188	) '("D" 0   ) '("L" 36375 ) '("E" 3550 ) '("F" 0   ) '("SwitchDiamondType" "BX")))
-				(list "KO-800090"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 23306) '("C" 20797	) '("D" 2509) '("L" 44103 ) '("E" 5994 ) '("F" 0   ) '("SwitchDiamondType" "BX")))
-				(list "KO-800108"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 10825) '("F" 9000) '("SwitchDiamondType" "BX")))
-				(list "KO-800164"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 2400 ) '("F" 9600) '("SwitchDiamondType" "BX")))
-				(list "KO-800081"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 18.4 ) '("R" 1200) '("A" 32829 ) '("B" 34429) '("C" 34429	) '("D" 0   ) '("L" 67257 ) '("E" 10781) '("F" 3600) '("SwitchDiamondType" "BX")))
-				(list "KO-701399"   (list '("RailProfile" "60E1") '("SleeperType" Concrete) '("x" 26.1 ) '("R" 2500) '("A" 48109 ) '("B" 46491) '("C" 46491	) '("D" 0   ) '("L" 94600 ) '("E" 17400) '("F" 0   ) '("SwitchDiamondType" "BX")))
+				(list "KO-800099"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 19760) '("C" 16615	) '("D" 3145) '("L" 36375 ) '("E" 1750 ) '("F" 2950) '("SwitchCrossingType" "BX")))
+				(list "KO-065306"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 8.21 ) '("R" 300 ) '("A" 18188 ) '("B" 18188) '("C" 18188	) '("D" 0   ) '("L" 36375 ) '("E" 3550 ) '("F" 0   ) '("SwitchCrossingType" "BX")))
+				(list "KO-800090"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 23306) '("C" 20797	) '("D" 2509) '("L" 44103 ) '("E" 5994 ) '("F" 0   ) '("SwitchCrossingType" "BX")))
+				(list "KO-800108"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 10825) '("F" 9000) '("SwitchCrossingType" "BX")))
+				(list "KO-800164"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 2400 ) '("F" 9600) '("SwitchCrossingType" "BX")))
+				(list "KO-800081"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 18.4 ) '("R" 1200) '("A" 32829 ) '("B" 34429) '("C" 34429	) '("D" 0   ) '("L" 67257 ) '("E" 10781) '("F" 3600) '("SwitchCrossingType" "BX")))
+				(list "KO-701399"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 26.1 ) '("R" 2500) '("A" 48109 ) '("B" 46491) '("C" 46491	) '("D" 0   ) '("L" 94600 ) '("E" 17400) '("F" 0   ) '("SwitchCrossingType" "BX")))
 			);list																														
 		);assoc
 	);cadr

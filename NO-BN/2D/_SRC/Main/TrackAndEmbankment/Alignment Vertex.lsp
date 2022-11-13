@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Alignment Characteristic Point.lsp
+; Alignment Vertex.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -12,14 +12,14 @@
 
 ; Characteristic locations in track (gradient, tangent/curve/spiral, cant ramp)
 
-(defun ALIGNMENT-CHARACTERISTIC-POINTS ( / )
-	(ALIGNMENT-CHARACTERISTIC-POINT)
+(defun ALIGNMENT-VERTICES ( / )
+	(ALIGNMENT-VERTEX)
 )
 
 
 
 ; Symmetrical short line transversal to track, to be centered on alignment axis (whereas insulated joints are located on one of the rails).
- (defun ALIGNMENT-CHARACTERISTIC-POINT ( / blockName description )
+ (defun ALIGNMENT-VERTEX ( / blockName description )
 	(setq blockName (strcat _TRK_ "DIV-" "KARAKTERISTISK-PUNKT"	))
 	(setq description (strcat "KARAKTERISTISK PUNKT" 			))
 	(command _LINE_ (list 0 (- _railHeadDistance_)) (list 0 _railHeadDistance_) _ENTER_ )

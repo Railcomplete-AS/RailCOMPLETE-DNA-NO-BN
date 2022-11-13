@@ -12,9 +12,9 @@
 
 ; Cantilever
 
-(defun ANYADM-OCS-CANTILEVER ( step / )
+(defun OCS-CANTILEVER ( step / )
 	; Implemented for all administrations:
-	(TraceLevel3 "ANYADM-BRACKET-FOR-MULTIPLE-CANTILEVERS")	(ANYADM-BRACKET-FOR-MULTIPLE-CANTILEVERS) ; For mounting of multiple cantilevers on the same mast. Argument: Separation of cantilevers.
+	(TraceLevel3 "BRACKET-FOR-MULTIPLE-CANTILEVERS")	(BRACKET-FOR-MULTIPLE-CANTILEVERS) ; For mounting of multiple cantilevers on the same mast. Argument: Separation of cantilevers.
 
 	; Specific to this administration:
 	(setq
@@ -64,7 +64,7 @@
 
 
 
-(defun ANYADM-BRACKET-FOR-MULTIPLE-CANTILEVERS ( / blockName description p1 p2 )
+(defun BRACKET-FOR-MULTIPLE-CANTILEVERS ( / blockName description p1 p2 )
 	; Console for fitting of two cantievers or more to the same catenary support mast.
 	;
 	;              (*)               <-- The OCS pole (*)

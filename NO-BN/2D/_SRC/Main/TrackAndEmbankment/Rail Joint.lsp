@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Isolated joint.lsp
+; Rail joint.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -17,7 +17,7 @@
 ;		(RAILJOINT q4 q3 q2 1)
 
 
-(defun ISOLATED-JOINTS ( / ) 
+(defun RAIL-JOINTS ( / ) 
 	; Isolated joints, for track circuit separation or for return current circuit drawings
 	;
 	; Note: New layers are created with color 62, but the graphic entities drawn on these layers shall be given color "_ByBlock",

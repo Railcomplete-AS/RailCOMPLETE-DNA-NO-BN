@@ -13,14 +13,14 @@
 ; ATC = Automatic Train Control.
 ; ATP = Automatic Train Protection.
 ; ETCS = European Train Control System, location and fixed or controlled info through balises, plus asynchronous messages through GSM-R transmission.
-; NSS = National Signaling System
+; NSS = National Signalling System
 ; Ebicab700 = Norway's legacy ATP system.
 ; KVB = Contrôle des Vitesses à Balise, SNCFs legacy ATP system.
 ; PZB = Punktformige ZugBeeinflüssung, Train speed control system using discrete balise groups, Germany's legacy ATP system.
 ; INDUSI = Same as PZB, last generation is INDUSI90.
 ; GÜ = Geschwindigkeitsüberwachung = Speed supervision, a legacy German system for controlling train speeds and for triggering braking actions.
 
-(defun ANYADM-BALISE-SYSTEM ( / )
+(defun BALISE-SYSTEM ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:

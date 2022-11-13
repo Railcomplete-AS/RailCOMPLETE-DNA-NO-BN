@@ -12,15 +12,15 @@
 
 ; Earthing (general symbol, earthing busbar)
 
-(defun ANYADM-EARTHING ( / )
-  	(TraceLevel3 "ANYADM-EARTH-POTENTIAL") 				(ANYADM-EARTH-POTENTIAL)
-  	(TraceLevel3 "ANYADM-EARTHING-BUSBAR")				(ANYADM-EARTHING-BUSBAR)
-  	(TraceLevel3 "ANYADM-EARTHING-POTENTIAL-AT-RAIL")	(ANYADM-EARTHING-POTENTIAL-AT-RAIL)
+(defun EARTHING ( / )
+  	(TraceLevel3 "EARTH-POTENTIAL") 				(EARTH-POTENTIAL)
+  	(TraceLevel3 "EARTHING-BUSBAR")				(EARTHING-BUSBAR)
+  	(TraceLevel3 "EARTHING-POTENTIAL-AT-RAIL")	(EARTHING-POTENTIAL-AT-RAIL)
 )
 
 
 
-(defun ANYADM-EARTH-POTENTIAL ( / blockName description p0 p1 p2 p3 p4 p5 p6 p7 )
+(defun EARTH-POTENTIAL ( / blockName description p0 p1 p2 p3 p4 p5 p6 p7 )
 	; General earth symbol - can be used as an	 earth potential marker, or as a crow's foot symbol, etc.
 	; NO-BN: Ref. TRV "KL skjemasymboler".
 	;
@@ -59,7 +59,7 @@
 )
 
 
-(defun ANYADM-EARTHING-BUSBAR ( / blockName description x y d r p1 p2 p3 p4 )
+(defun EARTHING-BUSBAR ( / blockName description x y d r p1 p2 p3 p4 )
 	; For installation under computer floors in buildings, on walls, in manholes and more. 
 	; Used at Bane NOR in 50x10x290 (9xØ13 pluss a Ø5 hole for marking) or 50x10x530 (17xØ13 pluss 1xØ5). Galvanized (GMB version) or pure copper (most common).
 	; Mounted 40mm from the substrate.
@@ -100,7 +100,7 @@
 
 
 
-(defun ANYADM-EARTHING-POTENTIAL-AT-RAIL ( / blockName description )
+(defun EARTHING-POTENTIAL-AT-RAIL ( / blockName description )
 	;
 	;       ( ) 
 	;        |

@@ -21,14 +21,14 @@
 	(SetCadSystemDefaults)  
 
 	; Implemented for all administrations:
-	(TraceLevel2 "ISOLATED-JOINTS") 				(ISOLATED-JOINTS) ; TRACK object when built, but designed by Signaling or Return Current specialists.
+	(TraceLevel2 "RAIL-JOINTS") 					(RAIL-JOINTS) ; TRACK object when built, but designed by Signalling or Return Current specialists.
 	(TraceLevel2 "BUFFER-STOPS")					(BUFFER-STOPS)
-	(TraceLevel2 "ALIGNMENT-CHARACTERISTIC-POINTS")	(ALIGNMENT-CHARACTERISTIC-POINTS)
-	(TraceLevel2 "ANYADM-CONNECTOR-SPLICE")			(ANYADM-CONNECTOR-SPLICE)
+	(TraceLevel2 "ALIGNMENT-VERTICES")				(ALIGNMENT-VERTICES)
+	(TraceLevel2 "CONNECTOR-CONTINUATIONS")			(CONNECTOR-CONTINUATIONS)
 	(TraceLevel2 "CONNECTOR-CROSSINGS")				(CONNECTOR-CROSSINGS)
-	(TraceLevel2 "CONNECTOR-SWITCHES")				(CONNECTOR-SWITCHES)
+	(TraceLevel2 "CONNECTOR-BIFURCATIONS")			(CONNECTOR-BIFURCATIONS)
+	(TraceLevel2 "SWITCH-TONGUES")					(SWITCH-TONGUES)
 
 	; Specific to this administration:
-	(TraceLevel2 "SWITCH-TONGUE")					(SWITCH-TONGUE)
 	(TraceLevel2 "DEFLECTION-BAR")					(DEFLECTION-BAR)
 )

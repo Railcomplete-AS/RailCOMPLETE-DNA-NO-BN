@@ -12,7 +12,7 @@
 
 ; High-voltage transformer
 
-(defun ANYADM-OCS-HIGH-VOLTAGE-TRANSFORMER ( / )
+(defun OCS-HIGH-VOLTAGE-TRANSFORMER ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:

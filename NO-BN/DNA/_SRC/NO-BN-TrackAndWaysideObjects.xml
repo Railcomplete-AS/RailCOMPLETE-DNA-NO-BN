@@ -55,7 +55,7 @@
 		<LuaExpression Name="DistanceToAlignment" ><Formula>RC__getSnapped(getPropertyValue("DistanceToAlignment"),5)</Formula></LuaExpression>
 		<LuaExpression Name="ReferenceMileage" >
 			<Formula>
-				r = getCollectionOfRelatedObjects("Er etikett for anything")
+				r = getRelatedObjects("Er etikett for anything")
 				return r[0] and r[0].ReferenceMileage or getPropertyValue(ReferenceMileage)
 			</Formula>
 		</LuaExpression>
@@ -368,7 +368,7 @@
 <!--========================================================================================================
 	OVERBYGNING
 	SPOR
-	JBTKO_SKI Enkeltskinne kjørekant og isolasjon
+	JBTKO_KJK Kjørekant og skinneisolering
 	To be used mainly for insulating rails, dealing with track circuits and return current.
 	May be created through import av LandXML or DWG, converted fra 2D/3D polyline (or drawn from scratch), but
 	will mainly be created as offsets with track gauge 1435/2 (0.717 m) from a track.
@@ -392,15 +392,15 @@
 	   their insulation status to decide where to get protective earth (when the object's EarthingMethod has 
 	   been set to 'Rail'). 
 	Note: 
-	The 'JBTKO_SKI Enkeltskinne kjørekant og isolasjon' alignment type may also be used as a lateral reference for objects (as with
+	The 'JBTKO_KJK Kjørekant og skinneisolering' alignment type may also be used as a lateral reference for objects (as with
 	the French SNCF).
 =========================================================================================================-->
-	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKO_SKI Enkeltskinne kjørekant og isolasjon"
-				Layer="JBTKO_SKI_isolasjon" Color="ByLayer"
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTKO_KJK Kjørekant og skinneisolering"
+				Layer="JBTKO_KJK_isolasjon" Color="ByLayer"
 				Group="Overbygning/Spor"
 				>
 
-		<RelationSpace>skinneisolasjon</RelationSpace>
+		<RelationSpace>kjørekant_og_skinneisolering</RelationSpace>
 		
 		<xpp:expand select="NOBN_com_DEROGATION" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR" />
@@ -412,16 +412,16 @@
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_KO_SKI" />
 
-		<AlignmentSystems DefaultSystemName="Kjørekant og isolasjon" >
-			<AlignmentSystem Name="Kjørekant og isolasjon"
+		<AlignmentSystems DefaultSystemName="Kjørekant og skinneisolering" >
+			<AlignmentSystem Name="Kjørekant og skinneisolering"
 				CantGauge="1.500"
 				AlignmentGauge="1.435"
 				QuickMode3DLiftWithCant="false"
 		 />
 		</AlignmentSystems>
 
-		<Variants DefaultValue="Kjørekant og isolasjon" >
-			<Variant Name="Kjørekant og isolasjon" >
+		<Variants DefaultValue="Kjørekant og skinneisolering" >
+			<Variant Name="Kjørekant og skinneisolering" >
 			</Variant>
 		</Variants>
 		
@@ -449,12 +449,12 @@
 
 		<LuaExpression Name="name" ><Formula>"["..code.."]"</Formula></LuaExpression>
 
-		<LuaExpression Name="code" ><Formula>_JBTKO_SKI_PointOfContact_code(nil)</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKO_SKI_PointOfContact_code()" ReturnType="String"
+		<LuaExpression Name="code" ><Formula>_JBTKO_KJK_PointOfContact_code(nil)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_KJK_PointOfContact_code()" ReturnType="String"
 			Description="Obtains the code for a rail point-of-contact alignment, deduced from an insulation in the associated track at the rail's start point." >
-			<Constructor>String _JBTKO_SKI_PointOfContact_code([AlignmentRef alg])</Constructor>
+			<Constructor>String _JBTKO_KJK_PointOfContact_code([AlignmentRef alg])</Constructor>
 			<Formula>
-				function _JBTKO_SKI_PointOfContact_code(alg)
+				function _JBTKO_KJK_PointOfContact_code(alg)
 					if alg == nil then alg = this end
 					if alg.RcAlignment == nil then return "ERROR - Bad argument ["..RC__identify(alg).."] - has no RcAlignment." end
 					local tol = 0.050 --[m]
@@ -495,13 +495,13 @@
 		</LuaFunction>
 
 		<!-- Not really needed - will be superseded by the code formula anyway: -->
-		<PropertyPrompt Key="code" DefaultValue="Kjørekant og isolasjon" AcceptEmptyValue="false" />
+		<PropertyPrompt Key="code" DefaultValue="Kjørekant og skinneisolering" AcceptEmptyValue="false" />
 
-		<InsertAlignment VariantName="Kjørekant og isolasjon" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-SKINNEPROFIL-Schematic" DefaultToTangentContinuity="true" >
+		<InsertAlignment VariantName="Kjørekant og skinneisolering" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-SKINNEPROFIL-Schematic" DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 			<IncludeSegmentType>Spiral</IncludeSegmentType>
-			<SetValue Key="AlignmentSystem" Value="Kjørekant og isolasjon" />
+			<SetValue Key="AlignmentSystem" Value="Kjørekant og skinneisolering" />
 		</InsertAlignment>
 
 	</ObjectType>
@@ -1045,14 +1045,14 @@ return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."
 		<PropertyPrompt Key="code" DefaultValue="Plattformkant" AcceptEmptyValue="false" />
 		
 		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, høyre side" 
-				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic"
+				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-PLATFORM-ELEMENT-Schematic"
 				DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>
 		</InsertAlignment>
 		
 		<InsertAlignment VariantName="Plattformelementer, betong, 1m bredde, 2m lengde, venstre side" 
-				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-Schematic"
+				DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-PLATFORM-ELEMENT-Schematic"
 				DefaultToTangentContinuity="true" >
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<IncludeSegmentType>Curve</IncludeSegmentType>

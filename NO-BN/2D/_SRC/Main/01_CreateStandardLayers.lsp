@@ -132,7 +132,7 @@
 
 		; Superstructure (track and embankment) layers
 		;----------------------------------------------
-		layDef_Turnout_LongSleepers
+		layDef_Switch_LongSleepers
 			(list ; NOBN
 				(strcat (ModifyAdmString _TRK_) "$$SPORVEKSEL_LANGSVILLEPARTI")
 				_colorMetaDataLayer_
@@ -140,7 +140,7 @@
 				_ByLayer_
 			)
 		
-		layDef_Turnout_ShortSleepers
+		layDef_Switch_ShortSleepers
 			(list ; NOBN
 				(strcat (ModifyAdmString _TRK_) "$$SPORVEKSEL_KORTSVILLEPARTI")
 				_colorMetaDataLayer_
@@ -148,7 +148,7 @@
 				_ByLayer_
 			)
 
-		layDef_Turnout_Geometry
+		layDef_Switch_Geometry
 			(list ; NOBN
 				(strcat (ModifyAdmString _TRK_) "$$SPORVEKSEL_GEOMETRI")
 				_colorMetaDataLayer_
@@ -200,9 +200,9 @@
 
 
 
-		; Signaling
+		; Signalling
 		;----------------------------------------------
-		layDef_Turnout_SigCircle_Wipeout
+		layDef_Switch_SigCircle_Wipeout
 			(list ; NOBN
 				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_SPORVEKSEL")
 				_colorMetaDataLayer_
@@ -350,10 +350,10 @@
 	(CreateLayer layDef_FoundationLocator)
 	
 	; Superstructure (track and embankment) layers
-	(CreateLayer layDef_Turnout_SigCircle_Wipeout)
-	(CreateLayer layDef_Turnout_LongSleepers)
-	(CreateLayer layDef_Turnout_ShortSleepers)
-	(CreateLayer layDef_Turnout_Geometry)
+	(CreateLayer layDef_Switch_SigCircle_Wipeout)
+	(CreateLayer layDef_Switch_LongSleepers)
+	(CreateLayer layDef_Switch_ShortSleepers)
+	(CreateLayer layDef_Switch_Geometry)
 
 	; Overhead Catenary System (OCS) layers
 	(CreateLayer layDef_CatenaryIsolator_Wipeout)
@@ -362,7 +362,7 @@
 	(CreateLayer layDef_CantileverType)
 	(CreateLayer layDef_HighVoltageSwitchActuator)
 
-	; Signaling
+	; Signalling
 	(CreateLayer layDef_Derailer_Wipeout)
 	(CreateLayer layDef_BaliseGroup_Wipeout)
 	(CreateLayer layDef_AxleCounter_Wipeout)

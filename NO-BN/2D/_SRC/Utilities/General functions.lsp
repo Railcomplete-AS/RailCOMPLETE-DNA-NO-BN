@@ -896,7 +896,7 @@
 	;
 	; Create an annotative block based on a scaled version of a schematic symbol retrieved from the BLOCK table as an INSERT.
 	;
-	; Signaling symbols are first programmed in LISP to their 'schematic plan' scale. However, some schematic symbols are quite big (the 
+	; Signalling symbols are first programmed in LISP to their 'schematic plan' scale. However, some schematic symbols are quite big (the 
 	; 'S-lås' symbol for instance) and may be scaled down before use in a geo drawing (annotative symbol). with , some must are 1:1 (yokes,
 	; switches). Each scalable block is first stored as a schematic version, then re-inserted and possibly scaled, before it is stored as
 	; an annotative symbol for use in geo drawings. 

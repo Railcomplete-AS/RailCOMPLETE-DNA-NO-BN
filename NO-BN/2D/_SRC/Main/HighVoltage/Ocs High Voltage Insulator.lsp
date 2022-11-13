@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; Ocs High Voltage Isolator.lsp
+; Ocs High Voltage Insulator.lsp
 ;
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -12,18 +12,18 @@
 
 ; Isolator (in contact wire, catenary, fix lines, and other lines)
 
-(defun ANYADM-OCS-HIGH-VOLTAGE-ISOLATOR ( / )
+(defun OCS-HIGH-VOLTAGE-INSULATOR ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:
-	(TraceLevel3 "NOBN-OCS-NON-CONTACT-WIRE-ISOLATOR")			(NOBN-OCS-NON-CONTACT-WIRE-ISOLATOR)
-	(TraceLevel3 "NOBN-OCS-CONTACT-WIRE-SECTIONING-ISOLATOR")	(NOBN-OCS-CONTACT-WIRE-SECTIONING-ISOLATOR)
-	(TraceLevel3 "NOBN-OCS-CONTACT-WIRE-ISOLATOR-ROD")			(NOBN-OCS-CONTACT-WIRE-ISOLATOR-ROD)
+	(TraceLevel3 "OCS-STRAIN-INSULATOR")			(OCS-STRAIN-INSULATOR)
+	(TraceLevel3 "OCS-SECTION-INSULATOR")			(OCS-SECTION-INSULATOR)
+	(TraceLevel3 "OCS-COVERED-WIRE-INSULATOR")		(OCS-COVERED-WIRE-INSULATOR)
 )
 
 
 
-(defun NOBN-OCS-NON-CONTACT-WIRE-ISOLATOR ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 )
+(defun OCS-STRAIN-INSULATOR ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 )
 	;2020-04-07 Bane NOR schematic 2D layer/symbol: JBTEH_Komponenter / EH_KL_Isolator
 	;TODO: Ask Bane NOR for permission to use EH-ISO for this one.
 	;Two arcs forming a ")(" with a wipeout bewtween them. 
@@ -38,7 +38,7 @@
 	;    9   10
 	;
 	(setq 
-		blockName "NO-BN-2D-JBTEH_ISO-ISOLATOR-LINEISOLATOR"
+		blockName	(strcat _OCS_ "ISO-" "ISOLATOR-LINEISOLATOR")
 		description "KL LINEISOLATOR"
 		x 3.25
 		y 4.5
@@ -67,7 +67,7 @@
 
 
 
-(defun NOBN-OCS-CONTACT-WIRE-SECTIONING-ISOLATOR ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 )
+(defun OCS-SECTION-INSULATOR ( / blockName description x y p1 p2 p3 p4 p5 p6 p7 p8 )
 	; Ref. Bane NOR schematic 2D layer/symbol: JBTEH_Komponenter / EH_KL_Seksjonsisolator
 	; Two bars forming a "||" with a wipeout between them. 
 	; Default insertion direction is "up" in wire / catenary / contact wire alignment.
@@ -79,8 +79,8 @@
 	;     3 4
 	;
 	(setq
-		blockName "NO-BN-2D-JBTEH_SIL-ISOLATOR-SEKSJONSISOLATOR"
-		description "KL SEKSJONSISOLATOR"
+		blockName	(strcat _OCS_ "SIL-" "ISOLATOR-SEKSJONSISOLATOR")
+		description	"KL SEKSJONSISOLATOR"
 		x 1.4
 		y 4.5
 		p1 (list (* -0.5 x) (*  0.500 y))
@@ -105,22 +105,23 @@
 
 
 
-(defun NOBN-OCS-CONTACT-WIRE-ISOLATOR-ROD ( / blockName x y description p1 p2 p3 p4 p5 p6 p7 p8 )
+(defun OCS-COVERED-WIRE-INSULATOR ( / blockName x y description p1 p2 p3 p4 p5 p6 p7 p8 )
 	; 2020-04-14 Norconsult schematic 2D layer/symbol: not found in Bane NOR TRV - JBTEH_Komponenter / EH_KL_Stavisolator
 	; Four horizontal lines inside a lying rectangle, to be inserted in direction "both". 
 	; Default insertion direction is "up" in wire / catenary / contact wire alignment.
 	;
 	;TODO: Ask Bane NOR for permission to use EH-ISS for this one.
 	;
-	; TL------------------------------------TR
-	; 1--------------------------------------2
-	; 3--------------------------------------4
-	; 5--------------------------------------6
-	; 7--------------------------------------8
-	; BL------------------------------------BR
+	;                 +--------------------------------------+
+	;                 1--------------------------------------2
+	;                 3--------------------------------------4
+	;  ---------------+                  .                   +--------------- Contact wire
+	;                 5--------------------------------------6
+	;                 7--------------------------------------8
+	;                 +--------------------------------------+
 	;
 	(setq
-		blockName "NO-BN-2D-JBTEH_ISS-ISOLATOR-STAVISOLATOR"
+		blockName	(strcat _OCS_ "ISS-" "ISOLATOR-STAVISOLATOR")
 		description "KL STAVISOLATOR"
 		x 2.0 		;halfLength 1:500 scale
 		y 0.25		;halfHeight of symbol

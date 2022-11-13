@@ -12,19 +12,19 @@
 
 ; Overhead Catenary System (OCS) Portals (yoke and galley)
 
-(defun ANYADM-OCS-PORTAL-AND-GALLEY ( / counter )
+(defun OCS-PORTAL-AND-GALLEY ( / counter )
 	(setq counter 10)
 	(repeat 34
 		(TraceLevel3 (strcat "OCS PORTAL: " (rtos counter _decimal_ 0) " m"))
-		(ANYADM-OCS-PORTAL counter) ; 10 to 43 inclusive
+		(OCS-PORTAL counter) ; 10 to 43 inclusive
 		(setq counter (+ counter 1))
 	)
-  	(ANYADM-OCS-GALLEY 6.000)
+  	(OCS-GALLEY 6.000)
 )
 
 
 
-(defun ANYADM-OCS-PORTAL ( len / blockName description )
+(defun OCS-PORTAL ( len / blockName description )
 	(setq blockName (strcat _OCS_ "AAK-" "KONTAKTLEDNINGS" _uARING_ "K-"	(rtos (* 1000 len) _decimal_ 0)	))
 	(setq description (strcat "KL-" _uARING_ "K "   						(rtos (* 1000 len) _decimal_ 0)	))
 
@@ -46,7 +46,7 @@
 
 
 
-(defun ANYADM-OCS-GALLEY ( len / blockName description )
+(defun OCS-GALLEY ( len / blockName description )
 	(setq blockName (strcat _OCS_ "AAK-" "KONTAKTLEDNINGS" _uARING_ "K-UTLIGGER" _uARING_ "K-"	(rtos (* 1000 len) _decimal_ 0)	))
 	(setq description (strcat "KL-UTLIGGER" _uARING_ "K "										(rtos (* 1000 len) _decimal_ 0)	))
 

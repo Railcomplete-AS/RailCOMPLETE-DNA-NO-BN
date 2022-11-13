@@ -233,7 +233,7 @@
 	(InitalizeSignalSymbol)
 
 	; The algorithm centers the very first item (when meaningful, such as solo MKs). Subsequent additions use the side of mast with the most free space.
-	; Items are added in this order: HS -> Fs (-> AVs -> TLs) -> MKs -> Ls -> LHs -> Zs -> Ds
+	; Items are added in this order: HS -> Fs (> AVs -> TLs) -> MKs -> Ls -> LHs -> Zs -> Ds
 
 	; The 'Unknown combination' signal symbol
 	

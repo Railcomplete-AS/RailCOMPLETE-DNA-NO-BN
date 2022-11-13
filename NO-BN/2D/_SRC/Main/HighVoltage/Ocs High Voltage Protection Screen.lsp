@@ -15,7 +15,7 @@
 ;
 ; EH-ASK Avskjerming (beskyttelse) diverse objekter
 
-(defun ANYADM-OCS-HIGH-VOLTAGE-PROTECTION-SCREEN ( / )
+(defun OCS-HIGH-VOLTAGE-PROTECTION-SCREEN ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:
@@ -36,7 +36,7 @@
 
 (defun NOBN-AVSKJERMING ( variation / blockName )
 	(setq
-		blockName	(strcat "NO-BN-2D-JBTEH_ASK-AVSKJERMING" "-" variation)
+		blockName	(strcat _OCS_ "ASK-" "AVSKJERMING" "-" variation)
 		description	(strcat "KL AVSKJERMING TYPE " variation)
 	)
 	(defun LocalGraphics (/)

@@ -22,7 +22,7 @@
 	; trk		Track and embankment - ballast, sleepers, rails, switches, crossings, buffer stops and other track related objects
 	; cur		Traction current system, transformers above catenary voltage levels, power distribution system other than OCS
 	; ocs		Overhead catenary system
-	; sig		Signaling
+	; sig		Signalling
 	; pow		Power supply, except traction current system (low voltage, up to ca 1000V to users, from 22kV public supplies or 15-25 kV railway HV)
 	; tel		Telecommunications
 	; otr		Other systems

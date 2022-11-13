@@ -11,7 +11,7 @@
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet
 
-; Train heating power connector
+; Train heating power CONNECTOR-CONTINUATIONS
 
 ; For debugging:
 ; (SKILT-TOGVARMEANLEGG-1000V)
