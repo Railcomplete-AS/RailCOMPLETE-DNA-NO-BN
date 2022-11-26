@@ -58,12 +58,7 @@
 			<Variant Name="Kabelkanal, betong, 3-løps, 60 cm" />
 		</Variants>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" >
-		<SetValue Key="Frozen" Value="False"/>
-		<SetValue Key="CustomTransformation" Value="True"/>
-		</SetDynamicProperty>
-
-		<CustomAttribute DataType="Enumeration" Name="AddElevationIfCant" DisplayName="Heving hvis overhøyde" DefaultValue="Ingen" 
+		<CustomAttribute DataType="Enumeration" Name="AddElevationIfCant" DisplayName="Heving hvis overhøyde" DefaultValue="NONE" 
 			Description="The 'Heving hvis overhøyde' (AddElevationIfCant) property controls how the cable duct shall behave if its alignment contains cant data. The cant data will normally be inherited from the closest track. If the duct is placed on the right side of this track, then select 'Venstrekurve' (CCW): the right rail's superelevation will be added to the cable duct's elevation (Z coordinate). If the duct is placed on the left side of this track, then select 'Høyrekurve' (CW): the left rail's superelevation will be added to the cable duct's elevation. If you need to elevate the duct to a specific height independent of left/right curvature, e.g. to attach it to a tunnel wall or to a bridge's fence, then select 'Alltid' (ALWAYS). To ignore possible cant data, select 'NONE'. Note: This formula will be overriden by RC standard 3D offset/rotation formulas if 3D Quick mode is active (true)."
 		>
 			<Values>
@@ -76,66 +71,6 @@
 
 		<LuaExpression Name="name" ><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
-		<LuaFunction Name="_JBTKU_KFK_getStartEndAndJump" 
-				ReturnType="AlignmentInfo,AlignmentInfo,Double"
-				HideFromUser="false"
-				Description="Sampled formula. Returns AlignmentInfo data objects for one duct element's start and end, plus the jump length from start to end along the duct's alignment. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>alignmentInfo,alignmentInfo,Double _JBTKU_KFK_getStartEndAndJump(_position)</Constructor>
-			<Formula>
-				function _JBTKU_KFK_getStartEndAndJump(_position)
-					--Interpret 'Cant' stored in duct's alignment as extra offset (usually the lift of the closest rail) [mm]:
-					local id,pos,len2d,offset,s,e,a,b
-					id = _position.ref.id
-					pos = _position.pos
-					len2d = getObjectFromId(id).RcAlignment.HorizontalProfile.Length
-					offset = 0.499 * Model3DSeparation --pick samples at +/- offset from object's insertion point
-					if pos &lt; offset then
-						a = 0
-						b = pos + offset
-					elseif pos &gt; len2d - offset then 
-						a = pos - offset
-						b = len2d
-					else 
-						a = pos - offset
-						b = pos + offset
-					end
-					s = getAlignmentInfo(getAlignmentPos(id,a))
-					e = getAlignmentInfo(getAlignmentPos(id,b))
-					return s,e,b-a
-				end
-			</Formula>
-		</LuaFunction>
-
-		<LuaExpression Name="SweptModel3D_0.Offset3D.Z" ><Formula>_JBTKU_KFK_Offset3dZ(_position)</Formula></LuaExpression>
-		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<!-- Trick: If QuickMode3D is False, then use possible Cant in the duct alignment as the height to add in 3D: -->
-		<LuaFunction Name="_JBTKU_KFK_Offset3dZ" 
-				ReturnType="Double"
-				HideFromUser="false"
-				Description="Sampled formula. Returns an extra elevation for the cable duct element in none/CCW/CW/always curve situations according to the current setting of the 'Heving hvis overhøyde' (AddElevationIfCant) parameter. Copy cant data from closest track's relevant cant using the RC-CreateAlignment command or the RC-OffsetProfile command, or RC-AlignmentManager/Cant. This function must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _JBTKU_KFK_Offset3dZ(_position)</Constructor>
-			<Formula>
-				function _JBTKU_KFK_Offset3dZ(_position)
-					startAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(_position)
-					mid = getAlignmentInfo(_position)
-					startElevation = startAi.Elevation
-					endElevation = endAi.Elevation
-					startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
-					endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
-					--if true then return {mid.Point.X, mid.Point.Y,mid.Point.Z}, startAi.Elevation, endElevation, startCant,endCant end --DEBUG
-					--if true then return AddElevationIfCant end
-					if AddElevationIfCant == "ALWAYS" then
-						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
-					elseif AddElevationIfCant == mid.CantRotation then
-						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
-					else 
-						--AddElevationIfCant == "NONE", or "CW" or "CCW" but not currently in a curve:
-						return (startElevation + endElevation)/2 - mid.Point.Z
-					end
-				end
-			</Formula>
-		</LuaFunction>
-		
 		<LuaExpression Name="Linetype" ><Formula>_JBTKU_KFK_Linetype()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFK_Linetype" 
 				ReturnType="String"
@@ -171,21 +106,175 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptModel3D_0.SweepProfile" ><Formula>_JBTKU_KFK_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFK_Model3DName()" 
+		<!-- 3D boundary representations: -->
+		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
+		<!-- If CustomTransformation is true , then use possible Cant in the duct alignment as the extra elevation to add in 3D: -->
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" >
+			<SetValue Key="Frozen" Value="True"/>
+			<SetValue Key="CustomTransformation" Value="True"/>
+			<LuaExpression Name="SweepProfile" ><Formula>_JBTKU_KFK_SweepProfile()</Formula></LuaExpression>
+			<LuaExpression Name="Offset3D.Z" ><Formula>_JBTKU_KFK_Offset3dZ(_position)</Formula></LuaExpression>
+		</SetDynamicProperty>
+
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedModel3D" >
+			<SetValue Key="Frozen" Value="False"/>
+			<SetValue Key="CustomTransformation" Value="True"/>
+			<LuaExpression Name="Model3DName" ><Formula>_JBTKU_KFK_Model3DName()</Formula></LuaExpression>
+			<LuaExpression Name="Offset3D.Z" ><Formula>_JBTKU_KFK_Offset3dZ(_position)</Formula></LuaExpression>
+			<LuaExpression Name="Rotation3D.X" ><Formula>_JBTKU_KFK_Rotation3dX(_position)</Formula></LuaExpression>
+			<LuaExpression Name="Model3DSeparation" ><Formula>_JBTKU_KFK_Model3DSeparation(_position)</Formula></LuaExpression>
+		</SetDynamicProperty>
+
+		<LuaFunction Name="_JBTKU_KFK_SweepProfile()" 
 				ReturnType="String"
 				HideFromUser="false"
-				Description="Returns the cable duct default 3D object model name." >
-			<Constructor>String _JBTKU_KFK_Model3DName()</Constructor>
+				Description="Returns the cable duct's default 3D sweep profile name." >
+			<Constructor>String _JBTKU_KFK_SweepProfile()</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Model3DName()
-					t = Sweep3D and "NO-BN-SWEEP-KU-KFØ-KABELKANAL-" or "NO-BN-3D-KU-KFØ-KABELKANAL-"
+				function _JBTKU_KFK_SweepProfile()
+					t = "NO-BN-SWEEP-KU-KFØ-KABELKANAL-"
 					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS-MED-50-50-LOKK"
 					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS-MED-50-50-LOKK"
 					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then return t.."620x2400-2-LØPS-MED-70-70-LOKK"
 					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then return t.."620x2400-3-LØPS-MED-70-70-LOKK"
 					else 
 						return "", _info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTKU_KFK_Model3DName()" 
+				ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the cable duct's default 3D representation file name." >
+			<Constructor>String _JBTKU_KFK_Model3DName()</Constructor>
+			<Formula>
+				function _JBTKU_KFK_Model3DName()
+					t = "NO-BN-3D-KU-KFØ-KABELKANAL-"
+					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS-MED-50-50-LOKK"
+					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS-MED-50-50-LOKK"
+					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then return t.."620x2400-2-LØPS-MED-70-70-LOKK"
+					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then return t.."620x2400-3-LØPS-MED-70-70-LOKK"
+					else 
+						return "", _info("Variant ["..Variant.."] has not been anticipated yet.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTKU_KFK_getStartEndAndJump" 
+				ReturnType="AlignmentInfo,AlignmentInfo,Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns AlignmentInfo data objects for one duct element's start and end, plus the jump length from start to end along the duct's alignment. Must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong)." >
+			<Constructor>alignmentInfo,alignmentInfo,Double _JBTKU_KFK_getStartEndAndJump(_position)</Constructor>
+			<Formula>
+				function _JBTKU_KFK_getStartEndAndJump(where)
+					--Interpret 'Cant' stored in duct's alignment as extra offset (usually the lift of the closest rail) [mm]:
+					local id,pos,len2d,offset,s,e,a,b
+					id = where.Ref.id
+					pos = where.Pos
+					len2d = getObjectFromId(id).RcAlignment.HorizontalProfile.Length
+					offset = 0.499 * _JBTKU_KFK_Model3DSeparation(where) --pick samples at +/- offset from object's insertion point (but avoid 0.5000 sharp).
+					if pos &lt; offset then
+						a = 0
+						b = pos + offset
+					elseif pos &gt; len2d - offset then 
+						a = pos - offset
+						b = len2d
+					else 
+						a = pos - offset
+						b = pos + offset
+					end
+					s = getAlignmentInfo(getAlignmentPos(id,a))
+					e = getAlignmentInfo(getAlignmentPos(id,b))
+					return s,e,b-a
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTKU_KFK_Offset3dZ" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns an extra elevation for the cable duct element in none/CCW/CW/always curve situations according to the current setting of the 'AddElevationIfCant' property. Copy cant data from closest track's cant using the RC-AssistOffsetProfile command, or RC-AlignmentManager/Alignment/Cant. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong)." >
+			<Constructor>Double _JBTKU_KFK_Offset3dZ(_position)</Constructor>
+			<Formula>
+				function _JBTKU_KFK_Offset3dZ(where)
+					startAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
+					mid = getAlignmentInfo(where)
+					startElevation = startAi.Elevation
+					endElevation = endAi.Elevation
+					startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
+					endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
+					if AddElevationIfCant == "ALWAYS" then
+						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
+					elseif AddElevationIfCant == mid.CantRotation then
+						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
+					else 
+						--If 'AddElevationIfCant' is "NONE" or "CW" or "CCW" but we are not currently in a curve:
+						return (startElevation + endElevation)/2 - mid.Point.Z
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTKU_KFK_Rotation3dX" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns pitch (gradient) for the cable duct element. Copy the duct's vertical profile (gradient) data from the relevant tracks' vertical profile using the RC-AssistOffsetProfile command. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong)." >
+			<Constructor>Double _JBTKU_KFK_Rotation3dX(_position)</Constructor>
+			<Formula>
+				function _JBTKU_KFK_Rotation3dX(where)
+					local startAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
+					local startElevation = startAi.Elevation
+					local endElevation = endAi.Elevation
+					local midCantRotation = getAlignmentInfo(where).CantRotation
+					local startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
+					local endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
+					local deltaZ
+					if AddElevationIfCant == "ALWAYS" or AddElevationIfCant == midCantRotation then
+						deltaZ = (endElevation + endCant/1000) - (startElevation + startCant/1000)
+					else
+						--If 'AddElevationIfCant' is "NONE" or "CW" or "CCW" but we are not currently in a curve:
+						deltaZ = endElevation - startElevation
+					end
+					return math.deg(math.atan(deltaZ,jumpDist))
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTKU_KFK_Model3DSeparation()" 
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Returns the default separation between consecutive concrete cable duct elements. 5 mm margin is added in tangent segments. In sharp curves, the elements have to be cut at an angle, so the separation decreases with decreasing curvature. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong)." >
+			<Constructor>Double _JBTKU_KFK_Model3DSeparation(_position)</Constructor>
+			<Formula>
+				function _JBTKU_KFK_Model3DSeparation(where)
+					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
+					-- This simple formula assumes that the Model3D is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
+					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then 
+						f = 2400/1000
+						b = 0.3
+					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then 
+						f = 2400/1000
+						b = 0.4
+					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then 
+						f = 1
+						b = 0.6
+					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then 
+						f = 1
+						b = 0.6
+					else 
+						return 3.1416, _info("Variant ["..Variant.."] has not been anticipated yet - so we assume 3.1416m 3D Model Separation...")
+					end
+					r = getAlignmentInfo(where).CurveRadius
+					-- Empirical formula, to allow a small separation between concrete elements in the "outer curve", but assuming that it will be cut in the "inner curve".
+					if r == nil or r &gt; 100 then 
+						return 2.4 / f + .005
+					elseif r &lt; (0.8 / b) then 
+						return (2.4 - b) / f
+					else 
+						return (2.4 - 0.8/r) / f + .005
 					end
 				end
 			</Formula>
