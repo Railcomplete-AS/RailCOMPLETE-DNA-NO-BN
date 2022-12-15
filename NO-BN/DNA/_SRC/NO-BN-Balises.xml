@@ -30,7 +30,7 @@
 			function NOBN_sig_getBaliseGroupDirection(balise)
 				--TODO: Replace with a function which finds out where the closest cable duct is, and rotates the balise with the cable towards that duct.
 				balise = balise or this
-				s = balise.RcType:match("ETCS") and "Tilhører ETCS_balisegruppe" or "Tilhører NSS_balisegruppe"
+				s = balise.RcType:match("ETCS") and rel_EtcsBalise_BelongsTo_EtcsBaliseGroup or rel_NssBalise_BelongsTo_NssBaliseGroup
 				r,n = getRelatedObjects(s,balise)
 				if n == 0 then
 					return "unknown", _info("UNFINISHED - Relate balise with '"..s.."' to a balise group to inherit direction.")
@@ -267,14 +267,14 @@
 				elseif Variant == "Forsignalbalisegruppe" then
 					a = "F"
 				elseif Variant == "Repeterbalisegruppe" then
-					local s = "Gjelder for signal/skilt/stolpe/sporveksel"
+					local s = rel_NssBaliseGroup_AppliesTo_Object
 					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						-- Balise group has no relation to a signal yet:
 						return "UNFINISHED - Relate with '"..s.."'."
 					else
 						sig = r[0] --should be a signal here, repeater groups don't repeat switches directly
-						bg = getRelatedObjects("Har NSS_balisegruppe",sig)
+						bg = getRelatedObjects(rel_Object_Has_NssBaliseGroup,sig)
 						bg = bg:filter(function (x) return x.Variant == "Repeterbalisegruppe" end)
 						nbg = getCollectionLength(bg)
 						if nbg == 0 then
@@ -321,7 +321,7 @@
 				end
 				ocpMsg = "Create an Operation / Control Point (OCP) area around your object and refresh it to replace '???' with the relevant OCP's codes."
 				if Variant == "Hastighetsbalisegruppe" then
-					r,n = getRelatedObjects("Har bremsekurve målpunkt i balisegruppe")
+					r,n = getRelatedObjects(rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup)
 					if n == 0 then
 						--Group is braking curve target:
 						ocp = RC_com_getOcpCode(getObjectFromId(id))
@@ -338,7 +338,7 @@
 						return ocp..a..string.format("%02d",seq%100)
 					end
 				elseif Variant =="Lenkingsbalisegruppe" or Variant == "Grensebalisegruppe" then
-					s = "Lenker til balisegruppe"
+					s = rel_NssBaliseGroup_LinksTo_NssBaliseGroup
 					r,n = getRelatedObjects(s)
 					if n == 0 then
 						ocp = RC_com_getOcpCode(getObjectFromId(id))
@@ -351,7 +351,7 @@
 						return ocp..a..string.format("%02d",seq%100)
 					end
 				else
-					s = "Gjelder for signal/skilt/stolpe/sporveksel"
+					s = rel_NssBaliseGroup_AppliesTo_Object
 					r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."'."
@@ -379,7 +379,7 @@
         <Constructor>String _JBTSA_ATB_code()</Constructor>
         <Formula>
 			function _JBTSA_ATB_code()
-				s = "Tilhører NSS_balisegruppe"
+				s = rel_NssBalise_BelongsTo_NssBaliseGroup
 				r,n = getRelatedObjects(s)
 				if n == 0 then  
 					return "UNFINISHED - Relate with '"..s.."' to balise group.",
@@ -391,15 +391,15 @@
 					return "Bad direction ["..bg.dir.."]",_warning 
 				end
 				
-				sq = "Har posisjonsdefinerende NSS_balise"
+				sq = rel_NssBaliseGroup_HasPositionDeterminedBy_NssBalise
 				q,nq = getRelatedObjects(sq,bg)
 				if nq == 0 then 
 					return "UNFINISHED - No A-balise in balise group - relate to balise group with '"..sq.."'."
 				else
 					Abalise = q[0]
-					qq,nqq = getRelatedObjects("Definerer posisjon for NSS_balisegruppe")
+					qq,nqq = getRelatedObjects(rel_NssBalise_DeterminesPositionFor_NssBaliseGroup)
 					isA = (nqq == 1) --it's me...
-					siblings,nsiblings = getRelatedObjects("Inneholder NSS_balise",bg)
+					siblings,nsiblings = getRelatedObjects(rel_NssBaliseGroup_Contains_NssBalise,bg)
 				end
 			
 				if isA == true then
@@ -462,7 +462,7 @@
         <Constructor>String _JBTSA_ATB_TextAbove()</Constructor>
         <Formula>
 			function _JBTSA_ATB_TextAbove()
-				s = "Tilhører NSS_balisegruppe"
+				s = rel_NssBalise_BelongsTo_NssBaliseGroup
 				r,n = getRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."' to NSS balise group."
@@ -514,7 +514,7 @@
         <Constructor>String _JBTSA_ATB_TextBelow()</Constructor>
         <Formula>
 			function _JBTSA_ATB_TextBelow()
-				r,n = getRelatedObjects("Definerer posisjon for balisegruppe")
+				r,n = getRelatedObjects(rel_EtcsBalise_DeterminesPositionFor_EtcsBaliseGroup)
 				if n > 0 then
 					return RC__identify(r[0])
 				else
