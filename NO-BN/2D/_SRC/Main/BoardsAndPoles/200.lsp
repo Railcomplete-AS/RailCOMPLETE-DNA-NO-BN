@@ -28,7 +28,7 @@
 		y 4.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th100_ _origin_ "Nivå 0")
+	(AddTextAtPoint layDef_Zero _th100_ _origin_ "Nivå 0")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

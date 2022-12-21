@@ -37,7 +37,7 @@
 		p2	(list (*  0.5 x) 0)
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(DrawBoxAtPos layDef_Zero (list 0 (HalfOf (HalfOf y))) x (HalfOf y) _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero (list 0 (HalfOf (HalfOf y))) x (HalfOf y) _noWipeout_)
 	(DrawHatch _solidHatch_)
 	(command _ROTATE_ _selectAll_ _ENTER_ _origin_ _angle27_)
 	(MoveUp (HalfOf (/ y (DDcos _angle27_))))

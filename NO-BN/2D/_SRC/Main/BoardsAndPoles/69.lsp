@@ -43,7 +43,7 @@
 	)
 	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 _origin_ p3 p4 _closedPolyline_)
-	(AddTextAttributeAtPos layDef_Zero _th250_ p5 attTen)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ p5 attTen)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
@@ -80,7 +80,7 @@
 	(SetLayer layDef_Zero)
 	(command _POLYLINE_ p1 p2 p3 p4 p5 _closedPolyline_)
 	(AddWipeoutToLastClosedPolyline layDef_BoardOrPole_Wipeout _keepWipeoutSource_)
-	(AddTextAttributeAtPos layDef_Zero _th250_ p6 attTen)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ p6 attTen)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created

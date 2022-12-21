@@ -532,9 +532,9 @@ layerdirector:printcommand nil
 
 ;;----------------------------------------------------------------------;;
 
-(defun LM:layerdirector:str->lst ( str del / pos )
-    (if (setq pos (vl-string-search del str))
-        (cons (substr str 1 pos) (LM:layerdirector:str->lst (substr str (+ pos 1 (strlen del))) del))
+(defun LM:layerdirector:str->lst ( str del / point )
+    (if (setq point (vl-string-search del str))
+        (cons (substr str 1 point) (LM:layerdirector:str->lst (substr str (+ point 1 (strlen del))) del))
         (list str)
     )
 )

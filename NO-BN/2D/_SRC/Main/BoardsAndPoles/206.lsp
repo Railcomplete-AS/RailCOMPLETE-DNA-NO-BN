@@ -110,9 +110,9 @@
 	(DrawLine layDef_Zero  p44 p45  )
 
 	
-	(AddTextAtPos layDef_Zero _th070_ '(0 -0.7) "GSM-R")
+	(AddTextAtPoint layDef_Zero _th070_ '(0 -0.7) "GSM-R")
  	(command _ELLIPSE_ _setEllipseCenter_ '(0 -2.0) '(1 -2.0) 0.55)
-	(AddTextAtPos layDef_Zero _th070_ '(0 -2.0) "N")
+	(AddTextAtPoint layDef_Zero _th070_ '(0 -2.0) "N")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

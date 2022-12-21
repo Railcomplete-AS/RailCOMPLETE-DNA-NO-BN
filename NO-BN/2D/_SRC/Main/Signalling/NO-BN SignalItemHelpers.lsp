@@ -41,8 +41,8 @@
 ;==========================
 ; Signal lanterns
 ;==========================
-(defun NOBN_DrawLantern ( pos r / )
-	(command _CIRCLE_ pos r)
+(defun NOBN_DrawLantern ( point r / )
+	(command _CIRCLE_ point r)
 )
 
 
@@ -199,7 +199,7 @@
 		centerPos (list posX (+ posY s2))
 	)
 	(command _RECTANGLE_ (list (+ posX (- s2)) posY) (list (+ posX s2) (+ posY side)))
-	(AddTextAtPos layDef_Zero _th180_ centerPos text)
+	(AddTextAtPoint layDef_Zero _th180_ centerPos text)
 )
 
 

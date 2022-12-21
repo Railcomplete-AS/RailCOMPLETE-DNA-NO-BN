@@ -83,8 +83,8 @@
 		p4	'(3.000 0.000)
 		t1	p1
 	)
-	(DrawCircleAtPos layDef_HighVoltageSwitchActuator p1 r _noWipeout_)
-	(AddTextAtPos layDef_HighVoltageSwitchActuator _th180_ t1 "M")
+	(DrawCircleAtPoint layDef_HighVoltageSwitchActuator p1 r _noWipeout_)
+	(AddTextAtPoint layDef_HighVoltageSwitchActuator _th180_ t1 "M")
 	(if (= variation tOpen)
 		(DrawLine layDef_HighVoltageSwitchActuator p2 p3)
 	;else

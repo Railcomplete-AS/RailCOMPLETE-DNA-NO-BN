@@ -185,7 +185,7 @@
 
 
 
-(defun AddLightFixture ( pos / r rm x y pX pY h p1 p2 )
+(defun AddLightFixture ( point / r rm x y pX pY h p1 p2 )
 	;
 	;    (X) ; Place bulb at a position defined as (a*r,b*r) where r=bulb symbol radius
 	;    /   ; Arm
@@ -196,12 +196,12 @@
 		rm (* 0.5 r) ; mast symbol radius (not drawn here)
 		x (* (sqrt 2) r) ; St Andrew's cross in light bulb symbol
 		y (* (sqrt 2) r)
-		pX (* (nth 0 pos) r) ; Position for center light bulb was given as multiples of bulb radius
-		pY (* (nth 1 pos) r)
+		pX (* (nth 0 point) r) ; Position for center light bulb was given as multiples of bulb radius
+		pY (* (nth 1 point) r)
 		h (sqrt (+ (* pX pX) (* pY pY))) ; distance from origin to center light bulb
 	)
-	(DrawCircleAtPos layDef_Zero (list pX pY) r _noWipeout_)
-	(DrawStAndrewCrossAtPos layDef_Zero (list pX pY) x y)
+	(DrawCircleAtPoint layDef_Zero (list pX pY) r _noWipeout_)
+	(DrawStAndrewCrossAtPoint layDef_Zero (list pX pY) x y)
 	(cond
 		((> h (+ rm r)) 
 			(setq 

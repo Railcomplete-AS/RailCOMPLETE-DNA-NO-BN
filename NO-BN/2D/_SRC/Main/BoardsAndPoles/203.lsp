@@ -30,7 +30,7 @@
 		r 2.0
 	)
 	(DrawCircle layDef_Zero r _noWipeout_)
-	(AddTextAtPos layDef_Zero _th200_	 _origin_ "20") 
+	(AddTextAtPoint layDef_Zero _th200_	 _origin_ "20") 
 	(MoveUp r)
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

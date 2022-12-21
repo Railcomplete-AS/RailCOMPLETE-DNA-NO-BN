@@ -52,8 +52,8 @@
 		cr	(HalfOf coverDiameter)	
 		p1 	(list coverOffsetX coverOffsetY)
 	)
-	(DrawCircleAtPos layDef_Zero _origin_ mr _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p1 cr _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero _origin_ mr _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p1 cr _noWipeout_)
 	(ScaleAll _four_)
 	(AddDescriptionBelowOrigin description mr)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -89,10 +89,10 @@
 	(MoveUp (HalfOf y))
 	(if (= coverDiameter 0)
 		; Rectangular cover:
-		(DrawBoxAtPos layDef_Zero p1 coverLength coverDepth _noWipeout_)
+		(DrawBoxAtPoint layDef_Zero p1 coverLength coverDepth _noWipeout_)
 	;else
 		;Circular cover:
-		(DrawCircleAtPos layDef_Zero p1 cr _noWipeout_)
+		(DrawCircleAtPoint layDef_Zero p1 cr _noWipeout_)
     )
 	(ScaleAll _four_)
 	(AddDescriptionBelowOrigin description (HalfOf y))

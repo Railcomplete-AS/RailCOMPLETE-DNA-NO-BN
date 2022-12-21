@@ -48,7 +48,7 @@
 	(DrawBox layDef_Zero gx gy layDef_Cabinet_Wipeout)
 	(DrawBottomEmphasis layDef_Zero gx gy)
 	(DrawCircle layDef_Zero gr _noWipeout_)
-	(AddTextAtPos layDef_Zero (* 0.8 gy) _origin_ "TR")
+	(AddTextAtPoint layDef_Zero (* 0.8 gy) _origin_ "TR")
 	(ScaleAll _four_)
 	(AddDescriptionBelowOrigin description (HalfOf gy))
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)

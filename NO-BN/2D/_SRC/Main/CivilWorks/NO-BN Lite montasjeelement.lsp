@@ -483,24 +483,24 @@
 	
 	; Annotative symbol
 	(SetLayer layDef_Zero)
-	(DrawBoxAtPos layDef_Zero p1 x1 y1 _noWipeout_)
-	(DrawBoxAtPos layDef_Zero p2 x2 y2 _noWipeout_)
-	(DrawBoxAtPos layDef_Zero p3 x3 y3 _noWipeout_)
-	(DrawBoxAtPos layDef_Zero p4 xBar yBar _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p1 x1 y1 _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p2 x2 y2 _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p3 x3 y3 _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p4 xBar yBar _noWipeout_)
 	(DrawLine layDef_Zero '(-0.250 0.058) '(0.250 0.058)) ; L-bar ==
-	(DrawBoxAtPos layDef_Zero p5 yBar xBar _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p5 yBar xBar _noWipeout_)
 	(DrawLine layDef_Zero '(-0.046 0.250) '(-0.046 -0.250)) ; L-bar ||
 	(ScaleAll _four_)
 	(AddGraphicsFromScaledSchematicBlock blockName _one_)
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
-	(DrawBoxAtPos layDef_MetricDetails p1 x1 y1 _noWipeout_)
-	(DrawBoxAtPos layDef_MetricDetails p2 x2 y2 _noWipeout_)
-	(DrawBoxAtPos layDef_MetricDetails p3 x3 y3 _noWipeout_)
-	(DrawBoxAtPos layDef_MetricDetails p4 xBar yBar _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p1 x1 y1 _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p2 x2 y2 _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p3 x3 y3 _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p4 xBar yBar _noWipeout_)
 	(DrawLine layDef_MetricDetails '(-0.250 0.058) '(0.250 0.058)) ; L-bar ==
-	(DrawBoxAtPos layDef_MetricDetails p5 yBar xBar _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p5 yBar xBar _noWipeout_)
 	(DrawLine layDef_MetricDetails '(-0.046 0.250) '(-0.046 -0.250)) ; L-bar ||
 	(CreateMetricBlockFromCurrentGraphics blockName)
 )
@@ -542,9 +542,9 @@
 	; Annotative symbol
 	(DrawCircle layDef_Zero r _noWipeout_)
 	(DrawCircle layDef_Zero ri _noWipeout_)
-	(DrawBoxAtPos layDef_Zero p4 xBar yBar _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p4 xBar yBar _noWipeout_)
 	(DrawLine layDef_Zero (list -0.250 r) (list 0.250 r)) ; L-bar ==
-	(DrawBoxAtPos layDef_Zero p5 yBar xBar _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero p5 yBar xBar _noWipeout_)
 	(DrawLine layDef_Zero (list (+ r 0.006) 0.250) (list (+ r 0.006) -0.250)) ; L-bar ||
 	(MoveUp r)
 	(ScaleAll _four_)
@@ -554,9 +554,9 @@
 	; Metric symbol
 	(DrawCircle layDef_MetricDetails r _noWipeout_)
 	(DrawCircle layDef_MetricDetails ri _noWipeout_)
-	(DrawBoxAtPos layDef_MetricDetails p4 xBar yBar _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p4 xBar yBar _noWipeout_)
 	(DrawLine layDef_MetricDetails (list -0.250 r) (list 0.250 r)) ; L-bar ==
-	(DrawBoxAtPos layDef_MetricDetails p5 yBar xBar _noWipeout_)
+	(DrawBoxAtPoint layDef_MetricDetails p5 yBar xBar _noWipeout_)
 	(DrawLine layDef_MetricDetails (list (+ r 0.006) 0.250) (list (+ r 0.006) -0.250)) ; L-bar ||
 	(MoveUp r)
 	(CreateMetricBlockFromCurrentGraphics blockName)

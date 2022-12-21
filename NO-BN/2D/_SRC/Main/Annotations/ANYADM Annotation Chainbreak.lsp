@@ -40,7 +40,7 @@
 	(AddAtt "UT_KM"		"Utgående km:"			"15"	"1.0,-2.75"  _th180_ _angleZero_ _rcTextStyle_ _middleLeft_)
 	(AddAtt "UT_M"		"Utgående m:"			"450"	"1.0,-5.50"  _th180_ _angleZero_ _rcTextStyle_ _middleLeft_)
 	(AddAtt "SPRANG"	"Sprang:"				"+28m"	"0,5.5"      _th180_ _angleZero_ _rcTextStyle_ _middleCenter_)
-	(AddTextAtPos layDef_Zero _th180_ "0,2" symbolText)
+	(AddTextAtPoint layDef_Zero _th180_ "0,2" symbolText)
 	(MoveUp 20)
 	(command _LINE_ _origin_ "0,20" _ENTER_)
 

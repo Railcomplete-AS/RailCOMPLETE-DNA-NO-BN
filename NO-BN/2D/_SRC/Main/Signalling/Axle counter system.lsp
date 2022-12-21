@@ -48,7 +48,7 @@
 
 	; Schematic symbol
 	(DrawLine layDef_Zero p0 p1)								;        --
-	(DrawCircleAtPos layDef_Zero p2 radius _noWipeout_)			;        --( )
+	(DrawCircleAtPoint layDef_Zero p2 radius _noWipeout_)			;        --( )
 	(DrawHatch _denseHatch_)									;        --(*)
 	(DrawLine layDef_Zero p3 p4)								;        --(*)-
 	(MirrorAboutYaxis _keepMirrorSource_)						; -(*)-----(*)-
@@ -71,7 +71,7 @@
 	(DrawLine layDef_AxleCounter_SnaplineForPositioning _origin_ p5)
 	
 	; Reserved area for tuning unit:
-	(DrawBoxAtPos layDef_AxleCounter_ReservedAreaForTuningUnit rap rax ray _noWipeout_)
+	(DrawBoxAtPoint layDef_AxleCounter_ReservedAreaForTuningUnit rap rax ray _noWipeout_)
 	(DrawHatch _solidHatch_)
 
 	; Metal-free area:
@@ -107,7 +107,7 @@
 		_POLYLINE_ (list 0.75 1.1) (list 0.7 2.0) (list 0.6 2.15) (list 0 2.15) _ENTER_
 		_MIRROR_ _selectAll_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_
 	)
-	(AddTextAtPos layDef_Zero 0.50 (list 0 1.625) axleCounterCaption)
+	(AddTextAtPoint layDef_Zero 0.50 (list 0 1.625) axleCounterCaption)
 
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

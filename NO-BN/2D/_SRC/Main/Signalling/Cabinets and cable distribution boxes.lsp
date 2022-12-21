@@ -83,7 +83,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy _noWipeout_)
 	(DrawStAndrewCross layDef_Zero gx gy)
-	(AddTextAtPos layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
+	(AddTextAtPoint layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "DOBBEL")
 			(DrawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (PosBL gx gy) (PosBC gx gy))
@@ -138,7 +138,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(AddTextAtPos layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
+	(AddTextAtPoint layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "VHENGSLET")(DrawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (PosBL gx gy) (PosBR gx gy)))
 		((= door "HHENGSLET") (DrawRightDoor layDef_Cabinet_ReservedSpaceForDoors (PosBR gx gy) (PosBL gx gy)))
@@ -186,7 +186,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(AddTextAtPos layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
+	(AddTextAtPoint layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "VHENGSLET")(DrawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (PosBL gx gy) (PosBR gx gy)))
 		((= door "HHENGSLET") (DrawRightDoor layDef_Cabinet_ReservedSpaceForDoors (PosBR gx gy) (PosBL gx gy)))
@@ -234,7 +234,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(AddTextAtPos layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
+	(AddTextAtPoint layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "VHENGSLET")(DrawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (PosBL gx gy) (PosBR gx gy)))
 		((= door "HHENGSLET") (DrawRightDoor layDef_Cabinet_ReservedSpaceForDoors (PosBR gx gy) (PosBL gx gy)))
@@ -282,7 +282,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy _noWipeout_)
 	; (no cross)
-	(AddTextAtPos layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
+	(AddTextAtPoint layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "VHENGSLET")(DrawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (PosBL gx gy) (PosBR gx gy)))
 		((= door "HHENGSLET") (DrawRightDoor layDef_Cabinet_ReservedSpaceForDoors (PosBR gx gy) (PosBL gx gy)))
@@ -331,7 +331,7 @@
 	(DrawLine layDef_Zero (PosTL gb gy) (PosTR gb gy)) 
 	(DrawBox layDef_Zero gx gy _noWipeout_)
 	(DrawHatch _solidHatch_)
-	(AddTextAtPos layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
+	(AddTextAtPoint layDef_Zero (* 0.7 gy) _origin_ gText) ; Text height is 0.7 of total box height
 	(cond 
 		((= door "VHENGSLET")(DrawLeftDoor layDef_Cabinet_ReservedSpaceForDoors (PosBL gx gy) (PosBR gx gy)))
 		((= door "HHENGSLET") (DrawRightDoor layDef_Cabinet_ReservedSpaceForDoors (PosBR gx gy) (PosBL gx gy)))

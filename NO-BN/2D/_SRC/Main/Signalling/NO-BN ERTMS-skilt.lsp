@@ -91,13 +91,13 @@
 	; Add captions below yoke mount / above mast mount;
 	(if (= mounting "YOKE")
 		(if (= distantSignal "ANNOUNCE")
-			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO-Fs" _topCenter_) ; below surrounding box
-			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO" _topCenter_) ; below surrounding box
+			(AddTextAtPointWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO-Fs" _topCenter_) ; below surrounding box
+			(AddTextAtPointWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO" _topCenter_) ; below surrounding box
 		)
 	;else
 		(if (= distantSignal "ANNOUNCE")
-			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO-Fs" _BottomCenter_) ; above surrounding box
-			(AddTextAtPosWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO" _BottomCenter_) ; above surrounding box
+			(AddTextAtPointWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO-Fs" _BottomCenter_) ; above surrounding box
+			(AddTextAtPointWithJustification layDef_Zero _th100_ (list 0 (* 0.55 y)) "PLO" _BottomCenter_) ; above surrounding box
 		)
 	)
 
@@ -140,7 +140,7 @@
 	(DrawBox layDef_Zero x y _noWipeout_)
 	
 	; Text 'SH' for 'shunting':
-	(AddTextAtPos layDef_Zero txtHeight _origin_ "SH")
+	(AddTextAtPoint layDef_Zero txtHeight _origin_ "SH")
 
 	(if (= beginOrEnd "END")
 		; Add three inclined 'slash' lines (symbol is drawn upright here)
@@ -250,8 +250,8 @@
 
 	; Surrounding box:
 	(DrawBox layDef_Zero x y _noWipeout_)
-	(AddTextAtPos layDef_Zero  _th180_ (list 0 (* 0.25 y)) "LT")
-	(AddTextAtPos layDef_Zero  _th180_ (list 0 (* -0.25 y)) "ETCS")
+	(AddTextAtPoint layDef_Zero  _th180_ (list 0 (* 0.25 y)) "LT")
+	(AddTextAtPoint layDef_Zero  _th180_ (list 0 (* -0.25 y)) "ETCS")
 	
 	; Epilogue:
 	(MoveUp (HalfOf y))

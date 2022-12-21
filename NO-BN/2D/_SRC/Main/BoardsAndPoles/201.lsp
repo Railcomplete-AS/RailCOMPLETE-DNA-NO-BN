@@ -29,8 +29,8 @@
 		y 4.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th0736_ '(0 0.55) "LT")
-	(AddTextAtPos layDef_Zero _th0736_ '(0 -0.55) "ETCS")
+	(AddTextAtPoint layDef_Zero _th0736_ '(0 0.55) "LT")
+	(AddTextAtPoint layDef_Zero _th0736_ '(0 -0.55) "ETCS")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

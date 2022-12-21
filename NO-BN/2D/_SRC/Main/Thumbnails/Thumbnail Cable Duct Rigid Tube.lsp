@@ -44,11 +44,11 @@
 ;	(DrawHatchAtPoint (* _tenth_ _denseHatch_) (list 0 (HalfOf (+ r1 r2))) _angleZero_ _zero_)
 
 	; Inner flexible tubes
-	(DrawCircleAtPos layDef_Zero p1 r3 _noWipeout_)		(DrawCircleAtPos layDef_Zero p1 r4 _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p2 r3 _noWipeout_)		(DrawCircleAtPos layDef_Zero p2 r4 _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p3 r3 _noWipeout_)		(DrawCircleAtPos layDef_Zero p3 r4 _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p4 r3 _noWipeout_)		(DrawCircleAtPos layDef_Zero p4 r4 _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p5 r3 _noWipeout_)		(DrawCircleAtPos layDef_Zero p5 r4 _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p1 r3 _noWipeout_)		(DrawCircleAtPoint layDef_Zero p1 r4 _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p2 r3 _noWipeout_)		(DrawCircleAtPoint layDef_Zero p2 r4 _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p3 r3 _noWipeout_)		(DrawCircleAtPoint layDef_Zero p3 r4 _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p4 r3 _noWipeout_)		(DrawCircleAtPoint layDef_Zero p4 r4 _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p5 r3 _noWipeout_)		(DrawCircleAtPoint layDef_Zero p5 r4 _noWipeout_)
 	
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
