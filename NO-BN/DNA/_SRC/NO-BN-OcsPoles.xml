@@ -167,7 +167,7 @@
 				offsetLateral = (offsetLateral or 0)/scale
 				offsetAlong = (offsetAlong or 0)/scale
 				worldOffsetX,worldOffsetY = RC__getWcsVectorFromAcsVector(offsetLateral,offsetAlong)
-				local r,n = getRelatedObjects("Neste kl-mast")
+				local r,n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
 				if n == 0 then
 					return {worldOffsetX,worldOffsetY}
 				else
@@ -191,7 +191,7 @@
 		<Constructor>Double _JBTEH_MAS_SpanlengthTextRotation()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthTextRotation()
-				local r,n = getRelatedObjects("Neste kl-mast")
+				local r,n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
 				if n == 0 then 
 					return AlignmentTangent
 				else 
@@ -213,10 +213,10 @@
 		<Constructor>_JBTEH_MAS_otherObjectsToModelcheck()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_otherObjectsToModelcheck()
-				sYoke1 = "Er åk-mast for åk"
-				sYoke2 = "Er hengemast festet i åk"
-				sMast = "Er åk holdt oppe av kl-mast"
-				sSuspensionMast = "Er åk for hengemast - kl-mast"
+				sYoke1 = rel_OcsPole_IsSupportFor_OcsPortal
+				sYoke2 = rel_OcsPole_IsDropArmUnder_OcsPortal
+				sMast = rel_OcsPortal_IsSupportedBy_OcsPole
+				sSuspensionMast = rel_OcsPortal_IsDropArmSupportFor_OcsPole
 				t = {} --Collection of other objects to check
 				txt = "{"
 				first = true
@@ -530,7 +530,7 @@
 			<Constructor>Double _JBTEH_MAS_OcsPoleHeight()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_OcsPoleHeight()
-					r,n = getRelatedObjects("Er åk-mast for åk")
+					r,n = getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
 					if n &gt; 0 then
 						return string.format("%.0f", 500 * ((r[0].RelativeElevation + 1.0) // 0.5)) --[mm]
 					else
@@ -893,7 +893,7 @@
 			<Constructor>Double _JBTEH_MAS_DropArmUnderBridgeOrTunnel_RelativeElevation()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_DropArmUnderBridgeOrTunnel_RelativeElevation()
-					s = "Har kl-fundament"
+					s = rel_OcsPoleOrAnchoringFootplate_Has_OcsFoundation
 					r,n = getRelatedObjects(s)
 					if n == 0 then
 						-- Belongs to a bridge underside (with no bolt group/foundation object), or has not (yet) received its bolt group relation:
@@ -1126,7 +1126,7 @@
 				<Constructor>String _JBTEH_MAS_DropArmUnderPortal_code()</Constructor>
 				<Formula>
 				function _JBTEH_MAS_DropArmUnderPortal_code()
-					local yokeRelation = "Er hengemast festet i åk"
+					local yokeRelation = rel_OcsPole_IsDropArmUnder_OcsPortal
 					local yokes, nYokes = getRelatedObjects(yokeRelation)
 					if nYokes == 0 then
 						return "UNFINISHED - Relate with '"..yokeRelation.."'."
@@ -1135,7 +1135,7 @@
 									.." - remove unintended relations '"..yokeRelation.."' or adjust the active stage using layer names."
 					else
 						--One yoke:
-						local supportMastRelation = "Er åk holdt oppe av kl-mast"
+						local supportMastRelation = rel_OcsPortal_IsSupportedBy_OcsPole
 						local supportMasts, nSupportMasts = getRelatedObjects(supportMastRelation,yokes[0]) 
 						if nSupportMasts == 0 then 
 							return "UNFINISHED - Cannot deduce suspended OCS pole name since yoke '"..RC__identify(yokes[0]).."' has no support mast yet."
@@ -1156,7 +1156,7 @@
 							local suspendedMastCode = supportMasts[referenceSupportMast].code
 							
 							--Assign sequence number to this suspended OCS pole (counted from the support mast closest to yoke's insertion point):
-							local suspendedMastRelation = "Er åk for hengemast - kl-mast"
+							local suspendedMastRelation = rel_OcsPortal_IsDropArmSupportFor_OcsPole
 							local suspendedMasts, nSuspendedMasts = getRelatedObjects(suspendedMastRelation,yokes[0])
 					
 							local sequenceNumber = 0
@@ -1182,7 +1182,7 @@
 			<Formula>
 				function _JBTEH_MAS_DropArmUnderPortal_Mileage(offset)
 					offset = offset or 0.0 --Note: The offset is "brutally" added to mileage, also when the yoke does not cross tracks at a straight angle.
-					local ys = "Er hengemast festet i åk"
+					local ys = rel_OcsPole_IsDropArmUnder_OcsPortal
 					local yr,yn = getRelatedObjects(ys)
 					if yn == 0 then
 						return getPropertyValue("Mileage"), _info("UNFINISHED - Relate to yoke/galley with '"..ys.."' to set mileage automatically.")
@@ -1194,7 +1194,7 @@
 					else
 						--yn == 1
 						
-						local s = "Er åk holdt oppe av kl-mast"
+						local s = rel_OcsPortal_IsSupportedBy_OcsPole
 						local r,n = getRelatedObjects(s,yr[0])
 						if n == 0 then
 							return offset + yr[0].mileage,
@@ -1266,14 +1266,14 @@
 			<Constructor>Double _JBTEH_MAS_DropArmUnderPortal_AngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_DropArmUnderPortal_AngularOffset()
-					local ys = "Er hengemast festet i åk"
+					local ys = rel_OcsPole_IsDropArmUnder_OcsPortal
 					yr,yn = getRelatedObjects(ys)
 					if yn == 0 then
 						return getPropertyValue("AngularOffset"), _info("UNFINISHED - relate to yoke with '"..ys.."'.")
 				
 					else
 						local yoke = yr[0]
-						local s = "Er åk holdt oppe av kl-mast"
+						local s = rel_OcsPortal_IsSupportedBy_OcsPole
 						local r,n = getRelatedObjects(s,yoke)
 				
 						if n == 0 then
@@ -1482,7 +1482,7 @@
 			<Constructor>_JBTEH_AAK_otherObjectsToModelcheck()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_otherObjectsToModelcheck()
-					sMast = "Er åk holdt oppe av kl-mast"
+					sMast = rel_OcsPortal_IsSupportedBy_OcsPole
 					rMast,nMast = getRelatedObjects(sMast)
 					t = {} --Collection of other objects to check
 					first = true
@@ -1491,7 +1491,7 @@
 						txt = first and "{"..RC__identify(rMast[i]) or txt..","..RC__identify(rMast[i])
 						first = false
 					end
-					sSuspensionMast = "Er åk for hengemast - kl-mast"
+					sSuspensionMast = rel_OcsPortal_IsDropArmSupportFor_OcsPole
 					rSuspensionMast,nSuspensionMast = getRelatedObjects(sSuspensionMast)
 					for i = 0, nSuspensionMast-1 do
 						table.insert(t,rSuspensionMast[i])
@@ -1559,7 +1559,7 @@
 						end
 					end --function
 				
-					local s = "Er åk holdt oppe av kl-mast"
+					local s = rel_OcsPortal_IsSupportedBy_OcsPole
 					local r,n = getRelatedObjects(s)
 
 					if n == 0 then
@@ -1611,7 +1611,7 @@
 			<Formula>
 				function _JBTEH_AAK_Length()
 					-- Ref Bane NOR, lærebok "Bygging av kontaktledningsanlegg" Del 2:2, Kap. 14
-					local RelationName = "Er åk holdt oppe av kl-mast"
+					local RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
 					local r,n = getRelatedObjects(RelationName)
 					local L
 					if n == 0 then
@@ -1676,7 +1676,7 @@
 			<Constructor>Double _JBTEH_AAK_AngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_AngularOffset()
-					local RelationName = "Er åk holdt oppe av kl-mast"
+					local RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
 					local r,n = getRelatedObjects(RelationName)
 
 					if n == 0 then
@@ -1719,7 +1719,7 @@
 			<Constructor>Double _JBTEH_AAK_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_Mileage()
-					local s = "Er åk holdt oppe av kl-mast"
+					local s = rel_OcsPortal_IsSupportedBy_OcsPole
 					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("Mileage"),
