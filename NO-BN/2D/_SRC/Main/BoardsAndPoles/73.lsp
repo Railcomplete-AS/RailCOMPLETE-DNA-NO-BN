@@ -34,7 +34,7 @@
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(DrawCircle layDef_Zero r _noWipeout_)
-	(AddTextAtPos layDef_Zero (* 0.5 x) _origin_ "R") ; Letter size is 45% of side
+	(AddTextAtPoint layDef_Zero (* 0.5 x) _origin_ "R") ; Letter size is 45% of side
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

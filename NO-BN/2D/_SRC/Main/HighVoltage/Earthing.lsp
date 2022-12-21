@@ -49,7 +49,7 @@
 	(DrawLine layDef_Zero p1 p2)
 	(DrawLine layDef_Zero p3 p4)
 	(DrawLine layDef_Zero p5 p6)
-	(AddTextAtPos layDef_Description _descriptionTextHeight_ p7 description)
+	(AddTextAtPoint layDef_Description _descriptionTextHeight_ p7 description)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Geo symbol
@@ -84,11 +84,11 @@
 	
 	; Schematic symbol
 	(DrawBox layDef_Zero x y _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p1 r _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p2 r _noWipeout_)
-	(DrawCircleAtPos layDef_Zero _origin_ r _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p3 r _noWipeout_)
-	(DrawCircleAtPos layDef_Zero p4 r _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p1 r _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p2 r _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero _origin_ r _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p3 r _noWipeout_)
+	(DrawCircleAtPoint layDef_Zero p4 r _noWipeout_)
 	(AddDescriptionBelowOrigin description (HalfOf y))
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 

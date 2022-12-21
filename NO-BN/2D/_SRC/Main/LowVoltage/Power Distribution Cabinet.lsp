@@ -56,7 +56,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy layDef_Cabinet_Wipeout)
 	(DrawBottomEmphasis layDef_Zero gx gy)
-	(AddTextAtPos layDef_Zero (* 0.8 gy) _origin_ "Ford.")
+	(AddTextAtPoint layDef_Zero (* 0.8 gy) _origin_ "Ford.")
 	(ScaleAll _four_)		; Up to 1:1000 size
 	(AddDescriptionBelowOrigin description (HalfOf gy))
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
@@ -89,7 +89,7 @@
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy layDef_Cabinet_Wipeout)
 	(DrawBottomEmphasis layDef_Zero gx gy)
-	(AddTextAtPos layDef_Zero (* 0.8 gy) _origin_ "GR")
+	(AddTextAtPoint layDef_Zero (* 0.8 gy) _origin_ "GR")
 	(ScaleAll _four_)		; Up to 1:1000 size
 	(AddDescriptionBelowOrigin description (HalfOf gy))
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
@@ -126,7 +126,7 @@
 
 	; Annotative symbol
 	(DrawBox layDef_Zero gx gy layDef_Cabinet_Wipeout)
-	(AddTextAtPos layDef_Zero (* 0.8 gy) _origin_ "GR")
+	(AddTextAtPoint layDef_Zero (* 0.8 gy) _origin_ "GR")
 	(ScaleAll _four_)		; Up to 1:1000 size
 	(AddDescriptionBelowOrigin description gy)
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)

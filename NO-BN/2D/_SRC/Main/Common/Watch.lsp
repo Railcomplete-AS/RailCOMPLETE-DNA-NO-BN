@@ -30,7 +30,7 @@
 		r 2.75
 	)
 	(command _CIRCLE_ _origin_ r)
-	(AddTextAttributeAtPos layDef_Zero _th180_ _origin_ att)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ _origin_ att)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
@@ -42,7 +42,7 @@
 	(setq description (strcat "WATCH"				))
 	(setq att '("W" "Watch-objekt"	"W"				))
 
-	(AddMultilineTextAttributeAtPos layDef_Zero _th180_ _origin_ att)
+	(AddMultilineTextAttributeAtPoint layDef_Zero _th180_ _origin_ att)
 	(AddDescriptionBelowOrigin description _one_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)

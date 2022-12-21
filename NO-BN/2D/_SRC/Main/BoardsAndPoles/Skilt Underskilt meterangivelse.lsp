@@ -31,7 +31,7 @@
 		attMeters '("AVSTAND" "Avstand (m):" "300m")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAttributeAtPos layDef_Zero _th250_ _origin_ attMeters)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ _origin_ attMeters)
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

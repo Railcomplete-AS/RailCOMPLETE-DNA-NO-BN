@@ -47,9 +47,9 @@
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
+	(AddTextAtPoint layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
-	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ p3 attMetersLeft)
 
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
@@ -81,9 +81,9 @@
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
+	(AddTextAtPoint layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p2 _east_)
-	(AddTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ p4 attMetersRight)
 
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
@@ -118,11 +118,11 @@
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
-	(AddTextAtPos layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
+	(AddTextAtPoint layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
 	(drawHollowArrowAtpoint x y p1 _west_)
-	(AddTextAttributeAtPos layDef_Zero _th180_ p3 attMetersLeft)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ p3 attMetersLeft)
 	(drawHollowArrowAtpoint x y p2 _east_)
-	(AddTextAttributeAtPos layDef_Zero _th180_ p4 attMetersRight)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ p4 attMetersRight)
 
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)

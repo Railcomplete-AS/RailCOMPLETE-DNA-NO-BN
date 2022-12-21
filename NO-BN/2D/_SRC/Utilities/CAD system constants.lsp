@@ -403,7 +403,7 @@
 		_setAttdefRotation_				"_R"
 		_setAttdefTextHeight_			"_H"
 		_setAttdefTextWidth_			"_W"	; Text box width - only when  _multipleLines_ bit is set,
-												; instead of giving a pos for the other corner of the 'box'
+												; instead of giving a point for the other corner of the 'box'
 		
 		
 		; ATTDEF flags

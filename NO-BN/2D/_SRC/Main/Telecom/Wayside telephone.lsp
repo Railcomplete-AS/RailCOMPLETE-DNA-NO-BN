@@ -33,7 +33,7 @@
 
 	; Annotative symbol
 	(DrawBox layDef_Zero x y _noWipeout_)
-	(AddTextAtPos layDef_Zero (* 0.8 y) _origin_ "T")
+	(AddTextAtPoint layDef_Zero (* 0.8 y) _origin_ "T")
 	(MoveDown (HalfOf y))
 	(AddDescriptionBelowOrigin description y)
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)

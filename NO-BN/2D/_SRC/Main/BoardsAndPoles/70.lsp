@@ -32,7 +32,7 @@
 		y 4.5
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th250_ _origin_ "V")
+	(AddTextAtPoint layDef_Zero _th250_ _origin_ "V")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

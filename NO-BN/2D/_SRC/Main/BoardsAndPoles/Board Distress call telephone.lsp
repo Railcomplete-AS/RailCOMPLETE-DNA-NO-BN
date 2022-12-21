@@ -56,7 +56,7 @@
 	(DrawLine layDef_Zero p4 p5)
 	(DrawLine layDef_Zero p12 p10)
 	(DrawLine layDef_Zero p11 p13)
-	(AddTextAtPos layDef_Zero _th180_ p14 "SOS")
+	(AddTextAtPoint layDef_Zero _th180_ p14 "SOS")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

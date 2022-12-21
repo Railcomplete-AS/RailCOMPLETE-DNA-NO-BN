@@ -32,12 +32,12 @@
 
 
 ; Vector addition
-(defun AddVectors ( pos displacement / px py dx dy x y )
+(defun AddVectors ( point displacement / px py dx dy x y )
 	; A position is a list of X- and Y coordinates: (list X Y) (which evaluates X and Y as expressions before returning)
 	; Add displacement (dx,dy) to position (px,py), return position (px+dx,py+dy)
 	(setq 
-		px (car pos)
-		py (cadr pos)
+		px (car point)
+		py (cadr point)
 		dx (car displacement)
 		dy (cadr displacement)
 		x  (+ px dx)
@@ -166,8 +166,8 @@
 
 
 
-(defun DrawStAndrewCrossAtPos ( layDef pos x y / p1 p2 p3 p4 )
-	; The two diagonals in a x-by-y rectangle centered at pos
+(defun DrawStAndrewCrossAtPoint ( layDef point x y / p1 p2 p3 p4 )
+	; The two diagonals in a x-by-y rectangle centered at point
 	;	
 	;   1   4
 	;    \ /   
@@ -176,82 +176,82 @@
 	;   3   2
 	;
 	(setq
-		p1 (AddVectors (PosTL x y) pos)
-		p2 (AddVectors (PosBR x y) pos)
-		p3 (AddVectors (PosBL x y) pos)
-		p4 (AddVectors (PosTR x y) pos)
+		p1 (AddVectors (PosTL x y) point)
+		p2 (AddVectors (PosBR x y) point)
+		p3 (AddVectors (PosBL x y) point)
+		p4 (AddVectors (PosTR x y) point)
 	)
 	(DrawLine layDef p1 p2) ; diagonal '\'
 	(DrawLine layDef p3 p4) ; diagonal '/'
-	'DrawStAndrewCrossAtPos
+	'DrawStAndrewCrossAtPoint
 )
 
 
 
 (defun DrawStAndrewCross ( layDef x y / )
 	; The two diagonals in a x-by-y rectangle centered at ORIGIN
-	(DrawStAndrewCrossAtPos layDef _origin_ x y)
+	(DrawStAndrewCrossAtPoint layDef _origin_ x y)
 	'DrawStAndrewCross
 )
 
 
 
-(defun DrawCircleAtPos ( layDef pos r layDef_Wipeout / )
-	; A circle, centered at 'pos'.
+(defun DrawCircleAtPoint ( layDef point r layDef_Wipeout / )
+	; A circle, centered at 'point'.
 	; Wipeout is added if wipeoutlayer is non-nil.
 	;        ___    
 	;       /   \
-	;      |  .  |       ; . = pos
+	;      |  .  |       ; . = point
 	;       \___/ 
 	;
 	(SetLayer layDef)
-	(command _CIRCLE_ pos r)
+	(command _CIRCLE_ point r)
 	(if layDef_Wipeout
 		(progn
-			(command _POLYGON_ 16 pos _inscribedPolygon_ r)
+			(command _POLYGON_ 16 point _inscribedPolygon_ r)
 			(AddWipeoutToLastClosedPolyline layDef_Wipeout _keepWipeoutSource_)
 			(command _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_)
 		)
 	)
-	'DrawCircleAtPos
+	'DrawCircleAtPoint
 )
 
 
 
 (defun DrawCircle ( layDef r layDef_Wipeout / )
 	; A circle, centered at ORIGIN
-	(DrawCircleAtPos layDef _origin_ r layDef_Wipeout)
+	(DrawCircleAtPoint layDef _origin_ r layDef_Wipeout)
 	'DrawCircle
 )
 
 
 
-(defun DrawBoxAtPos ( layDef pos x y layDef_Wipeout / )
-	; A rectangular x-by-y area on specified layer, centered at 'pos'.
+(defun DrawBoxAtPoint ( layDef point x y layDef_Wipeout / )
+	; A rectangular x-by-y area on specified layer, centered at 'point'.
 	; Wipeout is added if wipeoutlayer is non-nil.
 	;
 	;    TL----------TC---------TR  ^
 	;    |                       |  |
-	;    ML          .          MR  y high   ; . = pos
+	;    ML          .          MR  y high   ; . = point
 	;    |                       |  |
 	;    BL----------BC---------BR  v
 	;    <-------- x wide ------->
     ;
 	(SetLayer layDef)
-	(command _RECTANGLE_ (AddVectors (PosTL x y) pos) (AddVectors (PosBR x y) pos))
+	(command _RECTANGLE_ (AddVectors (PosTL x y) point) (AddVectors (PosBR x y) point))
 	(if layDef_Wipeout
 		(progn
 			(AddWipeoutToLastClosedPolyline layDef_Wipeout _keepWipeoutSource_)
 			(command _DRAWORDER_ _lastSelection_ _ENTER_ _aboveAllObjects_)
 		)
 	)
-	'DrawBoxAtPos
+	'DrawBoxAtPoint
 )
 
 
 (defun DrawBox ( layDef x y layDef_Wipeout / )
-	; As DrawBoxAtPos, centered at ORIGIN
-	(DrawBoxAtPos layDef _origin_ x y  layDef_Wipeout)
+	; As DrawBoxAtPoint, centered at ORIGIN
+	(DrawBoxAtPoint layDef _origin_ x y  layDef_Wipeout)
 	'DrawBox
 )
 	
@@ -340,7 +340,7 @@
 		((= (strlen text) 3) (setq textHeight _threeLetterProxySymbolTextHeight_))
 		(T 					 (setq textHeight _th050_)) ; Default linewidth, font height is 10x linewidth
 	)
-	(AddTextAtPos layDef textHeight _origin_ text)
+	(AddTextAtPoint layDef textHeight _origin_ text)
 )
 
 
@@ -354,13 +354,13 @@
 	; "THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG" is 44 characters, which in uppercase iso3098.shx textHeight 0.18 is 5.41 wide => 0.123/char => ratio 0.683.
 	(setq 
 		nLines	(+ 1 (/ (* (strlen description) 0.683 _descriptionTextHeight_) _descriptionTextBoxWidth_)) ; Round up
-		pos		(list 0 (- (+ distanceBelowOrigin (* nLines _descriptionTextHeight_))))
+		point		(list 0 (- (+ distanceBelowOrigin (* nLines _descriptionTextHeight_))))
 	)
 	(AddMText
 		layDef_Description
 		_descriptionTextHeight_ 
 		_descriptionTextBoxWidth_
-		pos
+		point
 		description
 	)
 )

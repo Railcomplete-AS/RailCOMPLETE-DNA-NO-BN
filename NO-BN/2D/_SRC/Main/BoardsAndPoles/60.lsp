@@ -146,7 +146,7 @@
 		description "SKILT SIGNAL 60D ATC REPETER HASTIGHET 10 KM/H"
 	)	
 	(DrawLosangeWithCircle)
-	(AddTextAtPos layDef_Zero (* 0.45 (GetLosangeSide)) _origin_ "1") ; Letter size is 45% of side
+	(AddTextAtPoint layDef_Zero (* 0.45 (GetLosangeSide)) _origin_ "1") ; Letter size is 45% of side
 	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -172,7 +172,7 @@
 		description "SKILT SIGNAL 60D ATC REPETER HASTIGHET 40 KM/H"
 	)	
 	(DrawLosangeWithCircle)
-	(AddTextAtPos layDef_Zero (* 0.45 (GetLosangeSide)) _origin_ "4") ; Letter size is 45% of side
+	(AddTextAtPoint layDef_Zero (* 0.45 (GetLosangeSide)) _origin_ "4") ; Letter size is 45% of side
 	(MoveUp (* (DDcos _angle45_) (GetLosangeSide)))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -231,7 +231,7 @@
 		y	6.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th250_ _origin_ "FATC")
+	(AddTextAtPoint layDef_Zero _th250_ _origin_ "FATC")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -258,8 +258,8 @@
 		y	6.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th250_ (Pos31 y) "FATC")
-	(AddTextAtPos layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
+	(AddTextAtPoint layDef_Zero _th250_ (Pos31 y) "FATC")
+	(AddTextAtPoint layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -286,7 +286,7 @@
 		y	6.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th250_ _origin_ "DATC")
+	(AddTextAtPoint layDef_Zero _th250_ _origin_ "DATC")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -313,8 +313,8 @@
 		y	6.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th250_ (Pos31 y) "DATC")
-	(AddTextAtPos layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
+	(AddTextAtPoint layDef_Zero _th250_ (Pos31 y) "DATC")
+	(AddTextAtPoint layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -346,7 +346,7 @@
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPos layDef_Zero _th250_ _origin_ "ATC")
+	(AddTextAtPoint layDef_Zero _th250_ _origin_ "ATC")
 	(SetLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_

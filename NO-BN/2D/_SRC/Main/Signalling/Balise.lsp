@@ -153,7 +153,7 @@
 		_MIRROR_ _lastSelection_ _ENTER_ _origin_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_
 	)
-	(AddTextAtPosWithJustification layDef_Balise_BaliseSeparation _th020_ (list (- dist1 (/ dist1 10.0)) (/ dist1 -6.0)) (rtos dist1 2 2) _topLeft_)
+	(AddTextAtPointWithJustification layDef_Balise_BaliseSeparation _th020_ (list (- dist1 (/ dist1 10.0)) (/ dist1 -6.0)) (rtos dist1 2 2) _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_)
 		
 	(SetLayer layDef_Balise_ActuatorSeparation)
@@ -163,7 +163,7 @@
 		_MIRROR_ _lastSelection_ _ENTER_ _origin_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_
 	)
-	(AddTextAtPosWithJustification layDef_Balise_ActuatorSeparation _th020_ (list (- dist2 (/ dist2 20.0)) (/ dist2 -6.0)) (rtos dist2 2 2) _topLeft_)
+	(AddTextAtPointWithJustification layDef_Balise_ActuatorSeparation _th020_ (list (- dist2 (/ dist2 20.0)) (/ dist2 -6.0)) (rtos dist2 2 2) _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_)
 
 	(SetLayer layDef_Balise_GroupSeparation)la
@@ -173,7 +173,7 @@
 		_MIRROR_ _lastSelection_ _ENTER_ _origin_ _xAxis_ _keepMirrorSource_
 		_MIRROR_ _lastSelection_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_
 	)
-	(AddTextAtPosWithJustification layDef_Balise_GroupSeparation _th020_  (list (- dist3 (/ dist3 20.0) ) (/ dist3 -6.0)) (rtos dist3 2 2) _topLeft_)
+	(AddTextAtPointWithJustification layDef_Balise_GroupSeparation _th020_  (list (- dist3 (/ dist3 20.0) ) (/ dist3 -6.0)) (rtos dist3 2 2) _topLeft_)
 	(command _MIRROR_ _lastSelection_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_)
 
 	; Metal-free area:
@@ -227,8 +227,8 @@
 			(DrawBox layDef_Zero x2 y _noWipeout_)
 		)
 	)
-	(AddTextAttributeAtPos layDef_Zero _th250_ a1 attAbove)
-	(AddTextAttributeAtPos layDef_Zero _th250_ a2 attBelow)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ a1 attAbove)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ a2 attBelow)
 	(AddDescriptionBelowOrigin thisDescription (* 0.75 y))
 	(if (= variation "DOBBEL") (MoveRight (HalfOf baliseDist)))
 )
@@ -266,8 +266,8 @@
 			(DrawHatch _solidHatch_)
 		)
 	)
-	(AddTextAttributeAtPos layDef_Zero _th180_ a1 attAbove)
-	(AddTextAttributeAtPos layDef_Zero _th180_ a2 attBelow)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ a1 attAbove)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ a2 attBelow)
 	(AddDescriptionBelowOrigin thisDescription (* 0.75 y))
 )
 
@@ -353,7 +353,7 @@
 		((= variation "TOM-FAST")
 		)
 		((= variation "TOM-STYRT")
-			(DrawBoxAtPos layDef_Zero p4 barWidth barHeight _noWipeout_)
+			(DrawBoxAtPoint layDef_Zero p4 barWidth barHeight _noWipeout_)
 			(DrawHatch _solidHatch_)
 		)
 		((= variation "FYLT-FAST")
@@ -361,11 +361,11 @@
 		)
 		((= variation "FYLT-STYRT")
 			(DrawHatch _solidHatch_)
-			(DrawBoxAtPos layDef_Zero p4 barWidth barHeight _noWipeout_)
+			(DrawBoxAtPoint layDef_Zero p4 barWidth barHeight _noWipeout_)
 			(DrawHatch _solidHatch_)
 		)
 	)
-	(AddTextAttributeAtPos layDef_Zero _th180_ a1 attAbove)
-	(AddTextAttributeAtPos layDef_Zero _th180_ a2 attBelow)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ a1 attAbove)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ a2 attBelow)
 	(AddDescriptionBelowOrigin thisDescription (* 0.75 y))
 )

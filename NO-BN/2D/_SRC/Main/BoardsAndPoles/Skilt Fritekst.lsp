@@ -31,7 +31,7 @@
 		attFreeText '("FREE_TEXT" "Enter free text: " "XYZZY")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAttributeAtPos layDef_Zero _th250_ _origin_ attFreeText)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ _origin_ attFreeText)
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -64,7 +64,7 @@
 		p6 (list (*  0.5 x) (*  0.4 y))
   	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAttributeAtPos layDef_Zero _th250_ _origin_ attFreeText)
+	(AddTextAttributeAtPoint layDef_Zero _th250_ _origin_ attFreeText)
 	(SetLayer layDef_Zero)
 	(command
 		_LINE_ p1 p4 _ENTER_

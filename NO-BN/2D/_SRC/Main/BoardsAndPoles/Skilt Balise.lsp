@@ -51,7 +51,7 @@
 		p6 (list x8 y)		p12 (list x7 y2)		p18 (list x6 y1)		p24 (list x5 0)		
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-  	(AddTextAtPos layDef_Zero _th125_ (Pos11 y) "BALISE")
+  	(AddTextAtPoint layDef_Zero _th125_ (Pos11 y) "BALISE")
 	(MoveUp (HalfOf y))
 	(command _POLYLINE_ p1 p2 p8 p7 _closedPolyline_)		(DrawHatch _solidHatch_)
 	(command _POLYLINE_ p3 p4 p10 p9 _closedPolyline_)		(DrawHatch _solidHatch_)

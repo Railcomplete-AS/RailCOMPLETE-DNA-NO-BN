@@ -46,11 +46,12 @@
 	; 67B Orientation for level crossing - "Orienteringssignal for planovergang" - Sound horn - "Tog kommer"
 	;       +
 	;     /p1 \
-	;   /p2--p3\  
-	;  +        +  ; Losange with wipeout and fat lining plus horizontal bar
-	;   \p4--p5/
+	;   /p2--p3 \  
+	;  +         +  ; Losange with wipeout and fat lining plus horizontal bar
+	;   \p4--p5 /
 	;     \p6 /
 	;       .
+	;
 	(setq 
 		blockName "NO-BN-2D-JBTKO_SKT-SKILT-KJOERENDE-SIGNAL-67B-ORIENTERINGSIGNAL-PLANOVERGANG"
 		description "SKILT SIGNAL 67B ORIENTERINGSIGNAL FOR PLANOVERGANG"

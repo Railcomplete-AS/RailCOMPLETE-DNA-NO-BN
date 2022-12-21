@@ -454,18 +454,18 @@
 ; CAD system TEXT entities
 ;----------------------------------------------------------
 
-(defun AddTextAtPosWithJustification ( layDef textHeight pos text justification / )
+(defun AddTextAtPointWithJustification ( layDef textHeight point text justification / )
 	(SetLayer layDef)
 	(command 
 		_TEXT_
 			_SetTextStyle_ _rcTextStyle_
 			_justifyText_ justification
-			pos 
+			point 
 			textHeight 
 			_angleZero_
 			text
 	)
-	'AddTextAtPosWithJustification
+	'AddTextAtPointWithJustification
 )
 
 
@@ -485,26 +485,26 @@
 
 
 
-(defun AddTextAtPos ( layDef textHeight pos text /  )
+(defun AddTextAtPoint ( layDef textHeight point text /  )
 	; Single text, no line breaking
-	; layDef textHeight pos text
+	; layDef textHeight point text
 	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
 	;
 	; Note: ; For some reason, texts on layer 0 get "ByLayer" instead of "ByBlock" :-( but not when running MAIN() as a batch job.
 	;
-	(AddTextAtPosWithJustification layDef textHeight pos text _middleCenter_)
-	'AddTextAtPos
+	(AddTextAtPointWithJustification layDef textHeight point text _middleCenter_)
+	'AddTextAtPoint
 )
 
 
 
-(defun AddMText ( layDef textHeight textBoxWidth pos text / )
+(defun AddMText ( layDef textHeight textBoxWidth point text / )
 	; Multiline text
 	; Note: TEXT and MTEXT will be annotative entities if they reside inside an annotative block (RC object anonymous block etc)
 	(SetLayer layDef)
 	(command 
 		_MTEXT_
-			pos 
+			point 
 			_setMtextStyle_ 		_rcTextStyle_
 			_setMtextHeight_		textHeight
 			_setMtextJustifcation_	_middleCenter_
@@ -525,7 +525,7 @@
 
 ; CAD system text ATTRIBUTE entities
 ;----------------------------------------------------------
-(defun AddAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification / tmp )
+(defun AddAtt ( attTag attPrompt attDefaultValue point textHeight rotation textStyle justification / tmp )
 	; Low-level access to CAD system Text Attribute entity creation
 	; Add text attribute (a named storage for text in a symbol, which can be read and written to later).
 	; Features the TAG, PROMPT amd VALUE field, a POSITION and lots of attribute flags (see global contants elsewhere).
@@ -564,7 +564,7 @@
 			attDefaultValue							; Default single-line text.
 			_setAttdefTextStyle_ textStyle			; 
 			_setAttdefJustifcation_ justification	; 
-			pos 									; Specify justification reference point
+			point 									; Specify justification reference point
 			textHeight								; No qualifier first since AutoCAD demands text height here.
 			rotation								; No qualifier first since AutoCAD demands text rotation here.
 	)
@@ -574,7 +574,7 @@
 
 
 
-(defun AddMultilineAtt ( attTag attPrompt attDefaultValue pos textHeight rotation textStyle justification width / tmp )
+(defun AddMultilineAtt ( attTag attPrompt attDefaultValue point textHeight rotation textStyle justification width / tmp )
 	; NB! The command dialog is quite different when multiline entity is needed.
 	(setq tmp (getvar 'AFLAGS))
 	(setvar 'AFLAGS (+ _lockPosition_ _multipleLines_)) ; We need multiple line attributes with our DNA's - in the Watch object. See AutoCAD escaped characters (+\ etc).
@@ -589,7 +589,7 @@
 			attPrompt								; Prompt
 			attDefaultValue							; Default single-line text.
 			_ENTER_									; Don't ask for more lines now - assume the user uses acad escaped characters for newline (\P)
-			pos 									; Specify justification reference point. Acad then asks for "Specify the other corner", but offers the down-arrow menu.
+			point 									; Specify justification reference point. Acad then asks for "Specify the other corner", but offers the down-arrow menu.
 			_setAttdefTextStyle_ textStyle			; 
 			_setAttdefJustifcation_ justification	; 
 			_setAttdefTextHeight_ textHeight		; No qualifier first since AutoCAD demands text height here.
@@ -602,7 +602,7 @@
 
 
 
-(defun AddTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue )
+(defun AddTextAttributeAtPoint ( layDef textHeight point attDef / attTag attPrompt attDefaultValue )
 	;
 	; API access to CAD system Text Attribute entity creation
 	; Single line text attribute, no line breaking
@@ -621,8 +621,8 @@
 		attDefaultValue	(eval (nth 2 attDef))
 	)
 	(SetLayer layDef)
-	(AddAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
-	'AddTextAttributeAtPos
+	(AddAtt attTag attPrompt attDefaultValue point textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
+	'AddTextAttributeAtPoint
 )
 
 
@@ -633,7 +633,7 @@
 
 
 
-(defun AddMultilineTextAttributeAtPos ( layDef textHeight pos attDef / attTag attPrompt attDefaultValue width )
+(defun AddMultilineTextAttributeAtPoint ( layDef textHeight point attDef / attTag attPrompt attDefaultValue width )
 	(setq
 		attTag			(eval (nth 0 attDef))
 		attPrompt		(eval (nth 1 attDef))
@@ -641,8 +641,8 @@
 		width 			0 		; Width = 0 induces autoscaled box width. Assume that the user adds newline characters as needed (escaped characters).
 	)
 	(SetLayer layDef)
-	(AddMultilineAtt attTag attPrompt attDefaultValue pos textHeight _angleZero_ _rcTextStyle_ _middleCenter_ width)
-	'AddMultilineTextAttributeAtPos
+	(AddMultilineAtt attTag attPrompt attDefaultValue point textHeight _angleZero_ _rcTextStyle_ _middleCenter_ width)
+	'AddMultilineTextAttributeAtPoint
 )
 
 

@@ -161,7 +161,7 @@
 			_TEXT_
 				_SetTextStyle_ _rcTextStyle_
 				_justifyText_ _middleCenter_
-				(list 0.2 -2.0) ; pos 
+				(list 0.2 -2.0) ; point 
 				_th020_
 				_angle90_
 				(strcat  variation "/" pp)
@@ -201,7 +201,7 @@
 		_TEXT_
 			_SetTextStyle_ _rcTextStyle_
 			_justifyText_ _middleCenter_
-			(list 0.2 -0.5) ; pos 
+			(list 0.2 -0.5) ; point 
 			_th020_
 			_angle90_
 			"Car"
@@ -233,7 +233,7 @@
 		_TEXT_
 			_SetTextStyle_ _rcTextStyle_
 			_justifyText_ _middleCenter_
-			(list 0.2 -0.5) ; pos 
+			(list 0.2 -0.5) ; point 
 			_th020_
 			_angle90_
 			"TET08"
