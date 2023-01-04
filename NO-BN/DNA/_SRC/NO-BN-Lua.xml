@@ -289,7 +289,7 @@
 					return r[0]
 			
 				elseif EarthingMethod == "Wire" then 
-					r = getClosestAlignments("JBTEH_JOR Jordleder",obj)
+					r = getClosestAlignments(rctype_EarthingConductor,obj)
 					return r[0]
 					
 				elseif EarthingMethod == "Object" then 
@@ -777,7 +777,7 @@
 			function NOBN_trk_getYawFromDir(rotation)
 				d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
 				if d == nil then return 0 end
-				if RcType == "JBTSA_ATB NSS balise" then 
+				if RcType == rctype_Balise then 
 					--Special case: Place balise slightly to the right of center track to keep the cable extending to the right
 					--We assume that all balises have cable extending to the right when seen in the 3D object's 'up' direction
 					--(the cable will then be best protected for left-handed normal driving on double track lines).
@@ -844,7 +844,7 @@
 			function NOBN_sig_getSignalSightingRequirement()
 				local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
 			
-				if RcType == "JBTSA_ERT ERTMS-signal" then
+				if RcType == rctype_EtcsEoA then
 					-- ERTMS marker board - Fixed 150 m requirement?
 					if MarkerBoard == "-" then
 						return 150, _info(DesignSpeed.." km/h: 150 m fixed sighting requirement for ERTMS boards.")
@@ -852,7 +852,7 @@
 						return 50, _info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
 					end
 				
-				elseif RcType == "JBTSA_SIG Signal" then
+				elseif RcType == rctype_Signal then
 					if not (MainSignal:match("^Hs") or  DistantSignal:match("Ja")) and (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") then
 						return 50, _info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
 				
@@ -893,15 +893,15 @@
 					v = math.max(40,math.min(130,DesignSpeed))
 					return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
 			
-				elseif RcType == "JBTSA_SIG Veisignal" then
+				elseif RcType == rctype_LevelCrossingSignalTowardsRoad then
 					--Signal mot vei
 					return 30, _info("30 m fixed sighting requirement for road traffic towards level crossing signal (To be verified!).")
 			
-				elseif RcType == "JBTSA_SIG Brusignal/Frostportsignal" then 
+				elseif RcType == rctype_BridgeAndFrostDoorSignal then 
 					--Samme byggeteknikk som for 3-lys Hs (2 røde blink / 1 hvit blink)
 					return 150, _info("150 m fixed sighting requirement for bridge / frost gate signal (To be verified!).")
 			
-				elseif RcType == "JBTSA_SIG Togsporsignal" then
+				elseif RcType == rctype_TrackSignal then
 					--Ingen spesielle krav, plasseres når lokfører eller ombordansvarlig ikke ser hovedsignal (ikke tillatt i nye anlegg)
 					return 50, _info("50 m fixed sighting requirement for Togsporsignal (old type RepHs repeater signal) (To be verified!).")
 			
@@ -974,7 +974,7 @@
 		<Constructor>Enumeration {'None','Vertical','Horizontal'} NOBN_bnp_getPoleRoutingDefaultValue()</Constructor>
 		<Formula>
 			function NOBN_bnp_getPoleRoutingDefaultValue()
-				if RcType == "JBTSA_ERT ERTMS-signal" then
+				if RcType == rctype_EtcsEoA then
 					return "Vertical"
 				
 				elseif RcType:match("JBTSA_MSS") or RcType:match("JBTKO_SKT") or RcType:match("JBTEH_BKT") then
@@ -1111,19 +1111,19 @@ end
 			
 				if obj == nil then obj = this end
 				if RcType:match("JBTEH_FUN KL%-fundament") then 
-					return fn(obj,{	"JBTEH_MAS KL-mast",
-									"JBTEH_MAS Hengemast i åk",
-									"JBTEH_MAS Hengemast for bru og tunnel",
-									"JBTEH_BAF Bardun fotplate",
-									"JBTEH_STF Strever fotplate",
-									"JBTEH_TUF Tunnelfeste"
+					return fn(obj,{	rctype_OcsPole,
+									rctype_OcsDropArmUnderPortal,
+									rctype_OcsDropArmPoleForBridgeOrTunnel,
+									rctype_GuywireFootplate,
+									rctype_SpannerFootplate,
+									rctype_TunnelWallFixing
 								},
 								"UNFINISHED - no visible OCS pole or guywire / spanner fastener found at foundation.")
-				elseif RcType:match("JBTKU_FUN Signalfundament") then 
-					return fn(obj,{"JBTSA_SIG Signal"},"UNFINISHED - no visible signal found at foundation.")
-				elseif RcType:match("JBTKU_FUN Apparatskapfundament") then 
-					return fn(obj,{"JBTSA_APS Apparatskap"},"UNFINISHED - no visible signal cabinet found at foundation.")
-				elseif RcType:match("JBTKU_FUN Telefundament") then 
+				elseif RcType:match(rctype_SignalFoundation) then 
+					return fn(obj,{rctype_Signal},"UNFINISHED - no visible signal found at foundation.")
+				elseif RcType:match(rctype_CabinetFoundation) then 
+					return fn(obj,{rctype_SignallingCabinet},"UNFINISHED - no visible signal cabinet found at foundation.")
+				elseif RcType:match(rctype_TelecomFoundation) then 
 					return fn(obj,{"TODO: Define telecom objects here :ODOT"},"UNFINISHED - no visible matching telecom object found at foundation.")
 				end
 			end
