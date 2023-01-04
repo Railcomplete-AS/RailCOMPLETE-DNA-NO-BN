@@ -419,10 +419,10 @@
 			<Formula>
 				function _JBTEH_ISO_Alignment()
 					tol = 1 --[m]
-					closestAlignments = getClosestAlignments(tol):filter(function (x) return RC__isMemberOf({rctype_ContactWire,"JBTEH_FIL Fixline"},x.RcType) end)
+					closestAlignments = getClosestAlignments(tol):filter(function (x) return RC__isMemberOf({rctype_ContactWire,rctype_MidpointAnchorLine},x.RcType) end)
 					a1 = closestAlignments[0]
 					a2 = closestAlignments[1]
-					if a1.RcType == "JBTEH_FIL Fixline" then 
+					if a1.RcType == rctype_MidpointAnchorLine then 
 						return a1,_info("Own alignment "..a1.code.." selected as midpoint anchor line.")
 					elseif a1.RcType == rctype_ContactWire then
 						--see if we are close to an end point where two contact wires meet:
@@ -452,7 +452,7 @@
 						else
 							return nil,_info("No target CW alignment selected - Move within "..tol.." m from a CW start point to snap to start.")
 						end
-					elseif Alignment.RcType == "JBTEH_FIL Fixline" then
+					elseif Alignment.RcType == rctype_MidpointAnchorLine then
 						return nil,_nosymbol,_info("No target alignment selected since midpoint anchor lines shall not be split in several alignment parts.")
 					else
 						return nil,_error,_info("ERROR - Unexpected alignment type '"..Alignment.RcType.."'.")
@@ -667,7 +667,7 @@
 		
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 
-		<SetValue Key="AlignmentRcType" Value="{{rctype_ContactWire}}" />
+		<LuaExpression Name="AlignmentRcType"><Formula>rctype_ContactWire</Formula></LuaExpression>
 
 		<LuaExpression Name="code" ><Formula>_JBTEH_SVE_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_SVE_code()" ReturnType="String"
@@ -676,7 +676,7 @@
 			<Formula>
 				function _JBTEH_SVE_code()
 					local first,second
-					if RcType ~= "JBTEH_SVE Svevende kryss" then
+					if RcType ~= rctype_FloatingWireCrossing then
 						return "Bad object type ["..RcType.."], 'JBTEH_SVE Svevende kryss' was expected."
 					else
 						first = Alignment

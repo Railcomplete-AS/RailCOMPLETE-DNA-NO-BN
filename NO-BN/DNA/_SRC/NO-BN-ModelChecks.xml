@@ -49,7 +49,7 @@
         <Constructor>String NOBN_com_chkNumberOfOcpAreas()</Constructor>
         <Formula>
 			function NOBN_com_chkNumberOfOcpAreas()
-				areas = RcArea:filter(function(x) return x.RcType == "JBTFE_DIV OCP område" end)
+				areas = RcArea:filter(function(x) return x.RcType == rctype_OcpArea end)
 				if (areas.Count == 0) then
 					--TODO: Return the '_unfinished' symbol, but remove this check from objects that do not need it (a NOBN_com_CHK_NUMBER_OF_OCP_AREAS macro):
 					return "0: UNFINISHED - Object does not belong to any Operation / Control area (OCP). Create an Rc-Area of type 'OCP' around the object."
@@ -70,7 +70,7 @@
 		<Formula>
 			function NOBN_com_chkConnectionAlignmentCompatibility()
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType == "JBTEH_ISO Lineisolator" then
+				if RcType == rctype_OcsIsolator then
 					compatibility = { 
 						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
 						{ a="Kontaktledning, kjørbar", ta={"Kontaktledning, avspenningsline"}},
@@ -110,9 +110,9 @@
 			function NOBN_com_chkConnectionContinuity()
 				tol = 0.030 -- meter
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-				if RcType == "JBTEH_ISO Lineisolator" then 
+				if RcType == rctype_OcsIsolator then 
 					if TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 					elseif TargetAlignment and Alignment.id == TargetAlignment.id then 
@@ -131,7 +131,7 @@
 						delta = RC__getDistance2D(p1,p2)
 					end
 
-				elseif RcType == "JBTKO_SPF Sporfortsettelse" or RcType == "JBTEH_LEF Ledningfortsettelse" or RcType == "JBTEH_KTF Kontaktledningfortsettelse" then 
+				elseif RcType == rctype_TrackContinuation or RcType == rctype_HighVoltageConductorContinuation or RcType == rctype_ContactWireContinuation then 
 					if ExtendingFromEnd then 
 						p1 = Alignment.RcAlignment.EndPoint
 					else
@@ -144,7 +144,7 @@
 					end
 					delta = RC__getDistance2D(p1,p2)
 
-				elseif RcType == "JBTKO_SPV Sporveksel" then
+				elseif RcType == rctype_Point then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -153,7 +153,7 @@
 					d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
 					delta = d1 &lt; d2 and d1 or d2
 
-				elseif RcType == "JBTKO_SPV Sporkryss" then
+				elseif RcType == rctype_PointCrossing then
 					-- Check that both alignments pass, i.e. none of them should have a continuation exactly at the crossing's position
 					if not getAlignmentInfo(Alignment.id).NormalProjectionExists then
 						return "ERROR: Crossing is outside Own Alignment - move crossing or extend own alignment.",_error
@@ -190,15 +190,15 @@
 				tol = 1.0  -- decimal degrees (Deutsche Bahn allegedly allows 1 degree in discontinuities)
 				maxNumber = 20 -- 2:(maxNumber*2) is the steepest crossing that we will classify as a crossing and not as an engineering error
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
-				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
-				or RcType == "JBTEH_LEF Ledningfortsettelse" 
-				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
-				or RcType == "JBTEH_ISO Lineisolator"
+				elseif RcType == rctype_TrackContinuation 
+				or RcType == rctype_HighVoltageConductorContinuation 
+				or RcType == rctype_ContactWireContinuation 
+				or RcType == rctype_OcsIsolator
 				then
 					if ExtendingFromEnd then 
 						t1 = Alignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
@@ -217,7 +217,7 @@
 					else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
 					end
 			
-				elseif RcType == "JBTKO_SPV Sporveksel" then
+				elseif RcType == rctype_Point then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -237,7 +237,7 @@
 					else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
 					end
 			
-				elseif RcType == "JBTKO_SPV Sporkryss" then
+				elseif RcType == rctype_PointCrossing then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -321,15 +321,15 @@
 			function NOBN_com_chkConnectionElevationMatch()
 				tol = 0.030  -- meter
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
-				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
-				or RcType == "JBTEH_LEF Ledningfortsettelse" 
-				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
-				or RcType == "JBTEH_ISO Lineisolator"
+				elseif RcType == rctype_TrackContinuation 
+				or RcType == rctype_HighVoltageConductorContinuation 
+				or RcType == rctype_ContactWireContinuation 
+				or RcType == rctype_OcsIsolator
 				then
 					if ExtendingFromEnd then 
 						z1 = Alignment.RcAlignment.EndPoint.Z
@@ -343,7 +343,7 @@
 					end
 					delta = z2 - z1 -- meter difference in elevations at connection
 			
-				elseif RcType == "JBTKO_SPV Sporveksel" then
+				elseif RcType == rctype_Point then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -357,7 +357,7 @@
 						z2 = TargetAlignment.RcAlignment.EndPoint.Z
 					end
 			
-				elseif RcType == "JBTKO_SPV Sporkryss" then
+				elseif RcType == rctype_PointCrossing then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -389,15 +389,15 @@
 			function NOBN_com_chkConnectionGradientMatch()
 				tol = 1.0  -- o/oo (per mille, elevation change per thousand meters running length)
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
-				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
-				or RcType == "JBTEH_LEF Ledningfortsettelse" 
-				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
-				or RcType == "JBTEH_ISO Lineisolator"
+				elseif RcType == rctype_TrackContinuation 
+				or RcType == rctype_HighVoltageConductorContinuation 
+				or RcType == rctype_ContactWireContinuation 
+				or RcType == rctype_OcsIsolator
 				then
 					--find gradient in o/oo from the tangent vector at the alignment's ends, where there ends are closest
 					if ExtendingFromEnd then 
@@ -419,7 +419,7 @@
 						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir
 					end
 			
-				elseif RcType == "JBTKO_SPV Sporveksel" then
+				elseif RcType == rctype_Point then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -477,15 +477,15 @@
 				tol = 0.010  -- cant (superelevation) [m]
 				msg = ""
 				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= "JBTEH_ISO Lineisolator" and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 
-				if RcType == "JBTEH_ISO Lineisolator" and TargetAlignment == nil then
+				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
-				elseif RcType == "JBTKO_SPF Sporfortsettelse" 
-				or RcType == "JBTEH_LEF Ledningfortsettelse" 
-				or RcType == "JBTEH_KTF Kontaktledningfortsettelse" 
-				or RcType == "JBTEH_ISO Lineisolator"
+				elseif RcType == rctype_TrackContinuation 
+				or RcType == rctype_HighVoltageConductorContinuation 
+				or RcType == rctype_ContactWireContinuation 
+				or RcType == rctype_OcsIsolator
 				then
 					if ExtendingFromEnd then
 						p1 = Alignment.RcAlignment.EndPoint
@@ -500,7 +500,7 @@
 					z1 = getAlignmentInfo(p1).Cant
 					z2 = getAlignmentInfo(TargetAlignment.id,p2).Cant
 				
-				elseif RcType == "JBTKO_SPV Sporveksel" then
+				elseif RcType == rctype_Point then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
@@ -588,7 +588,7 @@
 				--if math.abs(DistanceToAlignment) &gt; 2e-3 then return string.format("%.03f",DistanceToAlignment)..
 				--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
 				if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
-				if RcType == "JBTKO_SPV Sporkryss" then
+				if RcType == rctype_PointCrossing then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end

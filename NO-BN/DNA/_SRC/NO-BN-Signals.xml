@@ -91,14 +91,14 @@ end
         <Formula>
 			function NOBN_sig_getSignalFullName()
 				local t
-				if RcType == "JBTSA_ERT ERTMS-signal" then
+				if RcType == rctype_EtcsEoA then
 					if Variant == "ERTMS dverg" then 
 						return "EDs.R"..NOBN_sig_getSignalNumber() 
 					elseif Variant:match("E35") then
 						t = "Mb."
 					end
 				
-				elseif RcType == "JBTSA_SIG Signal" then
+				elseif RcType == rctype_Signal then
 					if (MainSignal == "Hs1") then
 						t = "Stopplykt"
 					elseif (MainSignal == "RepHs1" or MainSignal == "RepHs2") then 
@@ -117,7 +117,7 @@ end
 						t = "Sig." --Covers all the remaining - MKs, FKs, Ls, LHs, AVs, BPs
 					end
 				
-				elseif RcType == "JBTSA_FIK Fiktivt punkt" then
+				elseif RcType == rctype_FictitiousSignal then
 					t = "Fik."
 					if Variant == "Viapunkt for betjeningsanlegg" then return t..code
 					elseif Variant == "Fiktivt sluttpunkt for togvei" then return t..NOBN_sig_getSignalShortName().." (HTv)"
@@ -127,19 +127,19 @@ end
 						return t..NOBN_sig_getSignalShortName().." (Unrecognized variant ["..Variant.."])",_warning  
 					end
 			
-				elseif RcType == "JBTSA_SIG Togsporsignal" then
+				elseif RcType == rctype_TrackSignal then
 					t = "Tsp."..code
 					
-				elseif RcType == "JBTSA_SIG Brusignal/Frostportsignal" then
+				elseif RcType == rctype_BridgeAndFrostDoorSignal then
 					t = "Brusignal/Frostportsignal"..code
 					
-				elseif RcType == "JBTSA_SIG Rasvarslingssignal" then
+				elseif RcType == rctype_AvalancheSignal then
 					t = "Rasvarslingssignal "..code
 					
-				elseif RcType == "JBTSA_SIG Veisignal" then
+				elseif RcType == rctype_LevelCrossingSignalTowardsRoad then
 					t = "Veisignal "..code
 					
-				elseif RcType == "JBTSA_SIG Planovergangssignal" then
+				elseif RcType == rctype_LevelCrossingSignalTowardsRail then
 					t = (Variant:match("forsignal") and "PLO-Fs." or "PLO.")..code
 			
 				else
@@ -159,10 +159,10 @@ end
 function NOBN_sig_getSignalPartNames()
 	local s = ""
 	local errMsg = "*** Unrecognized signal configuration ***"
-	if RcType == "JBTSA_ERT ERTMS-signal" then
+	if RcType == rctype_EtcsEoA then
 		if Variant:match("E35") then s = "E35" end
 		if Variant:lower():match("dverg") then s = s.."-EDS" end
-	elseif RcType == "JBTSA_SIG Signal" then
+	elseif RcType == rctype_Signal then
 		if (MainSignal ~= "-") then s = s..MainSignal:upper() end
 		if (DistantSignal ~= "-") then s = s.."-FS" end
 		if (EndOfTrainRouteSignal ~= "-") then s = s.."-TVS" end
@@ -175,17 +175,17 @@ function NOBN_sig_getSignalPartNames()
 		if (DepartureSignal ~= "-") then s = s.."-AVS" end
 		if (BrakeTestSignal ~= "-") then s = s.."-BPS" end
 		--TODO: More complete check of unrecognized combination
-	elseif RcType == "JBTSA_SIG Togsporsignal" then
+	elseif RcType == rctype_TrackSignal then
 		s = "Togsporsignal"
-	elseif RcType == "JBTSA_SIG Brusignal/Frostportsignal" then
+	elseif RcType == rctype_BridgeAndFrostDoorSignal then
 		s = "Brusignal/Frostportsignal"
-	elseif RcType == "JBTSA_SIG Rasvarslingssignal" then
+	elseif RcType == rctype_AvalancheSignal then
 		s = "Rasvarslingssignal"
-	elseif RcType == "JBTSA_SIG Veisignal" then
+	elseif RcType == rctype_LevelCrossingSignalTowardsRoad then
 		s = "Veisignal"   
-	elseif RcType == "JBTSA_SIG Planovergangssignal" then
+	elseif RcType == rctype_LevelCrossingSignalTowardsRail then
 		s = "Planovergangssignal"
-	elseif RcType == "JBTSA_FIK Fiktivt punkt" then
+	elseif RcType == rctype_FictitiousSignal then
 		s = "Fiktivt punkt"
 	else
 		s = "Bad signal type ["..RcType.."].",_warning
@@ -528,33 +528,33 @@ end
 				local tolerance = 6 --Tolerance in meters
 			
 				--Preamble - called from a relevant object type?
-				if      RcType ~= "JBTSA_ERT ERTMS-signal"
-					and RcType ~= "JBTSA_SIG Signal"
-					and RcType ~= "JBTSA_SIG Brusignal/Frostportsignal"
+				if      RcType ~= rctype_EtcsEoA
+					and RcType ~= rctype_Signal
+					and RcType ~= rctype_BridgeAndFrostDoorSignal
 					and RcType ~= "SA-SIG Planovergang"
-					and RcType ~= "JBTSA_SIG Veisignal"
+					and RcType ~= rctype_LevelCrossingSignalTowardsRoad
 				then 
 					return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
 						
 				elseif PortalMounted then
 					return "WARNING - Check manually that no high voltage instllation is within safety distance from object in portal.",_warning
 
-				elseif RcType == "JBTSA_ERT ERTMS-signal" then
+				elseif RcType == rctype_EtcsEoA then
 					return "OK - Markerboard on the ground - Safety distance to OCS pole is not relevant.",_ok
 			
-				elseif RcType == "JBTSA_SIG Togsporsignal" then
+				elseif RcType == rctype_TrackSignal then
 					return "OK - Track signal (togsporsignal) - Safety distance to OCS pole is not relevant.",_ok 
 
 				else
-					if RcType == "JBTSA_SIG Signal" then
+					if RcType == rctype_Signal then
 						if HighShuntingSignal == "-" and MainSignal == "-" then 
 							return "OK - Free-standing low signal - Safety distance to OCS pole is not relevant.",_ok 
 						end
 					end
 
-					local c1 = getNearbyPointObjects2D("JBTEH_MAS KL-mast", tolerance)
-					local c2 = getNearbyPointObjects2D("JBTEH_MAS Hengemast for bru og tunnel", tolerance)
-					local c3 = getNearbyPointObjects2D("JBTEH_MAS Hengemast i åk", tolerance)
+					local c1 = getNearbyPointObjects2D(rctype_OcsPole, tolerance)
+					local c2 = getNearbyPointObjects2D(rctype_OcsDropArmPoleForBridgeOrTunnel, tolerance)
+					local c3 = getNearbyPointObjects2D(rctype_OcsDropArmUnderPortal, tolerance)
 					local nearbyObjects = getUnionOfCollections({c1,c2,c3})
 					local count = getCollectionLength(nearbyObjects)
 					local UpdateObjects = {}
@@ -595,7 +595,7 @@ end
 				if (DwarfSignal == "Ja" and MainSignal == "-" and PortalMounted) then return "WARNING - Shunting signal mounted in yoke. Please do manual check.",_warning end
 --2021-01-12 CLFEY: No warning just if high above but outside lateral problem distance.
 --if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.",_warning end
-				tracks = getClosestAlignments("JBTKO_SPO Spor"):filter(function (x) return (side:upper() == "RIGHT" and 1 or -1) * getAlignmentInfo(x.id).DistanceToAlignment &lt; 0 end)
+				tracks = getClosestAlignments(rctype_Track):filter(function (x) return (side:upper() == "RIGHT" and 1 or -1) * getAlignmentInfo(x.id).DistanceToAlignment &lt; 0 end)
 				if getCollectionLength(tracks) == 0 then return "OK - No tracks to the "..side..".",_ok end
 				ai = getAlignmentInfo(tracks[0].id)
 				curveRadius = ai.CurveRadius
