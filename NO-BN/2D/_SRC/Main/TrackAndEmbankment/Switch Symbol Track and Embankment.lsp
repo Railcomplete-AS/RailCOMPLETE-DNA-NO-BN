@@ -45,12 +45,12 @@
 	/ 	blockName
 		description
 		switchParameters
-		switchCrossingType  A B C D E F L R x railType ang
+		SwitchDiamondType  A B C D E F L R x RailProfile ang
 		zeroPad
 	)
 	(setq 
 		switchParameters (getSwitchParameters drawingNumber)
-		switchCrossingType	(cadr (assoc "SwitchCrossingType" switchParameters))
+		SwitchDiamondType	(cadr (assoc "SwitchDiamondType" switchParameters))
 		A			(/ (cadr (assoc "A" switchParameters)) 1000.0)
 		B			(/ (cadr (assoc "B" switchParameters)) 1000.0)
 		C			(/ (cadr (assoc "C" switchParameters)) 1000.0)
@@ -60,7 +60,7 @@
 		L			(/ (cadr (assoc "L" switchParameters)) 1000.0)
 		R			(cadr (assoc "R" switchParameters))
 		x			(cadr (assoc "x" switchParameters))
-		railType	(cadr (assoc "RailType" switchParameters))
+		RailProfile	(cadr (assoc "RailProfile" switchParameters))
 		ang (R->D (atan (/ 1.0 x)))
 	)
 	(setq blockName1 (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL"		))
@@ -72,8 +72,8 @@
 		(setq zeroPad _emptyString_)
 	)
 	(setq 
-		blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railType "-" switchCrossingType "-" (rtos quadrant 2 0))
-		description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railType "-" switchCrossingType "-" (rtos quadrant 2 0))
+		blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailProfile "-" SwitchDiamondType "-" (rtos quadrant 2 0))
+		description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailProfile "-" SwitchDiamondType "-" (rtos quadrant 2 0))
 	)
 	(SetLayer layDef_Zero)
  	(command

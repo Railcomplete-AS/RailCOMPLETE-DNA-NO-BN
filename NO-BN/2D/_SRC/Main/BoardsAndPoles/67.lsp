@@ -176,7 +176,7 @@
 		y 3.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(command _POLYLINE_ (PosBL x y) (PosBR x y ) (PosTR x y) _closedPolyline_)
+	(command _POLYLINE_ (PointBL x y) (PointBR x y ) (PointTR x y) _closedPolyline_)
 	(DrawHatchAtPoint _solidHatch_ _slightlyBelow_ _angleZero_ _offsetZero_)
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)

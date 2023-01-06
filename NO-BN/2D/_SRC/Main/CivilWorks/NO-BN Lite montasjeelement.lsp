@@ -322,14 +322,14 @@
 		b	0.164	; baseplate holes spacing
 		pr 	0.030	; Ø60 pole radius
 		br 	0.007	; Ø14 bolt radius
-		p1  (PosTL b b)
-		p2  (PosTR b b)
-		p3  (PosBL b b)
-		p4  (PosBR b b)
+		p1  (PointTL b b)
+		p2  (PointTR b b)
+		p3  (PointBL b b)
+		p4  (PointBR b b)
 	)
 	(defun LocalGraphics (/)
 		(command
-			_RECTANGLE_ (PosBL s s) (PosTR s s)
+			_RECTANGLE_ (PointBL s s) (PointTR s s)
 			_CIRCLE_ p1 br
 			_CIRCLE_ p2 br
 			_CIRCLE_ p3 br

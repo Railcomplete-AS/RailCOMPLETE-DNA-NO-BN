@@ -49,21 +49,21 @@
 
 
 ; Positions, relative to centered box
-(defun PosTL ( x y / ) (list (* -0.5 x) (*  0.5 y))) ; top left
-(defun PosML ( x y / ) (list (* -0.5 x) (*  0.0 y))) ; middle right
-(defun PosBL ( x y / ) (list (* -0.5 x) (* -0.5 y))) ; bottom left
-(defun PosTC ( x y / ) (list (*  0.0 x) (*  0.5 y))) ; top center
-(defun PosMC ( x y / ) (list (*  0.0 x) (*  0.0 y))) ; middle center = origin = "0,0"
-(defun PosBC ( x y / ) (list (*  0.0 x) (* -0.5 y))) ; bottom center
-(defun PosTR ( x y / ) (list (*  0.5 x) (*  0.5 y))) ; top right
-(defun PosMR ( x y / ) (list (*  0.5 x) (*  0.0 y))) ; middle right
-(defun PosBR ( x y / ) (list (*  0.5 x) (* -0.5 y))) ; bottom right
+(defun PointTL ( x y / ) (list (* -0.5 x) (*  0.5 y))) ; top left
+(defun PointML ( x y / ) (list (* -0.5 x) (*  0.0 y))) ; middle right
+(defun PointBL ( x y / ) (list (* -0.5 x) (* -0.5 y))) ; bottom left
+(defun PointTC ( x y / ) (list (*  0.0 x) (*  0.5 y))) ; top center
+(defun PointMC ( x y / ) (list (*  0.0 x) (*  0.0 y))) ; middle center = origin = "0,0"
+(defun PointBC ( x y / ) (list (*  0.0 x) (* -0.5 y))) ; bottom center
+(defun PointTR ( x y / ) (list (*  0.5 x) (*  0.5 y))) ; top right
+(defun PointMR ( x y / ) (list (*  0.5 x) (*  0.0 y))) ; middle right
+(defun PointBR ( x y / ) (list (*  0.5 x) (* -0.5 y))) ; bottom right
 
 
 
 ; Text positions above/below, relative to centered box
 (defun PosAbove ( textHeight y / ) (list 0 (+ (*  0.5 y) (*  0.75 textHeight)))) ; above
-(defun PosBelow ( textHeight y / ) (list 0 (+ (* -0.5 y) (* -0.75 textHeight)))) ; below
+(defun PointBelow ( textHeight y / ) (list 0 (+ (* -0.5 y) (* -0.75 textHeight)))) ; below
 
 
 
@@ -88,32 +88,32 @@
 	;
 	(list 0 (- (/ y 2.0) (* row (/ y (+ numberOfRows 1.0)))))
 )
-(defun Pos11 ( y / ) (PosNR 1 1 y)) ; 1 row, middle = _origin_
+(defun Point11 ( y / ) (PosNR 1 1 y)) ; 1 row, middle = _origin_
 
-(defun Pos21 ( y / ) (PosNR 2 1 y)) ; 2 rows, top
-(defun Pos22 ( y / ) (PosNR 2 2 y)) ; 2 rows, bottom
+(defun Point21 ( y / ) (PosNR 2 1 y)) ; 2 rows, top
+(defun Point22 ( y / ) (PosNR 2 2 y)) ; 2 rows, bottom
 
-(defun Pos31 ( y / ) (PosNR 3 1 y)) ; 3 rows, top
-(defun Pos32 ( y / ) (PosNR 3 2 y)) ; 3 rows, middle = _origin_
-(defun Pos33 ( y / ) (PosNR 3 3 y)) ; 3 rows, bottom
+(defun Point31 ( y / ) (PosNR 3 1 y)) ; 3 rows, top
+(defun Point32 ( y / ) (PosNR 3 2 y)) ; 3 rows, middle = _origin_
+(defun Point33 ( y / ) (PosNR 3 3 y)) ; 3 rows, bottom
 
-(defun Pos41 ( y / ) (PosNR 4 1 y)) ; 4 rows, top
-(defun Pos42 ( y / ) (PosNR 4 2 y)) ; 4 rows, above middle
-(defun Pos43 ( y / ) (PosNR 4 3 y)) ; 4 rows, below middle
-(defun Pos44 ( y / ) (PosNR 4 4 y)) ; 4 rows, bottom
+(defun Point41 ( y / ) (PosNR 4 1 y)) ; 4 rows, top
+(defun Point42 ( y / ) (PosNR 4 2 y)) ; 4 rows, above middle
+(defun Point43 ( y / ) (PosNR 4 3 y)) ; 4 rows, below middle
+(defun Point44 ( y / ) (PosNR 4 4 y)) ; 4 rows, bottom
 
-(defun Pos51 ( y / ) (PosNR 5 1 y)) ; 5 rows, top
-(defun Pos52 ( y / ) (PosNR 5 2 y)) ; 5 rows, above middle 
-(defun Pos53 ( y / ) (PosNR 5 3 y)) ; 5 rows, middle
-(defun Pos54 ( y / ) (PosNR 5 4 y)) ; 5 rows, below middle
-(defun Pos55 ( y / ) (PosNR 5 5 y)) ; 5 rows, bottom
+(defun Point51 ( y / ) (PosNR 5 1 y)) ; 5 rows, top
+(defun Point52 ( y / ) (PosNR 5 2 y)) ; 5 rows, above middle 
+(defun Point53 ( y / ) (PosNR 5 3 y)) ; 5 rows, middle
+(defun Point54 ( y / ) (PosNR 5 4 y)) ; 5 rows, below middle
+(defun Point55 ( y / ) (PosNR 5 5 y)) ; 5 rows, bottom
 
-(defun Pos61 ( y / ) (PosNR 6 1 y)) ; 6 rows, top
-(defun Pos62 ( y / ) (PosNR 6 2 y)) ; 6 rows, below top
-(defun Pos63 ( y / ) (PosNR 6 3 y)) ; 6 rows, above middle 
-(defun Pos64 ( y / ) (PosNR 6 4 y)) ; 6 rows, below middle
-(defun Pos65 ( y / ) (PosNR 6 5 y)) ; 6 rows, above bottom
-(defun Pos66 ( y / ) (PosNR 6 6 y)) ; 6 rows, bottom
+(defun Point61 ( y / ) (PosNR 6 1 y)) ; 6 rows, top
+(defun Point62 ( y / ) (PosNR 6 2 y)) ; 6 rows, below top
+(defun Point63 ( y / ) (PosNR 6 3 y)) ; 6 rows, above middle 
+(defun Point64 ( y / ) (PosNR 6 4 y)) ; 6 rows, below middle
+(defun Point65 ( y / ) (PosNR 6 5 y)) ; 6 rows, above bottom
+(defun Point66 ( y / ) (PosNR 6 6 y)) ; 6 rows, bottom
 
 
 ; Move all current graphics up/down/left/right
@@ -126,19 +126,19 @@
 
 ; Geometrical graphics at specified layers, possibly with wipeout below
 ;----------------------------------------------------------------------------
-(defun DrawLine (layDef posA posB / )
+(defun DrawLine (layDef pointA PointB / )
 	; A line fram A to B
 	;
 	;     A-------B
 	;
 	(SetLayer layDef)
-	(command _LINE_ posA posB _ENTER_)
+	(command _LINE_ pointA PointB _ENTER_)
 	'DrawLine
 )
 
 
 
-(defun DrawArc (layDef posA posB posC / )
+(defun DrawArc (layDef pointA PointB posC / )
 	; An arc from A through B to C 
 	;
 	;    __B__
@@ -146,13 +146,13 @@
 	;  A       C
 	;
 	(SetLayer layDef)
-	(command _ARC_ posA posB posC)
+	(command _ARC_ pointA PointB posC)
 	'DrawArc
 )
 
 
 
-(defun DrawArcByCenter (layDef posCenter posA posB / )
+(defun DrawArcByCenter (layDef posCenter pointA PointB / )
 	; An arc from A through B to C 
 	;
 	;    __B__
@@ -160,7 +160,7 @@
 	;  A       C
 	;
 	(SetLayer layDef)
-	(command _ARC_ 	_setArcCenter_ posCenter posA posB _ENTER_)
+	(command _ARC_ 	_setArcCenter_ posCenter pointA PointB _ENTER_)
 	'DrawArc
 )
 
@@ -176,10 +176,10 @@
 	;   3   2
 	;
 	(setq
-		p1 (AddVectors (PosTL x y) point)
-		p2 (AddVectors (PosBR x y) point)
-		p3 (AddVectors (PosBL x y) point)
-		p4 (AddVectors (PosTR x y) point)
+		p1 (AddVectors (PointTL x y) point)
+		p2 (AddVectors (PointBR x y) point)
+		p3 (AddVectors (PointBL x y) point)
+		p4 (AddVectors (PointTR x y) point)
 	)
 	(DrawLine layDef p1 p2) ; diagonal '\'
 	(DrawLine layDef p3 p4) ; diagonal '/'
@@ -238,7 +238,7 @@
 	;    <-------- x wide ------->
     ;
 	(SetLayer layDef)
-	(command _RECTANGLE_ (AddVectors (PosTL x y) point) (AddVectors (PosBR x y) point))
+	(command _RECTANGLE_ (AddVectors (PointTL x y) point) (AddVectors (PointBR x y) point))
 	(if layDef_Wipeout
 		(progn
 			(AddWipeoutToLastClosedPolyline layDef_Wipeout _keepWipeoutSource_)

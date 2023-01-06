@@ -48,7 +48,7 @@
 		p10	(list (* 0.40 x) (* 0.15 y))
 	)
 	(DrawBox layDef_Zero x y _noWipeout_)
-	(DrawLine layDef_Zero (PosTL x y) (PosBR x y))
+	(DrawLine layDef_Zero (PointTL x y) (PointBR x y))
 	(DrawLine layDef_Zero p1 p2)
 	(DrawLine layDef_Zero p3 p4)
 	(DrawArc layDef_Zero p5 p6 p7)

@@ -63,7 +63,7 @@
 		attWholeKm	'("HEL_KM_UTEN_HALV" "Hel km" "462")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ (Pos11 y) attWholeKm)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ (Point11 y) attWholeKm)
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

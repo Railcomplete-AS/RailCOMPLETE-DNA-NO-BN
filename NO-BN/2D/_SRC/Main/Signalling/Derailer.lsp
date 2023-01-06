@@ -69,7 +69,7 @@
 						pt (list (+ (HalfOf x) (* a1 (cos ang))) (+ (HalfOf y) (* a1 (sin ang)))) ; Tip of the arrow head
 					)
 					(command ; Add one arrow
-						_LINE_ (PosBL x y) pt _ENTER_					; Arrow line (diagonal plus extension), pointing at quadrant I
+						_LINE_ (PointBL x y) pt _ENTER_					; Arrow line (diagonal plus extension), pointing at quadrant I
 						_POLYLINE_										; Arrow head
 							(polar pt (+ (HalfOf pi) ang) (/ a2  2))			
 							(polar pt (+ (HalfOf pi) ang) (/ a2 -2))
@@ -91,7 +91,7 @@
 						pt (list (+ 0 (* a1 (cos ang))) (+ (HalfOf y) (* a1 (sin ang)))) ; Tip of first arrow
 					)
 					(command ; First arrow of two
-						_LINE_ (PosBL x y) pt _ENTER_
+						_LINE_ (PointBL x y) pt _ENTER_
 						_POLYLINE_ ; First arrow
 					(polar pt (+ (HalfOf pi) ang) (/ a2 2))
 							(polar pt (+ (HalfOf pi) ang) (/ a2 -2))

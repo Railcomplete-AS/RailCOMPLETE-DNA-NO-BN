@@ -39,10 +39,10 @@
 		; TRV:  4.5 x 2.25
 		x 4.5 	
 		y 2.25  
-		p1 (AddVectors (PosBL x y) (list 0 (/ y 9)))
+		p1 (AddVectors (PointBL x y) (list 0 (/ y 9)))
 		p2 (list (/ x 40) (+ (/ y 6) (/ y 18)))
 		p3 (list (/ x -40) (+ (/ y -6) (/ y 18)))
-		p4 (PosTR x y)
+		p4 (PointTR x y)
 		gx 1.2 ; Large outdoor cabinet ??
 		gy 0.5
 	)
@@ -72,10 +72,10 @@
 		; TRV:  4.5 x 2.25
 		x 4.5 	
 		y 2.25  
-		p1 (AddVectors (PosBL x y) (list 0 (/ y 9)))
+		p1 (AddVectors (PointBL x y) (list 0 (/ y 9)))
 		p2 (list (/ x 40) (+ (/ y 6) (/ y 18)))
 		p3 (list (/ x -40) (+ (/ y -6) (/ y 18)))
-		p4 (PosTR x y)
+		p4 (PointTR x y)
 		gx 1.2 ; Large outdoor cabinet ??
 		gy 0.5
 	)
