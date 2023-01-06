@@ -15,6 +15,7 @@
 
 ; For debugging:
 ; (65A) (65B) (65C) (65D) (65E) (65F) (65G-1) (65G-2) (65G-3)
+; (E65H) (E65J) (E65K) (E65L) (E65M) (E65N)
 
 (defun 65A ( / blockName description x y p11 p12 p21 p22 )
 	; Unpowered section, dead-end track - "Jordet seksjon"
@@ -381,6 +382,8 @@
 	description ; Used if table is created
 )
 
+
+
 (defun E65H ( / blockName description H W B a c e f g)
 	;
 	;  TL-------TR
@@ -403,19 +406,21 @@
 		g 0.62
 	)
 	(setq
-		offsetX (+ ((HalfOf W)) B e (HalfOf f))
+		offsetX (+ (HalfOf W) B e (HalfOf f))
 		offsetY (HalfOf (+ c g))
 	)
 	(DrawBox layDef_Zero W H layDef_BoardOrPole_Wipeout) 
-	(DrawBox layDef_Zero (- W B) (- H B) nil)
-	(DrawBoxAtPoint layDef_Zero (list offsetX offsetY) f g nil)	
-	(DrawBoxAtPoint layDef_Zero (list (- offsetX) (- offsetY)) f g nil)
+	(DrawBox layDef_Zero (- W B) (- H B) _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero (list offsetX offsetY) f g _noWipeout_)	
+	(DrawBoxAtPoint layDef_Zero (list (- offsetX) (- offsetY)) f g _noWipeout_)
 	(MoveUp (HalfOf H))
 	(AddDescriptionBelowOrigin description _offsetZero_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
+
+
 
 (defun E65J ( / blockName description H W B b2 c)
 	;
@@ -436,14 +441,16 @@
 
 	)
 	(DrawBox layDef_Zero W H layDef_BoardOrPole_Wipeout) 
-	(DrawBox layDef_Zero (- W B) (- H B) nil)
-	(DrawBox layDef_Zero b2 c nil)
+	(DrawBox layDef_Zero (- W B) (- H B) _noWipeout_)
+	(DrawBox layDef_Zero b2 c _noWipeout_)
 	(MoveUp (HalfOf H))
 	(AddDescriptionBelowOrigin description _offsetZero_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
+
+
 
 (defun E65K ( / blockName description H W B b2 c)
 	;
@@ -465,8 +472,8 @@
 
 	)
 	(DrawBox layDef_Zero W H layDef_BoardOrPole_Wipeout) 
-	(DrawBox layDef_Zero (- W B) (- H B) nil)
-	(DrawBox layDef_Zero c b2 nil)
+	(DrawBox layDef_Zero (- W B) (- H B) _noWipeout_)
+	(DrawBox layDef_Zero c b2 _noWipeout_)
 	(MoveUp (HalfOf H))
 	(AddDescriptionBelowOrigin description _offsetZero_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -474,13 +481,15 @@
 	description ; Used if table is created
 )
 
+
+
 (defun E65L ( / blockName description H W B g i m)
 	;
 	;  TL-------TR
 	;  |  _   _  |
 	;  | | | | | |
-		;  | | | | | |
-		;  | |_| |_| |
+	;  | | | | | |
+	;  | |_| |_| |
 	;  BL---.---BR 
 	;
 	(setq 
@@ -497,15 +506,17 @@
 		offsetX (HalfOf (+ i g))
 	)
 	(DrawBox layDef_Zero W H layDef_BoardOrPole_Wipeout) 
-	(DrawBox layDef_Zero (- W B) (- H B) nil)
-	(DrawBoxAtPoint layDef_Zero (list offsetX 0) g m nil)	
-	(DrawBoxAtPoint layDef_Zero (list (- offsetX) 0) g m nil)
+	(DrawBox layDef_Zero (- W B) (- H B) _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero (list offsetX 0) g m _noWipeout_)	
+	(DrawBoxAtPoint layDef_Zero (list (- offsetX) 0) g m _noWipeout_)
 	(MoveUp (HalfOf H))
 	(AddDescriptionBelowOrigin description _offsetZero_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
+
+
 
 (defun E65M ( / blockName description H W B g i j k)
 	;
@@ -534,16 +545,18 @@
 		offSetY2 (+ (HalfOf (- W)) B j (HalfOf g))
 	)
 	(DrawBox layDef_Zero W H layDef_BoardOrPole_Wipeout) 
-	(DrawBox layDef_Zero (- W B) (- H B) nil)
-	(DrawBoxAtPoint layDef_Zero (list offsetX offSetY1) g k nil)	
-	(DrawBoxAtPoint layDef_Zero (list (- offsetX) offSetY1) g k nil)
-	(DrawBoxAtPoint layDef_Zero (list 0 offSetY2) (+ (* 2 g) i) g nil)
+	(DrawBox layDef_Zero (- W B) (- H B) _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero (list offsetX offSetY1) g k _noWipeout_)	
+	(DrawBoxAtPoint layDef_Zero (list (- offsetX) offSetY1) g k _noWipeout_)
+	(DrawBoxAtPoint layDef_Zero (list 0 offSetY2) (+ (* 2 g) i) g _noWipeout_)
 	(MoveUp (HalfOf H))
 	(AddDescriptionBelowOrigin description _offsetZero_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 	description ; Used if table is created
 )
+
+
 
 (defun E65N ( / blockName description H W B g i j n p x1 x2 x3 x4 y1 y2 y3 p1 p2 p3 p4 p5 p6 p7 p8)
 	;

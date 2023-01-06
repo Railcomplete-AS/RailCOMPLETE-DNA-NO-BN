@@ -734,9 +734,9 @@
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative block
-	(DrawLine layDef_Zero _origin_ (PosTR x y))					; ./ line from origin
-	(DrawCircleAtPoint layDef_Zero (PosTR bx by) br _noWipeout_)	; ( ) bolt
-	(DrawLine layDef_Zero (PosTR x1 y1) (PosTR x2 y2))			; (/) hatch over bolt
+	(DrawLine layDef_Zero _origin_ (PointTR x y))					; ./ line from origin
+	(DrawCircleAtPoint layDef_Zero (PointTR bx by) br _noWipeout_)	; ( ) bolt
+	(DrawLine layDef_Zero (PointTR x1 y1) (PointTR x2 y2))			; (/) hatch over bolt
 	(MirrorAboutXaxis _keepMirrorSource_)
 	(MirrorAboutYaxis _keepMirrorSource_)
 	(MirrorAboutDiagonal _keepMirrorSource_) ; Now we have 8 bolts
@@ -746,9 +746,9 @@
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 	
 	; Metric block
-	(DrawLine layDef_MetricDetails _origin_ (PosTR x y))					
-	(DrawCircleAtPoint layDef_MetricDetails (PosTR bx by) br _noWipeout_)	
-	(DrawLine layDef_MetricDetails (PosTR x1 y1) (PosTR x2 y2))			
+	(DrawLine layDef_MetricDetails _origin_ (PointTR x y))					
+	(DrawCircleAtPoint layDef_MetricDetails (PointTR bx by) br _noWipeout_)	
+	(DrawLine layDef_MetricDetails (PointTR x1 y1) (PointTR x2 y2))			
 	(MirrorAboutXaxis _keepMirrorSource_)
 	(MirrorAboutYaxis _keepMirrorSource_)
 	(MirrorAboutDiagonal _keepMirrorSource_)
@@ -1036,14 +1036,14 @@
 		br 	(* _half_ bd)
 	)
 	(DrawStAndrewCross layDef x y) ; inner cross
-	(DrawLine layDef (PosTL x1 y1) (PosTL x2 y2))
-	(DrawLine layDef (PosTR x1 y1) (PosTR x2 y2))
-	(DrawLine layDef (PosBL x1 y1) (PosBL x2 y2))
-	(DrawLine layDef (PosBR x1 y1) (PosBR x2 y2))
-	(DrawCircleAtPoint layDef (PosTL bx by) br _noWipeout_)
-	(DrawCircleAtPoint layDef (PosTR bx by) br _noWipeout_)
-	(DrawCircleAtPoint layDef (PosBL bx by) br _noWipeout_)
-	(DrawCircleAtPoint layDef (PosBR bx by) br _noWipeout_)
+	(DrawLine layDef (PointTL x1 y1) (PointTL x2 y2))
+	(DrawLine layDef (PointTR x1 y1) (PointTR x2 y2))
+	(DrawLine layDef (PointBL x1 y1) (PointBL x2 y2))
+	(DrawLine layDef (PointBR x1 y1) (PointBR x2 y2))
+	(DrawCircleAtPoint layDef (PointTL bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointTR bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointBL bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointBR bx by) br _noWipeout_)
 )
 
 
@@ -1052,10 +1052,10 @@
 	(setq
 		br 	(* _half_ bd) ; Bolt radius
 	)
-	(DrawCircleAtPoint layDef (PosTL bx by) br _noWipeout_)
-	(DrawCircleAtPoint layDef (PosTR bx by) br _noWipeout_)
-	(DrawCircleAtPoint layDef (PosBL bx by) br _noWipeout_)
-	(DrawCircleAtPoint layDef (PosBR bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointTL bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointTR bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointBL bx by) br _noWipeout_)
+	(DrawCircleAtPoint layDef (PointBR bx by) br _noWipeout_)
 )
 
 

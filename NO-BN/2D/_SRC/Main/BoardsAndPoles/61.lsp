@@ -40,10 +40,10 @@
 		description "SKILT SIGNAL 61A AVSTANDSSKILT 1"
     	x	4.5
 		y	10.5
-		TL	(PosTL x y)
-		TR	(PosTR x y)
-		BL	(PosBL x y)
-		BR	(PosBR x y)
+		TL	(PointTL x y)
+		TR	(PointTR x y)
+		BL	(PointBL x y)
+		BR	(PointBR x y)
 		p11 (list (* -0.5 x) (*  0.454 y))
 		p12 (list (*  0.5 x) (*  0.167 y))
 		p13 (list (* -0.5 x) (*  0.310 y))
@@ -87,10 +87,10 @@
 		description "SKILT SIGNAL 61B AVSTANDSSKILT 2"
     	x	4.5
 		y	10.5
-		TL	(PosTL x y)
-		TR	(PosTR x y)
-		BL	(PosBL x y)
-		BR	(PosBR x y)
+		TL	(PointTL x y)
+		TR	(PointTR x y)
+		BL	(PointBL x y)
+		BR	(PointBR x y)
 		p11 (list (* -0.5 x) (*  0.454 y))
 		p12 (list (*  0.5 x) (*  0.167 y))
 		p13 (list (* -0.5 x) (*  0.310 y))
@@ -140,10 +140,10 @@
 		description "SKILT SIGNAL 61C AVSTANDSSKILT 3"
      	x	4.5
 		y	10.5
-		TL	(PosTL x y)
-		TR	(PosTR x y)
-		BL	(PosBL x y)
-		BR	(PosBR x y)
+		TL	(PointTL x y)
+		TR	(PointTR x y)
+		BL	(PointBL x y)
+		BR	(PointBR x y)
 		p11 (list (* -0.5 x) (*  0.454 y))
 		p12 (list (*  0.5 x) (*  0.167 y))
 		p13 (list (* -0.5 x) (*  0.310 y))
@@ -197,10 +197,10 @@
 		description "SKILT E61 AVSTANDSSKILT 4"
     	x	4.5
 		y	10.5
-		TL	(PosTL x y)
-		TR	(PosTR x y)
-		BL	(PosBL x y)
-		BR	(PosBR x y)
+		TL	(PointTL x y)
+		TR	(PointTR x y)
+		BL	(PointBL x y)
+		BR	(PointBR x y)
 		p11 (list (* -0.5 x) (*  0.4 y))
 		p12 (list (*  0.5 x) (*  0.2 y))
 		p13 (list (* -0.5 x) (*  0.3 y))

@@ -258,8 +258,8 @@
 		y	6.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPoint layDef_Zero _th250_ (Pos31 y) "FATC")
-	(AddTextAtPoint layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
+	(AddTextAtPoint layDef_Zero _th250_ (Point31 y) "FATC")
+	(AddTextAtPoint layDef_Zero _th150_ (Point33 y) "BEGYNNER")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -313,8 +313,8 @@
 		y	6.0
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAtPoint layDef_Zero _th250_ (Pos31 y) "DATC")
-	(AddTextAtPoint layDef_Zero _th150_ (Pos33 y) "BEGYNNER")
+	(AddTextAtPoint layDef_Zero _th250_ (Point31 y) "DATC")
+	(AddTextAtPoint layDef_Zero _th150_ (Point33 y) "BEGYNNER")
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
