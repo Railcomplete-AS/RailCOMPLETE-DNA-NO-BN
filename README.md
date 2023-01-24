@@ -11,8 +11,8 @@ RailCOMPLETE customization for Norway, Bane NOR
 6. Run the (MkLib) command to build the 2D library file, named after date and time, such as in 'XX-YY-20221009_093223-2D'.
 7. Rename the produced 2D library file into a name of the form 'XX-YY-2021.a-2D.dwg', compatible with the information contained in the batch file 'DefineDnaVersion.bat'.
 8. Launch batch file `...\Github\RailCOMPLETE-XX-YY\MakeDnaAndTransferFilesToAppdata.bat` to build and transfer a bundled DNA to your local test installation folder, `%appdata%\Roaming\Autodesk\ApplicationPlugins\RC.bundle`.
-9. Start AuoCAD with RC. Use command `_RC-AGENT-WRITESYMBOLTHUMBNAILSTOFILE` to create a combined 2D and 3D thumbnails '.rc' file.
-10. Push the fresh DNA, now with 2D library and thumbnails file, to Github and pull into MAIN. This trigger the Azure build process, see Azure pipeline for `XX-YY`.
+9. Start AutoCAD with RC. Use command `_RC-AGENT-WRITESYMBOLTHUMBNAILSTOFILE` to create a combined 2D and 3D thumbnails '.rc' file.
+10. Push the fresh DNA, now with 2D library and thumbnails file, to Github and pull into MAIN. This triggers the Azure build process, see Azure pipeline for `XX-YY`.
 11. Download the published `XX-YY` DNA installation file from the Azure cloud build pipeline site and distribute to users.
 
 **Note** Always remember to check consistency between 2D symbol names in the XML of the DNA and in the 2D DWG file. Also check consistency between all resource files and the corresponding XML element in the DNA source-XML (in `XX-YY Rootfile.xml`). The name of the 2D symbol file shall be stated as a resource in the corresponding DNA's XML root file.
