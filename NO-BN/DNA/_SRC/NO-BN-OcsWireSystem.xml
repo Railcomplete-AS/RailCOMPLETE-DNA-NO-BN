@@ -651,6 +651,24 @@
 		
 
 
+	<LuaFunction Name="NOBN_ocs_getOcsSystem()" 
+		ReturnType="Enumeration"
+		Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+		<Constructor>Enumeration NOBN_ocs_getOcsSystem()</Constructor>
+		<Formula>
+			function NOBN_ocs_getOcsSystem()
+				os = getPropertyValue("OcsSystem")
+				if os == "Unknown" then
+					return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
+				else
+					return os
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength" LuaName="rctype_ContactWire" Name="JBTEH_KTL Kontaktledning"
 				Layer="JBTEH_KTL" Color="ByLayer"
 				Group="Kontaktledning/Kontaktledning"
@@ -746,22 +764,7 @@
 				<Value>TET08</Value>
 			</Values>
 		</CustomAttribute>
-		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_KTL_OcsSystem()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KTL_OcsSystem()" 
-			ReturnType="Enumeration"
-			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
-			<Constructor>Enumeration _JBTEH_KTL_OcsSystem()</Constructor>
-			<Formula>
-				function _JBTEH_KTL_OcsSystem()
-					os = getPropertyValue("OcsSystem")
-					if os == "Unknown" then
-						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
-					else
-						return os
-					end
-				end
-			</Formula>
-		</LuaFunction>
+		<LuaExpression Name="OcsSystem" ><Formula>NOBN_ocs_getOcsSystem()</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Enumeration" Name="ContactWireMaterial" DisplayName="Kontaktledning materiale" DefaultValue=""
 			Description="The overhead catenary system (OCS) contact wire material." 
@@ -1356,22 +1359,8 @@
 				<Value>TET08</Value>
 			</Values>
 		</CustomAttribute>
-		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_KTL_OcsSystem()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KTL_OcsSystem()" 
-			ReturnType="Enumeration"
-			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
-			<Constructor>Enumeration _JBTEH_KTL_OcsSystem()</Constructor>
-			<Formula>
-				function _JBTEH_KTL_OcsSystem()
-					os = getPropertyValue("OcsSystem")
-					if os == "Unknown" then
-						return os,_unfinished,_info("UNFINISHED - Press F4 to select OCS System.")
-					else
-						return os
-					end
-				end
-			</Formula>
-		</LuaFunction>
+
+		<LuaExpression Name="OcsSystem" ><Formula>NOBN_ocs_getOcsSystem()</Formula></LuaExpression>
 
 		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
@@ -1439,6 +1428,25 @@
 				end
 			</Formula>
 		</LuaFunction> 
+
+		<LuaExpression Name="OcsSystem" ><Formula>_JBTEH_BAR_Offset3dZ()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAR_Offset3dZ()" 
+			ReturnType="Enumeration"
+			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection." >
+			<Constructor>Enumeration _JBTEH_BAR_Offset3dZ()</Constructor>
+			<Formula>
+				function _JBTEH_BAR_Offset3dZ()
+					local p1,p2,atp,gwf,L,t
+					p1 = RcAlignment.StartPoint
+					p2 = RcAlignment.EndPoint
+					atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_AnchoringToOcsPole)[0]
+					gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
+					L = RcAlignment.HorizontalProfile.Length
+					t = _position.Pos / L
+					return t * (gwf.GeoCoord.Z - atp.GeoCoord.Z) + kpm.GeoCoord.Z
+				end
+			</Formula>
+		</LuaFunction>
 
 		<!-- Asks for relation to its corresponding contact wire, and derives it code from it. -->
 		<PropertyPrompt Key="code" DefaultValue="Bardun" AcceptEmptyValue="false" /> 		
