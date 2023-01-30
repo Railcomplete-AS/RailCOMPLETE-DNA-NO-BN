@@ -11,34 +11,34 @@
 
 <!--========================================================================================================
 	Line(ca)	Contents:
-	  30		CONTACT WIRE AND CATENARY SUPPORT MASTS
-	 850		CATENARY MASTS UNDER BRIDGE OR TUNNEL CEILING
-	1215		CATENARY MASTS SUSPENDED FROM YOKE (OR FROM GALLEY)
-	1730		OVERHEAD CATENARY SYSTEM YOKE AND GALLEY
+	  30		CONTACT WIRE AND CATENARY SUPPORT POLES
+	 850		CATENARY POLES (DROPARMS) UNDER BRIDGE OR TUNNEL CEILING
+	1215		CATENARY POLES (DROPARMS) SUSPENDED FROM PORTAL (OR FROM GALLEY)
+	1730		OVERHEAD CATENARY SYSTEM PORTAL AND GALLEY
 	2215		End Of File
 =========================================================================================================-->
 
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	CONTACT WIRE AND CATENARY SUPPORT MASTS
+	CONTACT WIRE AND CATENARY SUPPORT POLES
 =========================================================================================================-->
 	<!-- Note: Functions which are called from 'JBTEH_MAS KL-mast' and 'JBTEH_MAS Hengemast for bru og tunnel' and 'JBTEH_MAS Hengemast i åk': -->
 
-	<LuaFunction Name="_JBTEH_MAS_non_yoke_mast_code()" ReturnType="String"
-		Description="Obtains the code for the OCS pole, as a concatenation of the mast's reference mileage km-value and the current 'seq' local variable." >
-		<Constructor>String _JBTEH_MAS_non_yoke_mast_code()</Constructor>
+	<LuaFunction Name="_JBTEH_MAS_nonPortalPole_code()" ReturnType="String"
+		Description="Obtains the code for the OCS pole, as a concatenation of the pole's reference mileage km-value and the current 'seq' local variable." >
+		<Constructor>String _JBTEH_MAS_nonPortalPole_code()</Constructor>
 		<Formula>
-			function _JBTEH_MAS_non_yoke_mast_code()
+			function _JBTEH_MAS_nonPortalPole_code()
 				entireKm = math.floor(ReferenceMileage/1000)
-				return string.format("%d-%02d",entireKm,seq), _info("Mast's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable seq ("..seq..").")
+				return string.format("%d-%02d",entireKm,seq), _info("Pole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable seq ("..seq..").")
 			end
 		</Formula>
 	</LuaFunction>
 
 	<LuaFunction Name="_JBTEH_MAS_Spanlength()" ReturnType="Double" 
 			HideFromUser="false"
-			Description="Returns the shortest span length [m] between this catenary mast and its related next mast." >
+			Description="Returns the shortest span length [m] between this catenary pole and its related next pole." >
 		<Constructor>Double _JBTEH_MAS_Spanlength()</Constructor>
 		<Formula>
 			--[[
@@ -159,7 +159,7 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
-			Description="Returns a World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point to halfway between the concerned masts' display points. Optionally, specify offsets as [lateralOffset [,longitudinalOffset]])." >
+			Description="Returns a World Coordinate System offset vector for the span length custom text attribute, by default from the object's insertion point to halfway between the concerned poles' display points. Optionally, specify offsets as [lateralOffset [,longitudinalOffset]])." >
 		<Constructor>{Double,Double} _JBTEH_MAS_SpanlengthTextPosition([Double offsetLateral [,Double offsetAlong]])</Constructor>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthTextPosition(offsetLateral,offsetAlong)
@@ -173,7 +173,7 @@
 				else
 					local target = r[0]
 
-					--Offset from object's insertion point to the midpoint between the displaypoints for the masts that are involved:
+					--Offset from object's insertion point to the midpoint between the displaypoints for the poles that are involved:
 					local startX = geoCoord.X + SymbolOffset.X
 					local startY = geoCoord.Y + SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
@@ -187,7 +187,7 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextRotation()" ReturnType="Double" 
 			HideFromUser="false" 
-			Description="Returns the text attribute's rotation [DD] for the shortest span length custom text attribute, to place the text nicely between its two masts' display points." >
+			Description="Returns the text attribute's rotation [DD] for the shortest span length custom text attribute, to place the text nicely between its two poles' display points." >
 		<Constructor>Double _JBTEH_MAS_SpanlengthTextRotation()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthTextRotation()
@@ -197,7 +197,7 @@
 				else 
 					local target = r[0]
 	
-					--WCS angle between the displaypoints for the masts that are involved:
+					--WCS angle between the displaypoints for the poles that are involved:
 					local startX = geoCoord.X + SymbolOffset.X
 					local startY = geoCoord.Y + SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
@@ -213,36 +213,36 @@
 		<Constructor>_JBTEH_MAS_otherObjectsToModelcheck()</Constructor>
 		<Formula>
 			function _JBTEH_MAS_otherObjectsToModelcheck()
-				sYoke1 = rel_OcsPole_IsSupportFor_OcsPortal
-				sYoke2 = rel_OcsPole_IsDropArmUnder_OcsPortal
-				sMast = rel_OcsPortal_IsSupportedBy_OcsPole
-				sSuspensionMast = rel_OcsPortal_IsDropArmSupportFor_OcsPole
+				sPortal1 = rel_OcsPole_IsSupportFor_OcsPortal
+				sPortal2 = rel_OcsPole_IsDroparmUnder_OcsPortal
+				sPole = rel_OcsPortal_IsSupportedBy_OcsPole
+				sDroparm = rel_OcsPortal_IsDroparmSupportFor_OcsPole
 				t = {} --Collection of other objects to check
 				txt = "{"
 				first = true
-				rYoke1,nYoke1 = getRelatedObjects(sYoke1)
-				rYoke2,nYoke2 = getRelatedObjects(sYoke2)
-				rYoke = getUnionOfCollections({rYoke1,rYoke2})
-				nYoke = nYoke1 + nYoke2
-				for j = 0,nYoke-1 do
-					table.insert(t,rYoke[j])
-					txt = first and "{"..RC__identify(rYoke[j]) or txt..","..RC__identify(rYoke[j])
+				rPortal1,nPortal1 = getRelatedObjects(sPortal1)
+				rPortal2,nPortal2 = getRelatedObjects(sPortal2)
+				rPortal = getUnionOfCollections({rPortal1,rPortal2})
+				nPortal = nPortal1 + nPortal2
+				for j = 0,nPortal-1 do
+					table.insert(t,rPortal[j])
+					txt = first and "{"..RC__identify(rPortal[j]) or txt..","..RC__identify(rPortal[j])
 					first = false
-					rMast,nMast = getRelatedObjects(sMast,rYoke[j])
-					for i = 0, nMast-1 do 
-						if rMast[i].id ~= this.id then
-							table.insert(t,rMast[i])
-							txt = txt..","..RC__identify(rMast[i])
+					rPole,nPole = getRelatedObjects(sPole,rPortal[j])
+					for i = 0, nPole-1 do 
+						if rPole[i].id ~= this.id then
+							table.insert(t,rPole[i])
+							txt = txt..","..RC__identify(rPole[i])
 						end
 					end
-					rSuspensionMast,nSuspensionMast = getRelatedObjects(sSuspensionMast,rYoke[j])
-					for i = 0, nSuspensionMast-1 do
-						if rSuspensionMast[i].id ~= this.id then
-							table.insert(t,rSuspensionMast[i])
-							txt = txt..","..RC__identify(rSuspensionMast[i])
+					rDroparm,nDroparm = getRelatedObjects(sDroparm,rPortal[j])
+					for i = 0, nDroparm-1 do
+						if rDroparm[i].id ~= this.id then
+							table.insert(t,rDroparm[i])
+							txt = txt..","..RC__identify(rDroparm[i])
 						end
 					end
-					n = nMast + nSuspensionMast
+					n = nPole + nDroparm
 					return n,t,_info(n..": "..txt.."}")
 				end
 				return 0,{},_info(first and "{}" or txt)
@@ -254,7 +254,7 @@
 <xpp:define name="_JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING" >
 	<xpp:bloc>
 		<CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
-			Description="The overhead catenary system (OCS) mast's age [Ny | Eksisterende]." >
+			Description="The overhead catenary system (OCS) pole's age [Ny | Eksisterende]." >
 			<Value>Ny</Value>
 			<Value>Eksisterende</Value>
 		</CustomAttribute>
@@ -265,7 +265,7 @@
 <xpp:define name="_JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH" >
 	<xpp:bloc>
 		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0" 
-			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'." />
+			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'." />
 		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
 			Description="The span length value [m] being displayed close to the OCS pole." />
@@ -274,9 +274,9 @@
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 			Invisible="false" Lock="false" MText="false" /> 
 		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
+			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the pole's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
+			Description="The span length(s) text along-offset [m] denotes the distance, along the pole's tangent direction, to offset the text element(s)." />
 		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
 	</xpp:bloc>
@@ -330,9 +330,9 @@
 				<SetValue Key="OcsPoleHeight" Value="7500" />
 			</Variant>
 			<Variant Name="Betongmast" >
-				<!-- Assuming that masts always extend 2m under ground -->
-				<!-- See EH.800065 (EK.800065), concrete masts & load computations -->
-				<!-- TODO 2021-03-14 Produce all concrete masts. At present, only the "13" and the "13S" series exist in 3D. -->
+				<!-- Assuming that poles always extend 2m under ground -->
+				<!-- See EH.800065 (EK.800065), concrete poles & load computations -->
+				<!-- TODO 2021-03-14 Produce all concrete poles. At present, only the "13" and the "13S" series exist in 3D. -->
 				<SetValue Key="OcsCrossSection" Value="13" />  
 				<SetValue Key="OcsPoleDepth" Value="2000" />
 				<SetValue Key="OcsPoleHeight" Value="8000" />
@@ -354,13 +354,13 @@
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
-			Description="If this OCS pole supports a yoke, then the yoke with more poles / drop arms are modelchecked as well."
+			Description="If this OCS pole supports a portal, then the portal with more poles / drop arms are modelchecked as well."
 		 />
 		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
 
 		<CustomAttribute DataType="Enumeration" Name="OcsCrossSection" DisplayName="Masteprofil"
-			Description="The overhead catenary system (OCS) mast profile (omp) [HEB200..280 | H3..H6 | B2..B6 | 240x240 | Ø260]." >
+			Description="The overhead catenary system (OCS) pole profile (omp) [HEB200..280 | H3..H6 | B2..B6 | 240x240 | Ø260]." >
 			<Values Variant="Bjelkemast" >
 				<Value>HEB280</Value>
 				<Value>HEB260</Value>
@@ -427,7 +427,7 @@
 		</CustomAttribute>
 		
 		<CustomAttribute DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Mastehøyde" DefaultValue="7000"
-			Description="The overhead catenary system (OCS) mast height (omh) [mm], given in predefined lengths in 100 millimeter steps." >
+			Description="The overhead catenary system (OCS) pole height (omh) [mm], given in predefined lengths in 100 millimeter steps." >
 			<Values Variant="Bjelkemast" >
 				<Value>13000</Value>
 				<Value>12500</Value>
@@ -526,7 +526,7 @@
 		<LuaExpression Name="OcsPoleHeight" ><Formula>_JBTEH_MAS_OcsPoleHeight()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_OcsPoleHeight()" ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the height of the OCS pole, possibly adapted to carry a yoke." >
+				Description="Returns the height of the OCS pole, possibly adapted to carry a portal." >
 			<Constructor>Double _JBTEH_MAS_OcsPoleHeight()</Constructor>
 			<Formula>
 				function _JBTEH_MAS_OcsPoleHeight()
@@ -534,7 +534,7 @@
 					if n &gt; 0 then
 						return string.format("%.0f", 500 * ((r[0].RelativeElevation + 1.0) // 0.5)) --[mm]
 					else
-						--Assume that the 3D library uses steps of 500 mm, assume using tall masts (for AT):
+						--Assume that the 3D library uses steps of 500 mm, assume using tall poles (for AT):
 						return tostring(9500 - 500*math.floor((250 + 1000*RelativeElevation)//500)) --[mm]
 					end
 				end
@@ -542,7 +542,7 @@
 		</LuaFunction>
 		
 		<CustomAttribute DataType="Enumeration" Name="OcsPoleDepth" DisplayName="Mastedybde" DefaultValue="0"
-			Description="Only applicable to wooden and concrete masts. The overhead catenary system (OCS) mast depth below ground reference level (omd) [mm]." >
+			Description="Only applicable to wooden and concrete poles. The overhead catenary system (OCS) pole depth below ground reference level (omd) [mm]." >
 			<Values Variant="GMB-mast" >
 				<Value>0</Value>
 			</Values>
@@ -570,7 +570,7 @@
 			Description="True if the OCS pole features a support arm holding autotransformer conductors [True | False]." />
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_non_yoke_mast_code()</Formula></LuaExpression>
+		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_nonPortalPole_code()</Formula></LuaExpression>
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 
 		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_MAS_RelativeElevation()</Formula></LuaExpression>
@@ -585,53 +585,52 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="AngularOffset" ><Formula>_JBTEH_MAS_mast_AngularOffset()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_mast_AngularOffset()" ReturnType="Double"
+		<LuaExpression Name="AngularOffset" ><Formula>_JBTEH_MAS_ocsPole_AngularOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_ocsPole_AngularOffset()" ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns an angular offset, to orient the (ordinary) mast colinear with its yoke (if any)." >
-			<Constructor>Double _JBTEH_MAS_mast_AngularOffset()</Constructor>
+				Description="Returns an angular offset, to orient the (ordinary) pole colinear with its portal (if any)." >
+			<Constructor>Double _JBTEH_MAS_ocsPole_AngularOffset()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_mast_AngularOffset()
-					local yRelationName = rel_OcsPole_IsSupportFor_OcsPortal
-					yr,yn = getRelatedObjects(yRelationName)
+				function _JBTEH_MAS_ocsPole_AngularOffset()
+					local pRelationName = rel_OcsPole_IsSupportFor_OcsPortal
+					pr,pn = getRelatedObjects(pRelationName)
 					if yn == 0 then
-						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually or relate with '"..yRelationName.."' to a yoke (which has second support pole).")
+						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually or relate with '"..pRelationName.."' to a portal (which has second support pole).")
 				
 					else
-						local yoke = yr[0]
+						local portal = pr[0]
 						local s = rel_OcsPortal_IsSupportedBy_OcsPole
-						local r,n = getRelatedObjects(s,yoke)
+						local r,n = getRelatedObjects(s,portal)
 				
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
-								_info("ERROR OCS pole has bad connection to galley '"..RC__identify(yoke).."'.")
+								_info("ERROR OCS pole has bad connection to galley '"..RC__identify(portal).."'.")
 				
 						elseif n == 1 then
 							--Galley:
 							return getPropertyValue("AngularOffset"),
-								_info("OCS pole is connected to a galley '"..RC__identify(yoke)..
-								"' - adjust pole's angular offset manually or change galley into yoke (which has one more yoke support poles).")
+								_info("OCS pole is connected to a galley '"..RC__identify(portal)..
+								"' - adjust pole's angular offset manually or change galley into portal (which has one more portal support poles).")
 						
 						elseif n == 2 then
-							--Assume that the first two related poles are located at the yoke's extremities:
+							--Assume that the first two related poles are located at the portal's extremities:
 							local m1 = r[0]
 							local m2 = r[1]
-							if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
 							local x1 = m1.geoCoord.X		
 							local y1 = m1.geoCoord.Y
 							local x2 = m2.geoCoord.X
 							local y2 = m2.geoCoord.Y
-							local yokeAngle = math.atan(y2-y1,x2-x1) * (180/math.pi) 
+							local portalDir = math.deg(math.atan(y2-y1,x2-x1)) % 180.0
 							local tg = getAlignmentInfo().Tangent
-							local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi)
-							local info = "Angular Offset deduced using yoke support poles '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
-							return (2*360.0 + RC__round(yokeAngle - (baseAngle-90.0),3)) % 360.0, _info(info)
+							local trackDir = math.deg(math.atan(tg.Y,tg.X))
+							local info = "Angular Offset deduced using portal support poles '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
+							return (360.0 + RC__round(90 - (trackDir - portalDir),3)) % 360.0, _info(info)
 				
 						else
-							--TODO: Locate the two support poles at each end of yoke, use this to find angular offset, then turn yourself if you 
+							--TODO: Locate the two support poles at each end of portal, use this to find angular offset, then turn yourself if you 
 							--are a support pole at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
-								_info("OCS pole is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
+								_info("OCS pole is connected to a portal '"..RC__identify(portal).." with total 3 or more supporting poles"..
 								"' - adjust pole's angular offset manually.")
 						end
 					end
@@ -639,14 +638,14 @@
 			</Formula>
 		</LuaFunction>
 		
-		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_MAS_KlMast_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_KlMast_Model3DName()" 
+		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_MAS_ocsPole_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_ocsPole_Model3DName()" 
 			ReturnType="String"
-			Description="Obtains the 'Model3DName' for this KL mast."
+			Description="Obtains the 'Model3DName' for this KL pole."
 			>
-			<Constructor>Double _JBTEH_MAS_KlMast_Model3DName()</Constructor>
+			<Constructor>Double _JBTEH_MAS_ocsPole_Model3DName()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_KlMast_Model3DName()
+				function _JBTEH_MAS_ocsPole_Model3DName()
 					if Variant == "Bjelkemast" then
 						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsCrossSection .."-191x374xM36-"..OcsPoleHeight
 					elseif Variant == "GMB-mast" then
@@ -758,7 +757,7 @@
 	HIGH VOLTAGE
 	CATENARY DROP ARM FOR BRIDGE OR TUNNEL CEILING
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsDropArmPoleForBridgeOrTunnel" Name="JBTEH_MAS Hengemast for bru og tunnel"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsDroparmPoleForBridgeOrTunnel" Name="JBTEH_MAS Hengemast for bru og tunnel"
 				Layer="JBTEH_MAS_HGM_TUNNEL" Color="ByLayer"
 				Group="Kontaktledning/Master"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -798,9 +797,9 @@
 		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>RC__TextAttributePosition(22,0)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>RC__TextAttributePosition(24,0)</Formula></TextPositionLuaExpression>
 
-		<!-- TODO: 100x100 suspension masts - Description="The overhead catenary system (OCS) suspension mast profile (smp) [Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200]." > -->
+		<!-- TODO: 100x100 droparms - Description="The overhead catenary system (OCS) droparm profile (smp) [Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200]." > -->
 		<CustomAttribute DataType="Enumeration" Name="OcsCrossSection" DisplayName="Masteprofil" DefaultValue="Sirkulær, Ø120"
-			Description="The overhead catenary system (OCS) suspension mast profile (smp) [ Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
+			Description="The overhead catenary system (OCS) droparm profile (smp) [ Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
 			<Values Variant="Hengemast for bru og tunnel" >
 				<Value>Sirkulær, Ø120</Value>
 				<Value>Kvadratisk, 100x100</Value>
@@ -814,7 +813,7 @@
 		</CustomAttribute>
 		
 		<CustomAttribute DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Høyde" DefaultValue="3600" 
-			Description="The overhead catenary system (OCS) suspension mast height (smh) [mm], given in predefined lengths 0.5m - 5.0m in 50 millimeter steps." >
+			Description="The overhead catenary system (OCS) droparm height (smh) [mm], given in predefined lengths 0.5m - 5.0m in 50 millimeter steps." >
 			<Values Variant="Hengemast for bru og tunnel" >	
 				<Value>5000</Value>
 				<Value>4750</Value>
@@ -860,14 +859,14 @@
         </CustomAttribute>
 
 		<CustomAttribute DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
-			Description="The overhead catenary system (OCS) mast's age [Ny | Eksisterende]." >
+			Description="The overhead catenary system (OCS) pole's age [Ny | Eksisterende]." >
 			<Value>Ny</Value>
 			<Value>Eksisterende</Value>
 		</CustomAttribute>
 
 		<!-- Span length -->
 		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="30" 
-			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'." />
+			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'." />
 		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
 			Description="The span length value [m] being displayed close to the OCS pole." />
@@ -876,29 +875,29 @@
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 			Invisible="false" Lock="false" MText="false" /> 
 		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
+			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the pole's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
+			Description="The span length(s) text along-offset [m] denotes the distance, along the pole's tangent direction, to offset the text element(s)." />
 		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_non_yoke_mast_code()</Formula></LuaExpression>
+		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_nonPortalPole_code()</Formula></LuaExpression>
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 
-		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_MAS_DropArmUnderBridgeOrTunnel_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderBridgeOrTunnel_RelativeElevation()" ReturnType="Double"
+		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_MAS_DroparmUnderBridgeOrTunnel_RelativeElevation()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_DroparmUnderBridgeOrTunnel_RelativeElevation()" ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the relative elevation for a OCS pole suspended from a yoke, based on the yoke's type and relative elevation." >
-			<Constructor>Double _JBTEH_MAS_DropArmUnderBridgeOrTunnel_RelativeElevation()</Constructor>
+				Description="Returns the relative elevation for a OCS pole suspended from a portal, based on the portal's type and relative elevation." >
+			<Constructor>Double _JBTEH_MAS_DroparmUnderBridgeOrTunnel_RelativeElevation()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_DropArmUnderBridgeOrTunnel_RelativeElevation()
+				function _JBTEH_MAS_DroparmUnderBridgeOrTunnel_RelativeElevation()
 					s = rel_OcsPoleOrAnchoringFootplate_Has_OcsFoundation
 					r,n = getRelatedObjects(s)
 					if n == 0 then
 						-- Belongs to a bridge underside (with no bolt group/foundation object), or has not (yet) received its bolt group relation:
 						return 7.0, _info(
-						"UNFINISHED - Relate mast with '"..rel_OcsPoleOrAnchoringFootplate_Has_OcsFoundation.."' to OCS ceiling bolt group, or delete formula and replace by actual relative height if bolt group is irrelevant.")
+						"UNFINISHED - Relate pole with '"..rel_OcsPoleOrAnchoringFootplate_Has_OcsFoundation.."' to OCS ceiling bolt group, or delete formula and replace by actual relative height if bolt group is irrelevant.")
 					else
 						-- Has bolt group:
 						return r[0].RelativeElevation, _info("Value obtained from foundation '"..RC__identify(r[0]).."'.")
@@ -907,13 +906,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_MAS_tunnel_mast_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_tunnel_mast_Model3DName()" 
+		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_MAS_tunnelOcsPole_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_tunnelOcsPole_Model3DName()" 
 			ReturnType="String"
-			Description="Obtains the 'Model3DName' for this OCS suspension mast." >
-			<Constructor>String _JBTEH_MAS_tunnel_mast_Model3DName()</Constructor>
+			Description="Obtains the 'Model3DName' for this OCS droparm." >
+			<Constructor>String _JBTEH_MAS_tunnelOcsPole_Model3DName()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_tunnel_mast_Model3DName()
+				function _JBTEH_MAS_tunnelOcsPole_Model3DName()
 					local h = (math.floor((250/2 + OcsPoleHeight) / 250)) * 250 -- Assume 3D models in steps of 250 mm
 					if Variant == "Hengemast for bru og tunnel" then
 						if (OcsCrossSection == "Sirkulær, Ø120") then
@@ -935,7 +934,7 @@
 						end
 					else 
 				
-						return "Bad OCS suspension mast Variant ["..Variant.."].",_warning
+						return "Bad OCS droparm Variant ["..Variant.."].",_warning
 					end
 				end
 			</Formula>
@@ -995,7 +994,7 @@
 	HIGH VOLTAGE
 	CATENARY DROP ARM FROM PORTAL (OR FROM GALLEY)
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsDropArmUnderPortal" Name="JBTEH_MAS Hengemast i åk"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsDroparmUnderPortal" Name="JBTEH_MAS Hengemast i åk"
 				Layer="JBTEH_MAS_HGM_ÅK" Color="ByLayer"
 				Group="Kontaktledning/Master"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
@@ -1033,7 +1032,7 @@
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
-			Description="When this OCS drop arm is refreshed, then its yoke with other OCS poles are modelchecked as well."
+			Description="When this OCS drop arm is refreshed, then its portal with other OCS poles are modelchecked as well."
 		 />
 		<!-- See global definition of function _JBTEH_MAS_otherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_MAS_otherObjectsToModelcheck()</Formula></LuaExpression>
@@ -1041,7 +1040,7 @@
 		<xpp:expand select="_JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING" />
 
 		<CustomAttribute DataType="Enumeration" Name="OcsCrossSection" DisplayName="Masteprofil" DefaultValue="Rektangulær, 100x150"
-			Description="The overhead catenary system (OCS) suspension mast profile (smp) [ Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
+			Description="The overhead catenary system (OCS) droparm profile (smp) [ Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ]." >
 			<Values >
 				<Value>Kvadratisk, 100x100</Value>
 				<Value>Rektangulær, 100x150</Value>
@@ -1096,13 +1095,13 @@
 			</Values>
         </CustomAttribute>
 		
-		<CustomAttribute DataType="Double" Name="DropArmAlongOffset" DisplayName="Hengemast offset langs egen akse" DefaultValue="0"
+		<CustomAttribute DataType="Double" Name="DroparmAlongOffset" DisplayName="Hengemast offset langs egen akse" DefaultValue="0"
 			Description="The drop arm's offset from center of portal, colinear to the drop arm's own alignments' tangent direction." >
 		</CustomAttribute>
 		
 		<!-- Span length -->
 		<CustomAttribute DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="30" 
-			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this mast to the closest next mast, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'." />
+			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'." />
 		<LuaExpression Name="Spanlength" ><Formula>_JBTEH_MAS_Spanlength()</Formula></LuaExpression>
 		<CustomAttribute DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
 			Description="The span length value [m] being displayed close to the OCS pole." />
@@ -1111,62 +1110,58 @@
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
 			Invisible="false" Lock="false" MText="false" /> 
 		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetLateral" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the mast's tangent direction, to offset the text element(s)." />
+			Description="The span length(s) text lateral offset along [m] denotes the distance, transversal to the pole's tangent direction, to offset the text element(s)." />
 		<CustomAttribute DataType="Double" Name="SpanlengthTextOffsetAlong" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text along-offset [m] denotes the distance, along the mast's tangent direction, to offset the text element(s)." />
+			Description="The span length(s) text along-offset [m] denotes the distance, along the pole's tangent direction, to offset the text element(s)." />
 		<TextPositionLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextOffsetLateral,SpanlengthTextOffsetAlong)</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="SPENNLENGDE" ><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
 
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 	
-		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_DropArmUnderPortal_code()</Formula></LuaExpression>
-			<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_code()" 
+		<LuaExpression Name="code" ><Formula>_JBTEH_MAS_DroparmUnderPortal_code()</Formula></LuaExpression>
+			<LuaFunction Name="_JBTEH_MAS_DroparmUnderPortal_code()" 
 				ReturnType="String"
-				Description="Obtains the code for this OCS suspension mast." >
-				<Constructor>String _JBTEH_MAS_DropArmUnderPortal_code()</Constructor>
+				Description="Obtains the code for this OCS droparm." >
+				<Constructor>String _JBTEH_MAS_DroparmUnderPortal_code()</Constructor>
 				<Formula>
-				function _JBTEH_MAS_DropArmUnderPortal_code()
-					local yokeRelation = rel_OcsPole_IsDropArmUnder_OcsPortal
-					local yokes, nYokes = getRelatedObjects(yokeRelation)
-					if nYokes == 0 then
-						return "UNFINISHED - Relate with '"..yokeRelation.."'."
-					elseif nYokes &gt; 1 then
-							return _warning, "UNFINISHED - Suspended OCS pole belongs to more than one yoke "
-									.." - remove unintended relations '"..yokeRelation.."' or adjust the active stage using layer names."
+				function _JBTEH_MAS_DroparmUnderPortal_code()
+					local portalRelation = rel_OcsPole_IsDroparmUnder_OcsPortal
+					local portals, nPortals = getRelatedObjects(portalRelation)
+					if nPortals == 0 then
+						return "UNFINISHED - Relate with '"..portalRelation.."'."
+					elseif nPortals &gt; 1 then
+							return _warning, "UNFINISHED - Suspended OCS pole belongs to more than one portal "
+									.." - remove unintended relations '"..portalRelation.."' or adjust the active stage using layer names."
 					else
-						--One yoke:
-						local supportMastRelation = rel_OcsPortal_IsSupportedBy_OcsPole
-						local supportMasts, nSupportMasts = getRelatedObjects(supportMastRelation,yokes[0]) 
-						if nSupportMasts == 0 then 
-							return "UNFINISHED - Cannot deduce suspended OCS pole name since yoke '"..RC__identify(yokes[0]).."' has no support mast yet."
+						--One portal:
+						local rSupportPoles,nSupportPoles = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole,portals[0]) 
+						if nSupportPoles == 0 then 
+							return "UNFINISHED - Cannot deduce suspended OCS pole name since portal '"..RC__identify(portals[0]).."' has no support pole yet."
 						else
-							--Find the reference support mast - being closest to the yoke's own insertion point (there may be many yoke support masts):
+							--Find the reference support pole - being closest to the portal's own insertion point (there may be many portal support poles):
 							local i
 							local shortestDist = math.huge
-							local referenceSupportMast = nil 
-							for i = 0, nSupportMasts-1 do
-								local newDist = RC__getDistance2D(yokes[0].geoCoord,supportMasts[i].geoCoord)
+							local referenceSupportPole = nil 
+							for i = 0, nSupportPoles-1 do
+								local newDist = RC__getDistance2D(portals[0].geoCoord,rSupportPoles[i].geoCoord)
 								if newDist &lt; shortestDist then
 									shortestDist = newDist
-									referenceSupportMast = i
+									referenceSupportPole = i
 								end
 							end
 					
-							--Start suspended mast's code with support mast's code:
-							local suspendedMastCode = supportMasts[referenceSupportMast].code
-							
-							--Assign sequence number to this suspended OCS pole (counted from the support mast closest to yoke's insertion point):
-							local suspendedMastRelation = rel_OcsPortal_IsDropArmSupportFor_OcsPole
-							local suspendedMasts, nSuspendedMasts = getRelatedObjects(suspendedMastRelation,yokes[0])
+							--Start suspended pole's code with support pole's code,
+							--assign sequence number to this suspended OCS pole (counted from the support pole closest to portal's insertion point):
+							local rDroparms, nDroparms = getRelatedObjects(rel_OcsPortal_IsDroparmSupportFor_OcsPole,portals[0])
 					
 							local sequenceNumber = 0
-							for i = 0, nSuspendedMasts-1 do
-								if suspendedMasts[i].id == this.id then
+							for i = 0, nDroparms-1 do
+								if rDroparms[i].id == this.id then
 									sequenceNumber = i + 1
 								end
 							end
-							return supportMasts[referenceSupportMast].code..string.format("-%02d",sequenceNumber),
-								_info("Code deduced from yoke '"..yokes[0].code.."' and its related components.")
+							return rSupportPoles[referenceSupportPole].code..string.format("-%02d",sequenceNumber),
+								_info("Code deduced from portal '"..portals[0].code.."' and its related components.")
 						end
 					end
 				end
@@ -1175,38 +1170,38 @@
 
 		<LuaExpression Name="name" ><Formula>code</Formula></LuaExpression>
 
-		<LuaExpression Name="Mileage" ><Formula>_JBTEH_MAS_DropArmUnderPortal_Mileage(DropArmAlongOffset)</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_Mileage()" ReturnType="Double"
-			Description="Deduces the yoke suspension mast's mileage, based on its relation to a yoke/galley and this one's support mast(s). If provided, the offset is added to the computed mileage." >
-			<Constructor>Double _JBTEH_MAS_DropArmUnderPortal_Mileage([Double offset])</Constructor>
+		<LuaExpression Name="Mileage" ><Formula>_JBTEH_MAS_DroparmUnderPortal_Mileage(DroparmAlongOffset)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_DroparmUnderPortal_Mileage()" ReturnType="Double"
+			Description="Deduces the portal droparm's mileage, based on its relation to a portal/galley and this one's support pole(s). If provided, the offset is added to the computed mileage." >
+			<Constructor>Double _JBTEH_MAS_DroparmUnderPortal_Mileage([Double offset])</Constructor>
 			<Formula>
-				function _JBTEH_MAS_DropArmUnderPortal_Mileage(offset)
-					offset = offset or 0.0 --Note: The offset is "brutally" added to mileage, also when the yoke does not cross tracks at a straight angle.
-					local ys = rel_OcsPole_IsDropArmUnder_OcsPortal
-					local yr,yn = getRelatedObjects(ys)
-					if yn == 0 then
-						return getPropertyValue("Mileage"), _info("UNFINISHED - Relate to yoke/galley with '"..ys.."' to set mileage automatically.")
+				function _JBTEH_MAS_DroparmUnderPortal_Mileage(offset)
+					offset = offset or 0.0 --Note: The offset is "brutally" added to mileage, also when the portal does not cross tracks at a straight angle.
+					local ps = rel_OcsPole_IsDroparmUnder_OcsPortal
+					local pr,pn = getRelatedObjects(ps)
+					if pn == 0 then
+						return getPropertyValue("Mileage"), _info("UNFINISHED - Relate to portal/galley with '"..ps.."' to set mileage automatically.")
 				
-					elseif yn &gt; 1 then
+					elseif pn &gt; 1 then
 						return _error,getPropertyValue("Mileage"),
-							_info("ERROR - Suspension mast is related to more than one yoke ("..RC__identify(yr[0])..", "..RC__identify(yr[1])..").")
+							_info("ERROR - Droparm is related to more than one portal ("..RC__identify(yr[0])..", "..RC__identify(yr[1])..").")
 						
 					else
-						--yn == 1
-						
+						--pn == 1
+						local portal = pr[0]
 						local s = rel_OcsPortal_IsSupportedBy_OcsPole
-						local r,n = getRelatedObjects(s,yr[0])
+						local r,n = getRelatedObjects(s,portal)
 						if n == 0 then
-							return offset + yr[0].mileage,
-								_info("Mileage deduced from yoke/galley lacking support mast(s) '"..RC__identify(yr[0]).."'.")
+							return offset + pr[0].mileage,
+								_info("Mileage deduced from portal/galley lacking support pole(s) '"..RC__identify(portal).."'.")
 					
 						elseif n == 1 then 
 							--Galley:
-							return offset + RC__getMileageFromRelatedObject(s,yr[0]), _info("Mileage deduced from support mast '"..RC__identify(r[0]).."'.")
+							return offset + RC__getMileageFromRelatedObject(s,yr[0]), _info("Mileage deduced from support pole '"..RC__identify(portal).."'.")
 							
 						elseif n &gt;= 2 then
-							--Our mast is suspended from a yoke yr[0] being supported by OCS poles r[0] and r[1]:
-							local m1 = r[0]
+							--Our droparm is suspended from a portal being supported by two OCS poles:
+							local p1 = r[0]
 							local m2 = r[1]
 							-- Not needed: if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
 							local x1 = m1.geoCoord.X		
@@ -1214,10 +1209,10 @@
 							local dx = m2.geoCoord.X - x1
 							local dy = m2.geoCoord.Y - y1
 							
-							--Find point Q on the straight line betweeen m1 and m2 with the yoke suspension mast's specified DistanceToAlignment:
+							--Find point Q on the straight line betweeen m1 and m2 with the portal droparm's specified DistanceToAlignment:
 							function err(t) 
-								local Qx = x1+t*dx  
-								local Qy = y1+t*dy  
+								local Qx = x1 + t*dx  
+								local Qy = y1 + t*dy  
 								return getAlignmentInfo(Alignment.id,Qx,Qy).DistanceToAlignment - this.DistanceToAlignment
 							end
 							local tq = getZeros(err,{tolerance = 1e-4, interval = {0,1}, timeLimit = 3})[0]
@@ -1230,96 +1225,95 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- Crude formula - mounted with a few cm above top of its yoke: -->
-		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_MAS_DropArmUnderPortal_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_RelativeElevation()" 
+		<!-- Crude formula - mounted with a few cm above top of its portal: -->
+		<LuaExpression Name="RelativeElevation" ><Formula>_JBTEH_MAS_DroparmUnderPortal_RelativeElevation()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_DroparmUnderPortal_RelativeElevation()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the relative elevation for a drop arm under a portal, based on the portal's type and relative elevation." >
-			<Constructor>Double _JBTEH_MAS_DropArmUnderPortal_RelativeElevation()</Constructor>
+			<Constructor>Double _JBTEH_MAS_DroparmUnderPortal_RelativeElevation()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_DropArmUnderPortal_RelativeElevation()
+				function _JBTEH_MAS_DroparmUnderPortal_RelativeElevation()
 					local s,r,n,e,v
-					local extensionAboveTopOfYoke = 0.10
-					local r,n = getRelatedObjects(rel_OcsPole_IsDropArmUnder_OcsPortal)
+					local extensionAboveTopOfPortal = 0.10
+					local r,n = getRelatedObjects(rel_OcsPole_IsDroparmUnder_OcsPortal)
 					if n == 0 then
-						return 0.0, _info("UNFINISHED - Relate with '"..rel_OcsPole_IsDropArmUnder_OcsPortal.."' to its OCS portal.") 
+						return 0.0, _info("UNFINISHED - Relate with '"..rel_OcsPole_IsDroparmUnder_OcsPortal.."' to its OCS portal.") 
 					else 
 						local e = (r[0].geoCoord.Z - getAlignmentInfo().Elevation) --Portal's elevation above this drop arm's own alignment
 						local v = r[0].Variant
-						if v == "Type 12" then return e + 0.8 + extensionAboveTopOfYoke
-						elseif v == "Utliggeråk" then return e + 0.8 + extensionAboveTopOfYoke --Uses Type 12, 6m.
-						elseif v == "Type 14" then return e + 1.2 + extensionAboveTopOfYoke
-						elseif v == "Type 40" then return e + 0.4 + extensionAboveTopOfYoke
+						if v == "Type 12" then return e + 0.8 + extensionAboveTopOfPortal
+						elseif v == "Utliggeråk" then return e + 0.8 + extensionAboveTopOfPortal --Uses Type 12, 6m.
+						elseif v == "Type 14" then return e + 1.2 + extensionAboveTopOfPortal
+						elseif v == "Type 40" then return e + 0.4 + extensionAboveTopOfPortal
 						else
-							return 0.0,_error, _info("Bad related OCS yoke '"..RC__identify(r[0]).."' Variant: ["..v.."].")
+							return 0.0,_error, _info("Bad related OCS portal '"..RC__identify(r[0]).."' Variant: ["..v.."].")
 						end
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="AngularOffset" ><Formula>_JBTEH_MAS_DropArmUnderPortal_AngularOffset()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_AngularOffset()" ReturnType="Double"
+		<LuaExpression Name="AngularOffset" ><Formula>_JBTEH_MAS_DroparmUnderPortal_AngularOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_DroparmUnderPortal_AngularOffset()" ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns an angular offset, to orient the mast colinear with its yoke (if any)." >
-			<Constructor>Double _JBTEH_MAS_DropArmUnderPortal_AngularOffset()</Constructor>
+				Description="Returns an angular offset, to orient the droparm colinearly with its portal (if any)." >
+			<Constructor>Double _JBTEH_MAS_DroparmUnderPortal_AngularOffset()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_DropArmUnderPortal_AngularOffset()
-					local ys = rel_OcsPole_IsDropArmUnder_OcsPortal
-					yr,yn = getRelatedObjects(ys)
+				function _JBTEH_MAS_DroparmUnderPortal_AngularOffset()
+					local ps = rel_OcsPole_IsDroparmUnder_OcsPortal
+					pr,pn = getRelatedObjects(ps)
 					if yn == 0 then
-						return getPropertyValue("AngularOffset"), _info("UNFINISHED - relate to yoke with '"..ys.."'.")
+						return getPropertyValue("AngularOffset"), _info("UNFINISHED - relate droparm to portal with '"..ps.."'.")
 				
 					else
-						local yoke = yr[0]
+						local portal = pr[0]
 						local s = rel_OcsPortal_IsSupportedBy_OcsPole
-						local r,n = getRelatedObjects(s,yoke)
+						local r,n = getRelatedObjects(s,portal)
 				
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
-								_info("ERROR Mast has bad connection to galley '"..RC__identify(yoke).."'.")
+								_info("ERROR Droparm has bad connection to galley '"..RC__identify(portal).."'.")
 				
 						elseif n == 1 then
 							--Galley:
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a galley '"..RC__identify(yoke)..
-								"' - adjust mast's angular offset manually or change galley into yoke (which has one more yoke support mast).")
+								_info("Droparm is connected to a galley '"..RC__identify(portal)..
+								"' - adjust droparm's angular offset manually or change galley into portal (which has one more portal support pole).")
 						
 						elseif n == 2 then
-							--Assume that the first two related masts are located at the yoke's extremities:
+							--Assume that the first two related poles are located at the portal's extremities:
 							local m1 = r[0]
 							local m2 = r[1]
-							if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
 							local x1 = m1.geoCoord.X		
 							local y1 = m1.geoCoord.Y
 							local x2 = m2.geoCoord.X
 							local y2 = m2.geoCoord.Y
-							local yokeAngle = math.atan(y2-y1,x2-x1) * (180/math.pi) 
+							local portalDir = math.deg(math.atan(y2-y1,x2-x1)) % 180.0
 							local tg = getAlignmentInfo().Tangent
-							local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi)
-							local info = "Angular Offset deduced using yoke support masts '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
-							return (2*360.0 + RC__round(yokeAngle - (baseAngle-90),3)) % 360.0, _info(info)
+							local trackDir = math.deg(math.atan(tg.Y,tg.X))
+							local info = "Angular Offset deduced using portal support poles '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
+							return (360.0 + RC__round(90 - (trackDir - portalDir),3)) % 360.0, _info(info)
 				
 						else
-							--TODO: Locate the two support masts at each end of yoke, uses this to find angular offset, then turn yourself if you 
-							--are a support mast at one or the other end, or just adapt if you are in between ends.
+							--TODO: Locate the two support poles at each end of portal, uses this to find angular offset, then turn yourself if you 
+							--are a support pole at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
-								_info("Mast is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
-								"' - adjust mast's angular offset manually.")
+								_info("Droparm is connected to a portal '"..RC__identify(portal).." with total 3 or more supporting poles"..
+								"' - adjust pole's angular offset manually.")
 						end
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_MAS_DropArmUnderPortal_Model3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_Model3DName()" 
+		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_MAS_DroparmUnderPortal_Model3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_MAS_DroparmUnderPortal_Model3DName()" 
 			ReturnType="String"
-			Description="Obtains the 'Model3DName' for this OCS suspension mast." >
-			<Constructor>String _JBTEH_MAS_DropArmUnderPortal_Model3DName()</Constructor>
+			Description="Obtains the 'Model3DName' for this OCS droparm." >
+			<Constructor>String _JBTEH_MAS_DroparmUnderPortal_Model3DName()</Constructor>
 			<Formula>
-				function _JBTEH_MAS_DropArmUnderPortal_Model3DName()
+				function _JBTEH_MAS_DroparmUnderPortal_Model3DName()
 					return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-HUP-"..(OcsCrossSection:match("(%d+x%d+)")).."-"..OcsPoleHeight
 				end
 			</Formula>
@@ -1368,7 +1362,7 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	OVERHEAD CATENARY SYSTEM YOKE AND GALLEY
+	OVERHEAD CATENARY SYSTEM PORTAL AND GALLEY
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_OcsPortal" Name="JBTEH_AAK Åk"
 				Layer="JBTEH_AAK" Color="ByLayer"
@@ -1414,7 +1408,7 @@
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
 		
 		<CustomAttribute DataType="Enumeration" Name="Length" DisplayName="Lengde" DefaultValue="11m"
-			Description="The overhead catenary system (OCS) yoke length (oyl), given in predefined lengths in 1 meter steps. Each may be composed of subparts, where the joints may hinder suspension mast mounting." >
+			Description="The overhead catenary system (OCS) portal length (oyl), given in predefined lengths in 1 meter steps. Each may be composed of subparts, where the joints may hinder droparm mounting." >
 			<Values Variant="Type 12" >
 				<Value Description="Type XXIII" >33m</Value>
 				<Value>32m</Value>
@@ -1474,31 +1468,31 @@
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
-			Description="When this yoke is refreshed, then all of its support masts and suspension masts are modelchecked as well."
+			Description="The number of other items to modelcheck, and a table with references to them."
 		 />
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_AAK_otherObjectsToModelcheck()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_otherObjectsToModelcheck()" ReturnType="String"
-			Description = "Returns the number of other items to modelcheck, and a table with references to them." >
+			Description="Returns the number of other items to modelcheck, and a table with references to them." >
 			<Constructor>_JBTEH_AAK_otherObjectsToModelcheck()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_otherObjectsToModelcheck()
-					sMast = rel_OcsPortal_IsSupportedBy_OcsPole
-					rMast,nMast = getRelatedObjects(sMast)
+					sPole = rel_OcsPortal_IsSupportedBy_OcsPole
+					rPole,nPole = getRelatedObjects(sPole)
 					t = {} --Collection of other objects to check
 					first = true
-					for i = 0, nMast-1 do 
-						table.insert(t,rMast[i])
-						txt = first and "{"..RC__identify(rMast[i]) or txt..","..RC__identify(rMast[i])
+					for i = 0, nPole-1 do 
+						table.insert(t,rPole[i])
+						txt = first and "{"..RC__identify(rPole[i]) or txt..","..RC__identify(rPole[i])
 						first = false
 					end
-					sSuspensionMast = rel_OcsPortal_IsDropArmSupportFor_OcsPole
-					rSuspensionMast,nSuspensionMast = getRelatedObjects(sSuspensionMast)
-					for i = 0, nSuspensionMast-1 do
-						table.insert(t,rSuspensionMast[i])
-						txt = first and "{"..RC__identify(rSuspensionMast[i]) or txt..","..RC__identify(rSuspensionMast[i])
+					sDroparm = rel_OcsPortal_IsDroparmSupportFor_OcsPole
+					rDroparm,nDroparm = getRelatedObjects(sDroparm)
+					for i = 0, nDroparm-1 do
+						table.insert(t,rDroparm[i])
+						txt = first and "{"..RC__identify(rDroparm[i]) or txt..","..RC__identify(rDroparm[i])
 						first = false
 					end
-					n = nMast + nSuspensionMast
+					n = nPole + nDroparm
 					if n == 0 then
 						return 0,{},_info("{}")
 					else
@@ -1513,27 +1507,27 @@
 
         <LuaExpression Name="DistanceToAlignment" ><Formula>_JBTEH_AAK_DistanceToAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_DistanceToAlignment()" ReturnType="Enum"
-			Description="Returns the distance to alignment for the yoke." >
+			Description="Returns the distance to alignment for the portal." >
 			<Constructor>Double _JBTEH_AAK_DistanceToAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_DistanceToAlignment()
 					-- Ref Bane NOR, lærebok "Bygging av kontaktledningsanlegg" Del 2:2, Kap. 14
 				
-					function _JBTEH_AAK_get_mastDistanceToAlignment(mast)
-						if mast.Alignment == nil then 
-							return RightSided and 4e-4 or -4e-4,_warning, _info("Closest OCS support mast is not connected to a track (own alignment).")
+					function _JBTEH_AAK_get_supportPoleDistanceToAlignment(pole)
+						if pole.Alignment == nil then 
+							return RightSided and 4e-4 or -4e-4,_warning, _info("Closest OCS support pole is not connected to a track (own alignment).")
 						else
-							local mv = mast.Variant
-							local mp = mast.OcsCrossSection
+							local mv = pole.Variant
+							local mp = pole.OcsCrossSection
 							local d
 							if mv:match("Bjelkemast") then
-								d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc
+								d = string.sub(mp,4,6)/2000 --Assume pole profile names "HEB200", "HEB220" etc
 							elseif mv:match("GMB%-mast") then
-								d = string.sub(mp,4,6)/2000 --Assume mast profile names "HEB200", "HEB220" etc TODO: Finn ekte profiler for GMB-mast
+								d = string.sub(mp,4,6)/2000 --Assume pole profile names "HEB200", "HEB220" etc TODO: Find the real profile for Gardermobanen pole
 							elseif mv:match("B%-mast") then
-								d = (mast.OcsPoleHeight - RelativeElevation) * math.tan(23/1000000)
+								d = (pole.OcsPoleHeight - RelativeElevation) * math.tan(23/1000000)
 							elseif mv:match("H%-mast") then
-								d = (mast.OcsPoleHeight - RelativeElevation) * math.tan(1/50000)
+								d = (pole.OcsPoleHeight - RelativeElevation) * math.tan(1/50000)
 							elseif mv:lower():match("hengemast") then
 								if (mp == 'Sirkulær, Ø120') then 
 									d = 0.06
@@ -1549,12 +1543,12 @@
 							else 
 								return 0,_warning, _info("Bad OCS pole variant ["..mv.."].")
 							end
-							-- OCS pole and yoke may belong to different tracks (when OCS pole is located between tracks):
-							mdist = getAlignmentInfo(alignment.id,mast.geoCoord.X,mast.geoCoord.Y).DistanceToAlignment --Distance from center closest OCS pole to yoke's alignment
-							if (mast.RightSided) then
-								if (mast.Alignment.id == Alignment.id) then return mdist-d else return mdist+d end
+							-- OCS pole and portal may belong to different tracks (when OCS pole is located between tracks):
+							mdist = getAlignmentInfo(alignment.id,pole.geoCoord.X,pole.geoCoord.Y).DistanceToAlignment --Distance from center closest OCS pole to portal's alignment
+							if (pole.RightSided) then
+								if (pole.Alignment.id == Alignment.id) then return mdist-d else return mdist+d end
 							else
-								if (mast.Alignment.id == Alignment.id) then return mdist+d else return mdist-d end
+								if (pole.Alignment.id == Alignment.id) then return mdist+d else return mdist-d end
 							end
 						end
 					end --function
@@ -1568,16 +1562,16 @@
 							return getPropertyValue("DistanceToAlignment"),_warning, _info("UNFINISHED: Relate galley to an OCS pole with relation '"..s.."'.")
 						else
 							return getPropertyValue("DistanceToAlignment"),_warning, _info(
-								"UNFINISHED: Relate yoke to OCS pole(s) with relation '"..s.."', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate portal to OCS pole(s) with relation '"..s.."', or change Variant to galley.")
 						end
 				
 					elseif n == 1 then
 						if Variant == "Utliggeråk" then 
 							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12.
-							return _JBTEH_AAK_get_mastDistanceToAlignment(r[0]), _info("Galley yoke (Utliggeråk) extending from mast '"..RC__identify(r[0]).."'.")
+							return _JBTEH_AAK_get_supportPoleDistanceToAlignment(r[0]), _info("Galley portal (Utliggeråk) extending from pole '"..RC__identify(r[0]).."'.")
 						else
 							return getPropertyValue("DistanceToAlignment"),_warning, _info(
-								"UNFINISHED: Relate yoke to one more OCS pole with relation '"..rel_OcsPortal_IsSupportedBy_OcsPole.."', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate portal to one more OCS pole with relation '"..rel_OcsPortal_IsSupportedBy_OcsPole.."', or change Variant to galley.")
 						end
 				
 					elseif n &gt;= 2 then 
@@ -1585,15 +1579,15 @@
 						local m2 = r[1]
 						if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
 						local d1 = RC__getDistance2D(m1,m2)
-						local L = math.floor(1.500 + d1) --Assume min 0.5 and max 1.5 meter total yoke length overshoot
-						local d2 = 0.5 * (L - d1) --Share overshoot between masts
+						local L = math.floor(1.500 + d1) --Assume min 0.5 and max 1.5 meter total portal length overshoot
+						local d2 = 0.5 * (L - d1) --Share overshoot between poles
 						local x1 = m1.geoCoord.X		
 						local y1 = m1.geoCoord.Y
 						local x2 = m2.geoCoord.X
 						local y2 = m2.geoCoord.Y
 						local x = x1 - (d2/d1)*(x2-x1)
 						local y = y1 - (d2/d1)*(y2-y1)
-						local info = "Distance to alignment deduced through support mast '"..RC__identify(m1).."' related by '"..s.."'."
+						local info = "Distance to alignment deduced through support pole '"..RC__identify(m1).."' related by '"..s.."'."
 						return getAlignmentInfo(Alignment.id,x,y).DistanceToAlignment, _info(info)
 					end
 				end
@@ -1606,7 +1600,7 @@
 
 		<LuaExpression Name="Length" ><Formula>_JBTEH_AAK_Length()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_Length()" ReturnType="Enum"
-			Description="Returns the length of the yoke, being the mast-mast center distance plus 1.50 meter, rounded down." >
+			Description="Returns the length of the portal, being the support's pole-to-pole center distance plus 1.50 meter, rounded down." >
 			<Constructor>Enum _JBTEH_AAK_Length()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_Length()
@@ -1625,20 +1619,20 @@
 							elseif Variant == "Type 40" then L = "10m"
 							end
 							return L,_warning, _info(
-								"UNFINISHED: Relate yoke to OCS pole(s) with relation '"..RelationName.."', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate portal to OCS pole(s) with relation '"..RelationName.."', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n == 1 then
 						local m1 = r[0]
 						if Variant == "Utliggeråk" then 
-							return "6m", _info("Galley yoke (Utliggeråk) extending from mast "..m1.code..".")
+							return "6m", _info("Galley portal (Utliggeråk) extending from OCS pole "..m1.code..".")
 						else
 							if Variant == "Type 12" then L = "11m"
 							elseif Variant == "Type 14" then L = "28m"
 							elseif Variant == "Type 40" then L = "10m"
 							end
 							return L,_warning, _info(
-								"UNFINISHED: Relate yoke to one more OCS pole with relation 'Har åk-mast / kl-mast', or change Variant to galley (Utliggeråk).")
+								"UNFINISHED: Relate portal to one more OCS poles with relation '"..RelationName.."', or change Variant to galley (Utliggeråk).")
 						end
 				
 					elseif n &gt;= 2 then 
@@ -1649,21 +1643,21 @@
 						local len = RC__getDistance2D(P1,P2)
 						L = math.floor(len + 1.5)
 						if Variant == "Type 12" then
-							if L &lt; 11 then return "11m",_warning, _info("L="..L.." required, but Type 12 yokes can't be shorter than 11 meter. Change to type 40 or galley (Utliggeråk).")
-							elseif L &gt; 33 then return "33m",_warning, _info("L="..L.." required, but Type 12 yokes can't be longer than 33 meter, change to Type 14.")
+							if L &lt; 11 then return "11m",_warning, _info("L="..L.." required, but Type 12 portals can't be shorter than 11 meter. Change to type 40 or galley (Utliggeråk).")
+							elseif L &gt; 33 then return "33m",_warning, _info("L="..L.." required, but Type 12 portals can't be longer than 33 meter, change to Type 14.")
 							end
 						elseif Variant == "Type 14" then
-							if L &lt; 28 then return "28m",_warning, _info("L="..L.." required, but Type 14 yokes can't be made shorter than 28 meter. Change to Type 12 or 40.")
-							elseif L &gt; 43 then return "43m",_warning, _info("L="..L.." required, but Type 14 yokes can't be made longer than 43 meter.")
+							if L &lt; 28 then return "28m",_warning, _info("L="..L.." required, but Type 14 portals can't be made shorter than 28 meter. Change to Type 12 or 40.")
+							elseif L &gt; 43 then return "43m",_warning, _info("L="..L.." required, but Type 14 portals can't be made longer than 43 meter.")
 							end
 						elseif Variant == "Type 40" then
-							if L &lt; 10 then return "10m",_warning, _info("L="..L.." required, but Type 40 yokes can't be made shorter than 10 meter. Change to galley (Utliggeråk).")
-							elseif L &gt; 16 then return "16m",_warning, _info("L="..L.." required, but Type 40 yokes can't be made longer than 16 meter, change to Type 12 or 14.")
+							if L &lt; 10 then return "10m",_warning, _info("L="..L.." required, but Type 40 portals can't be made shorter than 10 meter. Change to galley (Utliggeråk).")
+							elseif L &gt; 16 then return "16m",_warning, _info("L="..L.." required, but Type 40 portals can't be made longer than 16 meter, change to Type 12 or 14.")
 							end
 						else
-							return getPropertyValue("Length"),_error, _info("Remove excess yoke support mast(s), or change yoke Variant into Type 12/14/40.")
+							return getPropertyValue("Length"),_error, _info("Remove excess portal support pole(s), or change portal Variant into Type 12/14/40.")
 						end
-						return L.."m", _info("Length deduced from mast "..m1.code.." and "..m2.code.." ("..RC__round(len,3).." m).")
+						return L.."m", _info("Length deduced from support pole "..m1.code.." and "..m2.code.." ("..RC__round(len,3).." m).")
 					end
 				end
 			</Formula>
@@ -1672,7 +1666,7 @@
 		<LuaExpression Name="AngularOffset" ><Formula>_JBTEH_AAK_AngularOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_AngularOffset()" ReturnType="Double"
 			HideFromUser="false"
-			Description="Returns the angular offset needed to orient the yoke between its two masts, or a galley according to its mast." >
+			Description="Returns the angular offset needed to orient the portal between its two poles, or a galley according to its pole." >
 			<Constructor>Double _JBTEH_AAK_AngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_AngularOffset()
@@ -1680,7 +1674,7 @@
 					local r,n = getRelatedObjects(RelationName)
 
 					if n == 0 then
-						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually. Relate to one (galley) or two (yoke) masts using '"..RelationName.."' to set angular offset automatically.")
+						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually. Relate to one (galley) or two (portal) poles using '"..RelationName.."' to set angular offset automatically.")
 
 					elseif n == 1 then 
 						-- Galley "åk-unge", "utliggeråk"
@@ -1688,26 +1682,26 @@
 						return r[0].AngularOffset, _info("AngularOffset for galley deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
 
 					elseif n == 2 then 
-						--Assume that the first two related masts are located at the yoke's extremities:
+						--Assume that the first two related OCS poles are located at the portal's extremities:
 						local m1 = r[0]
 						local m2 = r[1]
 						local x1 = m1.geoCoord.X
 						local y1 = m1.geoCoord.Y
 						local x2 = m2.geoCoord.X
 						local y2 = m2.geoCoord.Y
-						local yokeAngle = math.atan(y2-y1,x2-x1) * (180/math.pi) 
+						local portalDir = math.deg(math.atan(y2-y1,x2-x1))
 						local tg = getAlignmentInfo().Tangent
-						local baseAngle = math.atan(tg.Y,tg.X) * (180/math.pi) - RC__getAngleFromDir()
-						local info = "AngularOffset for yoke deduced from support masts '"..
+						local trackDir = math.deg(math.atan(tg.Y,tg.X)) - RC__getAngleFromDir()
+						local info = "AngularOffset for portal deduced from its support poles '"..
 							RC__identify(m1).."' and '"..RC__identify(m2).."' related by '"..RelationName.."'."
-						return RC__round((2*360 + yokeAngle - baseAngle) % 360, 3), _info(info)
+						return RC__round((2*360 + portalDir - trackDir) % 360, 3), _info(info)
 
 					else
-						--TODO: Locate the two support masts at each end of yoke, uses thes to find angular offset, then turn yourself if you 
-						--are a support mast at one or the other end, or just adapt if you are in between ends.
+						--TODO: Locate the two support poles at each end of portal, uses thes to find angular offset, then turn yourself if you 
+						--are a support pole at one or the other end, or just adapt if you are in between ends.
 						return getPropertyValue("AngularOffset"),
-							_info("Mast is connected to a yoke '"..RC__identify(yoke).." with total 3 or more supporting masts"..
-							"' - adjust mast's angular offset manually.")
+							_info("Mast is connected to a portal '"..RC__identify(portal).." with total 3 or more supporting poles"..
+							"' - adjust pole's angular offset manually.")
 					end
 				end
 			</Formula>
@@ -1715,7 +1709,7 @@
 
 		<LuaExpression Name="Mileage" ><Formula>_JBTEH_AAK_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_Mileage()" ReturnType="Double"
-			Description="Deduces the galley's / yoke's mileage, based on relation to one or two yoke support masts." >
+			Description="Deduces the galley's / portal's mileage, based on relation to one or two portal support poles." >
 			<Constructor>Double _JBTEH_AAK_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_Mileage()
@@ -1723,26 +1717,26 @@
 					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("Mileage"),
-							_info("No control input - adjust mileage manually. Relate yoke to one or two masts using '"..s.."' to set mileage automatically.")
+							_info("No control input - adjust mileage manually. Relate portal to one or two poles using '"..s.."' to set mileage automatically.")
 				
 					elseif n == 1 then 
 						-- Move to related mast (assuming galley (Utliggeråk))
-						return RC__getMileageFromRelatedObject(s), _info("Mileage deduced from support mast '"..RC__identify(r[0]).."'.")
+						return RC__getMileageFromRelatedObject(s), _info("Mileage deduced from support pole '"..RC__identify(r[0]).."'.")
 						
 					elseif n &gt;= 2 then
 						local m1 = r[0]
 						local m2 = r[1]
 						if RC__getDistance2D(this,m1) &gt; RC__getDistance2D(this,m2) then m1,m2 = m2,m1 end 
 						local d1 = RC__getDistance2D(m1,m2)
-						local L = math.floor(1.500 + d1) --Assume min 0.5 and max 1.5 meter total yoke length overshoot
-						local d2 = 0.5 * (L - d1) --Share overshoot between masts
+						local L = math.floor(1.500 + d1) --Assume min 0.5 and max 1.5 meter total portal length overshoot
+						local d2 = 0.5 * (L - d1) --Share overshoot between poles
 						local x1 = m1.geoCoord.X		
 						local y1 = m1.geoCoord.Y
 						local x2 = m2.geoCoord.X
 						local y2 = m2.geoCoord.Y
 						local x = x1 - (d2/d1)*(x2-x1)
 						local y = y1 - (d2/d1)*(y2-y1)
-						local info = "Mileage deduced through support mast '"..RC__identify(m1).."' related by '"..s.."'."
+						local info = "Mileage deduced through support pole '"..RC__identify(m1).."' related by '"..s.."'."
 						return getAlignmentInfo(Alignment.id,x,y).Mileage, _info(info)
 					end
 				end
@@ -1751,7 +1745,7 @@
 
 		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTEH_AAK_Model3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_Model3DName()" ReturnType="String"
-			Description="Returns the yoke's 3D object model name." >
+			Description="Returns the portal's 3D object model name." >
 			<Constructor>String _JBTEH_AAK_Model3DName()</Constructor>
 			<Formula>
 				function _JBTEH_AAK_Model3DName()
@@ -1764,7 +1758,7 @@
 					elseif Variant == "Utliggeråk" then
 						return "NO-BN-3D-EH-AAK-TYPE-12-00-MELLOMRAMME-6M" --Ref tegninger EH-707507 (sammenstilling) / EH-707448 (type 12 6m mellomramme).
 					else
-						return "Bad OCS yoke Variant ["..Variant.."]",_warning
+						return "Bad OCS portal Variant ["..Variant.."]",_warning
 					end
 				end
 			</Formula>
