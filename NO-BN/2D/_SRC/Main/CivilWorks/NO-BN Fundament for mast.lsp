@@ -1061,7 +1061,7 @@
 
 
 ; DEPRECATED - bolt group real size:
-;(defun drawNut ( / )
+;(defun DrawNut ( / )
 	;	nutRadius 0.0277 ; M24
 	;	boltRadius 0.012 ; M24
 	;	x (/ 0.350 2) ; 350x350 bolteplassering

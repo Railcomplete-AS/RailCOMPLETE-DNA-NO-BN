@@ -21,14 +21,14 @@
 (defun CONTROLLER ( / blockName )
 	(setq blockName (strcat _COM_ "DIV-" "PROSESSTYRING"	))
 	(setq description (strcat "PROSESSTYRING"				))
-	(drawController)
+	(DrawController)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
 
 
 
-(defun drawController ( / )
+(defun DrawController ( / )
 	;
 	;        |
 	;       /|\

@@ -436,7 +436,7 @@
 
 
 
-(defun drawVerticalLine(x y len)
+(defun DrawVerticalLine(x y len)
 	(command _LINE_ (list x y) (list x (- y len)) _ENTER_)
 )
 
@@ -448,9 +448,9 @@
     	space 0.875
     	line 1.75
     )
-	(drawVerticalLine x y edge)
-	(drawVerticalLine x (- y edge space) line)
-	(drawVerticalLine x (- y edge space line space) edge)	
+	(DrawVerticalLine x y edge)
+	(DrawVerticalLine x (- y edge space) line)
+	(DrawVerticalLine x (- y edge space line space) edge)	
 )
 
 
@@ -461,9 +461,9 @@
     	space 0.875
     	line 1.75
     )
-	(drawVerticalLine x y edge)
-	(drawVerticalLine x (- y edge space) line)
-	(drawVerticalLine x (- y edge space line space) line)	
-	(drawVerticalLine x (- y edge space line space line space) line)
-	(drawVerticalLine x (- y edge space line space line space line space) edge)
+	(DrawVerticalLine x y edge)
+	(DrawVerticalLine x (- y edge space) line)
+	(DrawVerticalLine x (- y edge space line space) line)	
+	(DrawVerticalLine x (- y edge space line space line space) line)
+	(DrawVerticalLine x (- y edge space line space line space line space) edge)
 )
