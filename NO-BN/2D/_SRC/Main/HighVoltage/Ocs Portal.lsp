@@ -12,14 +12,14 @@
 
 ; Overhead Catenary System (OCS) Portals (yoke and galley)
 
-(defun OCS-PORTAL-AND-GALLEY ( / counter )
+(defun OCS-PORTAL-AND-GANTRY ( / counter )
 	(setq counter 10)
 	(repeat 34
 		(TraceLevel3 (strcat "OCS PORTAL: " (rtos counter _decimal_ 0) " m"))
 		(OCS-PORTAL counter) ; 10 to 43 inclusive
 		(setq counter (+ counter 1))
 	)
-  	(OCS-GALLEY 6.000)
+  	(OCS-GANTRY 6.000)
 )
 
 
@@ -46,9 +46,9 @@
 
 
 
-(defun OCS-GALLEY ( len / blockName description )
-	(setq blockName (strcat _OCS_ "AAK-" "KONTAKTLEDNINGS" _uARING_ "K-UTLIGGER" _uARING_ "K-"	(rtos (* 1000 len) _decimal_ 0)	))
-	(setq description (strcat "KL-UTLIGGER" _uARING_ "K "										(rtos (* 1000 len) _decimal_ 0)	))
+(defun OCS-GANTRY ( len / blockName description )
+	(setq blockName (strcat _OCS_ "AAK-" "UTLIGGER" _uARING_ "K-"	(rtos (* 1000 len) _decimal_ 0)	))
+	(setq description (strcat "KL-UTLIGGER" _uARING_ "K "			(rtos (* 1000 len) _decimal_ 0)	))
 
 	; Schematic symbol
 	; Adapt to schematic plan with _schematicTrackSpacing_ units between center tracks (instead of standard ~4.7 in shunting yards

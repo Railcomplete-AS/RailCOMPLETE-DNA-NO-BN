@@ -163,7 +163,7 @@ English										Norwegian							French								German
 ================================			================================	================================	================================
 OCS pole									kl-pole								support_caténaire
 portal support pole							åk-pole								support_portique
-droparm (pole suspended from ceiling/portal)hengemast							support_suspendu
+drop arm (pole suspended from ceiling/portal)hengemast							support_suspendu
 contact wire								kontakttråd	                		fil de contact
 catenary wire								bæreline	                		fil porteur
 stitch wire									y-line	                    		suspension en Y
@@ -210,7 +210,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
@@ -435,10 +435,10 @@ positive feeder in AT system				positiv leder i AT-system
 		<Formula>
 			function NOBN_ocs_getPoleHalfWidth(ocsPole,height)
 				local pol = ocsPole or this
-				if not pol.RcType:match("JBTEH_MAS") then return 0,_error,_info("ERROR - function works only for OCS poles or drop arms") end
+				if not pol.RcType:match("JBTEH_MAS") then return 0,_error, _info("ERROR - function works only for OCS poles or drop arms") end
 				local h = heightOnPole or 0
 				local pv = pol.Variant
-				local pp = pol.OcsCrossSection
+				local pp = pol.OcsPoleCrossSection
 				local d = 0.999 --default value - a sizeable pole diameter...a bad value which is easily recognized as such.
 			
 				if pv == "Bjelkemast" then
@@ -545,7 +545,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_MEDIUM_FAR___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 
 		<!-- Use custom version of wayside general object Lua functions (due to the possible angular offset): -->
 		<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" /> -->
@@ -893,7 +893,7 @@ positive feeder in AT system				positiv leder i AT-system
 						.." and next cantilever/WTB '%s'.",
 						forceDirection,lateralForce,directionChangeDD,RC__identify(prev),RC__identify(this),RC__identify(nxt))
 				
-					return forceDirection,_info(t)
+					return forceDirection, _info(t)
 				end
 			</Formula>
 		</LuaFunction>
@@ -1153,25 +1153,25 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomAttribute DataType="Double" Name="AddVisual2dAngularOffset" DisplayName="2D vinkeltillegg" DefaultValue="0" 
-			Description="The 'AddVisual2dAngularOffset' [Double] adds 16.7 decimal degrees to the 2D symbol's angle. Cantilevers mounted in a portal or galley will not be visible unless the 2D symbol is given an extra angle." />
+			Description="The 'AddVisual2dAngularOffset' [Double] adds 16.7 decimal degrees to the 2D symbol's angle. Cantilevers mounted in a portal or gantry will not be visible unless the 2D symbol is given an extra angle." />
 		<LuaExpression Name="AddVisual2dAngularOffset" ><Formula>_JBTEH_UTL_AddVisual2dAngularOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_AddVisual2dAngularOffset()" 
 			ReturnType="Double"
-			Description="Adds 17 Decimal Degrees rotation to the cantilever's angle in 2D whenever it is located in a portal or in a galley, to make it visible in 2D drawings. AngularOffset and 3D rendering are not affected" >
+			Description="Adds 17 Decimal Degrees rotation to the cantilever's angle in 2D whenever it is located in a portal or in a gantry, to make it visible in 2D drawings. AngularOffset and 3D rendering are not affected" >
 			<Constructor>Double _JBTEH_UTL_AddVisual2dAngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_AddVisual2dAngularOffset()
 					s = rel_Cantilever_BelongsTo_OcsPole
 					r,n = getRelatedObjects(s)
 					if n == 0 then
-						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal droparm or tunnel / bridge droparm.")
+						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal drop arm or tunnel / bridge drop arm.")
 					else 
 						--Cantilever mounted under portal?
 						--Make cantilever "rod" visible if located under a portal, by visually adding 17 degrees:
 						pol = r[0]
 						r1,n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
 						if n1 == 0 then 
-							return 0, _info("No visual angular offset added since cantilever is not mounted on a droparm (hidden by a portal).")
+							return 0, _info("No visual angular offset added since cantilever is not mounted on a drop arm (hidden by a portal).")
 						else
 							-- TODO: Detect if cantilever is located on the other side of one of the portal's support poles - and not under the next portal, if another portal continues...
 							return 17, _info("Visual angular offset added since cantilever might otherwise be visually hidden under a portal.")
@@ -1186,7 +1186,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<TextPositionLuaExpression Name="SIKKSAKK" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-11,-4)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-14,-4)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTID" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-16,-4)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTBESKRIVELSE" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-18,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTINFO" ><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-18,-4)</Formula></TextPositionLuaExpression>
 
 		<LuaFunction Name="_JBTEH_UTL_TextAttributeAcsPosition()" ReturnType="Vector2D" 
 				HideFromUser="false"
@@ -1596,7 +1596,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
