@@ -20,9 +20,9 @@
 ; DrawRightArrow
 ; DrawLeftArrow
 ; DrawDoubleArrow
-; DRAWFATRIGHTARROW
+; DrawFatRightArrow
 ; DrawFatLeftArrow
-; DRAWHOLLOWARROWATPOINT
+; DrawHollowArrowAtpoint
 
 (defun GetLosangeSide ( / ) 
 	(setq side 5.5)
@@ -207,7 +207,7 @@
 
 
 
-(defun drawFatRightArrow ( x y / p12 p21 p22 p33 p41 p42 p52 )
+(defun DrawFatRightArrow ( x y / p12 p21 p22 p33 p41 p42 p52 )
 	; Fat Right arrow
 	;
 	;           p52\
@@ -257,7 +257,7 @@
 
 
 
-(defun drawHollowArrowAtpoint ( x y tip angle / ux uy p0 p1 p2 p3 p4 q1 q2 aq3 q4 )
+(defun DrawHollowArrowAtpoint ( x y tip angle / ux uy p0 p1 p2 p3 p4 q1 q2 aq3 q4 )
 	; x,y : Surrounding box dimensions
 	; tip : Absolute coordinate of the arrow's right / left tip, meant to be inside box x*y
 	; dir : 0 => Right arrow (East) / 90 = Up arrow (North) / 180  => Left arrow (West) / 270 = Down arrow (South)

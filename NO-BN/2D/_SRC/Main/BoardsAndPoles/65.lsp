@@ -332,7 +332,7 @@
 	)
 	(DrawBox layDef_Zero x (+ y (- y2 dy)) layDef_BoardOrPole_Wipeout) ; Overlapping boxes
 	(MoveUp (HalfOf (- y dy)))
-	(drawFatRightArrow x y2)
+	(DrawFatRightArrow x y2)
 	(MoveUp (HalfOf y2))
 	(DrawCircleAtPoint layDef_Zero p1 r1 _noWipeout_)
 	(DrawCircleAtPoint layDef_Zero p1 r2 _noWipeout_)

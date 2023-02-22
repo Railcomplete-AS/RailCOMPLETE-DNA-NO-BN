@@ -9,6 +9,44 @@
 =========================================================================================================-->
 <xpp:bloc>
 
+	<!-- 
+		Note:
+		Alignments, such as railway tracks, that have been declared using this type of declaration:
+
+			<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="..." ...>
+
+		may be supplemented by "live" annotation objects. Each such alignment declaration may contain a LuaExpression (or SetValue) that 
+		associates a horizontal and a vertical annotation object type with it. The horizontal annotation object type must have been 
+		declared elsewhere such as in:
+
+			<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="My Horizontal Geometry Vertex Annotation Object Type" ... >
+
+		The vertical annotation object type must have been declared elsewhere such as in:
+
+			<ObjectType DataType="tDelimitedOrientedElement" Class="RailwayPlacedObject" Name="My Vertical Profile Vertex Annotation Object Type" ... >
+
+		These represent the critical points where the horizontal / the vertical profile has a change (horizontal start-of-curve, vertical PVI etc).
+		The to-be-annotated alignment object's declaration must contain assignments such as in:
+		
+			<LuaExpression Name="HorizontalGeometryPointObjectTypeRef"><Formula>"My Horizontal Geometry Vertex Annotation Object Type"</Formula></LuaExpression>
+			<LuaExpression Name="VerticalGeometryPointObjectTypeRef"><Formula>"My Vertical Profile Vertex Annotation Object Type"</Formula></LuaExpression>
+
+		Likewise, there is a possibility to add annotations to the segments between any two consecutive vertex annotations. These must have been declared
+		elsewhere such as in:
+		
+			<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="My Horizontal Geometry Segment Annotation Object Type" >
+			<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" Name="My Vertical Profile Segment Annotation Object Type" >
+
+		These represent the segments between any two consecutive vertices of the corresponding type (constant circular curve, constant gradient etc). 
+		The to-be-annotated alignment object's declaration must contain assignments such as in:
+
+			<LuaExpression Name="HorizontalGeometrySectionObjectTypeRef"><Formula>"My Horizontal Geometry Segment Annotation Object Type"</Formula></LuaExpression>
+			<LuaExpression Name="VerticalGeometrySectionObjectTypeRef"><Formula>"My Vertical Profile Segment Annotation Object Type"</Formula></LuaExpression>
+
+		The combined effect of these declarations is that the function 'RC-AssistCreateGeometryAndProfileAnnotationObjects' creates objects using these
+		four referenced object types and inserts them at the right places along the annotated alignment. These are now 'live' annotations, i.e. 
+		RC objects. Subsequently, these objects may be picked up as objects by RC-ManageObjects and used in data export, tables etc.
+	-->
 
 
 <!--========================================================================================================
@@ -162,9 +200,7 @@
 			</Values>
 		</CustomAttribute>
 		
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" >
-			<SetValue Key="CustomTransformation" Value="False"/>
-		</SetDynamicProperty>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" ></SetDynamicProperty>
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedModel3D" >
 			<SetValue Key="RotationBeforeOffset" Value="True"/>
 			<SetValue Key="CustomTransformation" Value="False"/>
@@ -307,13 +343,13 @@
 		<LuaExpression Name="name" ><Formula>"["..code.."]"</Formula></LuaExpression>
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
-		<!--<LuaExpression Name="Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>-->
-		<LuaExpression Name="SweptModel3D_0.Roll" ><Formula>NOBN_trk_getRollFromCant(_position)</Formula></LuaExpression>
-		<!--<LuaExpression Name="Rotation3D.Z" ><Formula>0</Formula></LuaExpression> -->
+		<!-- With the intrinsic 3D transformation from alignment axis to model insertion axis, no  -->
+		<!-- formulas are needed for 3D Offset and 3D Rotation. -->
 		<LuaExpression Name="SweptModel3D_0.Offset3D.Z" ><Formula>NOBN_trk_getLiftFromCant(_position)</Formula></LuaExpression>
-
-		<!--<LuaExpression Name="Model3DSeparation" ><Formula>Sweep3D and RC__getNearest3DStep(8.0) or 0.60</Formula></LuaExpression>
-		<LuaExpression Name="Model3DOffset" ><Formula>Sweep3D and 0 or Model3DSeparation/2</Formula></LuaExpression> -->
+		<LuaExpression Name="SweptModel3D_0.Roll" ><Formula>NOBN_trk_getRollFromCant(_position)</Formula></LuaExpression>
+		<LuaExpression Name="SweptModel3D_1.Offset3D.Z" ><Formula>NOBN_trk_getLiftFromCant(_position)</Formula></LuaExpression>
+		<LuaExpression Name="SweptModel3D_1.Rotation3D.X" ><Formula>NOBN_trk_getPitchFromGradient(_position)</Formula></LuaExpression>
+		<LuaExpression Name="SweptModel3D_1.Rotation3D.Y" ><Formula>NOBN_trk_getRollFromCant(_position)</Formula></LuaExpression>
 
 		<PropertyPrompt Key="code" DefaultValue="Spor" AcceptEmptyValue="false" />
 
@@ -366,34 +402,45 @@
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	SPOR
-	JBTKO_KJK Kjørekant og skinneisolering
+	TRACK AND EMBANKMENT
+	RAILS
+	
 	To be used mainly for insulating rails, dealing with track circuits and return current.
 	May be created through import av LandXML or DWG, converted fra 2D/3D polyline (or drawn from scratch), but
-	will mainly be created as offsets with track gauge 1435/2 (0.717 m) from a track.
-	Usage: 
-	1) First place an isolated joint railML element ('JBTKO_SKJ Skinneskjøt') in the associated track
-	2) Use RC-BreakAlignment and break rails according to the isolated joint objects in the assoc. track. 
-	3) The rails will automatically search for insulation joint objects at their alignment start, and
-	   will set their own code, color and linewidth to reflect the rail's insulation from that point an on,
+	will mainly be created as offsets with half of the track gauge from a track's center line.
+
+	Created conveniently as offset from a track with offset distance set to half of the track gauge.
+
+	Usage:
+	1) Object which serves to express the inner rail in 3D if you need them individually in 3D. Otherwise, use rctype_Track.
+	2) Linear element for use as an offset referent for linear placement (distance to closest rail).
+	3) Object to represent physical rails as linear objects
+	4) Object serving as an electrically conducting network for physical track circuit current
+	5) Object serving as an electrically conducting network for earthing
+	6) Object serving as an electrically conducting network for return current
+
+	How to insulate individual rails:
+	1) First place an isolated joint railML element (rctype_InsulatedRailJoint) in the associated track (not rail).
+	2) Use RC-BreakAlignment and one or both break rails according to the isolated joint object in the assoc. track. 
+	3) The rails will automatically search for the preceding insulation joint object at their alignment start, and
+	   will set their own code, color and linewidth to reflect the rail's insulation from that joint and up,
 	   the railML property 'insulatedRail' then being one of 'left', 'right', 'both' or 'none'. 
+	   
 	   0.05/Red = Return current rail = either a dedicated earth rail, the other rail carrying only track
 	              circuit currents (signal rail), OR both rails carry return current and signal currents,
 				  the two currents being separated through suitable filters (impedances) connecting return
 				  current rail(s) to return current rail(s), bridging over a double insulation.
+	   
 	   0.20/Green = Track circuit (signal) rail. This rail's potential, within the operating frequency band 
 				  for the track circuit, is allowed to oscillate freely. This means that the rail cannot be
 				  connected directly to earth with a pure ohmic connection, but only through an impedance 
 				  providing a closed circuit at 0 Hz (earthing) as well as at low frequencies (16 2/3 Hz in 
 				  Norway) for return current, but acting as an open circuit (high impedance) at higher 
 				  frequencies where the tack ciruit operates (typically 95 - 105 Hz in Norway).
-	4) Subsequent use of the NOBN-provided earthing assistance functions will search for these rails and use 
+				  
+	4) Subsequent use of the earthing assistance functions may search for these rails and use 
 	   their insulation status to decide where to get protective earth (when the object's EarthingMethod has 
 	   been set to 'Rail'). 
-	Note: 
-	The 'JBTKO_KJK Kjørekant og skinneisolering' alignment type may also be used as a lateral reference for objects (as with
-	the French SNCF).
 =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" LuaName="rctype_InnerRailAndInsulation" Name="JBTKO_KJK Kjørekant og skinneisolering"
 				Layer="JBTKO_KJK_isolasjon" Color="ByLayer"
@@ -527,7 +574,7 @@
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
@@ -556,13 +603,13 @@
 			<Constructor>String _JBTKO_HOT_Variant()</Constructor>
 			<Formula>
 				function _JBTKO_HOT_Variant()
-					alignmentInfo = getAlignmentInfo()
-					nearest = alignmentInfo.NearestHorizontalVertex
-					nearestCant = alignmentInfo.NearestCantVertex
+					ai = getAlignmentInfo()
+					nearest = ai.NearestHorizontalVertex
+					nearestCant = ai.NearestCantVertex
 					-- insert "RE,RB" if cant station is closest
 					vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
-					if nearestCant ~= nil and math.abs(nearestCant.Mileage - alignmentInfo.Mileage) &lt; math.abs(vertexMileage - alignmentInfo.Mileage)
-										and math.abs(vertexMileage - alignmentInfo.Mileage) &gt; 1 then
+					if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
+										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 						if math.abs(nearestCant.GradientIn) &gt; 0 and math.abs(nearestCant.GradientOut) &gt; 0 then
 							return "REB"
 						elseif (nearestCant.GradientIn == nil or nearestCant.GradientIn == 0) and math.abs(nearestCant.GradientOut) &gt; 0 then
@@ -599,13 +646,13 @@
 			<Constructor>Double _JBTKO_HOT_Mileage()</Constructor>
 			<Formula>
 			function _JBTKO_HOT_Mileage()
-				alignmentInfo = getAlignmentInfo()
-				nearest = alignmentInfo.NearestHorizontalVertex
+				ai = getAlignmentInfo()
+				nearest = ai.NearestHorizontalVertex
 				-- insert "RE,RB" if cant station is closest
-				nearestCant = alignmentInfo.NearestCantVertex
+				nearestCant = ai.NearestCantVertex
 				vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
-				if nearestCant ~= nil and math.abs(nearestCant.Mileage - alignmentInfo.Mileage) &lt; math.abs(vertexMileage - alignmentInfo.Mileage)
-										and math.abs(vertexMileage - alignmentInfo.Mileage) &gt; 1 then
+				if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
+										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 					return nearestCant.Mileage
 				else
 					if nearest.Item2 ~= nil then return nearest.Item2.StartMileage end
@@ -657,7 +704,7 @@
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_CLOSE___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
@@ -678,27 +725,27 @@
 
 		<LuaExpression Name="Variant" ><Formula>_JBTKO_VET_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_Variant()" ReturnType="String"
-				Description="Analyzes local alignment profile and returns nearest segment delimiters or vertex' 'Variant', i.e. type of geometric vertex/cant." >
+				Description="Analyzes local alignment vertical profile and returns nearest segment delimiters or vertex' 'Variant', i.e. type of vertical vertex." >
 			<Constructor>String _JBTKO_VET_Variant()</Constructor>
-      <Formula>
-			function _JBTKO_VET_Variant()
-				alignmentInfo = getAlignmentInfo()
-				nearestDelimiter = alignmentInfo.NearestVerticalSegmentDelimiter
-				if nearestDelimiter ~= nil then
-					if nearestDelimiter.Type == "CurveStart" then return "SE1" end
-					if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
+			<Formula>
+				function _JBTKO_VET_Variant()
+					ai = getAlignmentInfo()
+					nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+					if nearestDelimiter ~= nil then
+						if nearestDelimiter.Type == "CurveStart" then return "SE1" end
+						if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
+					end
+					nvv = ai.NearestVerticalVertex
+					if nvv == nil then return "_" end
+					if nvv.Type == "Crest" then return "HBP" end
+					if nvv.Type == "Sag" then return "LBP" end
+					if nvv.Type == "None" then return "(Linje start/slutt)" end
 				end
-				nearestVertex = alignmentInfo.NearestVerticalVertex
-				if nearestVertex == nil then return "_" end
-				if nearestVertex.Type == "Crest" then return "HBP" end
-				if nearestVertex.Type == "Sag" then return "LBP" end
-				if nearestVertex.Type == "None" then return "(Linje start/slutt)" end
-			end
-		</Formula>
+			</Formula>
 		</LuaFunction>
 
 		<CustomAttribute DataType="String" Name="PviInfo" DisplayName="PVI info" />
-		<TextAttribute Annotative="true" BindingProperty="PviInfo" CadAttributeTag="PVI_INFO" X="0" Y="-4" Layer="JBTKO@OBJEKTBESKRIVELSE" Color="ByBlock" Justify="MiddleCenter" Height="0.9" MText="true" />
+		<TextAttribute Annotative="true" BindingProperty="PviInfo" CadAttributeTag="PVI_INFO" X="0" Y="-4" Layer="JBTKO@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" MText="true" />
 		<LuaExpression Name="PviInfo" ><Formula>_JBTKO_VET_PviInfo()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_PviInfo()" ReturnType="String"
 				Description="Returns vertical profile info for crests and sags." >
@@ -709,11 +756,11 @@
 				tNil			= "?"
 				tR				= "R"
 				tAxisStartEnd	= "(Linje start/slutt)"
-				tMasl			= " m.o.h."	--meters above [mean] sea level
+				tMasl			= " moh."	--meters above [mean] sea level
 					
-				alignmentInfo = getAlignmentInfo()					
-				nearestDelimiter = alignmentInfo.NearestVerticalSegmentDelimiter
-				nearestVertex = alignmentInfo.NearestVerticalVertex
+				ai = getAlignmentInfo()					
+				nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+				nearestVertex = ai.NearestVerticalVertex
 					
 				if nearestVertex == nil then return tNil end
 				if nearestDelimiter ~= nil and nearestDelimiter.Type ~= "Pvi" then
@@ -790,7 +837,7 @@
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
@@ -808,7 +855,10 @@
 		<!-- The complete code book is found here: -->
 		<!-- https://knowledge.autodesk.com/support/autocad-lt/learn-explore/caas/CloudHelp/cloudhelp/2019/ENU/AutoCAD-LT/files/GUID-7D8BB40F-5C4E-4AE5-BD75-9ED7112E5967-htm.html -->
 		<!-- Print '0/00' where the first zero is half size and alignent with top text, the second double-zero is also half size but aligned with bottom text: -->
+		<!-- {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00} -->
+		<!-- InfinitySign = "{\\U+221E}" but it displays in an ugly boldface -->
 
+		<!-- TODO: Make better code to treat situations where the cant station and the geometry change do not coincide.  -->
 		<Variants>
 			<Variant Name="Rettlinje" >
 				<LuaExpression Name="code" >
@@ -817,15 +867,18 @@
 			</Variant>
 			<Variant Name="Kurve" >
 				<LuaExpression Name="code" >
-					<Formula>Variant.."\\P".."L="..string.format("%.3f",getAlignmentInfo().Segment.Length).."\\P".. "R="..string.format("%.3f",getAlignmentInfo().Segment.RadiusStart)</Formula>
+					<Formula>
+						ai = getAlignmentInfo()
+						return Variant.."\\P".."L="..string.format("%.3f",ai.Segment.Length) .."\\P".."R="..string.format("%.3f",ai.Segment.RadiusStart)
+					</Formula>
 				</LuaExpression>
 			</Variant>
 			<Variant Name="Klotoide" >
 				<LuaExpression Name="code" >
 					<Formula>
-						alignmentInfo = getAlignmentInfo()
-						segment = alignmentInfo.Segment
-						
+						ai = getAlignmentInfo()
+						segment = ai.Segment
+
 						if segment.RadiusStart == math.huge  then 
 							text1 = "RL"
 						else
@@ -838,7 +891,7 @@
 							text2 = "R"..string.format("%.3f",segment.RadiusEnd)
 						end
 						
-						vector = alignmentInfo.Tangent
+						vector = ai.Tangent
 						TangentAngle2D = math.atan(vector.Y,vector.Z)
 						if (math.cos(getUcsAngle() - TangentAngle2D) &lt; 0) then
 							text = "&lt;"..text2.."-"..text1.."&gt;"
@@ -846,7 +899,7 @@
 							text = "&lt;"..text1.."-"..text2.."&gt;"
 						end
 						
-						return Variant.."\\P".."L="..string.format("%.3f",getAlignmentInfo().Segment.Length).."\\P"..text
+						return Variant.."\\P".."L="..string.format("%.3f",ai.Segment.Length).."\\P"..text
 					</Formula>
 				</LuaExpression>
 			</Variant>
@@ -861,7 +914,6 @@
 			</Formula>
 		</LuaExpression>
 		
-		<!-- Just one InsertPointObject is needed, the formula on Variant will change to the correct Variant for us -->
 		<InsertPointObject VariantName="Horisontalgeometrisegment"
 				DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
@@ -873,7 +925,7 @@
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
 			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}" />
-			<SymbolAttribute Tag="W" ><Value>{{code}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="X" ><Value>{{code}}</Value></SymbolAttribute>
 		</SymbolDefinition>
 	</ObjectType>
 
@@ -896,7 +948,7 @@
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
@@ -914,6 +966,8 @@
 		<!-- The complete code book is found here: -->
 		<!-- https://knowledge.autodesk.com/support/autocad-lt/learn-explore/caas/CloudHelp/cloudhelp/2019/ENU/AutoCAD-LT/files/GUID-7D8BB40F-5C4E-4AE5-BD75-9ED7112E5967-htm.html -->
 		<!-- Print '0/00' where the first zero is half size and alignent with top text, the second double-zero is also half size but aligned with bottom text: -->
+		<!-- {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00} -->
+		<!-- InfinitySign = "{\\U+221E}" but it displays in an ugly boldface -->
 
 		<Variants>
 			<!-- <Variant Name="Straight" > -->
@@ -922,17 +976,16 @@
 					<Formula>Variant.."\\P"..string.format("%.3f",getAlignmentInfo().gradient).." {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00}"</Formula>
 				</LuaExpression>
 			</Variant>
-			<!-- <Variant Name="Circular rounding, crest" > -->
 			<Variant Name="HBP" >
 				<LuaExpression Name="code" >
 					<Formula>
-alignmentInfo = getAlignmentInfo()
-nearestVertex = alignmentInfo.NearestVerticalVertex
-pviElevation = string.format("%.3f", nearestVertex.Elevation)
-trackElevation = string.format("%.3f", alignmentInfo.Elevation)
-length3d = string.format("%.3f", nearestVertex.Length)
-radius = string.format("%.3f", nearestVertex.Radius)
-return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3d.."\\P".."R="..radius
+						ai = getAlignmentInfo()
+						nvv = ai.NearestVerticalVertex
+						pviElevation = string.format("%.3f", nvv.Elevation)
+						trackElevation = string.format("%.3f", ai.Elevation)
+						length3d = string.format("%.3f", nvv.Length)
+						radius = string.format("%.3f", nvv.Radius)
+						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3d.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
 			</Variant>
@@ -940,37 +993,31 @@ return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."
 			<Variant Name="LBP" >
 				<LuaExpression Name="code" >
 					<Formula>
-alignmentInfo = getAlignmentInfo()
-nearestVertex = alignmentInfo.NearestVerticalVertex
-pviElevation = string.format("%.3f", nearestVertex.Elevation)
-trackElevation = string.format("%.3f", alignmentInfo.Elevation)
-length3d = string.format("%.3f", nearestVertex.Length)
-radius = string.format("%.3f", nearestVertex.Radius)
-return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3d.."\\P".."R="..radius
+						ai = getAlignmentInfo()
+						nvv = ai.NearestVerticalVertex
+						pviElevation = string.format("%.3f", nvv.Elevation)
+						trackElevation = string.format("%.3f", ai.Elevation)
+						length3d = string.format("%.3f", nvv.Length)
+						radius = string.format("%.3f", nvv.Radius)
+						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3d.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
 			</Variant>
 		</Variants>
 		
 		<LuaExpression Name="Variant" >		   
-		<Formula>
-			nearest = getAlignmentInfo().NearestVerticalVertex
-			ownMileage = Mileage
-			nearestVertexMileage = nearest.Mileage
-			mileageDelta = math.abs(ownMileage - nearestVertexMileage)
-
-			if mileageDelta &gt; 4e-3 then return "Gradient" end
-			if nearest.Type == "Crest" then return "HBP" end
-			if nearest.Type == "Sag" then return "LBP" end
-			if nearest.Type == "None" then return "Gradient" end
-
-			return "Gradient"
-		</Formula>
+			<Formula>
+				nvv = getAlignmentInfo().NearestVerticalVertex
+				if nvv.Type == "None" then return "Gradient"
+				elseif nvv.Type == "Crest" then return nvv.Radius &lt; 4e-4 and "Gradient" or "HBP"
+				elseif nvv.Type == "Sag" then return nvv.Radius &lt; 4e-4 and "Gradient" or "LBP"
+				else return _info("Bad Vertical Vertex Type: "..nvv.Type),_warning
+				end
+			</Formula>
 		</LuaExpression>
 
-<!-- TODO: temp fix, use Watch symbol (which is multiline but does not behave correctly with scales). Section objects have temporarily been made into single-line text, whence they scale correctly with annotative scales. -->
-
-		<InsertPointObject VariantName="Vertikalprofilsegment" DisplayBlockName="NO-BN-2D-JBTRC_WATCH-INNSETTING-SYMBOL-Schematic" 
+		<InsertPointObject VariantName="Vertikalprofilsegment"
+				DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4" >
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
@@ -978,10 +1025,9 @@ return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}" />
 		</InsertPointObject>
 		
-		<!-- <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" > -->
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_WCH-WATCH-{{SymbolMode}}" AllowSymbolMove="true" >
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTFE_SEK-SEKSJON-{{SymbolMode}}" AllowSymbolMove="true" >
 			<Rotation AddAngle="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}" />
-			<SymbolAttribute Tag="W" ><Value>{{code}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="X" ><Value>{{code}}</Value></SymbolAttribute>
 		</SymbolDefinition>
 	</ObjectType>
 			
@@ -1080,7 +1126,7 @@ return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."
 		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />
@@ -1169,7 +1215,7 @@ return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."
 		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___TRK" />
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK" />
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" />
-		<xpp:expand select="RC_com_SET_OCP_STATION_REFERENCE" />
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT" />
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL" />
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR" />

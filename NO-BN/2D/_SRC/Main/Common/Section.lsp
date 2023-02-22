@@ -56,13 +56,13 @@
 	(setq description (strcat "SEKSJON"				))
 	(setq att '("X" "Seksjonsobjekt" "X"			))
 
-	;(AddMultilineTextAttributeAtPoint layDef_Zero _th180_ _origin_ att)
-	; NB! We had trouble with scaling of section objects : Adding in scale 1:1, then changing to 
+	(AddMultilineTextAttributeAtPoint layDef_Zero _th180_ _origin_ att)
+	; NB! Initially, we had trouble with scaling of section objects : Adding in scale 1:1, then changing to 
 	; m:1, then changing back to 1:1 - and then the text (but not the frame) is 'stuck' at m:1 
 	; scale.... And if I first change to m:1, then insert the very first section element, then the 
 	; text will then be drawn in scale 1:1 (but the circle around is m_1). Weird!!!!!
+	;(AddTextAttributeAtPoint layDef_Zero _th180_ _origin_ att)
 
-	(AddTextAttributeAtPoint layDef_Zero _th180_ _origin_ att)
 	(AddDescriptionBelowOrigin description _one_)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)

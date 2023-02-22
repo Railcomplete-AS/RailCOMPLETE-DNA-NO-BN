@@ -48,7 +48,7 @@
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
 	(AddTextAtPoint layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
-	(drawHollowArrowAtpoint x y p1 _west_)
+	(DrawHollowArrowAtpoint x y p1 _west_)
 	(AddTextAttributeAtPoint layDef_Zero _th180_ p3 attMetersLeft)
 
 	(MoveUp (HalfOf y))
@@ -82,7 +82,7 @@
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
 	(AddTextAtPoint layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
-	(drawHollowArrowAtpoint x y p2 _east_)
+	(DrawHollowArrowAtpoint x y p2 _east_)
 	(AddTextAttributeAtPoint layDef_Zero _th180_ p4 attMetersRight)
 
 	(MoveUp (HalfOf y))
@@ -119,9 +119,9 @@
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 
 	(AddTextAtPoint layDef_Zero _th125_ p0 (strcat "R" _uOSLASH_ "MNINGSVEI"))
-	(drawHollowArrowAtpoint x y p1 _west_)
+	(DrawHollowArrowAtpoint x y p1 _west_)
 	(AddTextAttributeAtPoint layDef_Zero _th180_ p3 attMetersLeft)
-	(drawHollowArrowAtpoint x y p2 _east_)
+	(DrawHollowArrowAtpoint x y p2 _east_)
 	(AddTextAttributeAtPoint layDef_Zero _th180_ p4 attMetersRight)
 
 	(MoveUp (HalfOf y))
