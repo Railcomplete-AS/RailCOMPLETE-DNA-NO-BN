@@ -519,9 +519,9 @@ end
 	Se også: http://www.stellwerke.de/signal/deutsch/ne.html#ne5
 ================================================================================--> 
 
-	<!-- Lua Model Check functions for 'JBTSA_SIG Signal' specific to NSI optical signals, with Lua code declared outside user's reach -->
+	<!-- Lua Model Check functions for 'JBTSA_SIG Signal' specific to NO-BN NSI optical signals, with Lua code declared outside user's reach -->
 	<LuaFunction Name="NOBN_sig_chkSafetyDistanceFromSignalToOcsPole()" ReturnType="String"
-		Description="Checks whether Returns the formated short name extracted from a main/distant signal's Code, e.g. '4313UL' or 'UL4313' => '4313(UL)'." >
+		Description="Checks whether this signal object is inside a radius of 6 meter from an OCS pole." >
         <Constructor>String NOBN_sig_chkSafetyDistanceFromSignalToOcsPole()</Constructor>
         <Formula>
 			function NOBN_sig_chkSafetyDistanceFromSignalToOcsPole()
@@ -530,14 +530,15 @@ end
 				--Preamble - called from a relevant object type?
 				if      RcType ~= rctype_EtcsEoA
 					and RcType ~= rctype_Signal
+					and RcType ~= rctype_TrackSignal
 					and RcType ~= rctype_BridgeAndFrostDoorSignal
-					and RcType ~= "SA-SIG Planovergang"
+					and RcType ~= rctype_LevelCrossingSignalTowardsRoad
 					and RcType ~= rctype_LevelCrossingSignalTowardsRoad
 				then 
 					return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
 						
 				elseif PortalMounted then
-					return "WARNING - Check manually that no high voltage instllation is within safety distance from object in portal.",_warning
+					return "WARNING - Check manually that no high voltage installation is within safety distance from object in portal.",_warning
 
 				elseif RcType == rctype_EtcsEoA then
 					return "OK - Markerboard on the ground - Safety distance to OCS pole is not relevant.",_ok
@@ -559,13 +560,11 @@ end
 					local count = getCollectionLength(nearbyObjects)
 					local UpdateObjects = {}
 					if count == 0 then 
-						return "OK - No OCS pole tolerance "..tolerance.." meters.",_ok
+						return "OK - No OCS pole within tolerance "..tolerance.." meters.",_ok
 					else
 						local i = 0
 						local shortestDistance = math.huge
-						local s = "WARNING - OCS pole"
-						if (count &gt; 1) then s = s.."s" end
-						s = s.." ["
+						local s = "WARNING - OCS pole"..(count &gt; 1 and "s " or " ") --Singular of plural form
 						while i ~= count do
 							d = RC__getDistance2D(nearbyObjects[i]) 
 							if d &lt; shortestDistance then shortestDistance = d end
@@ -574,8 +573,7 @@ end
 							i = i+1
 							if i ~= count then s = s..", " end
 						end
-						s = s.."]"
-						return string.format("%.03f: %s located inside horizontal tolerance %.3f meters.",shortestDistance,s,tolerance),UpdateObjects,_warning
+						return string.format("%.03f: %s located inside a circle of radius %.3f meters.",shortestDistance,s,tolerance),UpdateObjects,_warning
 					end
 				end
 			end
@@ -665,8 +663,9 @@ end
 				>
 
 		<RelationSpace>signal</RelationSpace>
-		<AttachmentCategory Name="signal" />
-			
+		 <!-- Note: When  PassAttachmentToTarget is true, then objects attached to it, even if through an intermediate object, will have their "Attachment" property set to the signal. -->
+		<AttachmentCategory Name="signal" PassAttachmentToTarget="true" />
+
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED" /> -->
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
@@ -1897,7 +1896,8 @@ end
 				>
 
 		<RelationSpace>signal</RelationSpace>
-		<AttachmentCategory Name="signal" />
+		 <!-- Note: When  PassAttachmentToTarget is true, then objects attached to it, even if through an intermediate object, will have their "Attachment" property set to the signal. -->
+		<AttachmentCategory Name="signal" PassAttachmentToTarget="true" />
 		<AttachTo Category="stolpe_med_fot" />
 		<AttachTo Category="signal" />
 
@@ -1917,9 +1917,6 @@ end
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA" />
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_SIG" />
 
-		<LuaExpression Name="IsyPostnotat" ><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
-
-
 		<Variants DefaultValue="Togsporsignal" >
 			<Variant Name="Togsporsignal 1-begrep" >
 			</Variant>
@@ -1931,7 +1928,20 @@ end
 			</Variant>
 		</Variants>
 
-<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Model3D"/>
+
+		<LuaExpression Name="IsyPostnotat" ><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression> 
+
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_SafetyDistanceFromSignalToOcsPole" DisplayName="Sikkerhetsavstand til KL" 
+			Description="Below 6 meter: Warning – Signal is too close to OCS pole, a potential HVAC hazard for maintenance personnel.\nAbove 6 meter: OK – No known HVAC danger to personnel." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_LeftSideDistanceFromSignalToTrack" DisplayName="Avstand til spor venstre"
+			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_RightSideDistanceFromSignalToTrack" DisplayName="Avstand til spor høyre"
+			Description="Dwarf signal:\Below 2.37m: Error – Signal too close to track.\nFrom 2.37m to 2.77m: Warning – Within tolerance, potentially too close to track.\nAbove 2.77m: OK – Far enough from track.\n\nOther signals:\nBelow 2.52m: Error - Signal too close to track.\nFrom 2.52m to 2.92m: Warning - Within tolerance, potentially too close to track.\nAbove 2.92m: OK - Far enough from track.\n\nThe calculations take into account the nose/coach midpoint curvature extension." />
+		
+		<LuaExpression Name="mc_SafetyDistanceFromSignalToOcsPole" IsModelCheck ="true" ><Formula>NOBN_sig_chkSafetyDistanceFromSignalToOcsPole()</Formula></LuaExpression>
+		<LuaExpression Name="mc_LeftSideDistanceFromSignalToTrack" IsModelCheck ="true" ><Formula>NOBN_sig_chkLeftSideDistanceFromSignalToTrack()</Formula></LuaExpression>
+		<LuaExpression Name="mc_RightSideDistanceFromSignalToTrack" IsModelCheck ="true" ><Formula>NOBN_sig_chkRightSideDistanceFromSignalToTrack()</Formula></LuaExpression>
 
 		<LuaExpression Name="Model3D_0.Model3DName" ><Formula>_JBTSA_SIG_Togsporsignal_Model3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_SIG_Togsporsignal_Model3DName()" ReturnType="String" HideFromUser="false"
@@ -2099,7 +2109,8 @@ end
 				>
 				
 		<RelationSpace>signal</RelationSpace>
-		<AttachmentCategory Name="signal" />
+		 <!-- Note: When  PassAttachmentToTarget is true, then objects attached to it, even if through an intermediate object, will have their "Attachment" property set to the signal. -->
+		<AttachmentCategory Name="signal" PassAttachmentToTarget="true" />
 
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
@@ -2185,7 +2196,8 @@ end
 				>
 				
 		<RelationSpace>signal</RelationSpace>
-		<AttachmentCategory Name="signal" />
+		 <!-- Note: When  PassAttachmentToTarget is true, then objects attached to it, even if through an intermediate object, will have their "Attachment" property set to the signal. -->
+		<AttachmentCategory Name="signal" PassAttachmentToTarget="true" />
 
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
@@ -2278,7 +2290,8 @@ end
 				>
 				
 		<RelationSpace>signal</RelationSpace>
-		<AttachmentCategory Name="signal" />
+		 <!-- Note: When  PassAttachmentToTarget is true, then objects attached to it, even if through an intermediate object, will have their "Attachment" property set to the signal. -->
+		<AttachmentCategory Name="signal" PassAttachmentToTarget="true" />
 
 		<xpp:expand select="NOBN_com_SYMBOLFRAME" />
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___ANGULAROFFSET_VAR" />
