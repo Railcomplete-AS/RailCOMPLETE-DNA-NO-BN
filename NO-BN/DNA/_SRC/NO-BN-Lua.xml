@@ -90,24 +90,31 @@
 						r.Relation.ReverseRelatesTo.Min	1
 						r.ReverseRelations				Name-of-related-object(1 reverse relation found)
 					--]]
-					ss1 = ss:gsub("%-","%%-").."/"
+					--[[
+						Note: We might have relation prompt texts such as "Is xyzzy for xyzzy_charger/multi_xyxxz/buzzer",
+						or just "Is xyzzy for multi_xyxxz", or just "Is xyzzy for buzzer". Don't accept partial word match.
+						I.e., our search pattern must be followed by either slash '/' or end-of-line '$'.
+						Also, we must start by substitution of all '-' with '%-', since '-' is a special character for match().
+					--]]
+					ss1 = ss:gsub("%-","%%-").."/" 
 					ss2 = ss:gsub("%-","%%-").."$"
-					t1 = r.ReverseRelationPromptText:match(ss1) --Look for object's own sourcespace among the first targets mentioned by the reverse relation...
-					t2 = r.ReverseRelationPromptText:match(ss2) --or as the very last target mentioned ('$' is the Lua matching pattern for "end of string")...
-					--if i == 0 then return ss,"a",t1,"b",t2,"c",r.ReverseRelationPromptText:match(string.gsub("kl-bryter","%-","%%-")),"d" end
+					t1 = (r.ReverseRelationPromptText:match(ss1) == ss)
+					t2 = (r.ReverseRelationPromptText:match(ss2) == ss)
+					--if true then return "Someone points to me = ".. ((t1 or t2) and "Yes" or "No") end
 					if t1 or t2 then
-						--if true then return i,r.ReverseRelationPromptText,ss, r.ReverseRelationPromptText:match(ss) end
 						nForward = getCollectionLength(r.Relations)
 						minForward = r.Relation.RelatesTo.Min
-						--if true and i == 0 then return nRel,i,"---",nForward,minForward,r.RelationPromptText,"---",nReverse,minReverse,r.ReverseRelationPromptText end
+						--if true then return nRel,i,"---",nForward,minForward,r.RelationPromptText,"---",nReverse,minReverse,r.ReverseRelationPromptText end
 						if nForward &lt; minForward then return _frames.UNFINISHED[_language] end
 					end
 			
-					t3 = r.RelationPromptText:match(ss1) --Look for object's own sourcespace among the first targets mentioned by the forward relation...
-					t4 = r.RelationPromptText:match(ss2) --or as the very last target mentioned ('$' is the Lua matching pattern for "end of string")...
+					t3 = (r.RelationPromptText:match(ss1) == ss)
+					t4 = (r.RelationPromptText:match(ss2) == ss)
+					--if true then return "I point to someone = ".. ((t3 or t4) and "Yes" or "No") end
 					if t3 or t4 then
 						nReverse = getCollectionLength(r.ReverseRelations)
 						minReverse = r.Relation.ReverseRelatesTo.Min
+						--if true then return nRel,i,"---",nForward,minForward,r.RelationPromptText,"---",nReverse,minReverse,r.ReverseRelationPromptText end
 						if nReverse &lt; minReverse then return _frames.UNFINISHED[_language] end
 					end
 				end
