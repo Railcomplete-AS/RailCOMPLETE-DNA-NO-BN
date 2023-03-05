@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -588,19 +588,29 @@ end
         <Formula>
 			function NOBN_sig_chkDistanceFromSignalToTrack(side)
 				side = side and side:lower() or "(no arg)"				
-				if side ~= "left" and side ~= "right" then return "ERROR Function should be called with argument 'right' or 'left' ["..side.."]." end
-				if Alignment == nil then return "UNFINISHED - Signal must first be assigned to an alignment to deduce its own direction." end
-				if (DwarfSignal == "Ja" and MainSignal == "-" and PortalMounted) then return "WARNING - Shunting signal mounted in portal. Please do manual check.",_warning end
---2021-01-12 CLFEY: No warning just if high above but outside lateral problem distance.
---if (RelativeElevation &gt; 0.3) then return "WARNING - Signal mounted outside normal elevations. Please do manual check.",_warning end
-				tracks = getClosestAlignments(rctype_Track):filter(function (x) return (side:upper() == "RIGHT" and 1 or -1) * getAlignmentInfo(x.id).DistanceToAlignment &lt; 0 end)
-				if getCollectionLength(tracks) == 0 then return "OK - No tracks to the "..side..".",_ok end
+				if side ~= "left" and side ~= "right" then
+					return "ERROR Function should be called with argument 'right' or 'left' ["..side.."]."
+				end
+				if Alignment == nil then
+					return "UNFINISHED - Signal must first be assigned to an alignment to deduce its own direction."
+				end
+				if (DwarfSignal == "Ja" and MainSignal == "-" and PortalMounted) then
+					return "WARNING - Shunting signal mounted in portal. Please do manual check.",_warning
+				end
+				if (RelativeElevation &gt; 0.3) then
+					return "WARNING - Signal mounted outside normal elevations. Please do manual check.",_warning 
+				end
+				tracks = getClosestAlignments(rctype_Track):
+					filter(function (x) return (side == "right" and 1 or -1) * getAlignmentInfo(x.id).DistanceToAlignment &lt; 0 end)
+				if getCollectionLength(tracks) == 0 then
+					return "OK - No tracks to the "..side..".",_ok
+				end
 				ai = getAlignmentInfo(tracks[0].id)
 				curveRadius = ai.CurveRadius
 				Ki = 0.0
 				Ky = 0.0
 				tolerance = 2.12
-				--Many signals are covered with these formulas, but not all - use your insight wiesely:
+				--Many signals are covered with these formulas, but not all - use your insight wisely:
 				if (DwarfSignal ~= "-" and MainSignal == "-") then
 					--Freestanding dwarf signal
 					tolerance = tolerance + 0.25
@@ -610,6 +620,7 @@ end
 				distToAlignment = math.abs(ai.DistanceToAlignment)
 				if (curveRadius ~= math.huge) then
 					--Std Bane NOR approximation formulae:
+					--See ..\Google Drive\RC_DEV\I - Issues\Attachments\2020-03-17 Taylor series expansion for RC-DisplayEnvelope (issue #6338)
 					Ki = 81000.0/(2*curveRadius)
 					Ky = 63000.0/(2*curveRadius)
 				end
@@ -619,13 +630,13 @@ end
 					tolerance = tolerance + (Ki/1000.0)
 				end
 				if (distToAlignment &lt;= tolerance) then
-					return string.format("%.3f: ERROR - Signal too close to track '%s' w.r.t. tolerance %.3f.",
+					return string.format("%.3f: ERROR - Signal too close to track '%s' wrt. tolerance %.3f.",
 						distToAlignment,ai.AlignmentName,tolerance),_error
 				elseif (distToAlignment &gt; tolerance and distToAlignment &lt;= (tolerance + 0.4)) then
 					return string.format("%.3f: WARNING - Signal close to track '%s', less than 0.4 m from tolerance %.3f.",
 						distToAlignment,ai.AlignmentName,tolerance),_warning
 				else
-					return string.format("%.3f: OK - Signal is far from track '%s' w.r.t. tolerance %.3f.",
+					return string.format("%.3f: OK - Signal is far from track '%s' wrt. tolerance %.3f.",
 						distToAlignment,ai.AlignmentName,tolerance),_ok
 				end
 			end

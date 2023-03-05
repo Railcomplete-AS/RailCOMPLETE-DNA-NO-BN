@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -12,7 +12,7 @@
 
 
 <!--========================================================================================================
-    Common
+    General modelcheck XPPq macros and functions
 =========================================================================================================-->
 	<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" /> -->
 <xpp:define name="NOBN_com_CHK_NUMBER_OF_OCP_AREAS" >
@@ -25,23 +25,6 @@
 	</xpp:bloc>
 </xpp:define>
 
-<xpp:define name="NOBN_com_CHK_CONNECTION___CONTINUATION" >
-	<xpp:bloc>
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AlignmentType" DisplayName="Alignment type" Description="The alignments must be compatible." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Continuity" DisplayName="Continuity" Description="The alignments shall end in the same XY point (seen from the above)." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Tangent" DisplayName="Tangent direction" Description="The alignments shall share the same tangent (i.e., XY-plane differentiability)." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Elevation" DisplayName="Elevation" Description="The alignments shall share the same elevation (Z-coordinate)." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Gradient" DisplayName="Gradient" Description="The alignments shall share the same gradient (pitch [o/oo])." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Cant" DisplayName="Cant" Description="The alignments shall share the same cant (roll / superelevation [mm]) where they meet." />
-		<LuaExpression Name="mc_AlignmentType" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionAlignmentCompatibility()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Continuity" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionContinuity()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Tangent" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionTangentMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Elevation" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionElevationMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Gradient" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionGradientMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Cant" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionCantMatch()</Formula></LuaExpression>
-	</xpp:bloc>
-</xpp:define>
-
 
 
     <LuaFunction Name="NOBN_com_chkNumberOfOcpAreas()" ReturnType="String"
@@ -51,17 +34,158 @@
 			function NOBN_com_chkNumberOfOcpAreas()
 				areas = RcArea:filter(function(x) return x.RcType == rctype_OcpArea end)
 				if (areas.Count == 0) then
-					--TODO: Return the '_unfinished' symbol, but remove this check from objects that do not need it (a NOBN_com_CHK_NUMBER_OF_OCP_AREAS macro):
 					return "0: UNFINISHED - Object does not belong to any Operation / Control area (OCP). Create an Rc-Area of type 'OCP' around the object."
-					-- NB: Leave it to the object's own SymbolFrame formula to define whether a 'Unfinished' frame should be shown or not
+					-- NB: Just return a text, then leave it to the object's setSymbolFrame formula to define whether an '_unfinished' frame should be shown or not.
 				elseif (areas.Count == 1) then 
-					return _ok,areas[0].code..": OK - Object belongs to just one Operation / Control (OCP) area."
+					return _ok, areas[0].code..": OK - Object belongs to just one Operation / Control (OCP) area."
 				else 
-					return _warning,areas.Count..": WARNING - Object belongs to several Operation / Control (OCP) areas."
+					return _warning, areas.Count..": WARNING - Object belongs to several Operation / Control (OCP) areas."
 				end
 			end
         </Formula>
     </LuaFunction> 
+
+
+
+	<LuaFunction Name="NOBN_com_triggerNeighbourObjectModelchecks()" ReturnType="String"
+		Description="Triggers modelchecking in all neighbour objects of the specified object type." >
+		<Constructor>NOBN_com_triggerNeighbourObjectModelchecks(String objectType)</Constructor>
+		<Formula>
+			function NOBN_com_triggerNeighbourObjectModelchecks(objectType)
+				if type(objectType) ~= "string" then
+					return 0,{}, _info("ERROR - Bad object type '"..objectType.."'.")
+				end
+				if Alignment == nil then
+					--Cannot do graph search without alignments:
+					return 0,{}, _info("UNFINISHED - Missing own alignment.")
+				end
+				prev = getDownObjectsWithPaths(objectType)
+				succ = getUpObjectsWithPaths(objectType)
+				all = getUnionOfCollections({prev,succ}) --all is now a collection of tuples {Object,Path}
+				n = getCollectionLength(all)
+				t = {}
+				for i = 0,n-1 do
+					table.insert(t,all[i].Object)
+				end
+				return n,t, _info(n.." items of "..objectType.." have been modelchecked.")
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_com_chkDistanceToClosestNeighbour()" ReturnType="String"
+		Description="Checks distance to the closest neighbouring object of the specified object type in the specified search direction [ up | down ]. Error if below the specified error threshold, warning if below the specified warning threshold." >
+		<Constructor>String NOBN_com_chkDistanceToClosestNeighbour(String objectType, Double errorThreshold, Double warningThreshold, Dir searchDir)</Constructor>
+		<Formula>
+			function NOBN_com_chkDistanceToClosestNeighbour(objectType,errorThreshold,warningThreshold,searchDir)
+				if searchDir ~= "up" and searchDir ~= "down" then
+					return "ERROR - Bad search direction '"..searchDir.."' - must be either 'up' or 'down'.",_error
+				end
+				if type(errorThreshold) ~= "number" or type(warningThreshold) ~= "number" or errorThreshold &lt; 0 or warningThreshold &lt;= errorThreshold then
+					return "ERROR - Thresholds must be numbers such that 0 &lt; errorThreshold &lt; warningThreshold.",_error
+				end
+				if type(objectType) ~= "string" then
+					return "ERROR - Object type must be a string containing the object type's 'RcType' property.",_error
+				end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment.",_error
+				end
+				closest = (searchDir == "down") and getDownObject(objectType) or getUpObject(objectType)
+				if closest == nil then
+					return "OK - No "..objectType:sub(10).." within reach in the '"..searchDir.."' direction.",_ok
+				end
+				dist = getDistance(closest)
+				t = string.format("%.3f", dist)
+				if dist &lt; errorThreshold then 
+					return string.format("%.03f: ERROR - %s '%s' too close in '%s' direction, outside tolerance %0.3f m.",
+						dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_error
+				elseif dist &lt; warningThreshold then 
+					return string.format("%.03f: WARNING - %s '%s' close in '%s' direction, but within tolerance %0.3f m.",
+						dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_warning
+				else
+					return string.format("%.03f: OK - %s '%s' is nearest in '%s' direction, farther away than tolerance %0.3f m.",
+						dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_ok
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+<!--========================================================================================================
+    Connection object modelcheck XPPq macros and functions
+=========================================================================================================-->
+<xpp:define name="NOBN_com_CHK_CONNECTION___CONTINUATION" >
+	<xpp:bloc>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AlignmentType" DisplayName="Alignment type"
+			Description="The alignments must be compatible." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Continuity" DisplayName="Continuity"
+			Description="The alignments shall end in the same XY point (seen from the above)." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Tangent" DisplayName="Tangent direction"
+			Description="The alignments shall share the same tangent (i.e., XY-plane differentiability)." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Elevation" DisplayName="Elevation"
+			Description="The alignments shall share the same elevation (Z-coordinate)." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Gradient" DisplayName="Gradient"
+			Description="The alignments shall share the same gradient (pitch [o/oo])." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Cant" DisplayName="Cant"
+			Description="The alignments shall share the same cant (roll / superelevation [mm]) where they meet." />
+		<LuaExpression Name="mc_AlignmentType" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionAlignmentCompatibility()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Continuity" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionContinuity()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Tangent" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionTangentMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Elevation" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionElevationMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Gradient" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionGradientMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Cant" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionCantMatch()</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_trk_CHK_CONNECTION___CROSSING" >
+	<xpp:bloc>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AlignmentType" DisplayName="Alignment type"
+			Description="Both alignments must be railway tracks." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Continuity" DisplayName="Continuity"
+			Description="The crossing shall be located where the tracks' center lines cross (as seen from the above, ignoring Z)." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Tangent" DisplayName="Tangent direction"
+			Description="The tracks are expected to cross at 2:9 or 2:12 (corresponding to 1:9 or 1:12 coupled switches)." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Elevation" DisplayName="Elevation"
+			Description="The tracks shall share the same elevation (Z-coordinate) at the crossing point." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_GradientAndCant" DisplayName="Rail plane"
+			Description="The tracks shall share the same combined gradient and cant (belonging to a possibly inclined plane in space)." />
+		<LuaExpression Name="mc_AlignmentType" IsModelCheck="true" > <Formula>NOBN_com_chkConnectionAlignmentCompatibility()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Continuity" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionContinuity()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Tangent" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionTangentMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Elevation" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionElevationMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_GradientAndCant" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionGradientAndCantMatch()</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+			
+
+
+<xpp:define name="NOBN_trk_CHK_CONNECTION___SWITCH" >
+	<xpp:bloc>
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AlignmentType" DisplayName="Alignment type"
+			Description="Both alignments must be railway tracks." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Continuity" DisplayName="Continuity"
+			Description="The switch's stock rail joint must be located on its own alignment, the branching track shall start or end in the through track." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Tangent" DisplayName="Tangent direction"
+			Description="The tracks shall share the same tangent where they meet (i.e., XY-plane differentiability when turning out) ." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Elevation" DisplayName="Elevation"
+			Description="The through track and the branch track shall share the same elevation at the stock rail joint (Z-coordinate)." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Gradient" DisplayName="Gradient"
+			Description="The tracks shall share the same  gradient (pitch) at the stock rail joint [o/oo]." />
+		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Cant" DisplayName="Cant"
+			Description="The tracks shall share the same cant (roll / superelevation) at the stock rail joint [mm]." />
+		<LuaExpression Name="mc_AlignmentType" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionAlignmentCompatibility()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Continuity" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionContinuity()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Tangent" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionTangentMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Elevation" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionElevationMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Gradient" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionGradientMatch()</Formula></LuaExpression>
+		<LuaExpression Name="mc_Cant" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionCantMatch()</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+			
 
 
 	<LuaFunction Name="NOBN_com_chkConnectionAlignmentCompatibility()" ReturnType="String"
@@ -69,7 +193,9 @@
 		<Constructor>String NOBN_com_chkConnectionAlignmentCompatibility()</Constructor>
 		<Formula>
 			function NOBN_com_chkConnectionAlignmentCompatibility()
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
 				if RcType == rctype_OcsIsolator then
 					compatibility = { 
 						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
@@ -91,7 +217,7 @@
 				else
 					if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
 					if TargetAlignment and Alignment.id == TargetAlignment.id then 
-						return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment object is same as own alignment object.",_error
+						return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment object cannot be the same as own alignment object.",_error
 					end
 					if TargetAlignment.RcType ~= Alignment.RcType then
 						return Alignment.RcType.."/"..TargetAlignment.RcType..": ERROR - Target alignment type must be same as own alignment type ("..Alignment.RcType..").",_error
@@ -102,6 +228,8 @@
 			end
 		</Formula>
 	</LuaFunction>
+
+
 	
 	<LuaFunction Name="NOBN_com_chkConnectionContinuity()" ReturnType="String"
 		Description="Checks that alignments are well-positioned where they meet (in the XY-plane)." >
@@ -109,8 +237,12 @@
 		<Formula>
 			function NOBN_com_chkConnectionContinuity()
 				tol = 0.030 -- meter
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
+					return "UNFINISHED - Missing target alignment."
+				end
 
 				if RcType == rctype_OcsIsolator then 
 					if TargetAlignment == nil then
@@ -173,27 +305,35 @@
 				else
 					return RcType..": ERROR - Bad connection object type",_error
 				end
-				if (delta &lt; tol/2) then return string.format("%.03f",delta) .. ": OK – Alignments meet at connection within 50% of tolerance " .. string.format("%.03f", tol).." m.",_ok
-				elseif (delta &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Alignments should be closer at connection, but are still within tolerance " .. string.format("%.03f", tol).." m.",_warning
-				else return string.format("%.03f",delta) .. ": ERROR: Alignments are too far apart at connection, outside tolerance " .. string.format("%.03f", tol).." m.",_error end
+				
+				if (delta &lt; tol/2) then
+					return string.format("%.03f",delta) .. ": OK – Alignments meet at connection within 50% of tolerance " .. string.format("%.03f", tol).." m.",_ok
+				elseif (delta &lt; tol) then
+					return string.format("%.03f",delta) .. ": WARNING – Alignments should be closer at connection, but are still within tolerance " .. string.format("%.03f", tol).." m.",_warning
+				else
+					return string.format("%.03f",delta) .. ": ERROR: Alignments are too far apart at connection, outside tolerance " .. string.format("%.03f", tol).." m.",_error end
 			end
 		</Formula>
 	</LuaFunction>
 	
 	
 	
-	<LuaFunction Name="NOBN_com_chkConnectionTangentMatch()" ReturnType="String"
+	<LuaFunction Name="NOBN_trk_chkConnectionTangentMatch()" ReturnType="String"
 		Description="Checks that alignment tangents (directions) match where they meet (in the XY-plane)." >
-		<Constructor>String NOBN_com_chkConnectionTangentMatch()</Constructor>
+		<Constructor>String NOBN_trk_chkConnectionTangentMatch()</Constructor>
 		<Formula>
-			function NOBN_com_chkConnectionTangentMatch()
+			function NOBN_trk_chkConnectionTangentMatch()
 				tol = 1.0  -- decimal degrees (Deutsche Bahn allegedly allows 1 degree in discontinuities)
 				maxNumber = 20 -- 2:(maxNumber*2) is the steepest crossing that we will classify as a crossing and not as an engineering error
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
+					return "UNFINISHED - Missing target alignment."
+				end
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
-						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+					return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
 				elseif RcType == rctype_TrackContinuation 
 				or RcType == rctype_HighVoltageConductorContinuation 
@@ -201,20 +341,23 @@
 				or RcType == rctype_OcsIsolator
 				then
 					if ExtendingFromEnd then 
-						t1 = Alignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
+						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.EndDir)
 					else
-						t1 = Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir * (180/math.pi)
+						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir)
 					end 
 					if ContinuingWithBegin then
-						t2 = TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir * (180/math.pi)
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir)
 					else
-						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.EndDir)
 					end
 					delta = ((90 + t2 - t1) % 180) - 90 --decimal degrees difference (alignments may be counterdirected)
-					if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
-					elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
+					if (math.abs(delta) &lt; tol / 2) then
+						return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
+					elseif (math.abs(delta) &lt; tol) then
+						return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
 							string.format("%.03f", tol).." degrees.",_warning
-					else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
+					else
+						return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
 					end
 			
 				elseif RcType == rctype_Switch then
@@ -224,17 +367,20 @@
 					p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
 					d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
 					d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
-					t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi) -- Can disregard Tangent.Z here, since only relative zize Y:X matters
+					t1 = math.deg(math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X)) -- Can disregard Tangent.Z here, since only relative zize Y:X matters
 					if d1 &lt; d2 then
-						t2 = TargetAlignment.RcAlignment.HorizontalProfile.StartDir * (180/math.pi)
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.StartDir)
 					else
-						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir * (180/math.pi)
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.EndDir)
 					end
 					delta = ((90 + t2 - t1) % 180) - 90 --decimal degrees difference (alignments may be counterdirected)
-					if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
-					elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
+					if (math.abs(delta) &lt; tol / 2) then
+						return string.format("%.03f",delta) .. ": OK - Tangents match within 50% of tolerance +/- " .. string.format("%.03f", tol).." degrees.",_ok
+					elseif (math.abs(delta) &lt; tol) then
+						return string.format("%.03f",delta) .. ": WARNING – Tangents match, but close to tolerance +/- " ..
 							string.format("%.03f", tol).." degrees.",_warning
-					else return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
+					else
+						return string.format("%.03f",delta) .. ": ERROR – Tangents are too different, outside tolerance +/- " .. string.format("%.03f", tol).." degrees.",_error
 					end
 			
 				elseif RcType == rctype_SwitchCrossing then
@@ -246,63 +392,63 @@
 					end
 					-- Can disregard Tangent.Z here, since only relative size Y:X matters:
 					t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi)
-					t2 = math.atan(getAlignmentInfo(TargetAlignment.id).Tangent.Y, getAlignmentInfo(TargetAlignment.id).Tangent.X) * (180/math.pi)
+					t2 = math.deg(math.atan(getAlignmentInfo(TargetAlignment.id).Tangent.Y, getAlignmentInfo(TargetAlignment.id).Tangent.X))
 			
-					x_1_9 = (180/math.pi) * math.atan(1/9) -- Single or double slip 1:9 point
-					x_1_12 = (180/math.pi) * math.atan(1/12) -- Single or double slip 1:12 point
-					x_2_9 = 2.0 * (180/math.pi) * math.atan(1/9) -- Crossing between four 1:9 switches in parallel tracks
-					x_2_12 = 2.0 *(180/math.pi) * math.atan(1/12) -- Crossing between four 1:12 switches in parallel tracks
+					x_1_9 = math.deg(math.atan(1/9)) -- Single or double slip 1:9 point
+					x_1_12 = math.deg(math.atan(1/12)) -- Single or double slip 1:12 point
+					x_2_9 = 2*math.deg(math.atan(1/9)) -- Crossing between four 1:9 switches in parallel tracks
+					x_2_12 = 2*math.deg(math.atan(1/12)) -- Crossing between four 1:12 switches in parallel tracks
 			
 					delta = math.abs(((90 + t2 - t1) % 180) - 90) --decimal degrees difference (alignments may be counterdirected)
 					d_1_9 = delta - x_1_9
 					d_1_12 = delta - x_1_12
 					d_2_9 = delta - x_2_9
 					d_2_12 = delta - x_2_12
-					crossingNumber = 1/math.tan(math.abs(delta*(math.pi/180))) --Add the angles between each track to the centerline between the tracks
+					crossingNumber = 1/math.tan(math.abs(math.rad(delta)) --Add the angles between each track to the centerline between the tracks
 				
 					-- If angle is close to 1:9 or 1:12 then the crossing is probably part of an Englishman (EKW, DKW), and not a crossing:
 					if math.abs(d_1_12) &lt; tol then 
 						if math.abs(d_1_12) &lt; (tol / 2) then 
 							return string.format("%.03f (1:%.03f): OK - Crossing tangents match 1:12 within 50%% of tolerance +/- %.03f degrees.", 
-								d_1_12, 1/math.tan(delta*(math.pi/180)), tol),_ok
+								d_1_12, 1/math.tan(math.rad(delta)), tol),_ok
 						else 
 							return string.format("%.03f (1:%.03f): WARNING – Crossing tangents match 1:12, but close to tolerance +/- %.03f degrees.", 
-								d_1_12, 1/math.tan(delta*(math.pi/180)), tol),_warning
+								d_1_12, 1/math.tan(math.rad(delta)), tol),_warning
 						end
 					elseif math.abs(d_1_9) &lt; tol then 
 						if math.abs(d_1_9) &lt; (tol / 2) then 
 							return string.format("%.03f (1:%.03f): OK - Crossing tangents match 1:9 within 50%% of tolerance +/- %.03f degrees.",
-								d_1_9, 1/math.tan(delta*(math.pi/180)), tol),_ok
+								d_1_9, 1/math.tan(math.rad(delta)), tol),_ok
 						else 
 							return string.format("%.03f (1:%.03f): WARNING – Crossing tangents match 1:9, but close to tolerance +/- %.03f degrees.",
-								d_1_9, 1/math.tan(delta*(math.pi/180)), tol),_warning
+								d_1_9, 1/math.tan(math.rad(delta)), tol),_warning
 						end
 			
 					-- A standard crossing matches two symmetrical pairs of 1:9 or 1:12 switches (here called '2_9' and '2_12'):
 					elseif math.abs(d_2_12) &lt; tol then 
 						if math.abs(d_2_12) &lt; (tol / 2) then 
 							return string.format("%.03f (2:%.03f): OK - Crossing tangents match 2:12 within 50%% of tolerance +/- %.03f degrees.", 
-								d_2_12, 1/math.tan((delta/2)*(math.pi/180)), tol),_ok
-						else 
+								d_2_12, 1/math.tan(math.rad(delta/2)), tol),_ok
+						else
 							return string.format("%.03f (2:%.03f): WARNING – Crossing tangents match 2:12, but close to tolerance +/- %.03f degrees.", 
-								d_2_12, 1/math.tan((delta/2)*(math.pi/180)), tol),_warning
+								d_2_12, 1/math.tan(math.rad(delta/2)), tol),_warning
 						end
 					elseif math.abs(d_2_9) &lt; tol then 
 						if math.abs(d_2_9) &lt; (tol / 2) then 
 							return string.format("%.03f (2:%.03f): OK - Crossing tangents match 2:9 within 50%% of tolerance +/- %.03f degrees.",
-								d_2_9, 1/math.tan((delta/2)*(math.pi/180)), tol),_ok
+								d_2_9, 1/math.tan(math.rad(delta/2)), tol),_ok
 						else 
 							return string.format("%.03f (2:%.03f): WARNING – Crossing tangents match 2:9, but close to tolerance +/- %.03f degrees.",
-								d_2_9, 1/math.tan((delta/2)*(math.pi/180)), tol),_warning
+								d_2_9, 1/math.tan(math.rad(delta/2)), tol),_warning
 						end
 			
 					elseif crossingNumber &gt;= maxNumber then 
 						return string.format("%.03f (1:%.01f): ERROR - Crossing tangents are close to being parallel, check for engineering or measurement errors.",
-								delta, crossingNumber),_error
+							delta, crossingNumber),_error
 			
 					else
 						return string.format("%.03f (1:%.01f): WARNING – Crossing tangents do not fit 1:9, 1:12, 2:9 or 2:12 (single slip / double slip / 4 switches) within tolerance %.03f degrees", 
-								delta, 1/(2*math.tan((delta/2)*(math.pi/180))), tol),_warning
+							delta, 1/(2*math.tan(math.rad(delta/2))), tol),_warning
 					end
 				
 				else 
@@ -314,17 +460,21 @@
 
 
 	
-	<LuaFunction Name="NOBN_com_chkConnectionElevationMatch()" ReturnType="String"
+	<LuaFunction Name="NOBN_trk_chkConnectionElevationMatch()" ReturnType="String"
 		Description="Checks that alignment elevations (Z-coordinate) match at the connection." >
-		<Constructor>String NOBN_com_chkConnectionElevationMatch()</Constructor>
+		<Constructor>String NOBN_trk_chkConnectionElevationMatch()</Constructor>
 		<Formula>
-			function NOBN_com_chkConnectionElevationMatch()
+			function NOBN_trk_chkConnectionElevationMatch()
 				tol = 0.030  -- meter
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
+					return "UNFINISHED - Missing target alignment."
+				end
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
-						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+					return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
 				elseif RcType == rctype_TrackContinuation 
 				or RcType == rctype_HighVoltageConductorContinuation 
@@ -373,23 +523,30 @@
 				if RC__isNan(z1) then z1 = 0 end
 				if RC__isNan(z2) then z2 = 0 end
 				delta = z2 - z1 -- meter difference in elevations at connection
-				if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Elevations match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
-				elseif (math.abs(delta) &lt; tol) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Elevations match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
-				else return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Elevations are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
+				if (math.abs(delta) &lt; tol / 2) then
+					return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Elevations match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
+				elseif (math.abs(delta) &lt; tol) then
+					return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Elevations match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
+				else
+					return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Elevations are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
 			end
 		</Formula>
 	</LuaFunction>
 	
 	
 	
-	<LuaFunction Name="NOBN_com_chkConnectionGradientMatch()" ReturnType="String"
+	<LuaFunction Name="NOBN_trk_chkConnectionGradientMatch()" ReturnType="String"
 		Description="Checks the continuity of gradient through the connection." >
-		<Constructor>NOBN_com_chkConnectionGradientMatch()</Constructor>
+		<Constructor>NOBN_trk_chkConnectionGradientMatch()</Constructor>
 		<Formula>
-			function NOBN_com_chkConnectionGradientMatch()
+			function NOBN_trk_chkConnectionGradientMatch()
 				tol = 1.0  -- o/oo (per mille, elevation change per thousand meters running length)
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
+					return "UNFINISHED - Missing target alignment."
+				end
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
@@ -427,7 +584,7 @@
 					--Own alignment's gradient and direction at stock rail joint:
 					t = getAlignmentInfo().Tangent
 					g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-					t1 = math.atan(t.Y,t.X) * (180/math.pi)
+					t1 = math.deg(math.atan(t.Y,t.X))
 			
 					--Target alignment's gradient and direction where branch track takes off from own alignment:
 					p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
@@ -436,11 +593,11 @@
 					if d1 &lt; d2 then
 						t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t2 = (180/math.pi) * math.atan(t.Y, t.X)
+						t2 = math.deg(math.atan(t.Y, t.X))
 					else
 						t = TargetAlignment.RcAlignment.EndTangent
-						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t2 = (180/math.pi) * math.atan(t.Y, t.X)
+						g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
+						t2 = math.deg(math.atan(t.Y, t.X))
 					end
 			
 				else 
@@ -465,22 +622,25 @@
 			end
 		</Formula>
 	</LuaFunction>
-	
-	
-	
-	
-	<LuaFunction Name="NOBN_com_chkConnectionCantMatch()" ReturnType="String"
+
+
+
+	<LuaFunction Name="NOBN_trk_chkConnectionCantMatch()" ReturnType="String"
 		Description="Checks the cant (superelevation) continuity through the connection." >
-		<Constructor>NOBN_com_chkConnectionCantMatch()</Constructor>
+		<Constructor>NOBN_trk_chkConnectionCantMatch()</Constructor>
 		<Formula>
-			function NOBN_com_chkConnectionCantMatch()
+			function NOBN_trk_chkConnectionCantMatch()
 				tol = 0.010  -- cant (superelevation) [m]
 				msg = ""
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
+				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
+					return "UNFINISHED - Missing target alignment."
+				end
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
-						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
+					return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
 				elseif RcType == rctype_TrackContinuation 
 				or RcType == rctype_HighVoltageConductorContinuation 
@@ -524,56 +684,17 @@
 				-- Presentation in meters:
 				--TODO: Check all combinations of CW, CCW and track directions
 				delta = delta/1000
-				if (math.abs(delta) &lt; tol / 2) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Cants match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
-				elseif (math.abs(delta) &lt; tol) then return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Cants match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
-				else return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Cants are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
+				if (math.abs(delta) &lt; tol / 2) then
+					return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": OK - Cants match within 50% of tolerance +/- " .. string.format("%.03f", tol).." m.",_ok
+				elseif (math.abs(delta) &lt; tol) then
+					return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": WARNING – Cants match, but close to tolerance +/- " .. string.format("%.03f", tol).." m.",_warning
+				else
+					return string.format("%.03f (%.03f / %.03f)",delta,z1,z2) .. ": ERROR – Cants are too different, outside tolerance +/- " .. string.format("%.03f", tol).." m.",_error end
 			end
 		</Formula>
 	</LuaFunction>
 
-
 	
-	
-	
-<!--========================================================================================================
-    TRACK
-=========================================================================================================-->
-			
-<xpp:define name="NOBN_trk_CHK_CONNECTION___CROSSING" >
-	<xpp:bloc>
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AlignmentType" DisplayName="Alignment type" Description="Both alignments must be railway tracks." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Continuity" DisplayName="Continuity" Description="The crossing shall be located where the tracks' center lines cross (as seen from the above, ignoring Z)." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Tangent" DisplayName="Tangent direction" Description="The tracks are expected to cross at 2:9 or 2:12 (corresponding to 1:9 or 1:12 coupled switches)." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Elevation" DisplayName="Elevation" Description="The tracks shall share the same elevation (Z-coordinate) at the crossing point." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_GradientAndCant" DisplayName="Rail plane" Description="The tracks shall share the same combined gradient and cant (belonging to a possibly inclined plane in space)." />
-		<LuaExpression Name="mc_AlignmentType" IsModelCheck="true" > <Formula>NOBN_com_chkConnectionAlignmentCompatibility()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Continuity" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionContinuity()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Tangent" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionTangentMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Elevation" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionElevationMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_GradientAndCant" IsModelCheck="true" ><Formula>NOBN_trk_chkConnectionGradientAndCantMatch()</Formula></LuaExpression>
-	</xpp:bloc>
-</xpp:define>
-			
-<xpp:define name="NOBN_trk_CHK_CONNECTION___SWITCH" >
-	<xpp:bloc>
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_AlignmentType" DisplayName="Alignment type" Description="Both alignments must be railway tracks." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Continuity" DisplayName="Continuity" Description="The switch's stock rail joint must be located on its own alignment, the branching track shall start or end in the through track." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Tangent" DisplayName="Tangent direction" Description="The tracks shall share the same tangent where they meet (i.e., XY-plane differentiability when turning out) ." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Elevation" DisplayName="Elevation" Description="The through track and the branch track shall share the same elevation at the stock rail joint (Z-coordinate)." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Gradient" DisplayName="Gradient" Description="The tracks shall share the same  gradient (pitch) at the stock rail joint [o/oo]." />
-		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_Cant" DisplayName="Cant" Description="The tracks shall share the same cant (roll / superelevation) at the stock rail joint [mm]." />
-		<LuaExpression Name="mc_AlignmentType" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionAlignmentCompatibility()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Continuity" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionContinuity()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Tangent" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionTangentMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Elevation" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionElevationMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Gradient" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionGradientMatch()</Formula></LuaExpression>
-		<LuaExpression Name="mc_Cant" IsModelCheck="true" ><Formula>NOBN_com_chkConnectionCantMatch()</Formula></LuaExpression>
-	</xpp:bloc>
-</xpp:define>
-			
-
-
-
 	
 	<LuaFunction Name="NOBN_trk_chkConnectionGradientAndCantMatch()" ReturnType="String"
 		Description="Checks the cant (superelevation) continuity through the connection." >
@@ -583,11 +704,13 @@
 				-- 'CallingProperty' ["Var0" | "Var1"] identifies the intended custom property where the result is to be returned (since this function does not know otherwise who is calling)
 				tol = 0.300  -- Decimal degrees
 				msg = "" -- to be returned with _info(msg)
-				if Alignment == nil then return "UNFINISHED - Missing own alignment." end
-				--Drop distance2D check here - is covered in other test:
-				--if math.abs(DistanceToAlignment) &gt; 2e-3 then return string.format("%.03f",DistanceToAlignment)..
-				--	": WARNING - Distance (2D) to own alignment should be close to zero.",_warning end
-				if TargetAlignment == nil then return "UNFINISHED - Missing target alignment." end
+				if Alignment == nil then
+					return "UNFINISHED - Missing own alignment."
+				end
+				if TargetAlignment == nil then
+					return "UNFINISHED - Missing target alignment."
+				end
+
 				if RcType == rctype_SwitchCrossing then
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
@@ -606,7 +729,9 @@
 					-- Alignments' tangential, normalized, vectors at projection points [3D vector {X,Y,Z}]:
 					t1 = getAlignmentInfo().Tangent
 					t2 = getAlignmentInfo(TargetAlignment.id).Tangent
-					if t1 == nil or t2 == nil then return "UNFINISHED - Missing elevation data, cannot compute normal vector(s)." end
+					if t1 == nil or t2 == nil then
+						return "UNFINISHED - Missing elevation data, cannot compute normal vector(s)."
+					end
 			
 					-- Alignment direction phi wrt WCS East [rad]:
 					phi1 = math.atan(a1.Tangent.y,a1.Tangent.x)
@@ -625,7 +750,9 @@
 					-- 'this' is a point object:
 					cg = Alignment.AlignmentSystem.CantGauge
 					tcg = TargetAlignment.AlignmentSystem.CantGauge
-					if tcg ~= cg then return ": ERROR - cant gauges are not identical in the two alignments: "..string.format("%.3f / %.3f",cg,tcg),_error end 
+					if tcg ~= cg then
+						return ": ERROR - cant gauges are not identical in the two alignments: "..string.format("%.3f / %.3f",cg,tcg),_error
+					end 
 					if RC__isNan(h1) then 
 						h1 = 0.0
 						rho1 = 0.0
@@ -681,18 +808,22 @@
 				
 					--Assert normalized vectors:
 					d1 = math.sqrt(w1.x^2+w1.y^2+w1.z^2)
-					if math.abs(d1-1.000) > 4e-4 then return RC__round(d1,3)..": ERROR - w1 not unit vector.",_error end 
+					if math.abs(d1-1.000) > 4e-4 then
+						return RC__round(d1,3)..": ERROR - w1 not unit vector.",_error
+					end 
 					d2 = math.sqrt(w2.x^2+w2.y^2+w2.z^2)
-					if math.abs(d2-1.000) > 4e-4 then return RC__round(d2,3)..": ERROR - w2 not unit vector.",_error end 
+					if math.abs(d2-1.000) > 4e-4 then
+						return RC__round(d2,3)..": ERROR - w2 not unit vector.",_error
+					end 
 					
 					--Find 3D angle between normal vectors (knowing that cos(delta) = (w1.w2)/(|w1|*|w2|) - and both vectors are already of length 1. 
 					delta = math.acos(w1.x*w2.x + w1.y*w2.y + w1.z*w2.z) * 180/math.pi 
 			
 					if (CallingProperty == "Var1") then
 						return string.format("delta= %.04f",delta)
-						..string.format(", rho= %.04f / %.04f",rho1*180/math.pi,rho2*180/math.pi)
-						..string.format(", theta= %.04f / %.04f",theta1*180/math.pi,theta2*180/math.pi)
-						..string.format(", phi= %.04f / %.04f",phi1*180/math.pi,phi2*180/math.pi)
+						..string.format(", rho= %.04f / %.04f",math.deg(rho1),math.deg(rho2))
+						..string.format(", theta= %.04f / %.04f",math.deg(theta1),math.deg(theta2))
+						..string.format(", phi= %.04f / %.04f",math.deg(phi1),math.deg(phi2))
 					end
 			
 					if (CallingProperty == "Var2") then
@@ -710,9 +841,12 @@
 					return RcType..": ERROR - Bad connection object type",_error, _info(msg)
 				end
 			
-				if (math.abs(delta) &lt; tol / 2.0) then return string.format("%.03f",delta) .. ": OK - Normal vectors match within 50% of tolerance +/- " .. string.format("%.03f",tol).." degrees.",_ok, _info(msg)
-				elseif (math.abs(delta) &lt; tol) then return string.format("%.03f",delta) .. ": WARNING – Normal vectors match, but close to tolerance +/- " .. string.format("%.03f",tol).." degrees.",_warning, _info(msg)
-				else return string.format("%.03f",delta) .. ": ERROR – Normal vectors are too different, outside tolerance +/- " .. string.format("%.03f",tol).." degrees.",_error, _info(msg) end
+				if (math.abs(delta) &lt; tol / 2.0) then
+					return string.format("%.03f",delta) .. ": OK - Normal vectors match within 50% of tolerance +/- " .. string.format("%.03f",tol).." degrees.",_ok, _info(msg)
+				elseif (math.abs(delta) &lt; tol) then
+					return string.format("%.03f",delta) .. ": WARNING – Normal vectors match, but close to tolerance +/- " .. string.format("%.03f",tol).." degrees.",_warning, _info(msg)
+				else
+					return string.format("%.03f",delta) .. ": ERROR – Normal vectors are too different, outside tolerance +/- " .. string.format("%.03f",tol).." degrees.",_error, _info(msg) end
 			end		
 		</Formula>
 	</LuaFunction>

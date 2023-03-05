@@ -4,12 +4,10 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
-
-<!-- TODO: Consider changing the name of element "CustomAttribute" into "CustomProperty". Our tool is called "RC-ManagePROPERTIES". Try to approach IFC terminology. -->
 
 <!--========================================================================================================
 	PropertyCategory
@@ -283,16 +281,22 @@
 
 
 <!--========================================================================================================
-	XPPq macro - general entry, make copy to use.
-	Objects include these to start with, to allow mass-update of macro names once they have been given 
-	useful contents.
+	XPPq macros
 =========================================================================================================-->
+		<!-- <xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE" /> -->
+<xpp:define name="NOBN_com_SET_OCP_STATION_REFERENCE" >
+	<xpp:bloc>
+		<LuaExpression Name="ocpStationReference" ><Formula>RC__getOcpStationReference()</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+
 		<!-- <xpp:expand select="NOBN_com_DEROGATION" /> -->
 <xpp:define name="NOBN_com_DEROGATION" >
-	<!-- To be used for alignment objects, which (as of 2022-03-09) do not feature the colored circle annotation depending on the SymbolFrame attribute. -->
 	<xpp:bloc>
 		<CustomAttribute DataType="Enumeration" Name="Derogation" DisplayName="Dispensasjon" DefaultValue="NORMED" Category="Model check"
-			Description="The 'Derogation' enumeration property [ Overholder regelverk (NORMED) | Ikke iht regelverk (DEVIATING) | Fravikssøknad sendt (REQUESTED) | Dispensasjon innvilget (GRANTED) ] reflects the status of the entire object in relation to applicable rules and regulations. The Derogation property is initially 'Normed', as long as all modelchecks result in 'Unfinished', 'OK' or 'Warning'. The Derogation property changes from 'Normed' to 'Deviating' if one or more modelchecks result in 'Error'. If the user manages to modify the model and thereby remove the errors, then status changes backed to 'Normed'. Whenever the user instead chooses to file an application for derogation, the user is expected to manually change status to 'Derogation requested' (using F4, not deleting the Lua formula). When a positive answer is received, the user is expected to change status to 'Derogation granted'. If instead a negative answer is received, the user is expected to change status manually back to 'Deviating' and take new steps from there. Note: 'Derogation' is a regular property that can be set/reset by the user, even if it appears in the 'Model check' category in the Property Manager." 
+			Description="The 'Derogation' enumeration property [ Overholder regelverk (NORMED) | Ikke iht regelverk (DEVIATING) | Fravikssøknad sendt (REQUESTED) | Dispensasjon innvilget (GRANTED) ] reflects the status of the entire object in relation to applicable rules and regulations. The Derogation property is initially NORMED, as long as all modelchecks result in 'Unfinished', 'OK' or 'Warning'. The Derogation property changes from NORMED to DEVIATING if one or more modelchecks result in 'Error'. If the user manages to modify the model and thereby remove the errors, then status changes backed to 'Normed'. Whenever the user instead chooses to file an application for derogation, the user is expected to manually change status to REQUESTED (using F4, not deleting the Lua formula). When a positive answer is received, the user is expected to change status to GRANTED. If instead a negative answer is received, the user is expected to change status manually back to DEVIATING and take new steps from there. Note: 'Derogation' is a regular property that can be set/reset by the user, even if it appears in the 'Model check' category in the Property Manager." 
 			>
 			<Values>
 				<Value DisplayName="Overholder regelverk" Description="All modelchecks are showing either Unfinished, OK or Warning" >NORMED</Value>
@@ -301,25 +305,31 @@
 				<Value DisplayName="Dispensasjon innvilget" Description="One or more modelchecks show an Error, a derogation has been granted" >GRANTED</Value>
 			</Values>
 		</CustomAttribute>
-		<LuaExpression Name="Derogation" ><Formula>NOBN_com_assessDerogation()</Formula></LuaExpression>
+		<LuaExpression Name="Derogation" ><Formula>RC__assessDerogation()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
+
+
 
 		<!-- <xpp:expand select="NOBN_com_SYMBOLFRAME" /> -->
 <xpp:define name="NOBN_com_SYMBOLFRAME" >
 	<xpp:bloc>
-		<xpp:expand select="NOBN_com_DEROGATION" />
-		<LuaExpression Name="SymbolFrame" ><Formula>NOBN__setSymbolFrame()</Formula></LuaExpression>
+		<LuaExpression Name="SymbolFrame" ><Formula>NOBN_com_setSymbolFrame()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
 
+
+		<!-- <xpp:expand select="NOBN_com_AVAILABLE___2" /> -->
 <xpp:define name="NOBN_com_AVAILABLE___2" >
 	<xpp:bloc>
 		<!-- Nothing yet -->
 	</xpp:bloc>
 </xpp:define>
 
+
+
+		<!-- <xpp:expand select="NOBN_com_AVAILABLE___3" /> -->
 <xpp:define name="NOBN_com_AVAILABLE___3" >
 	<xpp:bloc>
 		<!-- Nothing yet -->
@@ -516,7 +526,7 @@
 	<!-- Assume font Height 0.5 and that a short board type name is contained in the name property (OBJEKTNAVN), place 'name'==OBJEKTNAVN relative to display point: -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___BOARD_NAME_POSITION_AND_ORIENTATION" >
 	<xpp:bloc>
-		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>RC__getWcsVectorFromAcsVector(RightSided and 3.0 or -3.0, dir == 'up' and 0.5 or -0.5)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTNAVN" ><Formula>RC__getWcsVectorFromAcsVector(RC__scale(RightSided and 3.0 or -3.0, dir == 'up' and 0.5 or -0.5))</Formula></TextPositionLuaExpression>
 		<TextRotationLuaExpression Name="OBJEKTNAVN" ><Formula>math.deg(AlignmentTangent)+90.0</Formula></TextRotationLuaExpression>
 	</xpp:bloc>
 </xpp:define>
@@ -533,7 +543,7 @@
 				if d == 0 then 
 					return (LeftSided and -6/sc or 6/sc)
 				else
-					return RC__getSnapped(d*sc,3)/sc
+					return RC__getNearestSnapDistance(d*sc,3)/sc
 				end
 			</Formula>
 		</LuaExpression>
@@ -555,7 +565,7 @@
 					if d == 0 then 
 						return -6/sc
 					else
-						return RC__getSnapped(d*sc,3)/sc
+						return RC__getNearestSnapDistance(d*sc,3)/sc
 					end
 				else 
 					return RightSided and 4e-4 or -4e-4 
@@ -566,7 +576,7 @@
 				if d == 0 then 
 					return (LeftSided and -1 or 1) * 6/sc
 				else
-					return RC__getSnapped(d*sc,3)/sc
+					return RC__getNearestSnapDistance(d*sc,3)/sc
 				end
 			</Formula>
 		</LuaExpression>

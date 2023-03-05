@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -17,12 +17,11 @@
 	MIDPOINT ANCHOR LINE ALIGNMENT
 	GUYWIRE ALIGNMENT
 	SPANNER ALIGNMENT
-	GUYWIRE ANHCORING
-	SPANNER ANHCORING
+	GUYWIRE AND SPANNER ANHCORING TO GROUND
 	ANCHORING OF GUYWIRES OR WIRES TO TUNNEL WALL
 	GUYWIRE/TENSIONING WIRE FASTENING TO OCS POLE
 	WIRE TENSION BALANCER (WTB)
-	MIDPOINT ANCHOR - 'FIXPOINT'
+	MIDPOINT ANCHOR
 	OCS CONDUCTOR ALIGNMENT CONTINUATIONS
 	OCS CONTACT WIRE ALIGNMENT CONTINUATIONS
 =========================================================================================================-->
@@ -747,7 +746,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
+		<CustomAttribute DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S25"
 			Description="The OCS System is one of [ Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08 ]." >
 			<Values>
 				<Value>Unknown</Value>
@@ -1086,12 +1085,12 @@
 			DisplayName="Andre objekter som modelsjekkes" 
 			Description="When this contact wire is refreshed, then all point objects in 2D closer than 0.1 m from the alignment are modelchecked as well."
 		 />
-		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_KTL_otherObjectsToModelcheck()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KTL_otherObjectsToModelcheck()" ReturnType="String"
+		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true" ><Formula>_JBTEH_KTL_getOtherObjectsToModelcheck()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_getOtherObjectsToModelcheck()" ReturnType="String"
 			Description = "Returns the number of other items to modelcheck, and a table with references to them." >
-			<Constructor>_JBTEH_KTL_otherObjectsToModelcheck()</Constructor>
+			<Constructor>_JBTEH_KTL_getOtherObjectsToModelcheck()</Constructor>
 			<Formula>
-				function _JBTEH_KTL_otherObjectsToModelcheck()
+				function _JBTEH_KTL_getOtherObjectsToModelcheck()
 					t = getNearbyPointObjects2D(0.10)
 					n = t.Count
 					return n,t, _info(n.." objects close to this contact wire have been modelchecked.")
@@ -1118,8 +1117,8 @@
 		
 <!-- ========================================================================================================
 	HIGH VOLTAGE
-	MIDPOINT ANCHOR LINE
-	Comment: Object type is not known to Bane NOR's Banedata. The FIXLINE appears only as Pset Values to
+	MIDPOINT ANCHOR LINE ALIGNMENT
+	Comment: Object type is not known to Bane NOR's Banedata. The 'FIXLINE' appears only as Pset Values to
 	the contact wire EH-KTL object in Banedata.
  =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" EulynxDataType="EULYNX.rsmCommon.LinearElementWithLength" LuaName="rctype_MidpointAnchorLine" Name="JBTEH_FIL Fixline"
@@ -1224,11 +1223,6 @@
 
 		<!-- TODO Lage modelchecks: Check that the fixpoint actually sits at the middle of the entire contat wire (with continuations at one or both ends) -->
 
-		<!-- 2022-02-16 TODO - it is no longer necessary to make the step size fit exactly (RC takes "the last step" for you) -->
-		<!-- The Model3DSeparation is needed during sweep in order to sweep the entire length of the underlying alignment 2D length -->
-		<!-- <LuaExpression Name="Model3DSeparation" IsModelCheck="false" ><Formula>RC__getNearest3DStep(1.0)</Formula></LuaExpression> -->
-		<!-- <SetValue Key="Model3DOffset" Value="0.0" /> -->
-		
 		<InsertAlignment VariantName="Fixline" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false" > 
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="Linetype" Value="RC-DASHED" />
@@ -1268,7 +1262,7 @@
 		</Variants>
 
 		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptModel3D" >
-				<SetValue Key="CustomTransformation" Value="True"/>
+			<SetValue Key="CustomTransformation" Value="True"/>
 		</SetDynamicProperty>
 
 		<SetValue Key="GlobalWidth" Value="0.020" />
@@ -1767,9 +1761,10 @@
 	</ObjectType>
 
 
+
 <!--========================================================================================================
 	HIGH VOLTAGE
-	SPANNER ANHCORING
+	GUYWIRE AND SPANNER ANHCORING TO GROUND
 
 	NB! Covers both guywire anchoring and spanner anchoring, as well as ready-made spanners for attachment to 
 	tunnel roofs, for Ø120 drop arms. These are the end points for guywires and spanners, these are
@@ -1988,6 +1983,7 @@
 		</DockPointDefinitions>
 
 	</ObjectType>
+
 
 
 <!--========================================================================================================
@@ -2223,7 +2219,7 @@
 					rWtb = tmp:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
 					nWtb = getCollectionLength(rWtb)
 					if nTmp == 0 then
-						return _unfinished,getPropertyValue("dir"),info("No related WTB, guywire or spanner - cannot deduce anchor device's direction.")
+						return _unfinished,getPropertyValue("dir"), _info("No related WTB, guywire or spanner - cannot deduce anchor device's direction.")
 					end
 					if nWtb == 1 then
 						alg = rWtb[0].Alignment
@@ -2966,7 +2962,7 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	MIDPOINT ANCHOR - 'FIXPOINT'
+	MIDPOINT ANCHOR
 =========================================================================================================-->
 	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" EulynxDataType="EULYNX.sig.Fixing" LuaName="rctype_MidpointAnchor" Name="JBTEH_FIX Fixpunkt"
 				Layer="JBTEH_AEH" Color="ByLayer"
@@ -3238,6 +3234,7 @@
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true" />
 
 	</ObjectType>
+
 
 
 <!--========================================================================================================

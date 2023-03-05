@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -53,7 +53,7 @@
 				if balise.Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 				nextBalise = getDownObject(balise.RcType)
 				if nextBalise == nil then return "OK - No "..balise.RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
-				dist = distance(balise,nextBalise)
+				dist = getDistance(balise,nextBalise)
 				t = string.format("%.3f", dist)
 			
 				if (dist &lt; 2.35 ) then
@@ -90,7 +90,7 @@
 				if balise.Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 				nextBalise = getUpObject(balise.RcType)
 				if nextBalise == nil then return "OK - No "..balise.RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
-				dist = distance(balise,nextBalise)
+				dist = getDistance(balise,nextBalise)
 				t = string.format("%.3f", dist)
 			
 				if (dist &lt; 2.35 ) then
@@ -287,7 +287,7 @@
 							-- Assign 'U' to the one farthest away, 'R' to the one closest to signal: 
 							b1 = bg[0]
 							b2 = bg[1]
-							if distance(b1,sig) &gt; distance(b2,sig) then
+							if getDistance(b1,sig) &gt; getDistance(b2,sig) then
 								b1,b2 = b2,b1
 								--Now b1 is closest to signal
 							end
@@ -304,9 +304,9 @@
 							b2 = bg[1]
 							b3 = bg[2]
 							-- Three pairwise swaps and they're sorted:
-							if distance(b1,sig) &gt; distance(b2,sig) then b1,b2 = b2,b1 end
-							if distance(b2,sig) &gt; distance(b3,sig) then b2,b3 = b3,b2 end
-							if distance(b1,sig) &gt; distance(b2,sig) then b1,b2 = b2,b1 end
+							if getDistance(b1,sig) &gt; getDistance(b2,sig) then b1,b2 = b2,b1 end
+							if getDistance(b2,sig) &gt; getDistance(b3,sig) then b2,b3 = b3,b2 end
+							if getDistance(b1,sig) &gt; getDistance(b2,sig) then b1,b2 = b2,b1 end
 							if this.id == b1.id then
 								--I am the closest repeater group:
 								a = "R"
@@ -324,14 +324,14 @@
 					r,n = getRelatedObjects(rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup)
 					if n == 0 then
 						--Group is braking curve target:
-						ocp = RC_com_getOcpCode(getObjectFromId(id))
+						ocp = NOBN_com_getOcpCode(getObjectFromId(id))
 					else
 						--Warning board, use target's ocp:
-						ocp = RC_com_getOcpCode(r[0])
+						ocp = NOBN_com_getOcpCode(r[0])
 					end
 					return ocp..a..string.format("%02d",seq)
 				elseif Variant == "Signalhøyningsbalisegruppe" or Variant == "Sporvekselbalisegruppe" then
-					ocp = RC_com_getOcpCode(this)
+					ocp = NOBN_com_getOcpCode(this)
 					if seq == 0 then
 						return ocp..a.."UNFINISHED - Set balise group's 'seq' property to the required balise group number (01..99), use '100' for '0'."
 					else
@@ -341,9 +341,9 @@
 					s = rel_NssBaliseGroup_LinksTo_NssBaliseGroup
 					r,n = getRelatedObjects(s)
 					if n == 0 then
-						ocp = RC_com_getOcpCode(getObjectFromId(id))
+						ocp = NOBN_com_getOcpCode(getObjectFromId(id))
 					else
-						ocp = RC_com_getOcpCode(r[0])
+						ocp = NOBN_com_getOcpCode(r[0])
 					end
 					if seq == 0 then
 						return ocp..a.."UNFINISHED - Set balise group's 'seq' property to the required balise group number (01..99), use '100' for '0'."
@@ -357,7 +357,7 @@
 						return "UNFINISHED - Relate with '"..s.."'."
 					else
 						--Assume r[0] holds object dictating the group's number:
-						ocp = RC_com_getOcpCode(r[0])
+						ocp = NOBN_com_getOcpCode(r[0])
 						if r[0].code == nil then 
 							return ocp..a.."???", _info(ocpMsg)
 						elseif tostring(r[0].code):match("%d+") == nil then

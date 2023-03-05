@@ -4,11 +4,55 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
 
+
+
+<!--========================================================================================================
+	sub - Substructure / civil works functions accessible globally
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_sub_getFoundationCode()" ReturnType="String" 
+		Description="Returns the code for a foundation / bolt group / deduced from its associated object (based on RcType and close proximity)." >
+		<Constructor>String NOBN_sub_getFoundationCode([ObjRef obj])</Constructor>
+		<Formula>
+			function NOBN_sub_getFoundationCode(obj)
+				local tol = 0.50 --[m] Look for a matching object close to 'obj'
+				local function fn(obj,objectTypes,errMsg)
+						--Check for matching objects in prioritized order.
+					local ot,n,i,o
+					ot = getCollectionFromTable(objectTypes)
+					n = ot.count
+					for i=0,n-1 do
+						o = getNearbyPointObjects2D(tol,ot[i],obj)
+						if getCollectionLength(o) &gt; 0 then return o[0].code end
+					end
+					return errMsg 
+				end
+			
+				if obj == nil then obj = this end
+				if RcType:match("JBTEH_FUN KL%-fundament") then 
+					return fn(obj,{	rctype_OcsPole,
+									rctype_OcsDropArmUnderPortal,
+									rctype_OcsDropArmForBridgeOrTunnel,
+									rctype_GuywireFootplate,
+									rctype_SpannerFootplate,
+									rctype_TunnelWallFixing
+								},
+								"UNFINISHED - no visible OCS pole or guywire / spanner fastener found at foundation.")
+				elseif RcType:match(rctype_SignalFoundation) then 
+					return fn(obj,{rctype_Signal},"UNFINISHED - no visible signal found at foundation.")
+				elseif RcType:match(rctype_CabinetFoundation) then 
+					return fn(obj,{rctype_SignallingCabinet},"UNFINISHED - no visible signal cabinet found at foundation.")
+				elseif RcType:match(rctype_TelecomFoundation) then 
+					return fn(obj,{"TODO: Define telecom objects here :ODOT"},"UNFINISHED - no visible matching telecom object found at foundation.")
+				end
+			end
+		</Formula>
+	</LuaFunction> 
+		
 
 
 <!--========================================================================================================
@@ -1532,7 +1576,7 @@
 		</LuaFunction>
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="IteratedModel3D_0.Model3DSeparation" ><Formula>Sweep3D and RC__getNearest3DStep(1.0) or _JBTKU_VEI_Model3DSeparation(_position)</Formula></LuaExpression>
+		<LuaExpression Name="IteratedModel3D_0.Model3DSeparation" ><Formula>_JBTKU_VEI_Model3DSeparation(_position)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_VEI_Model3DSeparation()" 
 				ReturnType="Double"
 				HideFromUser="false"
@@ -1580,7 +1624,7 @@
 		</LuaFunction>
 
 		<!-- Half of 3D model spearation value at pos=0: -->
-		<LuaExpression Name="IteratedModel3D_0.Model3DOffset" ><Formula>Sweep3D and 0 or Model3DSeparation/2</Formula></LuaExpression>
+		<LuaExpression Name="IteratedModel3D_0.Model3DOffset" ><Formula>Model3DSeparation/2</Formula></LuaExpression>
 
 		<PropertyPrompt Key="code" DefaultValue="Vei" AcceptEmptyValue="false" />
 

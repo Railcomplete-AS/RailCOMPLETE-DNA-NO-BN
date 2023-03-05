@@ -11,7 +11,7 @@
 
 	Developed by RailCOMPLETE agent: NOR.0001 = Railcomplete AS, Oslo, Norway
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 
@@ -35,33 +35,21 @@
 ===		
 ===		The XPPq directives are:
 ===		
-===		<xpp:define name="NAME" >…</xpp:define> : definition of a macro named NAME.
-===		<xpp:expand select="NAME" >…</xpp:expand> : expansion of the macro named NAME.
-===		<UserTag xpp:attribute="ATTRIBUTE_NAME,MACRO_NAME" >…</UserTag> : expansion of the macro 
+===		<xpp:define name="NAME" >…</xpp:define>: definition of a macro named NAME.
+===		<xpp:expand select="NAME" >…</xpp:expand>: expansion of the macro named NAME.
+===		<UserTag xpp:attribute="ATTRIBUTE_NAME,MACRO_NAME" >…</UserTag>: expansion of the macro 
 ===			named MACRO_NAME as value of an attribute named ATTRIBUTE_NAME.
-===		<xpp:expand href="FILENAME" /> : inclusion of the content of the file named FILENAME.
-===		<xpp:set Name="NAME" value="VALUE" /> : set the variable named NAME to the value VALUE.
-===		<xpp:ifeq select="NAME" value="VALUE" >…</xpp:ifeq> : the content of this directive is skipped 
+===		<xpp:expand href="FILENAME" />: inclusion of the content of the file named FILENAME.
+===		<xpp:set Name="NAME" value="VALUE" />: set the variable named NAME to the value VALUE.
+===		<xpp:ifeq select="NAME" value="VALUE" >…</xpp:ifeq>: the content of this directive is skipped 
 ===			unless variable named NAME has VALUE as value.
-===		<xpp:cdata>…</xpp:cdata> : the content of this directive is put in a CDATA section.
-===		<xpp:bloc>…</xpp:bloc> : this directive has no effect by itself, but is required under some 
+===		<xpp:cdata>…</xpp:cdata>: the content of this directive is put in a CDATA section.
+===		<xpp:bloc>…</xpp:bloc>: this directive has no effect by itself, but is required under some 
 ===			circumstances by above directives (e.g., enclose everything in a NAME definition by bloc 
 ===			in order to expand it as one block later).
 ===		
 ===		By convention, The RailCOMPLETE DNA file has extension .XML, and the various XPPq preprocessor
 ===		source files also have extension .XML (in order for Notepad++ to choose the right Language).
-===		
-===		Naming conventions for XPPq macros follows the same pattern as for Lua constants (see below),
-===		however, they all use 'xpp' as category.
-===		
-===		Example:
-===		XXYY_com_STD_CUSTOM_ATTRIBUTES
-===		XXYY_com_STD_SYMBOL_ITEMS
-===		XXYY_com_ISY_STK
-===		XXYY_com_ISY_METER
-===		XXYY_com_ISY_KUBIKKMETER
-===		XXYY_xpp_MC_SPORKRYSS
-===		XXYY_xpp_MC_SPORVEKSEL
 ===		
 =========================================================================================================-->
 
@@ -69,7 +57,7 @@
 
 <!--========================================================================================================
 ===		
-===		General syntax for ObjectType element header prose Descriptions in this DNA file:
+===		General syntax for ObjectType element header prose descriptions in this DNA file:
 ===
 ===		MAIN_CATEGORY
 ===		SUBCATEGORY[/SUBCATEGORY]*
@@ -81,92 +69,260 @@
 
 
 <!--========================================================================================================
+===		
+===		Note on folder addresses: The main application (RailCOMPLETE running under AutoCAD) includes the
+===		file 'startup.xml' 
+===		
+=========================================================================================================-->
 
-	Lua Naming Conventions
-	======================
 
-	Overall name structure
-	----------------------
-	<PREFIX>_<category>_<actionObjectName | CONSTANTNAME>([arglist])
 
-	Function prefix
-	---------------
-	'PREFIX' denotes the railway administration's naming in a Lua context. It consists of country's
-	ISO 3166-2 2-letter code in uppercase letters, followed by an uppercased adm abbreviation.
-	E.g. XXGL, DEDB, FRSR, NOBN 
+<!--========================================================================================================
+
+	RailCOMPLETE Naming Conventions
+	===============================
+
+	Name structure for property names
+	---------------------------------
+	<propertyName>		--railML property.
+	<PropertyName>		--non-railML property, either intrinsic to RC or declared in DNA.
+	mc_<PropertyName>	--modelcheck property.
 	
-	Category
-	--------
+	
+	Name structure for text attribute definitions
+	---------------------------------------------
+	<ATTDEF_NAME>		--Uppercased name with underscore '_' as word separator. Note that RC converts
+						  underscore '_' to dash '-' in the GUI of the RC-EditTextAttribute command.
+
+	
+	Name structure for ordinary functions
+	-------------------------------------
+	RC__<actionObjectName>([arglist])					--No specific DNA or language involved inside function
+	<ADM>_<discipline>_<actionObjectName>([arglist])	--Administration-dependent function
+	<OBJECT_TYPE>_<PropertyName>([arglist])				--Global, shared by multiple object types
+	_<OBJECT_TYPE>_<PropertyName>([arglist])			--Local to one object type
+
+
+	Name structure for modelchecking functions
+	------------------------------------------
+	RC__chk<ModelFeatureToBeChecked>					--No specific DNA or language involved inside function
+	<ADM>_<discipline>_<actionObjectName>([arglist])    --Administration-dependent function
+	<OBJECT_TYPE>_<PropertyName>([arglist])             --Global, shared by multiple object types
+	_<OBJECT_TYPE>_<PropertyName>([arglist])            --Local to one object type
+
+
+	Name structure for constants
+	----------------------------
+	RC__<CONSTANT_NAME>()								--No specific DNA or language involved inside function
+	<ADM>_<discipline>_<CONSTANT_NAME>()                --Administration-dependent function
+	<OBJECT_TYPE>_<CONSTANT_NAME>()                     --Global, shared by multiple object types
+	_<OBJECT_TYPE>_<CONSTANT_NAME>()                    --Local to one object type
+	Constants must be written as functions, otherwise they would not be accessible in runtime from object's properties.
+	
+	
+	Name structure for XPPq macros
+	------------------------------
+	RC__<MACRO_NAME>									--No specific DNA or language involved inside function
+	<ADM>_<discipline>_<MACRO_NAME>                     --Administration-dependent function
+	<OBJECT_TYPE>_<MACRO_NAME>                          --Global, shared by multiple object types
+	_<OBJECT_TYPE>_<MACRO_NAME>                         --Local to one object type
+	
+
+	Prefix 'RC' or <ADM>
+	--------------------
+	RailCOMPLETE has an extensive Application Programming Interface (API). Functions contained in the API are generally
+	named using actionObject() names, such as 'getRelatedObjects(...)'.
+	
+	To distinguish a Lua function declared in DNA from an intrinsic API function, we add a mandatory prefix
+	to that function's name. The prefix tells us whether this function relies solely on intrisic features from RC, or if
+	it depends on features found only in a specifi administration's DNA.
+
+	A general RC function declared in Lua shall display these characteristics:
+	- It does not address any resource which must be declared somewhere in the DNA (only inrinsic features are used).
+	- It does not return a text string which is subject to translation into local language
+	- Its purpose and name are generally recognized terms, not being subject to different interpretations by administrations.
+	
+	A general RC function's prefix is always 'RC__' (with a double underscore following the 'RC').
+	
+	A national RC function's prefix is the railway administration's <ADM> code, such as 'XXYY'. It consists of the country's
+	ISO 3166-2 2-letter code in uppercase letters, followed by an uppercased abbreviation for the administration's name.
+	
+	Example of <ADM> administration codes
+	-------------------------------------
+	DEDB	Germany, DB Netz.
+	FRSR	France, SNCF Réseau.
+	JPTX	Japan, the Japanese Shinkansen consortium, adapted for the project 'Texas HiSpeedRail'.
+	NOBN	Norway, Bane NOR.
+	XXGL	A ficitious administration 'Genericland'.
+
+
+	DISCIPLINE
+	----------
 	These are: (void) / com / sub / trk / cur / ocs / sig / pow / tel / bnp / otr
 
-			(empty category) General and non-railway-specific issues, such as rounding numbers, format conversions etc.
-	com		Common - general and railway-specific issues
-	bnp		Boards and ('n) poles
-	sub		Substructure (foundations, cable ducts, platforms, civil engineering: buildings, bridges, tunnels, roads)
-	trk		Track and embankment - ballast, sleepers, rails, switches, crossings, buffer stops and other track related objects
-	cur		Traction current system, transformers above catenary voltage levels, power distribution system other than OCS
-	ocs		Overhead catenary system
-	sig		Signalling
-	pow		Power supply, except traction current system (low voltage, up to ca 1000V to users, from 22kV public supplies or 15-25 kV railway HV)
-	tel		Telecommunications
-	otr		Other systems
+			(empty category) General RC functions, such as rounding numbers, format conversions etc, using intrinsic entities exclusively.
+	com		Common - administration-specific issues, used by many disciplines.
+	sub		Substructure (foundations, cable ducts, platforms, civil engineering: buildings, bridges, tunnels, roads).
+	trk		Track and embankment - ballast, sleepers, rails, switches, crossings, buffer stops and other track related objects.
+	cur		Traction current system, transformers above catenary voltage levels, power distribution system other than OCS.
+	ocs		Overhead catenary system, High Voltage (HV) systems except for upper-level distribution systems (from 25kV approx. and down).
+	sig		Signalling.
+	pow		Power supply, except traction current system (low voltage, up to ca 1000V out to users, from 22kV public supplies or 15-25 kV railway HV).
+	tel		Telecommunications.
+	bnp		Boards and ('n) poles.
+	otr		Other systems, if none of the above should fit. Usually not in use.
 
-	actionObjectName
-	----------------
-	The action (get/export/compute/is/has/...) is written in lowercase letters. The following object name is 
-	written in PascalCase. I.e., together they form a camelCased word.
-	
-	CONSTANTNAME
-	------------
-	Constant names shall be written in uppercase with underscore as word separator. 
-	E.g. 'MYFIRSTCONSTANT', 'BRAKINGCURVE_TARGET_DISTANCE'
 
-	Constants
+	ACTION - OBJECT NAME
+	--------------------
+	An action (get/export/compute/is/has/...) is written in lowercase letters. The following object name is 
+	written in PascalCase. I.e., together they form a camelCased word. These are used as part of Lua function names.
+	
+	Example of typical use of an objectAction name:
+	-----------------------------------------------
+	DEDB_bnp_getBoardOrPoleName()		--The action is 'get', the object is 'BoardOrPoleName'.
+	
+	
+	CONSTANTS
+	-------------
+	Lua does not support constants. If you really need something like a constant, then write a Lua function to return it.
+	Such 'fake constant' names shall be written in all-uppercase, with underscore '_' as word separator.
+	
+	Constants for generic constants (not depending on any other DNA contents, but rather universal stuff shall be prefixed by 'RC__'.
+	
+	Constants declared specifically for one DNA shall be prefixed with the identity of the DNA's administration and the discipline in
+	lower-case letters, and then the constant's name. This constitutes the name of a Subject, and not an ActionObject (as in Lua functions).
+
+	Examples of constants:
+	----------------------
+	RC__COPYRIGHT_STATEMENT() 				--Returns a copyright message as a string.
+	RC__EPSILON() 							--Returns a constant tolerance to be used in model checks
+	NOBN_sig_NSS_DEFAULT_DECELERATION()		--Returns a default deceleration rate for the NOBN national signalling ATP system, in m/s^2.
+	DEDB_ocs_CATENARY_STUFF_TABLE()			--Returns an entire table, e.g. {{3,5,8,13},{5,8,13,21}}.
+	DEDB_ocs_CATENARY_STUFF_VALUE(2,4)		--Returns value 21 at the 2-dimensional index [2,4] into the 2-dimensional table {{3,5,8,13},{5,8,13,21}}.
+	JBTSA_SIG_CLOSED_SIGNAL_ASPECT_CODE()	--Returns the string "Hs20", declared globally and being applicable to all signal objects with
+											  object type names starting with "JBTSA_SIG" ("JBTSA_SIG Main signal", "JBTSA_SIG Track signal" etc)
+	_JBTSA_TEL_MAX_DISTANCE_TO_TUNER()		--Returns the number '8' which is maximum distance from Bane NOR's axle counter to its tuning unit.
+											  The leading underscore signifies that the declaration is local to that ObjectType 
+
+	
+	FUNCTIONS
 	---------
-	These are function calls which return a constant value, or a [multidimensional] table.
-	Constants never feature a verb (action) in its name, just an uppercased noun.
+	Functions expect a list of input arguments and return a list of results. In most cases a function returns just one value.
+
+	A function may return a comma-separated list of values. Lua does assignment matching, such as in 'a,b,c,d = NOBN_com_computeValues()'.
+	If a function returns fewer values than the assignment's left side is prepared for, then 'nil' will be assigned.
+	If a function returns more values than the assignment's left side is prepared for, then the superfluous right side return values are ignored.
 	
-	Example:
-	RC__EPSILON() returns a constant tolerance to be used in model checks
-	XXYY_trk_2DTABLE() returns a table, e.g. {{3,5,8,13},{5,8,13,21}}.
-	XXYY_trk_2DTABLE()[2][4] returns value 21 from the 2-dimensional table {{3,5,8,13},{5,8,13,21}}.
+	Intrinsic functions, i.e. contained in the Lua API in RC, are generally named as 'actionObject()', such as in 'getRelatedObjects(...)'.
 	
-	Functions
-	---------
-	Functions expect a variable number of arguments and return a list of arguments, usually only one, or
-	one argument and a symbol (to be shown in modelchecks or in tables along with its first return value).
-	Functions have a lowercased action (verb) immediately followed by a PascalCasedObjectName (or no object).
+	A function, be it intrinsic or DNA-declared, may return a collection instead of a single value, as in 
+	'r,n = getRelatedObjects(rel_Marker_AppliesTo_Anything)', where 'r' is a collection (of object references) and 'n' is a number
+	(the number of object references in that collection).
 	
-	Example:
-	RC__isNan(x)				-- 'Nan' (not a number) is usually written 'NaN', but we respect the PascalCase naming rule here.
-	RC__round(math.pi,2)		-- Special case, does not mention the object (which is obvious here - the argument as a number).
-	NOBN_trk_toKm(Mileage)			-- Special case, 'to' implicitly means the action 'convertTo'.
-	RC_com_chkNumberOfOcpAreas() -- Implicitly, the object is 'this' or an explicitly given argument (an object reference)
-	XXYY_trk_chkConnectionAlignmentTypes()	--
+	Functions which are declared in DNA but which are not using any feature or property than those which are always prsent, 
+	regardless of the choice of DNA, shall start with 'RC__' and be followed by an underscore '_' and an actionObject name.
+	
+	Example - generic RC functions declared as Lua functions in DNA
+	---------------------------------------------------------------
+	RC__isNan(x)				--'Nan' (not a number) is usually written 'NaN', but we respect the PascalCase naming rule here.
+	RC__round(math.pi,2)		--Special case, does not mention the object (which is obvious here - the object is a number).
+	RC__chkNumberOfOcpAreas() 	--Implicitly, the object is 'this' or an explicitly given argument (an object reference).
+
+	Such generic RC functions can easily be incorporated into the C# core application's API, and they probably will, after a burn-in
+	period of use. It they are included in the API, then they will retain their actionObject() name, without the prefix 'RC__'.
+
+	Functions which are declared globally in DNA (outside any object's ObjectType declaration) and which use features or properties
+	declared in the DNA, including text messages, shall start with 'XXYY_xxx' and be followed by an underscore '_' and an 
+	actionObject name, where 'XXYY' is the administration's abbreviation and 'xxx' is the applicable discipline.
+	
+	Example - global, DNA-dependent functions
+	-----------------------------------------
+	DEDB_trk_toKm(Mileage)							--Special case, 'to' implicitly means the action 'convertTo'.
+	NOBN_com_getKof05Records()						--Returns a formatted multi-line text string.
+	NOBN_com_getLabelItem1()						--Returns a formatted text string.
+	NOBN_com_chkConnectionAlignmentCompatibility()	--See also 'modelcheck' fuctions elsewhere..
 	
 	Function XML definitions in DNA have these XML elements and attributes:
 	<LuaFunction
 		Name="RC__round()"
-		ReturnType="String" | "Double" 
-		HideFromUser="false" | "true"
+		ReturnType="String"                 (...or may be "Double" etc...)
+		HideFromUser="false" 				(...or "true"...)
 		Description="Rounds floating point input x to p [-6..6] decimal places. Default precision is 0 decimals."
 	>
 		<Constructor>Double RC__round(Double x [, Int p])</Constructor>
-		<Formula>...Lua formula...</Formula>
+		<Formula>...your Lua formula goes here...</Formula>
 	</LuaFunction>
+
+
+	Example - Object-type specific functions
+	----------------------------------------
+	_JBTSA_TEL_code()			--Local object-dependent Lua function, inside the object type declaration for "JBTSA_TEL Tellepunkt" (axle
+								  counter sensor). The function returns suitable contents for the 'code' property. To be called from 'code'.
+								  Note that 'code' is written in camelCase because it was inherited from railML 2.3.
+
+	JBTEH_SUP_AngularOffset()	--Global object-dependent Lua function, outside the three "JBTEH_SUP ...." object type declarations (straight-up
+								  OCS support pole, drop-arm pole in portal or gantry, drop-arm pole from tunnel ceiling).
+								  The function returns suitable contents for the 'Model3D_0.Layer3D' custom property.
+								  Note that 'Layer3D' is written in PascalCase because it is intrinsic to the RC application and not from railML.
+
+	JBTEH_SUP_Spanlength()		--Global object-dependent Lua function.
+								  The function returns suitable contents for the 'Spanlength' custom property. To be called from 'Spanlength'.
+								  Note that 'Spanlength' is written in PascalCase because it was added by RC (after railML) or added in DNA.
+
+	The role of the leading underscore '_' is to show to the DNA designer or to the end-user that this function's scope is meant to be local to
+	the named object type and not accessible from other object types.
 	
-	Conventions for Model Check functions
-	-------------------------------------
-	Model check functions shall return a string...
-	Starting with the assessed value,
-	followed by a colon,
-	followed by a space and one of the words OK / WARNING / ERROR,
-	followed by space - dash - space (' - '),
-	followed by a full sentence starting with capital letter and ended by a period '.',
-	followed by a symbol being one of the predefined symbols in RailCOMPLETE: _error / _warning / _ok
+
+	MODELCHECKS
+	-----------
+	Modelchecks are made up of two things: 
+	- A custom property holding the result. This property must be declared with attribute IsModelCheck="true".
+	- A modelchecking function which is called from its corresponding modelcheck property.
+	
+	A modelchecking function does a more or less thorough check of one aspect of your model, based on the object
+	that is calling on the modelchecking function. The result being return is a text string, a classificaiton symbol and a
+	collection of references to other objects that shall be checked (but not necessarily being refreshed).
+	
+	The name of a custom property used as a modelcheck shall start with the letters 'mc_' in lowercase, followed by
+	a PascalCased subject (a noun), to be understood in its context inside an RC object's DNA declaration:
+	
+	mc_NumberOfOcpAreas					Count of the number of (visible) OCP areas currently surrounding the object.
+	mc_Tangent							Checking the correspondence between own alignment and target alignment's tangent directions.
+	mc_OtherObjectsToBeModelchecked		A special case, this one returns a list of other objects that will also be checked,
+										for instance the closest upstream ad downstream axle counter(s).
+	
+	The name of a model checking function shall, in general, follow the naming convention for global and object-local Lua functions,
+	where the action (the verb in the function's name) shall be 'chk':
+	
+	FRSR_trk_chkConnectionTangentMatch()
+
+	A modelcheck function shall return a character string which is...:
+	- starting with the assessment's main value (a string or a number, the main conclusion of that check)
+	- followed by a colon ':' (or space+colon ' :' in French language)
+	- followed by a space and one of the words OK / WARNING (AVERTISSEMENT, WARNUNG, ...) / ERROR (ERREUR, FEHLER, ...),
+	- followed by space - dash - space (' - '),
+	- followed by a full sentence starting with capital letter and erminated with a period '.',
+	- followed by a RailCOMPLETE symbol
+	
+	The available RailCOMPLETE symbols are these:
+
+	Symbols shown in the Property Manager:
+	_error 			A white St.Andrew cross on a red disk
+	_warning		A yellow warning triangle with a black exclamation mark '!' inside 
+	_ok				A black checkmark 'v' on a green disk
+	_unfinished		A white question mark '?' on a light blue disk
+	_void			Nothing (this is the default value)
+	
+	Symbols shown in the Lua editor:
+	_error			A white St.Andrew cross on a red disk
+	_warning		A yellow triangle outline with an exlamation mark '!' inside
+	_ok				A green checkmark
+	_unfinished		A white question mark '?' on a light blue disk
+	_void			Nothing (this is the default value)
 	
 	Example:
-	A call to RC_mc_NumberIsSmallEnough() with assessed value n == 0, 1 or >=2 will return these:
+	A call to RC__chkNumberIsSmallEnough() where positive integer inputs 0, 1 or n >=2 will return these:
     "0: OK - Number is small.",_ok
 	"1: WARNING - Number is barely acceptable.",_warning
     n..": ERROR - Number is unbearably large",_error
@@ -396,8 +552,8 @@
 <xpp:expand href="NO-BN-Eulynx.xml" />
 
 <!-- Lua expressions -->
-<xpp:expand href="NO-BN-RC-Lua.xml" />
-<xpp:expand href="NO-BN-Lua.xml" />
+<xpp:expand href="NO-BN-General-Lua.xml" />
+<xpp:expand href="NO-BN-National-Lua.xml" />
 <xpp:expand href="NO-BN-Foulingpoint.xml" />
 <xpp:expand href="NO-BN-PositionToolSettings.xml" />
 <xpp:expand href="NO-BN-ModelChecks.xml" />
@@ -424,6 +580,7 @@
 <xpp:expand href="NO-BN-SignallingObjects.xml" />
 <xpp:expand href="NO-BN-Balises.xml" />
 <xpp:expand href="NO-BN-Signals.xml" />
+<xpp:expand href="NO-BN-SignalSighting.xml" />
 
 <xpp:expand href="NO-BN-Telecom.xml" />
 

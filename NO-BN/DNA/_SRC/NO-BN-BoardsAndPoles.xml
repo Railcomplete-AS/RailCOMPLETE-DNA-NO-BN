@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -96,7 +96,7 @@
 
 
 	
-	<!-- TODO 2022-04-21 CLFEY The function 'RC__sortTable(t)' should be replaced by the standard Lua table.sort() function. -->
+	<!-- TODO 2022-04-21 CLFEY The function 'RC__NumberCollection(t)' should be replaced by the standard Lua table.sort() function. -->
 	<LuaFunction Name="NOBN_bnp_getEscapeDistanceBoardTexts()" ReturnType="String"
 		Description="Returns a table {'Left'=Lval,'Right'=Rval} with distance to nearest related marker. Default step 10, default offset 0. '?':missing marker, '+':multiple markers found." >
 		<Constructor>String NOBN_bnp_getEscapeDistanceBoardTexts([Int step[, Int offset]])</Constructor>
@@ -122,7 +122,7 @@
 					for i = 1, n do
 						table.insert(t,r[i-1].ReferenceMileage) --collection r is indexed from 0
 					end
-					t = RC__sortTable(t)
+					t = RC__NumberCollection(t)
 					k = 0
 					for i = 1, n do
 						if ReferenceMileage &gt; t[i] then
@@ -602,7 +602,7 @@
 		<Constructor>String _JBTSA_MSS_E101_ID_STED()</Constructor>
 			<Formula>
 				function _JBTSA_MSS_E101_ID_STED()
-					return Attachment and Attachment.RC_com_getOcpCode() or "OCP?"
+					return Attachment and Attachment.NOBN_com_getOcpCode() or "OCP?"
 				end
 			</Formula>
 		</LuaFunction>
@@ -2934,7 +2934,7 @@
 		<LuaExpression Name="code" ><Formula>Attachment and Attachment.code or "(no attachment found)"</Formula></LuaExpression>
 		<LuaExpression Name="ID_BOKSTAV" ><Formula>NOBN_sig_getSignalLitra()</Formula></LuaExpression>
 		<LuaExpression Name="ID_NUMMER" ><Formula>NOBN_sig_getSignalNumber()</Formula></LuaExpression>
-		<LuaExpression Name="ID_STED" ><Formula>Attachment and Attachment.RC_com_getOcpCode() or "(no attachment found)"</Formula></LuaExpression>
+		<LuaExpression Name="ID_STED" ><Formula>Attachment and Attachment.NOBN_com_getOcpCode() or "(no attachment found)"</Formula></LuaExpression>
 
 		<LuaExpression Name="ID_MINDRE_SIGNAL" >
 			<Formula>
@@ -3450,9 +3450,9 @@
 		<CustomAttribute DataType="UInt32" Name="HEL_KM_UTEN_HALV" DisplayName="Hel km uten halv" DefaultValue="0" />
 		<CustomAttribute DataType="UInt32" Name="HALV_KM" DisplayName="Halv km" DefaultValue="0" />
 
-		<LuaExpression Name="HEL_KM" ><Formula>NOBN_com_getNearestEntireKm()</Formula></LuaExpression>
-		<LuaExpression Name="HEL_KM_UTEN_HALV" ><Formula>NOBN_com_getNearestEntireKm2()</Formula></LuaExpression>
-        <LuaExpression Name="HALV_KM" ><Formula>NOBN_com_getNearestHalfKm()</Formula></LuaExpression>
+		<LuaExpression Name="HEL_KM" ><Formula>NOBN_trk_getNearestEntireKm()</Formula></LuaExpression>
+		<LuaExpression Name="HEL_KM_UTEN_HALV" ><Formula>NOBN_trk_getNearestEntireKm2()</Formula></LuaExpression>
+        <LuaExpression Name="HALV_KM" ><Formula>NOBN_trk_getNearestHalfKm()</Formula></LuaExpression>
 								
 		<Variants DefaultValue="Signal 75A-1 Kilometerskilt, enkelsidet, midtstilt" >
 			<Variant Name="Signal 75A-1 Kilometerskilt, enkelsidet, midtstilt" >
@@ -4704,6 +4704,180 @@
 		</DisplayPointDefinitions>
 	</ObjectType>
 	
+
+
+<!--========================================================================================================
+    Placement in 3D relative to insertion point 
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_bnp_getBoardOffset3dZ()" ReturnType="String"
+		Description="Returns the default pole 3D offset Z, i.e. the height of the pole." >
+		<Constructor>Double NOBN_bnp_getBoardOffset3dZ()</Constructor>
+		<Formula>
+			function NOBN_bnp_getBoardOffset3dZ()
+				-- To be mounted below other board on common pole:
+				if Variant:find("Meterangivelse") then return 2.6 --May be placed under 68F
+				elseif Variant:find("68F") then return 2.8 --Tilleggshastighet, to be placed under 68
+			
+				--To be mounted relatively low on NSI63 optical signal's mast:
+				elseif Variant:find("62") then return 2.85 --Ugyldighetssignal på standard Bane NOR signalmast alternativ 2
+				elseif Variant:find("72") then return 2.45 --FJS begynner/slutter
+				elseif Variant:find("73") then return 2.45 --Rasvarsling
+				elseif Variant:find("F-ATC") or Variant:find("D-ATC") then return 2.9
+			
+				--To be mounted on front/top of optical light signal's sunscreen:
+				elseif Variant:find("60E") then return 5.80 --ATC Varsel. Remember to adjust Offset3d.Y as well.
+			
+				--Close to track, low placement, with pole:
+				elseif Variant:find("Bevegelig kryss") then return 0.5 --Short vertical pole close to track
+				elseif Variant:find("69") then return 1.5 --Temporary speed restriction, to be mounted with horizontal pole to track/sleeper
+			
+				--Close to track, low placement, no pole:
+				elseif Variant:find("Baliseskilt") then return 0.0 --Mounted on platform element's side towards track, at A-balise
+			
+				--May be hanging from portal, othwerwise on own pole:
+				elseif Variant:find("Spornummer") then return PortalMounted and -1 or 3.5
+				-- TODO elseif Variant:find("E34") then return PortalMounted and -1 or 3.5 --ERTMS Stedsskilt
+				elseif Variant:find("E35") then return PortalMounted and -1 or 3.5 --ERTMS Stoppskilt
+			
+				--To be read by train driver sitting in train, AND by walking people:
+				elseif Variant:find("1000V") then return 2.5
+				elseif Variant:find("kjedebrudd") then return 2.5
+			
+				--To be read by walking people:
+				elseif Variant:find("Nødtelefon") then return 2.00
+				elseif Variant:find("Stopp se og lytt") then return 2.00 --Skilt langs bilvei, for mennesker
+				elseif Variant:find("Arbeidsområde") then return 2.02 --Tenkt montert på et NSI hovedsignal
+			
+				-- High relative Elevations, no pole:
+				elseif Variant:find("75B") then return 0.0 --Old km board type, directly on tunnel wall (high RelativeElevation)
+				elseif Variant:find("Rømningsavstand") then return 0.0 --Escape route distance / direction board, directly on tunnel wall
+			
+				else 
+					return 3.5
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+<!--========================================================================================================
+    Pole routing
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_bnp_getPoleRoutingDefaultValue()" ReturnType="String"
+		Description="Returns the default pole setting for the board in question, from {'none','vertical','horizontal'}." >
+		<Constructor>Enumeration {'None','Vertical','Horizontal'} NOBN_bnp_getPoleRoutingDefaultValue()</Constructor>
+		<Formula>
+			function NOBN_bnp_getPoleRoutingDefaultValue()
+				if RcType == rctype_EtcsEoA then
+					return "Vertical"
+				
+				elseif RcType:match("JBTSA_MSS") or RcType:match("JBTKO_SKT") or RcType:match("JBTEH_BKT") then
+					--Those who do NOT use pole routing:
+					if Variant:match("Baliseskilt")
+					or Variant:match("60E")
+					or Variant:match("62")
+					or Variant:match("64")
+					or Variant:match("65") --pantograph signs are usually mounted on OCS pole
+					or Variant:match("67E")
+					or Variant:match("68D%-2")
+					or Variant:match("68D%-3")
+					or Variant:match("68F")
+					or Variant:match("70")
+					or Variant:match("72A")
+					or Variant:match("72B")
+					or Variant:match("73")
+					or Variant:match("Arbeidsområde")
+					or Variant:match("138") --Traffic sign St.Andrew cross along road at level crossing, to be fixed on traffic light towards road.
+					then 
+						return "None"
+					
+					elseif Variant:find("69") then
+						return "Horizontal" --Fixed with temporary bracket to closest rail/sleeper
+
+					else 
+						return "Vertical"
+					end
+				else
+					return "None"
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+	
+<!--========================================================================================================
+    Sighting distance requirement for boards
+=========================================================================================================-->
+	<LuaFunction Name="NOBN_bnp_getBoardSightingRequirement()" ReturnType="String"
+		Description="Returns the sighting requirement according to TRV regulations for vegetation clearance towards boards. Speed is extracted from the object's own alignment using getAlignmentInfo().Speed." >
+		<Constructor>Double NOBN_bnp_getBoardSightingRequirement()</Constructor>
+		<Formula>
+			function NOBN_bnp_getBoardSightingRequirement()
+				local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
+			
+				if 	   Variant:find("Baliseskilt")
+					or Variant:find("Arbeidsområde")
+					or Variant:find("75C") -- 75C: Hev sporrenser
+					or Variant:find("75D") -- 75D: Senk sporrenser
+					or Variant:find("60E") --ATC Varsel - Monteres på Fs eller Hs+Fs
+					or Variant:find("62") --Ugyldighetsskilt - står alltid sammen med Hs, Fs eller enkelt innkjørsignal
+					or Variant:find("64E") --64E: Blå/Hvit Teknisk stolpe
+					or Variant:find("67E") --Orienteringssignal dagtid, unngå å gi signal 83 "Tog kommer" mellom kl 22 og 06
+					or Variant:find("68F") --Tilleggshastighet underskilt - står alltid sammen med signal 68AB
+					or Variant:find("68G") --Krengetoghasighet underskilt - står alltid sammen med signal 68AB
+					or Variant:find("101") --ID-skilt av alle typer
+					or Variant:find("102") --PIL
+					or Variant:find("138") --Traffic sign St.Andrew cross along road at level crossing, to be fixed on traffic light towards road.
+				then
+					--No sighting requirement:
+					return 0, _info("No sighting requirement.")
+			
+				elseif
+					(Variant:find("60") and not Variant:find("60E")) --60ABCD_FGH: ATC skilt
+					or Variant:find("61") --61ABC: Avstandsskilt 1/2/3 (1000/800/250 meter)
+					or Variant:find("63") --63AB: Fallviser/Stigningsviser
+					or Variant:find("64A") --64A: Grense-innkoblingsstolpe
+					or Variant:find("64B") --64B: Seksjoneringsstolpe
+					or Variant:find("64C") --64C: Rasvarslingsstolpe
+					or Variant:find("64D") --64D: Bremsestolpe
+					or Variant:find("65") --65ABCDEFG: KL-skilt
+					or Variant:find("66") --66: Togvei slutt
+					or Variant:find("68A") --69A: Nedsatt hastighet
+					or Variant:find("68B") --69B: Økt hastighet
+					or Variant:find("68C") --69C: Avvikende hastighet
+					or Variant:find("68D") --69D: Markeringsmerke
+					or Variant:find("69") --69AB: Midlertidig hastighet
+					or Variant:find("70") --70: Planovergangsskilt "V"
+					or Variant:find("72") --72AB: FJS begynner/slutter
+					or Variant:find("73") --73: Rasvarsling
+					or Variant:find("74") --74: Toglengdeskilt
+					or Variant:find("75A") --75AB: Kilometerskilt, gammel type
+					or Variant:find("75B") --75AB: Kilometer, ny type
+				then
+					-- Ref TRV Underbygning vedlikehold, 2.1.1 "Sikt til signaler og skilt"
+					v = math.max(40,math.min(130,DesignSpeed))
+					d = RC__round(v/3.6 * 5, 0)
+					return d, _info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m.")
+			
+				elseif		
+					--Krav som til dvergsignaler pga kun aktuelle å observere under skifting (40 km/h / 50 meter)
+					Variant:find("51") --51ABCD: Sporvekselsignal, lysreflekterende. A=tilRettspor, B=fraAvvik, C=tilV, D=tilH
+					or Variant:find("52") --52ABCD: Sporvekselsignal for kryssporveksel. A=fraVtilH, B=fraHtilV, C=fraVtilV, D=fraHtilH.
+					or Variant:find("53") --53: Sporsperresignal, "sporet sperret"
+					or Variant:find("54") --54: Sporsperresignal, "sporet fritt"
+					or Variant:find("64E") --64E: Dvergsignalstolpe
+				then
+					return 50, _info("50 m fixed sighting requirement during shunting movements.")
+			
+				else
+					return 0, _info(DesignSpeed.." km/h: Bad board type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
 
 
 <!--========================================================================================================
