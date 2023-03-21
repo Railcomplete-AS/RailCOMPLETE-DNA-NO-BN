@@ -1,0 +1,94 @@
+<!--========================================================================================================
+
+    NO-BN-SignalSighting.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml" />.
+
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+
+=========================================================================================================-->
+<xpp:bloc>
+
+
+
+	<LuaFunction Name="NOBN_sig_getSignalSightingRequirement()" ReturnType="String"
+		Description="Returns the sighting requirement according to TRV regulations for signals. Speed is extracted from the object's own alignment using 'getAlignmentInfo().Speed'. If no design speed is found in the object's own alignment, then 130 km/h will be assumed." >
+		<Constructor>Double NOBN_sig_getSignalSightingRequirement()</Constructor>
+		<Formula>
+			function NOBN_sig_getSignalSightingRequirement()
+				local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
+			
+				if RcType == rctype_EtcsEoA then
+					-- ERTMS marker board - Fixed 150 m requirement?
+					if MarkerBoard == "-" then
+						return 150, _info(DesignSpeed.." km/h: 150 m fixed sighting requirement for ERTMS boards.")
+					elseif DwarfSignal == "Ja" and MarkerBoard == "-" then
+						return 50, _info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
+					end
+				
+				elseif RcType == rctype_Signal then
+					if not (MainSignal:match("^Hs") or  DistantSignal:match("Ja")) and (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") then
+						return 50, _info("50 m fixed sighting requirement during shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
+				
+					elseif (MainSignal:match("^Hs") or EndOfTrainRoute == "Ja") and (DistantSignal == "-") then
+						-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
+						--NB! If through-signalling is in use, the sighting requirements are reduced to 80 km/h requirements - see TRV change ca 2019.
+						if DesignSpeed &gt; 210 then
+							return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
+						else 
+							v = math.max(135,math.min(210,DesignSpeed))
+							return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
+						end
+			
+					elseif DistantSignal == "Ja" then 
+						-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
+						v = math.max(40,math.min(130,DesignSpeed))
+						return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
+			
+					elseif HighShuntingSignal ~= "-" then
+						return 50, _info("50 m fixed sighting requirement during shunting movements.")
+				
+					else
+						return 0, _info(DesignSpeed.." km/h: Bad JBTSA_SIG Signal type [RcType="..RcType..", Variant="..(Variant and "(void)" or Variant.."."))
+					end
+			
+				
+				elseif RcType == "JBTSA_SIG PLO-signal" then
+					-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
+					if DesignSpeed &gt; 210 then
+						return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
+					else 
+						v = math.max(135,math.min(210,DesignSpeed))
+						return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
+					end
+			
+				elseif RcType == "SA-SIG PLO-forsignal" then
+					-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
+					v = math.max(40,math.min(130,DesignSpeed))
+					return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
+			
+				elseif RcType == rctype_LevelCrossingSignalTowardsRoad then
+					--Signal mot vei
+					return 30, _info("30 m fixed sighting requirement for road traffic towards level crossing signal (To be verified!).")
+			
+				elseif RcType == rctype_BridgeAndFrostDoorSignal then 
+					--Samme byggeteknikk som for 3-lys Hs (2 røde blink / 1 hvit blink)
+					return 150, _info("150 m fixed sighting requirement for bridge / frost gate signal (To be verified!).")
+			
+				elseif RcType == rctype_TrackSignal then
+					--Ingen spesielle krav, plasseres når lokfører eller ombordansvarlig ikke ser hovedsignal (ikke tillatt i nye anlegg)
+					return 50, _info("50 m fixed sighting requirement for Togsporsignal (old type RepHs repeater signal) (To be verified!).")
+			
+				else
+					return 0, _info(DesignSpeed.." km/h: Bad signal type [RcType="..RcType..", Variant="..(Variant or "(void)").."].")
+				end
+			end
+		</Formula>
+	</LuaFunction>
+		
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
