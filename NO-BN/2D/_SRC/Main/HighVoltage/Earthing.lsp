@@ -13,9 +13,55 @@
 ; Earthing (general symbol, earthing busbar)
 
 (defun EARTHING ( / )
+  	(TraceLevel3 "TRANSIENT-EARTHING-CONNECTOR")	(TRANSIENT-EARTHING-CONNECTOR)
   	(TraceLevel3 "EARTH-POTENTIAL") 				(EARTH-POTENTIAL)
-  	(TraceLevel3 "EARTHING-BUSBAR")				(EARTHING-BUSBAR)
-  	(TraceLevel3 "EARTHING-POTENTIAL-AT-RAIL")	(EARTHING-POTENTIAL-AT-RAIL)
+  	(TraceLevel3 "EARTHING-BUSBAR")					(EARTHING-BUSBAR)
+  	(TraceLevel3 "EARTHING-POTENTIAL-AT-RAIL")		(EARTHING-POTENTIAL-AT-RAIL)
+)
+
+
+
+(defun TRANSIENT-EARTHING-CONNECTOR ( / blockName p1 p2 polylineStartWidth polylineEndWidth )
+	; 'Blob' symbol which marks where the transient earthing line is connected to a point object or an alignment.
+	; It is recommended that this block's name is reference in DNA in element <DefaultEarthingBlockName>, as a default 'blob'.
+	; The blob can be used at either end of a transient earthing connector.
+	;
+	;     ___
+	;    / * \		; Use thick polyline instead of solid hatch here.
+	;   2  .  1
+	;    \___/
+	;
+	(setq 
+		blockName	(strcat _OCS_ "TEC-" "TRANSIENT-EARTHING-CONNECTOR")
+		; No description text, just the 'blob'.
+	
+		p1	'( 0.250  0.000)
+		p2	'(-0.250  0.000)
+		
+		polylineStartWidth	0.5
+		polylineEndWidth	0.5
+	)
+
+	; Schematic symbol
+	(SetLayer layDef_Zero)
+	(command
+		_POLYLINE_
+			p1
+			_setPolylineWidth_			polylineStartWidth polylineEndWidth
+			_setPolylineArcMode_
+			_setPolylineArcDirection_	_north_
+			p2
+			p1
+			_ENTER_
+	)
+	(command
+		_POLYLINE_ _origin_ _setPolylineWidth_ _zero_ _zero_ _ENTER_ ; Default to thin polylines (from start to end)
+	)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+
+	; Geo symbol
+	(AddGraphicsFromScaledSchematicBlock blockName _one_)
+	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 

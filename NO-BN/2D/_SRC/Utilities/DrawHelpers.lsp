@@ -152,15 +152,17 @@
 
 
 
-(defun DrawArcByCenter (layDef posCenter pointA PointB / )
+(defun DrawArcByCenter (layDef pointCenter pointA PointB / )
 	; An arc from A through B to C 
 	;
-	;    __B__
+	;    _____
 	;   /     \
-	;  A       C
+	;  A       B
+	;      C		; C = center of circular arc
+	;
 	;
 	(SetLayer layDef)
-	(command _ARC_ 	_setArcCenter_ posCenter pointA PointB _ENTER_)
+	(command _ARC_ 	_setArcCenter_ pointCenter pointA PointB _ENTER_)
 	'DrawArc
 )
 
