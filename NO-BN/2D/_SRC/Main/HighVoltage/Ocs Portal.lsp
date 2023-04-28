@@ -10,7 +10,7 @@
 ;
 ;=========================================================================================================================
 
-; Overhead Catenary System (OCS) Portals (yoke and galley)
+; Overhead Catenary System (OCS) Portals (yoke and gantry)
 
 (defun OCS-PORTAL-AND-GANTRY ( / counter )
 	(setq counter 10)
