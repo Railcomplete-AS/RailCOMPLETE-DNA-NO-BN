@@ -153,29 +153,29 @@
 		<!-- 3D boundary geometries: -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
 		<!-- If CustomTransformation is true , then use possible Cant in the duct alignment as the extra elevation to add in 3D: -->
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry3D" >
-			<SetValue Key="Frozen" Value="True"/>
-			<SetValue Key="CustomTransformation" Value="True"/>
-			<LuaExpression Name="SweepProfile" ><Formula>_JBTKU_KFK_Geometry3DName()</Formula></LuaExpression>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry" >
+			<SetValue Key="Frozen" Value="True" />
+			<SetValue Key="CustomTransformation" Value="True" />
+			<LuaExpression Name="SweepProfile" ><Formula>_JBTKU_KFK_GeometryName()</Formula></LuaExpression>
 			<LuaExpression Name="Offset.Z" ><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 		</SetDynamicProperty>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedGeometry3D" >
-			<SetValue Key="Frozen" Value="False"/>
-			<SetValue Key="CustomTransformation" Value="True"/>
-			<LuaExpression Name="Name" ><Formula>_JBTKU_KFK_Geometry3DName()</Formula></LuaExpression>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedGeometry" >
+			<SetValue Key="Frozen" Value="False" />
+			<SetValue Key="CustomTransformation" Value="True" />
+			<LuaExpression Name="Name" ><Formula>_JBTKU_KFK_GeometryName()</Formula></LuaExpression>
 			<LuaExpression Name="Offset.Z" ><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 			<LuaExpression Name="Rotation.X" ><Formula>_JBTKU_KFK_Rotation3DX(_position)</Formula></LuaExpression>
-			<LuaExpression Name="Separation" ><Formula>_JBTKU_KFK_Geometry3DSeparation(_position)</Formula></LuaExpression>
+			<LuaExpression Name="Separation" ><Formula>_JBTKU_KFK_IteratedGeometrySeparation(_position)</Formula></LuaExpression>
 		</SetDynamicProperty>
 
-		<LuaFunction Name="_JBTKU_KFK_Geometry3DName()" 
+		<LuaFunction Name="_JBTKU_KFK_GeometryName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the cable duct's default 3D sweep profile name." >
-			<Constructor>String _JBTKU_KFK_Geometry3DName()</Constructor>
+			<Constructor>String _JBTKU_KFK_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Geometry3DName()
+				function _JBTKU_KFK_GeometryName()
 					t = "NO-BN-SWEEP-KU-KFØ-KABELKANAL-"
 					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS-MED-50-50-LOKK"
 					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS-MED-50-50-LOKK"
@@ -188,13 +188,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_Geometry3DName()" 
+		<LuaFunction Name="_JBTKU_KFK_GeometryName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the cable duct's default 3D representation file name." >
-			<Constructor>String _JBTKU_KFK_Geometry3DName()</Constructor>
+			<Constructor>String _JBTKU_KFK_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Geometry3DName()
+				function _JBTKU_KFK_GeometryName()
 					t = "NO-BN-3D-KU-KFØ-KABELKANAL-"
 					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS-MED-50-50-LOKK"
 					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS-MED-50-50-LOKK"
@@ -219,7 +219,7 @@
 					id = where.Ref.id
 					pos = where.Pos
 					len2d = getObjectFromId(id).RcAlignment.HorizontalProfile.Length
-					offset = 0.499 * _JBTKU_KFK_Geometry3DSeparation(where) --pick samples at +/- offset from object's insertion point (but avoid 0.5000 sharp).
+					offset = 0.499 * _JBTKU_KFK_IteratedGeometrySeparation(where) --pick samples at +/- offset from object's insertion point (but avoid 0.5000 sharp).
 					if pos &lt; offset then
 						a = 0
 						b = pos + offset
@@ -287,13 +287,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_Geometry3DSeparation()" 
+		<LuaFunction Name="_JBTKU_KFK_IteratedGeometrySeparation()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the default separation between consecutive concrete cable duct elements. 5 mm margin is added in tangent segments. In sharp curves, the elements have to be cut at an angle, so the separation decreases with decreasing curvature. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong)." >
-			<Constructor>Double _JBTKU_KFK_Geometry3DSeparation(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFK_IteratedGeometrySeparation(_position)</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Geometry3DSeparation(where)
+				function _JBTKU_KFK_IteratedGeometrySeparation(where)
 					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
 					-- This simple formula assumes that the 3D geometry is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
 					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then 
@@ -441,9 +441,9 @@
 		
 		</Variants>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry3D" >
-			<SetValue Key="Frozen" Value="False"/>
-			<SetValue Key="CustomTransformation" Value="True"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry" >
+			<SetValue Key="Frozen" Value="False" />
+			<SetValue Key="CustomTransformation" Value="True" />
 		</SetDynamicProperty>
 
 		<CustomAttribute DataType="Boolean" Name="UnderTrackCrossing" DisplayName="Krysser under spor" DefaultValue="true"
@@ -655,14 +655,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptGeometry3D_0.SweepProfile" ><Formula>_JBTKU_KFR_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFR_Geometry3DName()" 
+		<LuaExpression Name="SweptGeometry_0.SweepProfile" ><Formula>_JBTKU_KFR_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFR_GeometryName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the tube package default 3D object model name." >
-			<Constructor>Double _JBTKU_KFR_Geometry3DName()</Constructor>
+			<Constructor>Double _JBTKU_KFR_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_KFR_Geometry3DName()
+				function _JBTKU_KFR_GeometryName()
 						if Variant == "Rørpakke, omstøpt, 1x1xØ110" then return "NO-BN-SWEEP-KU-KFØ-OMTSTØPT-RØRPAKKE-(0.2x0.17)-(1x1-110)"
 					elseif Variant == "Rørpakke, omstøpt, 2x1xØ110" then return "NO-BN-SWEEP-KU-KFØ-OMTSTØPT-RØRPAKKE-(0.34x0.17)-(2x1-110)"
 					elseif Variant == "Rørpakke, omstøpt, 3x1xØ110" then return "NO-BN-SWEEP-KU-KFØ-OMTSTØPT-RØRPAKKE-(0.48x0.17)-(3x1-110)"
@@ -772,7 +772,7 @@
 		</LuaFunction>
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="SweptGeometry3D_0.Offset3D.Z" ><Formula>_JBTKU_KFR_Offset3DZ(_position)</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry_0.Offset3D.Z" ><Formula>_JBTKU_KFR_Offset3DZ(_position)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFR_Offset3DZ()" ReturnType="String" HideFromUser="false"
 				Description="Returns the tube package default elevation, interpolated linearly from the nearest manhole (or track) close to each end. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
 			<Constructor>Double _JBTKU_KFR_Offset3DZ(_position)</Constructor>
@@ -910,9 +910,9 @@
 			 />
 		</AlignmentSystems>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry3D" >
-			<SetValue Key="Frozen" Value="False"/>
-			<SetValue Key="CustomTransformation" Value="False"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry" >
+			<SetValue Key="Frozen" Value="False" />
+			<SetValue Key="CustomTransformation" Value="False" />
 		</SetDynamicProperty>
 
 		<Variants DefaultValue="Pressrør Ø160 uten subrør" >
@@ -952,14 +952,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptGeometry3D_0.SweepProfile" ><Formula>_JBTKU_KFP_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFP_Geometry3DName()" 
+		<LuaExpression Name="SweptGeometry_0.SweepProfile" ><Formula>_JBTKU_KFP_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFP_GeometryName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the tube package default 3D object model name." >
-			<Constructor>Double _JBTKU_KFP_Geometry3DName()</Constructor>
+			<Constructor>Double _JBTKU_KFP_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_KFP_Geometry3DName()
+				function _JBTKU_KFP_GeometryName()
 					t = "NO-BN-SWEEP-KU-KFØ-PRESSRØR-DIAMETER-"
 					if Variant:match("Pressrør Ø160") then return t.."144-160-TOMT"
 					elseif Variant:match("Pressrør Ø400") then return t.."360-400-TOMT"
@@ -1023,9 +1023,9 @@
 
 		<LuaExpression Name="name" ><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry3D" >
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="SweptGeometry" >
 			<!-- Use custom transformation, we need formulas to set the Z coordinate relative to the start/end of the tube where it picks up a cable duct Z. -->
-			<SetValue Key="CustomTransformation" Value="True"/>
+			<SetValue Key="CustomTransformation" Value="True" />
 		</SetDynamicProperty>
 
 		<LuaExpression Name="Linetype" ><Formula>_JBTKU_KFT_Linetype()</Formula></LuaExpression>
@@ -1061,14 +1061,14 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptGeometry3D_0.SweepProfile" ><Formula>_JBTKU_KFT_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFT_Geometry3DName()" 
+		<LuaExpression Name="SweptGeometry_0.SweepProfile" ><Formula>_JBTKU_KFT_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFT_GeometryName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the flexible tube default 3D object model name." >
-			<Constructor>String _JBTKU_KFT_Geometry3DName()</Constructor>
+			<Constructor>String _JBTKU_KFT_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_KFT_Geometry3DName()
+				function _JBTKU_KFT_GeometryName()
 					local t = "NO-BN-SWEEP-KU-KFØ-TREKKERØR-RØD-DIAMETER-"
 					if Variant:match("Ø50") then return t.."042-050"
 					elseif Variant:match("Ø75") then return t.."063-075"
@@ -1084,7 +1084,7 @@
 
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="SweptGeometry3D_0.Offset3D.Z" ><Formula>_JBTKU_KFT_Offset3DZ(_position)</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry_0.Offset3D.Z" ><Formula>_JBTKU_KFT_Offset3DZ(_position)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFT_Offset3DZ()" 
 				ReturnType="Double"
 				HideFromUser="false"
@@ -1249,7 +1249,7 @@
 			</Variant>
 		</Variants>
 		
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D" />
 
 		<CustomAttribute DataType="UInt32" Name="ManholeDiameter" DisplayName="Trekkekum diameter" DefaultValue="0"
 			Description="The manhole diameter (exterior dimension) [mm]." />
@@ -1314,13 +1314,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTKU_KFOE_manhole_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFOE_manhole_Geometry3DName()" 
+		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTKU_KFOE_manhole_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_manhole_GeometryName()" 
 				ReturnType="String"
 				Description="Returns manhole's default 3D object model name." >
-			<Constructor>String _JBTKU_KFOE_manhole_Geometry3DName()</Constructor>
+			<Constructor>String _JBTKU_KFOE_manhole_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_KFOE_manhole_Geometry3DName()
+				function _JBTKU_KFOE_manhole_GeometryName()
 					if ManholeDiameter == 0 and (ManholeLength == 0 and ManholeDepth == 0) then --AND: all are zero...
 						return "NO-BN-3D-FE-DIV-UKJENT",
 							_info("Dimensions are missing, set either Diameter or Length/Depth to their intended values.")
@@ -1491,8 +1491,8 @@
 			</Variant>
 		</Variants>
 		
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedGeometry3D" >
-			<SetValue Key="RotationBeforeOffset" Value="True"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="IteratedGeometry" >
+			<SetValue Key="RotationBeforeOffset" Value="True" />
 			<SetValue Key="CustomTransformation" Value="False" />
 		</SetDynamicProperty>
 
@@ -1549,14 +1549,14 @@
 			</Values>
 		</CustomAttribute>
 	
-	<LuaExpression Name="IteratedGeometry3D_0.Name" ><Formula>_JBTKU_VEI_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_VEI_Geometry3DName()" 
+	<LuaExpression Name="IteratedGeometry_0.Name" ><Formula>_JBTKU_VEI_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_VEI_GeometryName()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the road's default 3D object model name." >
-			<Constructor>String _JBTKU_VEI_Geometry3DName()</Constructor>
+			<Constructor>String _JBTKU_VEI_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_VEI_Geometry3DName()
+				function _JBTKU_VEI_GeometryName()
 					--TODO: Add more roads in 3D
 					--TODO: Allow for varying segment lengths (all are 1000 mm now)
 					t = Sweep3D and "NO-BN-SWEEP-KU-VEI-" or "NO-BN-3D-KU-VEI-"
@@ -1576,14 +1576,14 @@
 		</LuaFunction>
 
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="IteratedGeometry3D_0.Separation" ><Formula>_JBTKU_VEI_Geometry3DSeparation(_position)</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_VEI_Geometry3DSeparation()" 
+		<LuaExpression Name="IteratedGeometry_0.Separation" ><Formula>_JBTKU_VEI_IteratedGeometrySeparation(_position)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_VEI_IteratedGeometrySeparation()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the distance to the next 3D model insertion point along the alignment axis during 3D Preview or 3D Export. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>Double _JBTKU_VEI_Geometry3DSeparation(Double _position)</Constructor>
+			<Constructor>Double _JBTKU_VEI_IteratedGeometrySeparation(Double _position)</Constructor>
 			<Formula>
-				function _JBTKU_VEI_Geometry3DSeparation(pos)
+				function _JBTKU_VEI_IteratedGeometrySeparation(pos)
 					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
 					-- This simple formula assumes that the 3D geometry is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
 					-- TODO: Implement 'SweepMode3D' which interprets the given 3D Model Name as a 2D section to be sweeped (or twisted, if Cant info is provided).
@@ -1624,7 +1624,7 @@
 		</LuaFunction>
 
 		<!-- Half of 3D model spearation value at pos=0: -->
-		<LuaExpression Name="IteratedGeometry3D_0.InitialLinearOffset" ><Formula>IteratedGeometry3D_0.Separation/2</Formula></LuaExpression>
+		<LuaExpression Name="IteratedGeometry_0.InitialLinearOffset" ><Formula>IteratedGeometry3D_0.Separation/2</Formula></LuaExpression>
 
 		<PropertyPrompt Key="code" DefaultValue="Vei" AcceptEmptyValue="false" />
 
@@ -1715,7 +1715,7 @@
 			</Variant>
 		</Variants>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D" />
 
         <LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
         <LuaExpression Name="code" ><Formula>NOBN_sub_getFoundationCode()</Formula></LuaExpression>
@@ -1879,7 +1879,7 @@
 			</Variant>
 		</Variants>
 		
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D" />
 
 		<CustomAttribute DataType="Enumeration" Name="OcsFoundationBaseWidth" DisplayName="Fundament bunnplate bredde"
 			Description="The overhead catenary system (OCS) foundation base plate width (transversal to track). Not applicable to bored foundations." 
@@ -2022,14 +2022,14 @@
 		<LuaExpression Name="dir" ><Formula>RC__getDirFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
 		<LuaExpression Name="AngularOffset" ><Formula>RC__getAngularOffsetFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
 
-		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTEH_FUN_OcsFoundation_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FUN_OcsFoundation_Geometry3DName" 
+		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTEH_FUN_OcsFoundation_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FUN_OcsFoundation_GeometryName" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the 3D model name for an OCS foundation." >
-			<Constructor>String _JBTEH_FUN_OcsFoundation_Geometry3DName()</Constructor>
+			<Constructor>String _JBTEH_FUN_OcsFoundation_GeometryName()</Constructor>
 			<Formula>
-				function _JBTEH_FUN_OcsFoundation_Geometry3DName()
+				function _JBTEH_FUN_OcsFoundation_GeometryName()
 					local bw = OcsFoundationBaseWidth
 					local bo = OcsFoundationBaseOffset == 0 and "000" or tostring(OcsFoundationBaseOffset)
 					local sh = OcsFoundationShaftHeight
@@ -2308,15 +2308,15 @@
 			</Values>
 		</CustomAttribute>
 		
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D" />
 
-		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTKU_FUN_Signalfundament_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_FUN_Signalfundament_Geometry3DName()" ReturnType="Double"
+		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTKU_FUN_Signalfundament_GeometryName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_FUN_Signalfundament_GeometryName()" ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns sideways offset for cable duct element (midway betwen end points on alignment). Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong)." >
-			<Constructor>_JBTKU_FUN_Signalfundament_Geometry3DName()</Constructor>
+			<Constructor>_JBTKU_FUN_Signalfundament_GeometryName()</Constructor>
 			<Formula>
-				function _JBTKU_FUN_Signalfundament_Geometry3DName()
+				function _JBTKU_FUN_Signalfundament_GeometryName()
 					if (Variant == "Betong Hs fundament på fri linje") then
 						return "NO-BN-3D-KU-FUN-HOVEDSIGNAL-FRI-LINJE-2000x2000x300-650x650-300x300xM24-1700"
 					elseif(Variant == "Betong Hs fundament på plattform") then
@@ -2487,7 +2487,7 @@
         <LuaExpression Name="code" ><Formula>NOBN_sub_getFoundationCode()</Formula></LuaExpression>
         <LuaExpression Name="name" ><Formula>tostring(code):upper():match("UNFINISHED") and "" or code</Formula></LuaExpression>
 
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D" />
 
 		<InsertPointObject VariantName="Betongfundament, anvisersøyle" DisplayBlockName="NO-BN-2D-JBTKU_FUN-TELEFUNDAMENT-BETONG-ANVISERSOEYLE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" >
@@ -2632,7 +2632,7 @@
 			</Variant>
 		</Variants>
 		
-		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D"/>
+		<SetDynamicProperty DynamicPropertiesPropertyName="Representation" DynamicPropertyType="Geometry3D" />
 		
 		<LuaExpression Name="dir" ><Formula>"both"</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation" ><Formula>if Variant:find("Brakett mot vegg") then return 2.5 else return 0 end</Formula></LuaExpression>

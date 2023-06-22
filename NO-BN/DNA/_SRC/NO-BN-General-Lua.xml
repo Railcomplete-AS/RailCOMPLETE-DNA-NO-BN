@@ -233,7 +233,7 @@
 		<Formula>
 			function RC__identify(obj)
 				obj = obj or this
-				if type(obj) ~= "table" then
+				if type(obj) ~= "userdata" then
 					return "ERROR: RC__identify() called with a bad argument type '"..type(obj).."', an objRef was expected."
 				end
 				objName = obj:getPropertyValue("name")
@@ -411,19 +411,19 @@
 		<Formula>
 			function RC__isMemberOf(t,item) 
 				local i
-				if getTableValue(t) == nil and type(t) == "table" then
+				if type(t) == "table" then
 					-- A genuine Lua table, convert it to RailCOMPLETE/C# collection object (deleting the keys from key/value pairs):
 					t = getCollectionFromTable(t)
-					--Collections respond correctly to the '.count' attribute:
-					for i = 0, t.count-1 do
-						if type(item) == "string" or type(item) == "number" then
-							if t[i] == item then
-								return true
-							end
-						elseif item.id then
-							if t[i].id == item.id then
-								return true
-							end
+				end
+				--Collections respond correctly to the '.count' attribute:
+				for i = 0, t.count-1 do
+					if type(item) == "string" or type(item) == "number" then
+						if t[i] == item then
+							return true
+						end
+					elseif item.id then
+						if t[i].id == item.id then
+							return true
 						end
 					end
 				end
@@ -501,7 +501,7 @@
 				else
 					return 0,_warning, _info("Second point has no X coordinate.")
 				end
-				return math.sqrt(math.pow(x2-x1,2) + math.pow(y2-y1,2))
+				return math.sqrt((x2-x1)^2 + (y2-y1)^2)
 			end
         </Formula>
 	</LuaFunction>
@@ -542,7 +542,7 @@
 				else
 					return 0,_warning, _info("Second point has no X coordinate.")
 				end
-				return math.sqrt(math.pow(x2-x1,2) + math.pow(y2-y1,2) + math.pow(z2-z1,2))
+				return math.sqrt((x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2)
 			end
         </Formula>
 	</LuaFunction>
@@ -590,11 +590,11 @@
 			Description="Scales a 2D vector intended for 1:1 drawing scale into the corresponding vector for the current drawing scale." >
 		<Constructor>{Double,Double} RC__scale([Double offsetLateral [,Double offsetAlong]])</Constructor>
 		<Formula>
-			function RC__scale( offsetLateral, offsetAlong )
-				scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
+			function RC__scale( LateralOffset, LongitudinalOffset )
+				local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
 				LateralOffset = (LateralOffset or 0)/scale
-				LongitudinallOffset = (LongitudinallOffset or 0)/scale
-				worldOffsetX,worldOffsetY = RC__getWcsVectorFromAcsVector(LateralOffset,LongitudinallOffset)
+				LongitudinalOffset = (LongitudinalOffset or 0)/scale
+				local worldOffsetX,worldOffsetY = RC__getWcsVectorFromAcsVector(LateralOffset,LongitudinalOffset)
 				return { SymbolOffset.X + worldOffsetX, SymbolOffset.Y + worldOffsetY }
 			end
 		</Formula>
