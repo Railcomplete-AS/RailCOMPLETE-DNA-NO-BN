@@ -153,10 +153,10 @@
 		<!-- 3D boundary geometries: -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
 		<!-- If CustomTransformation is true , then use possible Cant in the duct alignment as the extra elevation to add in 3D: -->
-		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry">
+		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
 			<SetValue Key="Frozen" Value="True"/>
 			<SetValue Key="CustomTransformation" Value="True"/>
-			<LuaExpression Name="SweepProfile"><Formula>_JBTKU_KFK_Geometry3DName()</Formula></LuaExpression>
+			<LuaExpression Name="Name"><Formula>_JBTKU_KFK_Geometry3DName()</Formula></LuaExpression>
 			<LuaExpression Name="Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 		</SetDynamicProperty>
 
@@ -166,7 +166,7 @@
 			<LuaExpression Name="Name"><Formula>_JBTKU_KFK_Geometry3DName()</Formula></LuaExpression>
 			<LuaExpression Name="Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 			<LuaExpression Name="Rotation.X"><Formula>_JBTKU_KFK_Rotation3DX(_position)</Formula></LuaExpression>
-			<LuaExpression Name="Separation"><Formula>_JBTKU_KFK_IteratedGeometrySeparation(_position)</Formula></LuaExpression>
+			<LuaExpression Name="Separation"><Formula>_JBTKU_KFK_IteratedGeometry3DSeparation(_position)</Formula></LuaExpression>
 		</SetDynamicProperty>
 
 		<LuaFunction Name="_JBTKU_KFK_Geometry3DName()" 
@@ -219,7 +219,7 @@
 					id = where.Ref.id
 					pos = where.Pos
 					len2d = getObjectFromId(id).RcAlignment.HorizontalProfile.Length
-					offset = 0.499 * _JBTKU_KFK_IteratedGeometrySeparation(where) --pick samples at +/- offset from object's insertion point (but avoid 0.5000 sharp).
+					offset = 0.499 * _JBTKU_KFK_IteratedGeometry3DSeparation(where) --pick samples at +/- offset from object's insertion point (but avoid 0.5000 sharp).
 					if pos &lt; offset then
 						a = 0
 						b = pos + offset
@@ -287,13 +287,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_IteratedGeometrySeparation()" 
+		<LuaFunction Name="_JBTKU_KFK_IteratedGeometry3DSeparation()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the default separation between consecutive concrete cable duct elements. 5 mm margin is added in tangent segments. In sharp curves, the elements have to be cut at an angle, so the separation decreases with decreasing curvature. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong).">
-			<Constructor>Double _JBTKU_KFK_IteratedGeometrySeparation(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFK_IteratedGeometry3DSeparation(_position)</Constructor>
 			<Formula>
-				function _JBTKU_KFK_IteratedGeometrySeparation(where)
+				function _JBTKU_KFK_IteratedGeometry3DSeparation(where)
 					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
 					-- This simple formula assumes that the 3D geometry is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
 					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then 
@@ -441,7 +441,7 @@
 		
 		</Variants>
 
-		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry">
+		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
 			<SetValue Key="Frozen" Value="False"/>
 			<SetValue Key="CustomTransformation" Value="True"/>
 		</SetDynamicProperty>
@@ -655,7 +655,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptGeometry3D_0.SweepProfile"><Formula>_JBTKU_KFR_Geometry3DName()</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFR_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFR_Geometry3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
@@ -893,7 +893,6 @@
 
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SUB"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___SUB"/>
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>
@@ -910,7 +909,7 @@
 			 />
 		</AlignmentSystems>
 
-		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry">
+		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
 			<SetValue Key="Frozen" Value="False"/>
 			<SetValue Key="CustomTransformation" Value="False"/>
 		</SetDynamicProperty>
@@ -952,7 +951,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptGeometry3D_0.SweepProfile"><Formula>_JBTKU_KFP_Geometry3DName()</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFP_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFP_Geometry3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
@@ -1023,7 +1022,7 @@
 
 		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
-		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry">
+		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
 			<!-- Use custom transformation, we need formulas to set the Z coordinate relative to the start/end of the tube where it picks up a cable duct Z. -->
 			<SetValue Key="CustomTransformation" Value="True"/>
 		</SetDynamicProperty>
@@ -1061,7 +1060,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="SweptGeometry3D_0.SweepProfile"><Formula>_JBTKU_KFT_Geometry3DName()</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFT_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKU_KFT_Geometry3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
@@ -1583,7 +1582,7 @@
 				Description="Returns the distance to the next 3D model insertion point along the alignment axis during 3D Preview or 3D Export. Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong).">
 			<Constructor>Double _JBTKU_VEI_IteratedGeometrySeparation(Double _position)</Constructor>
 			<Formula>
-				function _JBTKU_VEI_IteratedGeometrySeparation(pos)
+				function _JBTKU_VEI_IteratedGeometry3DSeparation(pos)
 					-- TODO: A more elaborate function would rely on the actual size for each inserted 3D Model, which may vary as a sampled function along the alignment.
 					-- This simple formula assumes that the 3D geometry is constant along the alignment, decided by the Variant (which applies to the whole alignment's length)
 					-- TODO: Implement 'SweepMode3D' which interprets the given 3D Model Name as a 2D section to be sweeped (or twisted, if Cant info is provided).

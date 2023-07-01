@@ -589,8 +589,11 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT"/> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TABLE_OBJECT">
 	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
 		<LuaExpression Name="name"><Formula>Variant .. " - " .. RC__getUrlFilename()</Formula></LuaExpression>
-		<xpp:expand select="NOBN_com_DISCIPLINE___COM"/>
+		<!-- Don't call macro NOBN_com_DISCIPLINE___COM because that one tries to set a Representation3D 'Layer3D' property, which is not present in the TABLE class. -->
+		<xpp:expand select="NOBN_com_DISCIPLINE"/>
+		<SetValue Key="Discipline" Value="Felles"/>
 	</xpp:bloc>
 </xpp:define>
 
@@ -599,11 +602,14 @@
 	<!-- <xpp:expand select="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT"/> -->
 <xpp:define name="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT">
 	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
 		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
 		<!-- OCS uses "Swiss cant method", i..e rotating but not lifting the alignment axis with cant -->
-		<!-- NB! Roll is a ocs function, not trk. Cant is here interpreted as a decimal degrees angle: -->
-		<LuaExpression Name="Geometry3D_0.Rotation.X"><Formula>NOBN_trk_getPitchFromGradient()</Formula></LuaExpression>
+		<!-- NB! Roll is a 'com' function, not trk. Cant is here interpreted as a decimal degrees angle: -->
+		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="GCS"/>
+		</SetDynamicProperty>
 		<LuaExpression Name="Geometry3D_0.Rotation.Y"><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees()</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 	</xpp:bloc>
@@ -614,9 +620,11 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT">
 	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="CCS"/>
+		</SetDynamicProperty>
 		<LuaExpression Name="RelativeElevation"><Formula>NOBN_trk_getLiftFromCant()</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.Rotation.X"><Formula>NOBN_trk_getPitchFromGradient()</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.Rotation.Y"><Formula>NOBN_trk_getRollFromCant()</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
@@ -624,9 +632,13 @@
 
 
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/> -->
-	<!-- NOTE: Use this macro for objects such as reflective markers, i.e which have special needs concerning Offset.Z, name or other issues. -->
+	<!-- NOTE: Use this macro for objects such as reflective markers, i.e which have special needs concerning Offset3D.Z, name or other issues. -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT">
 	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+		</SetDynamicProperty>
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
@@ -636,6 +648,15 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_BOARD_OBJECT"/> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_BOARD_OBJECT">
 	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+		</SetDynamicProperty>
+		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>NOBN_bnp_getBoardOffset3DZ()</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>NOBN_bnp_getBoardOrPoleName()</Formula></LuaExpression>
+		<LuaExpression Name="sight"><Formula>NOBN_bnp_getBoardSightingRequirement()</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation">
 			<Formula>
 				if PortalMounted then
@@ -651,11 +672,6 @@
 				end
 			</Formula>
 		</LuaExpression>
-		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>NOBN_bnp_getBoardOffset3DZ()</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
-		<LuaExpression Name="name"><Formula>NOBN_bnp_getBoardOrPoleName()</Formula></LuaExpression>
-		<LuaExpression Name="sight"><Formula>NOBN_bnp_getBoardSightingRequirement()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -664,8 +680,13 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT">
 	<xpp:bloc>
-		<LuaExpression Name="RelativeElevation"><Formula>if PortalMounted == nil then return 0 else return PortalMounted and 8.0 or 0 end</Formula></LuaExpression>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+		</SetDynamicProperty>
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
+		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 3.5 or -3.5</Formula></LuaExpression>
+		<LuaExpression Name="RelativeElevation"><Formula>Portalmounted and 8.0 or 0 end</Formula></LuaExpression>
 		<LuaExpression Name="name"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression>
 		<LuaExpression Name="BaneNORBeskrivelse"><Formula>NOBN_sig_getSignalPartNames()</Formula></LuaExpression>
 		<LuaExpression Name="sight"><Formula>NOBN_sig_getSignalSightingRequirement()</Formula></LuaExpression>
@@ -702,14 +723,6 @@
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE">
 	<xpp:bloc>
 		<SetValue Key="EarthingMethod" Value="None"/>
-		<LuaExpression Name="EarthingLabelColor"><Formula>NOBN_com_assignEarthingLabelColor()</Formula></LuaExpression>
-	</xpp:bloc>
-</xpp:define>
-
-	<!-- <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_UNKNOWN"> -->
-<xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_UNKNOWN">
-	<xpp:bloc>
-		<SetValue Key="EarthingMethod" Value="Unknown"/>
 		<LuaExpression Name="EarthingLabelColor"><Formula>NOBN_com_assignEarthingLabelColor()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
