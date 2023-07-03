@@ -211,7 +211,7 @@
 	<PropertyOverride Name="Color" DisplayName="Farge"									Category="CAD"/>
 	<PropertyOverride Name="Layer" DisplayName="Lag"									Category="CAD"/>
 	<PropertyOverride Name="Linetype" DisplayName="Linjetype"							Category="CAD"/>
-	<PropertyOverride Name="Lineweight" DisplayName="Linjevekt"							Category="CAD"/>
+	<PropertyOverride Name="LineWeight" DisplayName="Linjevekt"							Category="CAD"/>
 	<PropertyOverride Name="GlobalWidth" DisplayName="Global linjebredde"				Category="CAD"/>
 
 <PropertyCategory Name="Presentation" DisplayName="2D symbol"						Collapsed="true"  />	<!-- Intrinsic -->
@@ -533,44 +533,11 @@
 
 
 
-	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT"/> -->
-<xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT">
-	<xpp:bloc>
-		<LuaExpression Name="DistanceToAlignment">
-			<Formula>
-				d = getPropertyValue("DistanceToAlignment")
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
-				if d == 0 then 
-					return (LeftSided and -6/sc or 6/sc)
-				else
-					return RC__getNearestSnapDistance(d*sc,3)/sc
-				end
-			</Formula>
-		</LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
-	</xpp:bloc>
-</xpp:define>
-
-
-
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT">
 	<xpp:bloc>
 		<LuaExpression Name="DistanceToAlignment">
 			<Formula>
---[[
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
-				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("DistanceToAlignment")
-					if d == 0 then 
-						return -6/sc
-					else
-						return RC__getNearestSnapDistance(d*sc,3)/sc
-					end
-				else 
-					return RightSided and 4e-4 or -4e-4 
-				end
---]]
 				d = getPropertyValue("DistanceToAlignment")
 				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if d == 0 then 
@@ -692,6 +659,53 @@
 		<LuaExpression Name="sight"><Formula>NOBN_sig_getSignalSightingRequirement()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
+
+
+
+	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_WITH_CANT"/> -->
+<xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_WITH_CANT">
+	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
+			<SetValue Key="Parent" Value="GCS"/>
+			<SetValue Key="RotationBeforeOffset" Value="True"/>
+		</SetDynamicProperty>
+		<SetDynamicProperty Type="Representation3D" Subtype="IteratedGeometry3D">
+			<SetValue Key="Parent" Value="GCS"/>
+			<SetValue Key="RotationBeforeOffset" Value="True"/>
+		</SetDynamicProperty>
+		<LuaExpression Name="IteratedGeometry3D_1.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_WITHOUT_CANT"/> -->
+<xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_WITHOUT_CANT">
+	<xpp:bloc>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<SetDynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
+			<SetValue Key="Parent" Value="GCS"/>
+			<SetValue Key="RotationBeforeOffset" Value="True"/>
+		</SetDynamicProperty>
+		<SetDynamicProperty Type="Representation3D" Subtype="IteratedGeometry3D">
+			<SetValue Key="Parent" Value="GCS"/>
+			<SetValue Key="Frozen" Value="=not SweptGeometry3D_0.Frozen"/>
+			<SetValue Key="RotationBeforeOffset" Value="True"/>
+		</SetDynamicProperty>
+		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS__TAG"/> -->
+<!-- <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS__TAG"> -->
+	<!-- <xpp:bloc> -->
+		<!-- <LuaExpression Name="Tag"><Formula>string.match(RcType,"%w+_%w+").."-nnnnnn"</Formula></LuaExpression> -->
+	<!-- </xpp:bloc> -->
+<!-- </xpp:define> -->
 
 
 

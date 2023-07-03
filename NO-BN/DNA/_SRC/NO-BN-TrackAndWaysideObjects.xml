@@ -314,7 +314,7 @@
 		</Variants>
 	
 		<!-- TODO: Adjust GlobalWidth in schematic mode to reflect track usage (with train routes: Thicker line) -->
-		<!-- Note: Plotting with Lineweight being 'Default' or 'ByLayer' or 'ByBlock' implies that GlobalWidth will be plotted. -->
+		<!-- Note: Plotting with LineWeight being 'Default' or 'ByLayer' or 'ByBlock' implies that GlobalWidth will be plotted. -->
 		<LuaExpression Name="GlobalWidth"><Formula>_JBTKO_SPO_GlobalWidth()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPO_GlobalWidth()" ReturnType="String"
 			Description="Returns the CAD system Global Width (modelspace / paperspace line thickness) for railway track alignments.">
@@ -844,8 +844,9 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
+
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>
 		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
@@ -920,6 +921,22 @@
 			</Formula>
 		</LuaExpression>
 		
+		<LuaExpression Name="DistanceToAlignment">
+			<Formula>
+				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				if RcType:upper():match("SEGMENT") then
+					d = getPropertyValue("DistanceToAlignment")
+					if d == 0 then 
+						return -6/sc
+					else
+						return RC__getNearestSnapDistance(d*sc,3)/sc
+					end
+				else 
+					return RightSided and 4e-4 or -4e-4 
+				end
+			</Formula>
+		</LuaExpression>
+
 		<InsertPointObject VariantName="Horisontalgeometrisegment"
 				DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-Schematic" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4e-4">
@@ -955,7 +972,7 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ANNOTATIVE_DISTANCE_TO_ALIGNMENT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>
@@ -1020,6 +1037,22 @@
 				elseif nvv.Type == "Crest" then return nvv.Radius &lt; 4e-4 and "Gradient" or "HBP"
 				elseif nvv.Type == "Sag" then return nvv.Radius &lt; 4e-4 and "Gradient" or "LBP"
 				else return _info("Bad Vertical Vertex Type: "..nvv.Type),_warning
+				end
+			</Formula>
+		</LuaExpression>
+
+		<LuaExpression Name="DistanceToAlignment">
+			<Formula>
+				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				if RcType:upper():match("SEGMENT") then
+					d = getPropertyValue("DistanceToAlignment")
+					if d == 0 then 
+						return -6/sc
+					else
+						return RC__getNearestSnapDistance(d*sc,3)/sc
+					end
+				else 
+					return RightSided and 4e-4 or -4e-4 
 				end
 			</Formula>
 		</LuaExpression>
