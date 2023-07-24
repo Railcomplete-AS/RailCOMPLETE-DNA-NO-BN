@@ -30,6 +30,35 @@
 	NOBN_com_YyyyZzzz
 	Lua functions common to two or more railway disciplines.
 =========================================================================================================-->
+	<LuaFunction Name="NOBN_com_mileageIncreasesTowardsLeft()" ReturnType="String"
+		Description="Returns 'true' if, and only if, the alignment's local tangent direction of the calling point object has kilometration increasing towards left in the current User Coordinate System. Use the context menu's 'RailCOMPLETE Screen Orientation' to set a new UCS, then refresh the affected point objects.">
+		<Constructor>String NOBN_com_mileageIncreasesTowardsLeft()</Constructor>
+		<Formula>
+			function NOBN_com_mileageIncreasesTowardsLeft()
+				acsYaxisTangent = getAlignmentInfo().Tangent
+				acsYaxisWcsAngle = math.deg(math.atan(acsYaxisTangent.Y,acsYaxisTangent.X))
+				cs = DocumentData.Document.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d
+				ucsXaxisWcsAngle = math.deg(math.atan(cs.Xaxis.Y,cs.Xaxis.X))
+				diffAngMod360 = (acsYaxisWcsAngle - ucsXaxisWcsAngle) % 360
+				return diffAngMod360 &gt; 90 and diffAngMod360 &lt; 270
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_com_setStage()" ReturnType="String"
+		Description="Returns the object's layer's 'stageEntry-stageExit' pattern (two 4-digit numbers 'nnnn-mmmm'). If not found, a '?' is returned. See also command RC-ManageStagesUsingLayerNames.">
+		<Constructor>String NOBN_com_setStage()</Constructor>
+		<Formula>
+			function NOBN_com_setStage()
+				return layer:match(".+(%d%d%d%d%-%d%d%d%d).*") or "?"
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
 	<LuaFunction Name="NOBN_com_getOcpCode()" ReturnType="String"
 		Description="Returns the code property for the Operation / Control Point (OCP) area surrounding the given object.">
         <Constructor>String NOBN_com_getOcpCode([Reference obj])</Constructor>
@@ -52,7 +81,7 @@
 
 
 	<LuaFunction Name="NOBN_com_setSymbolFrame()" ReturnType="String"
-		Description="Checks object modelcheck attributes for status symbols warnings and errors, turns on the corresponding symbol frame ([no frame]/_unfinished/_warning/_error).">
+		Description="Checks the object's modelcheck attributes for status symbols such as warnings and errors and turns on the corresponding symbol frame ([no frame]/_unfinished/_warning/_error).">
 		<Constructor>String NOBN_com_setSymbolFrame()</Constructor>
 		<Formula>
 			function NOBN_com_setSymbolFrame()
