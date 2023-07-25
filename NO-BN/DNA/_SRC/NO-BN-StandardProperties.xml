@@ -318,6 +318,7 @@
 	Create discipline-holding custom attribute, for use in ObjectType declarations.
 	Value to be set with <SetValue Key="Fag" Value="Tele"/> statement immediately after creation.
 =========================================================================================================-->
+
 <xpp:define name="NOBN_com_DISCIPLINE">
 	<xpp:bloc>
 		<CustomAttribute DataType="Enumeration" Name="Discipline" DisplayName="Discipline" DefaultValue="" Category="General"
@@ -415,6 +416,26 @@
 	
 
 
+		<!-- <xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___TAG"/> -->  <!-- Not in use for this administration. Leave it as comment, to have correspondence line-by-line with other DNAs. -->
+<!-- <xpp:define name="NOBN_com_STD_CUSTOMATTRIBUTES___TAG"> -->
+	<!-- <xpp:bloc> -->
+		<!-- <CustomAttribute DataType="String" Name="Tag" DisplayName="Tag" DefaultValue="false" Category="Custom properties" -->
+			<!-- Description="The 'Tag' string custom property holds the unique identifier for the object, for use when it enters its operational life or is transferred to the administration's operational asset management database."/> -->
+	<!-- </xpp:bloc> -->
+<!-- </xpp:define> -->
+
+
+
+		<!-- <xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO"/> -->  <!-- Not in use for this administration. Leave it as comment, to have correspondence line-by-line with other DNAs. -->
+<!-- <xpp:define name="NOBN_com_STD_CUSTOMATTRIBUTES___OBJECTINFO"> -->
+	<!-- <xpp:bloc> -->
+		<!-- <CustomAttribute DataType="String" Name="ObjectInfo" DisplayName="Info" DefaultValue="" Category="Metadata" -->
+			<!-- Description="Spezifische Eigenschaft, die (benutzerdefinierte) Informationen enthält, die in Zeichnungen angezeigt werden sollen. Ein-/Ausblenden mit dem Werkzeug 'Anzeigen der Layergruppen'. Zusätzliche Informationen, z. B. über den Bauprozess, sollten in der Eigenschaft Description gespeichert werden."/> -->
+	<!-- </xpp:bloc> -->
+<!-- </xpp:define> -->
+		
+
+
 		<!-- <xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/> -->
 <xpp:define name="NOBN_com_STD_CUSTOMATTRIBUTES___VAR">
 	<xpp:bloc>
@@ -448,8 +469,7 @@
 <xpp:define name="NOBN_sig_STD_CUSTOMATTRIBUTES___SPREADING_LENS">
 	<xpp:bloc>
 		<CustomAttribute DataType="Enumeration" Name="SpreadingLens" DisplayName="Spredelinse" DefaultValue="-" Category="Custom properties"
-			Description="The 'SpreadingLens' custom property [Ja,-] defines whether the signal shall use spreading lenses (default: '-')." 
-		>
+			Description="The 'SpreadingLens' custom property [Ja,-] defines whether the signal shall use spreading lenses (default: '-').">
 			<Values >
 				<Value>Ja</Value>	
 				<Value>-</Value> 
@@ -461,7 +481,7 @@
 
 
 <!--========================================================================================================
-	Compound macros (macro in macro) - Standard Lua expressions for attributes of various kinds.
+	Nested macros (macro in macro) - Standard Lua expressions for attributes of various kinds.
 	I.e., combinations of the elementary macros stated above (further up in this file).
 =========================================================================================================-->
 
@@ -524,6 +544,9 @@
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
 		<LuaExpression Name="name"><Formula>Variant .. " - " .. RC__getUrlFilename()</Formula></LuaExpression>
+		<!-- Don't call macro NOBN_com_DISCIPLINE___COM because that one tries to set a Representation3D 'Layer3D' property, which is not present in the TABLE class. -->
+		<xpp:expand select="NOBN_com_DISCIPLINE"/>
+		<SetValue Key="Discipline" Value="Felles"/>
 	</xpp:bloc>
 </xpp:define>
 
@@ -533,15 +556,16 @@
 <xpp:define name="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT">
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<!-- Contact wire alignment shall use "Swiss cant method" in its AlignmentSystem declaration, i..e rotating but not lifting the alignment axis with cant -->
+		<!-- NB! Roll is a 'com' function, not trk. Cant is here interpreted as a decimal degrees angle: -->
 		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 4e-4 or -4e-4</Formula></LuaExpression>
 		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
-		<!-- OCS uses "Swiss cant method", i..e rotating but not lifting the alignment axis with cant -->
-		<!-- NB! Roll is a 'com' function, not trk. Cant is here interpreted as a decimal degrees angle: -->
+		<LuaExpression Name="Layer3D"><Formula>"3D_"..Discipline</Formula></LuaExpression>
 		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="GCS"/>
+			<LuaExpression Name="Rotation.Y"><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees()</Formula></LuaExpression>
+			<LuaExpression Name="Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 		</SetDynamicProperty>
-		<LuaExpression Name="Geometry3D_0.Rotation.Y"><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees()</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -551,11 +575,13 @@
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT">
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
+		<!-- Note: DistanceToAlignment must be set individually for each object type, as placement will vary among trackbound object types. -->
+		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="Layer3D"><Formula>"3D_"..Discipline</Formula></LuaExpression>
 		<SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="CCS"/>
+			<LuaExpression Name="Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 		</SetDynamicProperty>
-		<LuaExpression Name="RelativeElevation"><Formula>NOBN_trk_getLiftFromCant()</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
