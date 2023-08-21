@@ -24,7 +24,7 @@
 (princ "\n================================= 2D Symbol Library Commands.lsp =================================") (prin1)
 (setq 
 	adm			"NO-BN"
-	github		"C:\\Users\\Claus Feyling\\Documents\\GitHub"
+	github		"C:\\Users\\claus\\OneDrive\\Dokumenter\\GitHub"
 )
 (vl-load-com) ; Load AutoCAD's Visual LISP environment (if not already loaded)
 (setq rootFolder (strcat github "\\RailCOMPLETE-DNA-" adm "\\" adm "\\2D\\_SRC"))
