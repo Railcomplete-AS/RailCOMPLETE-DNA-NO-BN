@@ -1,0 +1,1029 @@
+<!--========================================================================================================
+
+    NO-BN-Eulynx.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+<xpp:define name="NOBN_eulynx_INITIALIZE">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ExportScript LuaVariableName="rcObjects">
+					<LuaScript>
+--THBEN: Hvor kommer rcObjects fra? Kunne vi fikset dette selv, med filter på DocumentData?
+					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == rcType end)
+					
+					for k,v in pairs(filteredObjects) do
+						local obj = v
+						if v.hasConfiguration == nil then 
+							local configuration = createEulynxObject("generic.Configuration", {})
+							
+							local designation = createEulynxObject("generic.SimpleDesignation", {})
+							designation.name = tostring(obj.code) ~= "" and obj.code or obj.name
+							
+							obj.EULYNX_hasConfiguration = configuration
+							
+							obj.EULYNX_hasConfiguration.hasConfigurationProperty = {designation}
+						end
+					end
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_SIGNAL">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					--NB! 'dataPrep' is a hard-coded C# declared identifier name. It will be "softened" 
+					--with an XML name attribute for the ImportScript element.
+
+					--Signals are complex, they have no simple defaultVariant, but instead they have lots of qualifiers 'MainSignal', 'DistantSignal' etc.
+					local defaultDist = 3.500
+					
+					rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+					
+					rsmSignals = rsmEntities.ownsSignal
+					
+					signals = table.select(rsmSignals, function(x) return {["rsmSignal"] = x,["eulynxSignal"] = table.firstOrNil(signallingEntities.ownsTrackAsset, function (trackAsset) return trackAsset.refersToRsmSignal.ref == x.id end), ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.locations[0].ref end)} end)
+					
+					write("Track assets: "..signallingEntities.ownsTrackAsset.count.."\n")
+					write("Signals: "..#signals.."\n")
+					for k, v in pairs(signals) do
+						
+						signalType = table.firstOrNil(signallingEntities.ownsSignalType, function (x) return x.appliesToSignal.ref == v.eulynxSignal.id end)
+						local levelCrossingSignalRelation = table.firstOrNil(signallingEntities.ownsLevelCrossingSignalRelation, function (x) return x.appliesToSignal.ref == v.eulynxSignal.id end)
+						-- continue if signal has no signal type or levelCrossingSignalRelation
+						if (signalType == nil and levelCrossingSignalRelation == nil) then 
+							goto continue 
+						end
+						
+						write("Inserting signal: "..v.rsmSignal.name.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+						
+						--A suitable start value at creation. Modify with MainSignal = {'-' | 'Ja'}, DwarfSignal = {'-' | 'Ja'}
+						local signalRcType = rctype_Signal
+						local signalVariant = "2-lys Rep. hovedsignal"
+						
+						if (levelCrossingSignalRelation ~= nil) then
+							signalRcType = rctype_LevelCrossingSignal
+							signalVariant = "Planovergang, signal"
+						end
+--THBEN: Her er det noe rart - togsporsignal er ikke PLO-signal, men et slags hjelpesignal:
+--Bruke ownsSignalType, appliestToSignal og SignalType.value ?
+						if (levelCrossingSignalRelation ~= nil) then
+							signalRcType = rctype_TrackSignal
+							signalVariant = "Planovergang, signal"
+							--[[
+								TODO: Decipher these variants:
+									"Togsporsignal 1-begrep"
+									"Togsporsignal 1-begrep, sidestilt"
+									"Togsporsignal 2-begrep"
+									"Togsporsignal 2-begrep, sidestilt"
+							--]]
+						end
+						
+						local obj = createPointObject(alignment, signalRcType, signalVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
+						obj.code = v.rsmSignal.name
+						obj:setObjectId(v.eulynxSignal.id)
+						obj.EulynxBaseObject = v.eulynxSignal
+						
+						signalFunction = table.firstOrNil(signallingEntities.ownsSignalFunction, function (x) return x.appliesToSignal.ref == v.eulynxSignal.id end)
+						if (signalFunction ~= nil) then
+							obj.SignalFunction = signalFunction
+						end
+						
+						if (levelCrossingSignalRelation ~= nil) then
+							obj.LevelCrossingSignalRelation = levelCrossingSignalRelation
+						end
+
+						if signalType ~= nil then
+							local isMain = string.match(string.lower(signalType.value), "main")
+							local isMultiSection = string.match(string.lower(signalType.value), "multisection")
+							local isRepeater = string.match(string.lower(signalType.value), "repeater")
+							local isDistant = string.match(string.lower(signalType.value), "distant")
+							local isDwarf = string.match(string.lower(signalType.value), "shunting")
+							if isMain or isMultiSection or isRepeater then
+								-- find main signal frame.
+								local signalFrame = table.firstOrNil(signallingEntities.ownsSignalFrame, function (x) return x.isOfSignalFrameType == "main" and x.id == table.firstOrNil(v.eulynxSignal.hasSignalFrame).ref end)
+								if signalFrame then
+									write("Located signal frame\n")
+									local aspectCount = signalFrame.hasAspect.Count
+									write("Aspect count:"..aspectCount.."\n")
+									if aspectCount == 1 then
+										obj.MainSignal = isRepeater and "RepHs1" or "Hs1"
+									elseif aspectCount == 2 then
+										obj.MainSignal = isRepeater and "RepHs2" or "Hs2"
+									elseif aspectCount == 3 then
+										obj.MainSignal = "Hs3"
+									else
+										obj.MainSignal = "-"
+									end
+								end
+							else
+								obj.MainSignal = "-"
+							end
+								
+							obj.DistantSignal = (isDistant or isMultiSection) and "Ja" or "-"
+							obj.DwarfSignal = isDwarf and "Ja" or "-"
+								
+						end
+--THBEN: HighShuntingSignal ~= DwarfSignal, although both of them are signals for autorising shunting movements:
+							write("\n")
+						
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+--THBEN: Hvor kommer rcObjects fra? Kunne vi fikset dette selv, med filter på DocumentData?
+					local objectsToReturn = {}
+					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == rctype_Signal end)
+						
+					local function AddAspect(sf)
+						local aspect = createEulynxObject("sig.ActiveAspect", {})
+						table.insert(objectsToReturn, aspect)
+						local aspectRef = createEulynxObject("rsmCommon.tElementWithIDref", {aspect.id})
+						local allApects = {}
+						for i = 0 , sf.hasAspect.Count do
+							table.insert(allApects,sf.hasAspect[i])
+						end
+						
+						table.insert(allApects,aspectRef)
+						
+						sf.hasAspect = allApects
+						write("Added aspect to signal frame\n")
+					end			
+					
+					local function SetSignalType(signal)
+						local signalType = createEulynxObject("sig.SignalType", {})
+						local signalTypeValue = signal.MainSignal ~= "-" and "main" or nil
+						if signal.MainSignal:match("Rep") then
+							signalTypeValue = "repeater"
+						end
+						if signal.DistantSignal == "Ja" then
+							signalTypeValue = signalTypeValue and signalTypeValue.."Distant" or "distant" 
+						end
+						if signal.DwarfSignal == "Ja" then
+							signalTypeValue = signalTypeValue and signalTypeValue.."Shunting" or "shunting" 
+						end
+						
+		
+						signalType.value = signalTypeValue
+						table.insert(objectsToReturn, signalType)
+						signalType.appliesToSignal = createEulynxObject("rsmCommon.tElementWithIDref", {signal.id})
+					
+						write("Set signal type\n")
+					end			
+					
+					for k,v in pairs(filteredObjects) do
+						local obj = v
+						
+						local signalFrame = createEulynxObject("sig.SignalFrame", {})
+						signalFrame.isOfSignalFrameType = "main"
+						signalFrame.isFixed = false
+						table.insert(objectsToReturn, signalFrame)
+						
+						local signalFrameRef = createEulynxObject("rsmCommon.tElementWithIDref", {})
+						signalFrameRef.ref = signalFrame.id
+						obj.EULYNX_hasSignalFrame = {signalFrameRef}
+						
+						if obj.MainSignal:match("1") then
+							AddAspect(signalFrame)
+						end
+						if obj.MainSignal:match("2") then
+							AddAspect(signalFrame)
+							AddAspect(signalFrame)
+						end
+						if obj.MainSignal:match("3") then
+							AddAspect(signalFrame)
+							AddAspect(signalFrame)
+							AddAspect(signalFrame)
+							
+						end
+						SetSignalType(obj)
+						
+					end
+					
+					return objectsToReturn
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_AXLE_COUNTER">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					local defaultVariant = "Tellepunkt"
+					local defaultDist = 0.750
+
+					rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+					
+					rsmOnTrackSignallingDevices = table.where(rsmEntities.ownsOnTrackSignallingDevice, function (x) return x:getTableValue():ToString():match("VehiclePassageDetector") end)
+					
+					axleCounters = table.select(rsmOnTrackSignallingDevices, function(x) return {["rsmOnTrackSignallingDevice"] = x,["eulynxAxleCountingHead"] = table.firstOrNil(signallingEntities.ownsTrackAsset, function (trackAsset) return trackAsset.refersToRsmVehiclePassageDetector.ref == x.id end), ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.locations[0].ref end)} end)
+											
+					for k, v in pairs(axleCounters) do
+						
+						write("Inserting axle counter: "..v.rsmOnTrackSignallingDevice.name.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+						
+						local obj = createPointObject(alignment, rctype_AxleCounterSensor, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						obj.dir = "both"  --v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
+						if v.eulynxAxleCountingHead.hasConfiguration ~= nil and v.eulynxAxleCountingHead.hasConfiguration.hasConfigurationProperty.Count > 0 then
+							--write("Setting code to: "..v.eulynxAxleCountingHead.hasConfiguration.hasConfigurationProperty[0].shortNameLayoutPlan.."\n")
+							obj.code = "="
+							obj.code = v.eulynxAxleCountingHead.hasConfiguration.hasConfigurationProperty[0].shortNameLayoutPlan
+						end
+						
+						obj:setObjectId(v.eulynxAxleCountingHead.id)
+						obj.EulynxBaseObject = v.eulynxAxleCountingHead
+												
+						write("\n")
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == rctype_AxleCounter end)
+						
+					for k,v in pairs(filteredObjects) do
+						local obj = v
+						
+						if obj.EULYNX_limitsTdsSection.Count == 0 then
+							local t = {}
+							local sections = getUnionOfCollections({obj.DownSections, obj.UpSections})
+							for i = 0, sections.Count -1 do
+								local ref = createEulynxObject("rsmCommon.tElementWithIDref", {})
+								ref.ref = sections[i].id
+								table.insert(t, ref)
+							end
+							obj.EULYNX_limitsTdsSection = t
+						end
+					end
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_ETCS_BALISE_GROUP">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					local defaultVariant = "ETCS L2 balisegruppe, enkel"
+					local defaultDist = 4e-4
+					
+					rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+
+					etcsBaliseGroups = table.where(signallingEntities.ownsTrackAsset, function (x) return string.match(x:getTableValue():ToString():sub(-19), "sig.EtcsBaliseGroup") end)
+
+				
+					local etcsBaliseGroupsTable = table.select(etcsBaliseGroups, function(x) return {["etcsBaliseGroup"] = x, ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.isLocatedAt.ref end)} end)
+					
+					write("EtcsBaliseGroups: "..#etcsBaliseGroupsTable.."\n")
+					
+					for k, v in pairs(etcsBaliseGroupsTable) do
+						write("Inserting etcsBaliseGroup: "..v.etcsBaliseGroup.id.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+						
+						local balisesInGroup = table.where(signallingEntities.ownsTrackAsset, function (x) return x.implementsTpsDataTxSystem.ref == v.etcsBaliseGroup.id end)
+						local numberOfBalisesInGroup = #balisesInGroup
+						local baliseGroupVariant = defaultVariant
+						if numberOfBalisesInGroup > 1 then
+							baliseGroupVariant = "ETCS L2 balisegruppe, dobbel"
+						end
+						
+						write("Number of balises in group: "..numberOfBalisesInGroup.."\n")
+						
+				--THBEN: 'left' er vel negativ side?
+				--THBEN: Vi burde hatt LuaName for Variants også!
+						local obj = createPointObject(alignment, rctype_EtcsBaliseGroup, baliseGroupVariant, pos,
+				--Distance to alignment will be overriden by object's formula anyway, but assign something here which is on the correct side:
+						v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true) 
+						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
+						
+				--THBEN: Har balisegruppe en hasConfiguration? Jeg fant ikke dette i Eulynx DP skjemaet / UML diagrammene:
+
+
+						if v.etcsBaliseGroup.hasConfiguration ~= nil and v.etcsBaliseGroup.hasConfiguration.hasConfigurationProperty.Count > 0 then
+							--write("Setting code to: "..v.eulynxEtcsBaliseGroup.hasConfiguration.hasConfigurationProperty[0].shortNameLayoutPlan.."\n")
+							obj.code = "="
+							obj.code = v.etcsBaliseGroup.hasConfiguration.hasConfigurationProperty[0].name
+						end
+									
+						obj:setObjectId(v.etcsBaliseGroup.id)
+						
+						
+						local etcsBaliseGroupLevel2 = table.firstOrNil(signallingEntities.ownsTpsDataTransmissionSystemProperties, function (x) return x.appliesToTpsDataTxSystem.ref == v.etcsBaliseGroup.id end)
+						
+						if etcsBaliseGroupLevel2 then
+							if etcsBaliseGroupLevel2.hasPurpose and etcsBaliseGroupLevel2.hasPurpose.refersToSignal then
+								setRelation(obj, etcsBaliseGroupLevel2.hasPurpose.refersToSignal.ref, rel_EtcsBaliseGroup_AppliesTo_Object)
+							end
+						end
+						
+						
+						
+						write("\n")
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+--THBEN: Hvor kommer rcObjects fra? Kunne vi fikset dette selv, med filter på DocumentData?
+					local etcsBaliseGroups = table.where(rcObjects, function (x) return x.rcType == rctype_EtcsBaliseGroup end)
+					
+					for k,v in pairs(etcsBaliseGroups) do
+						local obj = v
+						if obj.EtcsBaliseGroupLevel2 == nil then
+							local bgl2 = createEulynxObject("sig.EtcsBaliseGroupLevel2", {})
+							obj.EtcsBaliseGroupLevel2 = bgl2
+						end
+						
+						local relations, relCount = obj:getRelatedObjects(rel_EtcsBaliseGroup_AppliesTo_Object)
+						if obj.EtcsBaliseGroupLevel2.hasPurpose == nil and relCount > 0 then
+							local baliseGroupPurpose = createEulynxObject("sig.BaliseGroupPurpose", {})
+							
+							local length = createEulynxObject("rsmCommon.Length", {})
+							length.value = obj:getDistance(relations[0])
+							length.unit = "meter"
+							baliseGroupPurpose.hasDistance = length
+
+--THBEN: Related object may something else than a signal... A sign, a turnout (switch). What should we do then?
+							local signalRef = createEulynxObject("rsmCommon.tElementWithIDref", {relations[0].id})
+							baliseGroupPurpose.refersToSignal = signalRef
+
+							obj.EtcsBaliseGroupLevel2.hasPurpose = baliseGroupPurpose
+						end
+					end
+					
+					
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+<xpp:define name="NOBN_eulynx_BALISE_GROUP">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					local defaultVariant = "Hovedsignalbalisegruppe"
+					local defaultDist = 4e-4
+					
+					rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+					
+					etcsBaliseGroups = table.where(signallingEntities.ownsTrackAsset, function (x) return string.match(x:getTableValue():ToString():sub(-15), "sig.BaliseGroup") end)
+
+				--THBEN: Hjelp - hva er forskjellen på dem? Et datapunkt ER en balisegruppe!					
+					local baliseGroupsTable = table.select(etcsBaliseGroups, function(x) return {["baliseGroup"] = x, ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.isLocatedAt.ref end)} end)
+					
+					write("baliseGroup: "..#baliseGroupsTable.."\n")
+					
+					for k, v in pairs(baliseGroupsTable) do
+						write("Inserting baliseGroup: "..v.baliseGroup.id.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+						
+				--THBEN: 'left' er vel negativ side?
+				--THBEN: Vi burde hatt LuaName for Variants også!
+						local obj = createPointObject(alignment, rctype_BaliseGroup, defaultVariant, pos,
+				--Distance to alignment will be overriden by object's formula anyway, but assign something here which is on the correct side:
+						v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true) 
+						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
+						
+				--THBEN: Har balisegruppe en hasConfiguration? Jeg fant ikke dette i Eulynx DP skjemaet / UML diagrammene:
+
+
+						if v.baliseGroup.hasConfiguration ~= nil and v.baliseGroup.hasConfiguration.hasConfigurationProperty.Count > 0 then
+							--write("Setting code to: "..v.eulynxEtcsBaliseGroup.hasConfiguration.hasConfigurationProperty[0].shortNameLayoutPlan.."\n")
+							obj.code = "="
+							obj.code = v.baliseGroup.hasConfiguration.hasConfigurationProperty[0].name
+						end
+									
+						obj:setObjectId(v.baliseGroup.id)
+						
+						
+												
+						local etcsBaliseGroupLevel2 = table.firstOrNil(signallingEntities.ownsTpsDataTransmissionSystemProperties, function (x) return x.appliesToTpsDataTxSystem.ref == v.baliseGroup.id end)
+						
+						if etcsBaliseGroupLevel2 then
+							if etcsBaliseGroupLevel2.hasPurpose and etcsBaliseGroupLevel2.hasPurpose.refersToSignal then
+								setRelation(obj, etcsBaliseGroupLevel2.hasPurpose.refersToSignal.ref, rel_NssBaliseGroup_AppliesTo_Object)
+							end
+						end
+						
+						
+						write("\n")
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+--THBEN: Hvor kommer rcObjects fra? Kunne vi fikset dette selv, med filter på DocumentData?
+					local baliseGroups = table.where(rcObjects, function (x) return x.rcType == rctype_BaliseGroup end)
+					
+					for k,v in pairs(baliseGroups) do
+						local obj = v
+						
+						if obj.EtcsBaliseGroupLevel2 == nil then
+							local bgl2 = createEulynxObject("sig.EtcsBaliseGroupLevel2", {})
+							obj.EtcsBaliseGroupLevel2 = bgl2
+						end
+						
+						local relations, relCount = obj:getRelatedObjects(rel_NssBaliseGroup_AppliesTo_Object)
+						if obj.EtcsBaliseGroupLevel2.hasPurpose == nil and relCount > 0 then
+							local baliseGroupPurpose = createEulynxObject("sig.BaliseGroupPurpose", {})
+							
+							local length = createEulynxObject("rsmCommon.Length", {})
+							length.value = obj:getDistance(relations[0])
+							length.unit = "meter"
+							baliseGroupPurpose.hasDistance = length
+
+--THBEN: Related object may something else than a signal... A sign, a turnout (switch). What should we do then?
+							local signalRef = createEulynxObject("rsmCommon.tElementWithIDref", {relations[0].id})
+							baliseGroupPurpose.refersToSignal = signalRef
+
+							obj.EtcsBaliseGroupLevel2.hasPurpose = baliseGroupPurpose
+						end
+					end
+					
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_ETCS_BALISE">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					local defaultVariant = "ETCS-balise, fast"
+					local defaultDist = 4e-4
+
+					local rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					local signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+					local baliseTrackAsstets = table.where(signallingEntities.ownsTrackAsset, function (x) return string.match(x:getTableValue():ToString():sub(-14), "sig.EtcsBalise") end)
+					local tpsDevices = table.select(baliseTrackAsstets, function (x) return table.firstOrNil(rsmEntities.ownsOnTrackSignallingDevice, function (tpsDevice) return tpsDevice.id == x.refersToRsmTpsDevice.ref end) end)
+					
+					
+					write("baliseTrackAsstets: "..#baliseTrackAsstets.."\n")
+					
+					local balises = table.select(tpsDevices, function(x) return {["tpsDevice"] = x, ["balise"] = table.firstOrNil(baliseTrackAsstets, function (balise) return x.id == balise.refersToRsmTpsDevice.ref end), ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.locations[0].ref end)} end)
+					
+					write("Balises: "..#balises.."\n")
+					for k, v in pairs(balises) do
+						write("Inserting balise: "..v.tpsDevice.name.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+
+						local etcsBaliseVariant = defaultVariant
+						
+						if v.balise.isSwitchable then
+							etcsBaliseVariant = "ETCS-balise, styrt"
+						end
+						
+
+				--THBEN: 'left' er vel negativ side?
+				--THBEN: Vi burde hatt LuaName for Variants også!
+						local obj = createPointObject(alignment, rctype_EtcsBalise, etcsBaliseVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
+
+						obj.code = "="
+						obj.code = v.tpsDevice.name
+
+						obj:setObjectId(v.balise.id)
+						
+						local newVariant = v.balise.positionInSystem == 0 and "Fylt" or "Tom"
+						newVariant = newVariant..(v.balise.isSwitchable and "/styrt" or "/fast")
+						
+						obj.Variant = newVariant
+						
+						-- Create one way relations since the balise groups might not exist yet.
+						
+						if v.balise.implementsTpsDataTxSystem.ref then
+							setRelation(obj, v.balise.implementsTpsDataTxSystem.ref, rel_EtcsBalise_BelongsTo_EtcsBaliseGroup)
+							
+							if v.balise.positionInSystem == 0 then
+								setRelation(obj, v.balise.implementsTpsDataTxSystem.ref, rel_EtcsBalise_DeterminesPositionFor_EtcsBaliseGroup)
+							end
+						end
+						
+						
+						
+						write("\n")
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+					local objectsToReturn = {}
+					local etcsBalises = table.where(rcObjects, function (x) return x.rcType == rctype_EtcsBalise end)
+					
+					write("Etcs Balises: "..#etcsBalises.."\n")
+
+					for k,v in pairs(etcsBalises) do
+						local obj = v
+						local belongsTo, n = table.firstOrNil((obj:getRelatedObjects(rel_EtcsBalise_BelongsTo_EtcsBaliseGroup)))
+						if belongsTo then
+							write("Belongs to!"..rel_EtcsBalise_BelongsTo_EtcsBaliseGroup.."\n")
+							local implementsTps = createEulynxObject("rsmCommon.tElementWithIDref", {belongsTo.id})
+							obj.EULYNX_implementsTpsDataTxSystem = implementsTps
+						end
+						
+						if obj.Variant:lower():match("styrt") then
+							obj.EULYNX_isSwitchable = true
+						else
+							obj.EULYNX_isSwitchable = false
+						end
+						
+						--You can force a call to return exactly one result by enclosing it in an extra pair of parentheses
+						
+						local definesPositionFor = table.firstOrNil((obj:getRelatedObjects(rel_EtcsBalise_DeterminesPositionFor_EtcsBaliseGroup)))
+						
+						if definesPositionFor then
+							obj.EULYNX_positionInSystem = 0
+						end
+					end
+					
+					return objectsToReturn
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+<xpp:define name="NOBN_eulynx_BALISE">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					local defaultVariant = "Balise fylt/fast"
+					local defaultDist = 4e-4
+
+					local rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					local signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+					local baliseTrackAsstets = table.where(signallingEntities.ownsTrackAsset, function (x) return string.match(x:getTableValue():ToString():sub(-10), "sig.Balise") end)
+					local tpsDevices = table.select(baliseTrackAsstets, function (x) return table.firstOrNil(rsmEntities.ownsOnTrackSignallingDevice, function (tpsDevice) return tpsDevice.id == x.refersToRsmTpsDevice.ref end) end)
+					
+					
+					write("baliseTrackAsstets: "..#baliseTrackAsstets.."\n")
+					
+					local balises = table.select(tpsDevices, function(x) return {["tpsDevice"] = x, ["balise"] = table.firstOrNil(baliseTrackAsstets, function (balise) return x.id == balise.refersToRsmTpsDevice.ref end), ["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == x.locations[0].ref end)} end)
+					
+					write("Balises: "..#balises.."\n")
+					for k, v in pairs(balises) do
+						write("Inserting balise: "..v.tpsDevice.name.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+
+				--THBEN: 'left' er vel negativ side?
+				--THBEN: Vi burde hatt LuaName for Variants også!
+						local obj = createPointObject(alignment, rctype_Balise, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						obj.dir = v.location.associatedNetElements[0].appliesInDirection == "reverse" and "down" or "up"
+
+						obj.code = "="
+						obj.code = v.tpsDevice.name
+
+						obj:setObjectId(v.balise.id)
+						
+						local newVariant = v.balise.positionInSystem == 0 and "Fylt" or "Tom"
+						newVariant = newVariant..(v.balise.isSwitchable and "/styrt" or "/fast")
+						
+						obj.Variant = newVariant
+						
+						-- Create one way relations since the balise groups might not exist yet.
+						
+						if v.balise.implementsTpsDataTxSystem.ref then
+							setRelation(obj, v.balise.implementsTpsDataTxSystem.ref, rel_NssBalise_BelongsTo_NssBaliseGroup)
+							
+							if v.balise.positionInSystem == 0 then
+								setRelation(obj, v.balise.implementsTpsDataTxSystem.ref, rel_NssBalise_DeterminesPositionFor_NssBaliseGroup)
+							end
+						end
+						
+						
+						
+						write("\n")
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+					local objectsToReturn = {}
+				
+					local balises = table.where(rcObjects, function (x) return x.rcType == rctype_Balise end)
+					
+					write("Balises: "..#balises.."\n")
+					for k,v in pairs(balises) do
+						local obj = v
+						
+						--You can force a call to return exactly one result by enclosing it in an extra pair of parentheses
+						
+						local belongsTo = table.firstOrNil((obj:getRelatedObjects(rel_NssBalise_BelongsTo_NssBaliseGroup)))
+						if belongsTo then
+							write("Belongs to!\n")
+							local implementsTps = createEulynxObject("rsmCommon.tElementWithIDref", {belongsTo.id})
+							obj.EULYNX_implementsTpsDataTxSystem = implementsTps
+						end
+						
+						
+						if obj.Variant:lower():match("styrt") then
+							obj.EULYNX_isSwitchable = true
+						else
+							obj.EULYNX_isSwitchable = false
+						end
+						
+						if obj.Variant:lower():match("fylt") then
+							obj.EULYNX_positionInSystem = 0
+						end
+					end
+	
+					return objectsToReturn
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_TECHNICAL_BUILDING">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+--THBEN: Hvordan får vi skrevet variant til Eulynx-filen?
+					local defaultVariant = "Teknisk hus"
+					local defaultDist = 20
+
+					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == rctype_TechnicalBuilding end)
+					
+--THBEN: Teknisk bygg er som oftest assoisert med et RC-spor fordi det dermed får en orientering i tegningen. Eksportere denne?
+					local objectsToReturn = {}
+					for k,v in pairs(filteredObjects) do
+						local obj = v
+						local tvpSection = nil
+						if obj.EULYNX_controlsArea == nil then
+							
+							local controlArea = createEulynxObject("sig.ControlArea", {})
+							local configuration = createEulynxObject("generic.Configuration", {})
+							
+							local designation = createEulynxObject("generic.SimpleDesignation", {})
+							designation.name = "ControlArea for "..(obj.code or obj.RcType)
+							controlArea.hasConfiguration = configuration
+							controlArea.hasConfiguration.hasConfigurationProperty = {designation}
+							
+							containsTrackAssets = obj.Relations[rel_Watch_AppliesTo_Anything]
+							local containsTrackAssetsTable = {}
+							for i = 0, containsTrackAssets.Count -1 do
+								local ta = containsTrackAssets[i]
+								local trackAssetRef = createEulynxObject("rsmCommon.tElementWithIDref", {ta.id})
+								table.insert(containsTrackAssetsTable, trackAssetRef)
+							end
+							
+							controlArea.containsTrackAsset = containsTrackAssetsTable
+							-- Missing area location
+							local controlAreaRef = createEulynxObject("rsmCommon.tElementWithIDref", {})
+							controlAreaRef.ref = controlArea.id
+							obj.EULYNX_controlsArea = controlAreaRef
+							
+							table.insert(objectsToReturn, controlArea)
+						end
+					end
+					return objectsToReturn
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_AXLE_COUNTER_SECTION">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ImportScript LuaVariableName="dataPrep">
+				<LuaScript>
+					local defaultVariant = "Togdeteksjonsavsnitt for akseltellere"
+					local defaultDist = 4e-4
+
+					signallingEntities = dataPrep.hasDataContainer[0].ownsDataPrepEntities
+					rsmEntities = dataPrep.hasDataContainer[0].ownsRsmEntities
+					
+					tdsSctions = table.where(signallingEntities.ownsTrackAsset, function (x) return string.match(x:getTableValue():ToString(), "TdsSection") or string.match(x:getTableValue():ToString(), "AxleCountingSection") end) 
+					
+					function getSections(x)
+						local tvpSection = table.firstOrNil(signallingEntities.ownsTrackAsset, function (trackAsset) return trackAsset.id == x.appliesToTvpSection.ref end)
+						return {
+						["tdsSection"] = x, 
+						["tvpSection"] = tvpSection,
+						["location"] = table.firstOrNil(rsmEntities.usesLocation, function(location) return location.id == tvpSection.isLocatedAt.Ref end)
+						} 
+					end
+					
+					sections = tdsSctions:select(getSections):where(function (x) return x.location ~= nil end)
+					
+					for k, v in pairs(sections) do
+						
+						local name = v.tdsSection.hasConfiguration.hasConfigurationProperty[0].hasCodeLetter or v.tdsSection.hasConfiguration.hasConfigurationProperty[0].name
+						
+						write("Inserting TDS section: "..name.."\n")
+						alignmentId = v.location.associatedNetElements[0].netElement.ref
+						alignment = table.firstOrNil(DocumentData.ObjectCollection, function (x) return x.id == alignmentId end)
+						local bounds = table.firstOrNil(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x.id == v.location.associatedNetElements[0].bounds[0].ref end) 
+						pos = bounds.value * alignment.rcAlignment.HorizontalProfile.Length
+						
+						write("Alignment: "..alignment.code.."\n")
+						write("Pos: "..pos.."\n")
+						
+						local obj = createPointObject(alignment, rctype_AxleCounterSection, defaultVariant, pos, v.location.associatedNetElements[0].isLocatedToSide == "left" and defaultDist or -defaultDist, true)
+						if name ~= nil then
+							--write("Setting code to: "..name.."\n")
+							obj.code = "="
+							obj.code = name
+						end
+						
+						obj:setObjectId(v.tvpSection.id)
+						obj.EulynxBaseObject = v.tvpSection
+						
+						write("\n")
+						::continue::
+					end
+				</LuaScript>
+			</ImportScript>
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+					local filteredObjects = table.where(rcObjects, function (x) return x.rcType == rctype_AxleCounterSection end)
+					
+					for k,v in pairs(filteredObjects) do
+						local obj = v
+						local tvpSection = nil
+						if obj.AxleCountingSection == nil then
+							
+							local axleCountingSection = createEulynxObject("sig.AxleCountingSection", {})
+							
+							local configuration = createEulynxObject("generic.Configuration", {})
+							local designation = createEulynxObject("generic.SimpleDesignation", {})
+							designation.name = obj.code
+							
+							axleCountingSection.hasConfiguration = configuration
+							
+							axleCountingSection.hasConfiguration.hasConfigurationProperty = {designation}
+							obj.AxleCountingSection = axleCountingSection
+						end
+					end
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_CABLE_TROUGH">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+THBEN: Er det riktig å bruke rcObjects her? Eller DocumentData.ObjectCollection osv?:
+					local cableRouteObjects = table.where(rcObjects, function (x) return x.rcType == rctype_CableTrough end)
+THBEN: Er det riktig å bruke dataprep her? Eller rcObjects?:
+					local rsmEntities = dataprep.hasDataContainer[0].ownsRsmEntities
+					
+					local intrinsicCoordinates = table.select(rsmEntities.usesTopography.usesIntrinsicCoordinate, function (x) return x end)
+					if (intrinsicCoordinates == nil) then
+						write("intrinsicCoordinates is nil!\n")
+					end
+						
+					intrinsicCoordinates = intrinsicCoordinates and intrinsicCoordinates or {}
+					
+					local locations = table.select(rsmEntities.usesLocation, function (x) return x end)
+					locations = locations and locations or {}
+					
+					write("Length intrinsicCoordinates: "..#intrinsicCoordinates.."\n")
+					write("Length locations: "..#locations.."\n\n")
+					
+					write("number of cable route objects: "..#cableRouteObjects.."\n")
+					for k,v in pairs(cableRouteObjects) do
+						local obj = v
+						local linearLocation = createEulynxObject("rsmCommon.LinearLocation", {})
+						linearLocation.id = getGUID()
+						local associatedNetElement = createEulynxObject("rsmCommon.AssociatedNetElement", {})
+						
+						associatedNetElement.appliesInDirection = "undefined"
+						associatedNetElement.isLocatedToSide = "undefined"
+						associatedNetElement.netElement = createEulynxObject("rsmCommon.tElementWithIDref", {"TOPO__"..v.id})
+						local boundsStart = createEulynxObject("rsmCommon.IntrinsicCoordinate", {})
+						boundsStart.id = getGUID()
+						boundsStart.value = 0
+						boundsStart.coordinates = {createEulynxObject("rsmCommon.tElementWithIDref", {"StartPoint_"..v.id})}
+						local boundsEnd = createEulynxObject("rsmCommon.IntrinsicCoordinate", {})
+						boundsEnd.id = getGUID()
+						boundsEnd.value = 1
+						boundsEnd.coordinates = {createEulynxObject("rsmCommon.tElementWithIDref", {"EndPoint_"..v.id})}
+						associatedNetElement.bounds = {createEulynxObject("rsmCommon.tElementWithIDref", {boundsStart.id}), createEulynxObject("rsmCommon.tElementWithIDref", {boundsEnd.id})}
+						linearLocation.associatedNetElements = {associatedNetElement}
+						table.insert(intrinsicCoordinates, boundsStart)
+						table.insert(intrinsicCoordinates, boundsEnd)
+						table.insert(locations, linearLocation)
+						v.EULYNX_isLocatedAt = createEulynxObject("rsmCommon.tElementWithIDref", {linearLocation.id})
+						write("Added location to "..v.name.."\n")
+					end
+					
+					write("Length intrinsicCoordinates: "..#intrinsicCoordinates.."\n")
+					write("Length locations: "..#locations.."\n")
+					
+					rsmEntities.usesTopography.usesIntrinsicCoordinate = intrinsicCoordinates
+					rsmEntities.usesLocation = locations
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<xpp:define name="NOBN_eulynx_HIGH_VOLTAGE_CABLE">
+	<xpp:bloc>
+		<ImportExportScript Format="EULYNX">
+			<ExportScript LuaVariableName="rcObjects">
+				<LuaScript>
+					local cableRoutingObjects = table.where(DocumentData.ObjectCollection, function (x) return x.rcType == rctype_HighVoltageConductor end)
+THBEN: Er det riktig å bruke dataprep her? Eller rcObjects?:
+					local rsmEntities = dataprep.hasDataContainer[0].ownsRsmEntities
+					
+					local cablingTopology = createEulynxObject("generic.Topology", {})
+					
+					local cablingPositioningSystem = createEulynxObject("rsmCommon.Canvas", {})
+					cablingPositioningSystem.id = getGUID()
+					cablingPositioningSystem.name = "cablePositioningSystem"
+					cablingPositioningSystem.longname = "cablePositioningSystem"
+					cablingPositioningSystem.description = "Paper coordinate system for page cable (universal name is cable) of size visPaperSizeA3 FROM RAILCOMPLETE"
+					
+					local positioningSystems = table.select(rsmEntities.usesTopography.usesPositioningSystem, function (x) return x end)
+					table.insert(positioningSystems, cablingPositioningSystem)
+					rsmEntities.usesTopography.usesPositioningSystem = positioningSystems
+					
+					local netElements = {}
+					local coordinates = table.select(rsmEntities.usesTopography.usesPositioningSystemCoordinate, function (x) return x end)
+					coordinates = coordinates and coordinates or {}
+					for k,v in pairs(cableRoutingObjects) do
+						local linearElementWithLength = createEulynxObject("rsmCommon.LinearElementWithLength", {})
+						linearElementWithLength.id = "TOPO__"..v.id
+						linearElementWithLength.name = v.name
+						linearElementWithLength.longname = v.name
+						
+						-- Add positioning:
+						local associatedPositionAtStart = createEulynxObject("rsmCommon.AssociatedPositioning", {})
+						associatedPositionAtStart.id = getGUID()
+						local intrinsicCoordinateAtStart = createEulynxObject("rsmCommon.IntrinsicCoordinate", {})
+						intrinsicCoordinateAtStart.id = getGUID()
+						intrinsicCoordinateAtStart.value = 0
+						local startCoordinate = createEulynxObject("rsmCommon.CartesianCoordinate", {})
+						startCoordinate.id = "StartPoint_"..v.id
+						startCoordinate.name = "StartPoint_"..v.name
+						startCoordinate.positioningSystem = createEulynxObject("rsmCommon.tElementWithIDref", {cablingPositioningSystem.id})
+						startCoordinate.x = v.RcAlignment.StartPoint.X
+						startCoordinate.y = v.RcAlignment.StartPoint.Y
+						startCoordinate.z = v.RcAlignment.StartPoint.Z
+						intrinsicCoordinateAtStart.coordinates = {createEulynxObject("rsmCommon.tElementWithIDref", {startCoordinate.id})}
+						associatedPositionAtStart.intrinsicCoordinates = {intrinsicCoordinateAtStart}
+						
+						local associatedPositionAtEnd = createEulynxObject("rsmCommon.AssociatedPositioning", {})
+						associatedPositionAtEnd.id = getGUID()
+						local intrinsicCoordinateAtEnd = createEulynxObject("rsmCommon.IntrinsicCoordinate", {})
+						intrinsicCoordinateAtEnd.id = getGUID()
+						intrinsicCoordinateAtEnd.value = 1
+						local endCoordinate = createEulynxObject("rsmCommon.CartesianCoordinate", {})
+						endCoordinate.id = "EndPoint_"..v.id
+						endCoordinate.name = "EndPoint_"..v.name
+						endCoordinate.positioningSystem = createEulynxObject("rsmCommon.tElementWithIDref", {cablingPositioningSystem.id})
+						endCoordinate.x = v.RcAlignment.EndPoint.X
+						endCoordinate.y = v.RcAlignment.EndPoint.Y
+						endCoordinate.z = v.RcAlignment.EndPoint.Z
+						intrinsicCoordinateAtEnd.coordinates = {createEulynxObject("rsmCommon.tElementWithIDref", {endCoordinate.id})}
+						associatedPositionAtEnd.intrinsicCoordinates = {intrinsicCoordinateAtEnd}
+
+						linearElementWithLength.associatedPositioning = {associatedPositionAtStart, associatedPositionAtEnd}
+						
+						table.insert(netElements, linearElementWithLength)
+						table.insert(coordinates, startCoordinate)
+						table.insert(coordinates, endCoordinate)
+					end
+					
+					cablingTopology.usesNetElement = netElements
+					
+					rsmEntities.usesTopography.usesPositioningSystemCoordinate = coordinates
+					
+					-- Add positioned relations:
+--THBEN: Jeg satte inn ledningsfortsettelse...blir det helt feil? Kunne hat Avspenning her også? Høyspentledning kan også kobles til HV-brytere:
+					local cableRoutingJunctions = table.where(DocumentData.ObjectCollection, function (x) return x.rcType == rctype_HighVoltageConductorContinuation end)
+					
+					local positionedRelations = {}
+					
+					for k,v in pairs(cableRoutingJunctions) do
+						local joinedCableRoutings = v.Relations["Joins cable routing"]
+						for i = 0 , joinedCableRoutings.Count - 1 do
+							
+							local j = i+1
+							
+							while j &lt; joinedCableRoutings.Count do
+								local positionedRelation = createEulynxObject("rsmCommon.PositionedRelation", {})
+								local elementA = joinedCableRoutings[i]
+								local elementB = joinedCableRoutings[j]
+								positionedRelation.id = getGUID()
+								positionedRelation.name = elementA.name.." --- "..elementB.name
+								positionedRelation.longname = positionedRelation.name
+								positionedRelation.elementA = createEulynxObject("rsmCommon.tElementWithIDref", {elementA.id})
+								positionedRelation.elementB = createEulynxObject("rsmCommon.tElementWithIDref", {elementB.id})
+								positionedRelation.navigability = "Both"
+								positionedRelation.positionOnA = RC__getDistance2D(v.geoCoord, elementA.RcAlignment.StartPoint) &lt; 0.5 and "start" or "end"
+								positionedRelation.positionOnB = RC__getDistance2D(v.geoCoord, elementB.RcAlignment.StartPoint) &lt; 0.5 and "start" or "end"
+								table.insert(positionedRelations, positionedRelation)
+								
+								j = j + 1
+							end
+						end
+					end
+					
+					cablingTopology.usesPositionedRelation = positionedRelations
+					
+					rsmEntities.usesCablingTopology = cablingTopology
+				</LuaScript>
+			</ExportScript>
+		</ImportExportScript>
+	</xpp:bloc>
+</xpp:define>
+
+
+
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>
