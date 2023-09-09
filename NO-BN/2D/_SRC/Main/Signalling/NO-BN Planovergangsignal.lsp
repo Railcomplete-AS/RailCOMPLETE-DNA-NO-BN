@@ -42,7 +42,7 @@
 	(SetLayer layDef_View_CablePlan)
 	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "SMALL" "WIDE")
 	
-	; Schematic 2-line signaling / track insulation plan OR high voltage / return current plan view
+	; Schematic 2-line signaling / track isolation plan OR high voltage / return current plan view
 	(SetLayer layDef_View_TrackIsolationPlan)
 	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "WIDE")
 	
@@ -59,7 +59,7 @@
 	(SetLayer layDef_View_CablePlan)
 	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "SMALL" "NARROW")
 	
-	; Geo 2-line signaling / track insulation plan OR high voltage / return current plan view
+	; Geo 2-line signaling / track isolation plan OR high voltage / return current plan view
 	(SetLayer layDef_View_TrackIsolationPlan)
 	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
 	

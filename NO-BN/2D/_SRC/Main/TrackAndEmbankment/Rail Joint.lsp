@@ -89,7 +89,7 @@
 	(SetLayer layDef_View_CablePlan)
 	(DrawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ 0.0) ; No scaling, no offset from centre track
 
-	; Schematic 2-line signaling / track insulation plan OR high voltage / return current plan view
+	; Schematic 2-line signaling / track isolation plan OR high voltage / return current plan view
 	(SetLayer layDef_View_TrackIsolationPlan)
 	(DrawIsolatedJointSymbolWithEars q4 q3 q2 q1 _one_ (* _half_ _schematicGauge_)) ; No scaling, then offset with half of schematic gauge from centre track
 
