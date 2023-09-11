@@ -52,7 +52,7 @@
 		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT"/>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
 
 		<Variants DefaultValue="Vekslingsfelt annotering">
 			<Variant Name="Seksjonsfelt annotering"/>
@@ -173,7 +173,7 @@
 			<AlignmentSystem Name="Høyspentledning"
 				CantGauge="0.010"
 				AlignmentGauge="0.010"
-				LiftWithCant="true"
+				LiftWithCant="false"
 			 />
 		</AlignmentSystems>
 
@@ -677,7 +677,7 @@
 			<AlignmentSystem Name="Kontaktledning"
 				CantGauge="0.010"
 				AlignmentGauge="0.010"
-				LiftWithCant="true"
+				LiftWithCant="false"
 			 />
 		</AlignmentSystems>
 
@@ -1670,15 +1670,15 @@
 
 		<!-- Guy wires' dir = down, spanner's dir = down, assuming the guywire / spanner has been drawn from pole to the force relief's foundation -->
 		<LuaExpression Name="dir"><Formula>"down"</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
 
-		<LuaExpression Name="RelativeElevation"><Formula>_JBTEH_BAF_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_BAF_RelativeElevation()" 
+		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_BAF_VerticalOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BAF_VerticalOffset()" 
 			ReturnType="Double"
 			Description="Returns the releative elevation for this guywire anchoring baseplate object.">
-			<Constructor>Double _JBTEH_BAF_RelativeElevation()</Constructor>
+			<Constructor>Double _JBTEH_BAF_VerticalOffset()</Constructor>
 			<Formula>
-				function _JBTEH_BAF_RelativeElevation()
+				function _JBTEH_BAF_VerticalOffset()
 					local Pe = Alignment.RcAlignment.EndPoint
 					local t = getClosestTracks(Pe.X,Pe.Y)
 					local e = getAlignmentInfo(t[0].id,Pe.X,Pe.Y).Point.Z --absolute elevation
@@ -1859,15 +1859,15 @@
 
 		<!-- Guy wires' dir = down, spanner's dir = down, assuming the guywire / spanner has been drawn from pole to the force relief baseplate's foundation -->
 		<LuaExpression Name="dir"><Formula>"down"</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
 
-		<LuaExpression Name="RelativeElevation"><Formula>_JBTEH_STF_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_STF_RelativeElevation()" 
+		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_STF_VerticalOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STF_VerticalOffset()" 
 			ReturnType="Double"
 			Description="Returns the releative elevation for this OCS contact wire spanner fastening object.">
-			<Constructor>Double _JBTEH_STF_RelativeElevation()</Constructor>
+			<Constructor>Double _JBTEH_STF_VerticalOffset()</Constructor>
 			<Formula>
-				function _JBTEH_STF_RelativeElevation()
+				function _JBTEH_STF_VerticalOffset()
 					tol = 0.5 --[m]
 					local Pe = Alignment.RcAlignment.EndPoint
 					local f = getNearbyPointObjects2D(tol,rctype_OcsPoleFoundation,Pe)
@@ -2017,7 +2017,7 @@
 		</Variants>
 
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>6.0</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>6.0</Formula></LuaExpression>
 
 		<!-- TODO Create 3D-object from EH drawing. -->
 		<!-- For now, just use guywire anchoring baseplate: -->
@@ -2134,24 +2134,24 @@
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="DistanceToAlignment"><Formula>_JBTEH_FPM_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FPM_DistanceToAlignment()" 
+        <LuaExpression Name="LateralOffset"><Formula>_JBTEH_FPM_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_LateralOffset()" 
 			ReturnType="String"
-			Description="Returns the DistanceToAlignment for this anchoring device, deduced from its related OCS pole.">
-			<Constructor>String _JBTEH_FPM_DistanceToAlignment()</Constructor>
+			Description="Returns the LateralOffset for this anchoring device, deduced from its related OCS pole.">
+			<Constructor>String _JBTEH_FPM_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTEH_FPM_DistanceToAlignment()
+				function _JBTEH_FPM_LateralOffset()
 					local s = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
 					local r,n = getRelatedObjects(s)
 					if n == 0 then 
-						return getPropertyValue("DistanceToAlignment"),
-							_info("No related OCS pole, cannot deduce DistanceToAlignment.")
+						return getPropertyValue("LateralOffset"),
+							_info("No related OCS pole, cannot deduce LateralOffset.")
 					elseif n == 1 then 
-						return r[0].DistanceToAlignment
+						return r[0].LateralOffset
 					else
 						-- Two or more poles were found:
-						return r[0].DistanceToAlignment,
-							_warning, _info("WARNING - Multiple OCS poles found, console uses closest pole's DistanceToAlignment.")
+						return r[0].LateralOffset,
+							_warning, _info("WARNING - Multiple OCS poles found, console uses closest pole's LateralOffset.")
 					end
 				end
 			</Formula>
@@ -2247,24 +2247,24 @@
 						return 0,_unfinished, _info("UNFINISHED - relate with '"..s.."'.")
 					elseif n == 1 then 
 						pol = r[0]
-						return this.RelativeElevation - pol.RelativeElevation,
+						return this.VerticalOffset - pol.VerticalOffset,
 							_info("Anchoring device's mounting height on OCS pole "..RC__identify(pol))
 					else
 						-- Two or more OCS poles were found:
-						return this.RelativeElevation - r[0].RelativeElevation, _warning,
+						return this.VerticalOffset - r[0].VerticalOffset, _warning,
 							_info("WARNING - Multiple OCS poles found (we are using just the first related OCS pole).")
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="RelativeElevation"><Formula>_JBTEH_FPM_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FPM_RelativeElevation()" 
+		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_FPM_VerticalOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FPM_VerticalOffset()" 
 			ReturnType="Double"
 			Description="Returns the relative elevation for this anchoring device, deduced from its related OCS pole.">
-			<Constructor>Double _JBTEH_FPM_RelativeElevation()</Constructor>
+			<Constructor>Double _JBTEH_FPM_VerticalOffset()</Constructor>
 			<Formula>
-				function _JBTEH_FPM_RelativeElevation()
+				function _JBTEH_FPM_VerticalOffset()
 					defaultGuywireHeight = 6.50 --TODO: Check value
 					defaultSpannerHeight = 4.80 --TODO: Check value
 					
@@ -2584,7 +2584,7 @@
 		<TextPositionLuaExpression Name="OBJEKTID"><Formula>RC__TextAttributePosition(5,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
 		<TextPositionLuaExpression Name="OBJEKTINFO"><Formula>RC__TextAttributePosition(7,dir == "up" and 16 or -16)</Formula></TextPositionLuaExpression>
 
-        <LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+        <LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
 
         <LuaExpression Name="dir"><Formula>_JBTEH_AEH_dir()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_dir()" 
@@ -2659,13 +2659,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="RelativeElevation"><Formula>_JBTEH_AEH_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_AEH_RelativeElevation()" 
+		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_AEH_VerticalOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_AEH_VerticalOffset()" 
 			ReturnType="String"
 			Description="Obtains the relative elevation above the wire that will be tensioned. Fixed WTBs and spring WTBs are located at the same zero relative elevation (same height). Weighted WTBs will vary with design. The default Bane NOR weighted WTB has its anchoring device insertion point located at 0.235 m above its wire. If the WTB is tensioning two wires (a double WTB), then the wires' default separation is 0.70 m. The reference elevation is the elevation of the contact wire - the messenger wire will be deduced from surrounding object's parameters.">
-			<Constructor>String _JBTEH_AEH_RelativeElevation()</Constructor>
+			<Constructor>String _JBTEH_AEH_VerticalOffset()</Constructor>
 			<Formula>
-				function _JBTEH_AEH_RelativeElevation()
+				function _JBTEH_AEH_VerticalOffset()
 					if OcsSystem == "Unknown" then return 0, _info("?/? kN (UNFINISHED - unknown OcsSystem).") end
 					if Variant == "Fjæravspenning, enkel" or Variant == "Fjæravspenning, dobbel" or Variant == "Fastavspenning, enkel" or Variant == "Fastavspenning, dobbel" then
 						return 0
@@ -3042,20 +3042,20 @@
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="DistanceToAlignment"><Formula>_JBTEH_FIX_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIX_DistanceToAlignment()" 
+        <LuaExpression Name="LateralOffset"><Formula>_JBTEH_FIX_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_LateralOffset()" 
 			ReturnType="String"
-			Description="Obtains the DistanceToAlignment for this midpoint anchor, deduced from its cantilever.">
-			<Constructor>String _JBTEH_FIX_DistanceToAlignment()</Constructor>
+			Description="Obtains the LateralOffset for this midpoint anchor, deduced from its cantilever.">
+			<Constructor>String _JBTEH_FIX_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTEH_FIX_DistanceToAlignment()
+				function _JBTEH_FIX_LateralOffset()
 					sCnt = rel_MidpointAnchor_Locks_Cantilever
 					rCnt,nCnt = getRelatedObjects(sCnt)
 					if nCnt == 0 then
 						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
 					elseif nCnt == 1 then
 						cnt = rCnt[0]
-						return cnt.Stagger, _info("Distance to alignment was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
+						return cnt.Stagger, _info("LateralOffset was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
 					else
 						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
 					end

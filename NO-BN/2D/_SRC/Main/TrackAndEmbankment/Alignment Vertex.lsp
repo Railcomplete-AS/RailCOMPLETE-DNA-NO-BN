@@ -18,7 +18,7 @@
 
 
 
-; Symmetrical short line transversal to track, to be centered on alignment axis (whereas insulated joints are located on one of the rails).
+; Symmetrical short line transversal to track, to be centered on alignment axis (whereas isolated joints are located on one of the rails).
  (defun ALIGNMENT-VERTEX ( / blockName description )
 	(setq blockName (strcat _TRK_ "DIV-" "KARAKTERISTISK-PUNKT"	))
 	(setq description (strcat "KARAKTERISTISK PUNKT" 			))

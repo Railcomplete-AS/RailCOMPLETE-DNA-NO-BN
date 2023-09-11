@@ -53,9 +53,9 @@
 		p9  (list (* -0.500 x) (* -0.500 y))
 		p10 (list (*  0.500 x) (* -0.500 y))
 	)
-	; Wipeout between the two curved bars to remove the insulated part of wire under the line insulator:
+	; Wipeout between the two curved bars to remove the isolated part of wire under the line insulator:
 	(command _POLYLINE_ p3 p4 p6 p8 p7 p5 p3 _closedPolyline_)
-	(AddWipeoutToLastClosedPolyline layDef_CatenaryIsolator_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_CatenaryInsulator_Wipeout _eraseWipeoutSource_)
 	; Two curved bars ')(' across the contact wire:
 	(SetLayer layDef_Zero)
 	(DrawArc layDef_Zero p1 p5 p9)
@@ -92,9 +92,9 @@
 		p7 (list (* -0.5 x) (* -0.278 y))
 		p8 (list (*  0.5 x) (* -0.278 y))
 	)
-	; Wipeout to remove the insulated part of wire under the line insulator (no box!)
+	; Wipeout to remove the isolated part of wire under the line insulator (no box!)
 	(command _POLYLINE_ p5 p6 p8 p7 _closedPolyline_)
-	(AddWipeoutToLastClosedPolyline layDef_CatenaryIsolator_Wipeout _eraseWipeoutSource_)
+	(AddWipeoutToLastClosedPolyline layDef_CatenaryInsulator_Wipeout _eraseWipeoutSource_)
 	; Two vertical bars '||' across the contact wire:
 	(DrawLine layDef_Zero p1 p3)
 	(DrawLine layDef_Zero p2 p4)

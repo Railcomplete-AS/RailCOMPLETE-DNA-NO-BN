@@ -194,16 +194,17 @@
 <PropertyCategory Name="Aligned object" DisplayName="Plassering langs linje"		Collapsed="false"/>	<!-- Intrinsic (Linear Placement) -->
 	<PropertyOverride Name="Alignment" DisplayName="Egen linje"							Category="Aligned object"/> 
 	<PropertyOverride Name="TargetAlignment" DisplayName="Avvikende / tilstøtende linje"	Category="Aligned object"/>
-	<PropertyOverride Name="Mileage" DisplayName="Profil i egen linje (PEL) [m]"		Category="Aligned object"/> 
 	<PropertyOverride Name="ReferenceAlignment" DisplayName="Referanselinje"			Category="Aligned object"/> 
-	<PropertyOverride Name="ReferenceMileage" DisplayName="Profil i referanselinje [m]"	Category="Aligned object"/> 
-	<PropertyOverride Name="LineKilometerValue" DisplayName="Linjekilometer [km, relativ]"	Category="Aligned object"/> 
 	<PropertyOverride Name="SideOfAlignment"  DisplayName="Side av egen linje"			Category="Aligned object"/> 
 	<PropertyOverride Name="dir" DisplayName="Retning"									Category="Aligned object"/> 
-	<PropertyOverride Name="DistanceAlong" DisplayName="Plassering fra start i egen linje [m]"	Category="Aligned object"/> 
-	<PropertyOverride Name="LateralOffset" DisplayName="Sideavsett fra egen linje"	Category="Aligned object"/> 
-	<PropertyOverride Name="LinearPositionLongitudinalOffset" DisplayName="Langsgående offset [m]"	Category="Aligned object"/> 
-	<PropertyOverride Name="VerticalOffset" DisplayName="Høydeavsett over egen linje"	Category="Aligned object"/> 
+	<PropertyOverride Name="LineKilometerValue" DisplayName="Linjekilometer [km]"		Category="Aligned object"/> 
+	<PropertyOverride Name="Mileage" DisplayName="Profil i egen linje, absolutt [m]"	Category="Aligned object"/> 
+	<PropertyOverride Name="ReferenceMileage" DisplayName="Profil i referanselinje, absolutt [m]"	Category="Aligned object"/> 
+	<PropertyOverride Name="DistanceAlong" DisplayName="Pos (fra start=0) i egen linje [m]"	Category="Aligned object"/> 
+	<PropertyOverride Name="LongitudinalOffset" DisplayName="Langsgående offset [m]"	Category="Aligned object"/> 
+	<PropertyOverride Name="LateralOffset" DisplayName="Sideavsett fra egen linje [m]"	Category="Aligned object"/> 
+	<PropertyOverride Name="VerticalOffset" DisplayName="Høyde over egen linje [m]"		Category="Aligned object"/> 
+	<PropertyOverride Name="DistanceToAlignment" DisplayName="Avstand i 2D til egen linje [m]" Category="Aligned object"/> 
 
 <PropertyCategory Name="Custom properties" DisplayName="Spesifikke egenskaper"		Collapsed="false"/>	<!-- Intrinsic -->
 																			
@@ -555,9 +556,9 @@
 	<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT"/> -->
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_ANNOTATION_OBJECT">
 	<xpp:bloc>
-		<LuaExpression Name="DistanceToAlignment">
+		<LuaExpression Name="LateralOffset">
 			<Formula>
-				d = getPropertyValue("DistanceToAlignment")
+				d = getPropertyValue("LateralOffset")
 				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if d == 0 then 
 					return (LeftSided and -1 or 1) * 6/sc
@@ -566,7 +567,7 @@
 				end
 			</Formula>
 		</LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>0</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -591,8 +592,8 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
 		<!-- Contact wire alignment shall use "Swiss cant method" in its AlignmentSystem declaration, i..e rotating but not lifting the alignment axis with cant -->
 		<!-- NB! Roll is a 'com' function, not trk. Cant is here interpreted as a decimal degrees angle: -->
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>0</Formula></LuaExpression>
 		<LuaExpression Name="Layer3D"><Formula>"3D_"..Discipline</Formula></LuaExpression>
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="GCS"/>
@@ -606,8 +607,8 @@
 <xpp:define name="NOBN_ocs_STD_LUAEXPRESSIONS___OVERHEADLINEBOUND_OBJECT_NO_3D" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
-		<LuaExpression Name="DistanceToAlignment" ><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation" ><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset" ><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset" ><Formula>0</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -616,7 +617,7 @@
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
 		<!-- Note: DistanceToAlignment must be set individually for each object type, as placement will vary among trackbound object types. -->
-		<LuaExpression Name="RelativeElevation"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>0</Formula></LuaExpression>
 		<LuaExpression Name="Layer3D"><Formula>"3D_"..Discipline</Formula></LuaExpression>
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="CCS"/>
@@ -629,7 +630,7 @@
 <xpp:define name="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT_NO_3D" >
 	<xpp:bloc>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___STAGE"/>
-		<LuaExpression Name="RelativeElevation" ><Formula>NOBN_trk_getLiftFromCant()</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset" ><Formula>NOBN_trk_getLiftFromCant()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -664,8 +665,8 @@
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 		<LuaExpression Name="name"><Formula>NOBN_bnp_getBoardOrPoleName()</Formula></LuaExpression>
 		<LuaExpression Name="sight"><Formula>NOBN_bnp_getBoardSightingRequirement()</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 3.5 or -3.5</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation">
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 3.5 or -3.5</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset">
 			<Formula>
 				if PortalMounted then
 					--Object, or the object it is attached to, has the PortalMounted custom attribute:
@@ -698,8 +699,8 @@
 		<LuaExpression Name="name"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression>
 		<LuaExpression Name="sight"><Formula>NOBN_sig_getSignalSightingRequirement()</Formula></LuaExpression>
 		<LuaExpression Name="BaneNORBeskrivelse"><Formula>NOBN_sig_getSignalPartNames()</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 3.5 or -3.5</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>Portalmounted and 8.0 or 0 end</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 3.5 or -3.5</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>Portalmounted and 8.0 or 0 end</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 

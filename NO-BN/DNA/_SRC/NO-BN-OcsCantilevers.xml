@@ -247,19 +247,19 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>_JBTEH_UTK_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTK_DistanceToAlignment()" 
+		<LuaExpression Name="LateralOffset"><Formula>_JBTEH_UTK_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTK_LateralOffset()" 
 				ReturnType="Double"
 				Description="Returns the distance to alignment for this multi-cantilever console, moved to the same side of its OCS pole as the cantilevers it serves.">
-			<Constructor>Double _JBTEH_UTK_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTEH_UTK_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTEH_UTK_DistanceToAlignment()
+				function _JBTEH_UTK_LateralOffset()
 					local sPol = rel_MultiCantileverConsole_IsInstalledOn_OcsPole
 					local sCnt = rel_MultiCantileverConsole_IsMountingSurfaceFor_Cantilever
 					local rPol,nPol = getRelatedObjects(sPol)
 					local rCnt,nCnt = getRelatedObjects(sCnt)
 					if nPol == 0 then
-						return getPropertyValue("DistanceToAlignment")
+						return getPropertyValue("LateralOffset")
 					else
 						local pol = rPol[0]
 						if this.Alignment.id ~= pol.Alignment.id then
@@ -267,7 +267,7 @@ positive feeder in AT system				positiv leder i AT-system
 						end
 						if nCnt == 0 then
 							--Assume that console will be needed on the track side of its OCS pole (cantilevers will be added afterwards). It may change sides when cantilevers are added.
-							return _JBTEH_UTL_DistanceToAlignment(cnt) - (RightSided and 1 or -1) * defaultConsoleDepth
+							return _JBTEH_UTL_LateralOffset(cnt) - (RightSided and 1 or -1) * defaultConsoleDepth
 						else
 							local cnt = rCnt[0]
 							--Place console on the same side of its OCS pole as the first cantilever being related to the console.
@@ -276,7 +276,7 @@ positive feeder in AT system				positiv leder i AT-system
 							--NB The cantilever may belong to a different track, e.g. at the deviating track in a switch.
 							local dPol = pol.DistanceToAlignment
 							local dCnt = cnt:getAlignmentInfo(pol.Alignment.id).DistanceToAlignment
-							local d = NOBN_ocs_getPoleHalfWidth(pol,this.RelativeElevation)
+							local d = NOBN_ocs_getPoleHalfWidth(pol,this.VerticalOffset)
 							if math.abs(dCnt) &lt; math.abs(dPol) then
 								--Place on front side of its OCS pole (facing the track):
 								return dPol - (RightSided and 1 or -1) * d
@@ -302,7 +302,7 @@ positive feeder in AT system				positiv leder i AT-system
 					local rPol,nPol = getRelatedObjects(sPol)
 					local rCnt,nCnt = getRelatedObjects(sCnt)
 					if nPol == 0 then
-						return getPropertyValue("DistanceToAlignment")
+						return getPropertyValue("LateralOffset")
 					else
 						local pol = rPol[0]
 						if this.Alignment.id ~= pol.Alignment.id then
@@ -311,7 +311,7 @@ positive feeder in AT system				positiv leder i AT-system
 						if nCnt == 0 then
 							--Assume that console will be needed on the track side of its OCS pole (cantilevers will be added afterwards).
 							--Note: It may change sides when the cantilevers are related to it.
-							return _JBTEH_UTL_DistanceToAlignment(cnt) - (RightSided and 1 or -1) * defaultConsoleDepth
+							return _JBTEH_UTL_LateralOffset(cnt) - (RightSided and 1 or -1) * defaultConsoleDepth
 						else
 							local cnt = rCnt[0]
 							--Place console on the same side of its OCS pole as the first cantilever being related to the console.
@@ -320,7 +320,7 @@ positive feeder in AT system				positiv leder i AT-system
 							--NB The cantilever may belong to a different track, e.g. at the deviating track in a switch.
 							local dPol = pol.DistanceToAlignment
 							local dCnt = cnt:getAlignmentInfo(pol.Alignment.id).DistanceToAlignment
-							local d = NOBN_ocs_getPoleHalfWidth(pol,this.RelativeElevation)
+							local d = NOBN_ocs_getPoleHalfWidth(pol,this.VerticalOffset)
 							if math.abs(dCnt) &lt; math.abs(dPol) then
 								--Placed on front side of its OCS pole (facing the track):
 								return "both"
@@ -683,14 +683,14 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>_JBTEH_UTL_DistanceToAlignment()</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>_JBTEH_UTL_LateralOffset()</Formula></LuaExpression>
 <!-- TODO: Adjust cantilever position towards track if they should adapt to a console holding multiple cantilevers -->
-		<LuaFunction Name="_JBTEH_UTL_DistanceToAlignment()" 
+		<LuaFunction Name="_JBTEH_UTL_LateralOffset()" 
 			ReturnType="Double"
 			Description="Returns cantilever's distance to own alignment, based on its OCS pole's type and position. (2020-02-16: Formula does not take into account the angularOffset of the pole.)">
-			<Constructor>Double _JBTEH_UTL_DistanceToAlignment(ObjRef Cantilever = this)</Constructor>
+			<Constructor>Double _JBTEH_UTL_LateralOffset(ObjRef Cantilever = this)</Constructor>
 			<Formula>
-				function _JBTEH_UTL_DistanceToAlignment(cnt)
+				function _JBTEH_UTL_LateralOffset(cnt)
 					local cnt = cnt or this
 					if (Alignment == nil) then 
 						--If cantilever has no alignment, set insignificant but noticeable value (maintain sideOfAlignment)
@@ -703,7 +703,7 @@ positive feeder in AT system				positiv leder i AT-system
 					else
 						-- Cantilever's OCS pole does not have to be connected a track - this Lua snippet works fine without.
 						local pol = rPol[0]
-						local d = NOBN_ocs_getPoleHalfWidth(pol,this.RelativeElevation)
+						local d = NOBN_ocs_getPoleHalfWidth(pol,this.VerticalOffset)
 
 						-- OCS pole and cantilever may belong to different tracks (when OCS pole is located between tracks):
 						--Distance from center OCS pole to the *cantilever's* alignment:
@@ -719,7 +719,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>ContactWireHeight - NOBN_ocs_getCantileverStandardValues(Variant)["wco"]</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>ContactWireHeight - NOBN_ocs_getCantileverStandardValues(Variant)["wco"]</Formula></LuaExpression>
 
 
 		<!-- Primary custom attributes (generally input by hand or script) -->
@@ -1361,7 +1361,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_chkUpperTubeAngle()
 					-- Assume that the catenary wire clamp holds the catenary 11.7 cm above the upper tube's center:
-					vDiff = CatenaryClampVerticalOffset - 0.117 - RelativeElevation
+					vDiff = CatenaryClampVerticalOffset - 0.117 - VerticalOffset
 					hDiff = math.abs(CatenaryClampLateralOffset - DistanceToAlignment)
 					angle = math.deg(math.atan(vDiff,hDiff))
 					min = -5.0 --Decimal Degrees
@@ -1666,13 +1666,13 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 		
-		<LuaExpression Name="DistanceToAlignment"><Formula>_JBTEH_KLK_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KLK_DistanceToAlignment()" 
+		<LuaExpression Name="LateralOffset"><Formula>_JBTEH_KLK_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KLK_LateralOffset()" 
 			ReturnType="Double"
 			Description="Copies the cantilever's lateral offset (distance to alignment).">
-			<Constructor>Double _JBTEH_KLK_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTEH_KLK_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTEH_KLK_DistanceToAlignment()
+				function _JBTEH_KLK_LateralOffset()
 					s = rel_OcsWireClamp_BelongsTo_Cantilever
 					r,n = getRelatedObjects(s)
 					if n == 0 then
@@ -1684,19 +1684,19 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="RelativeElevation"><Formula>_JBTEH_KLK_RelativeElevation()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_KLK_RelativeElevation()" 
+		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_KLK_VerticalOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KLK_VerticalOffset()" 
 			ReturnType="Double"
 			Description="Copies the cantilever's vertical offset (relative elevation).">
-			<Constructor>Double _JBTEH_KLK_RelativeElevation()</Constructor>
+			<Constructor>Double _JBTEH_KLK_VerticalOffset()</Constructor>
 			<Formula>
-				function _JBTEH_KLK_RelativeElevation()
+				function _JBTEH_KLK_VerticalOffset()
 					s = rel_OcsWireClamp_BelongsTo_Cantilever
 					r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						return r[0].RelativeElevation
+						return r[0].VerticalOffset
 					end
 				end
 			</Formula>

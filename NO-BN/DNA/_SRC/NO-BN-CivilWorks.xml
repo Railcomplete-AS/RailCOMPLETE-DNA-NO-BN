@@ -86,8 +86,8 @@
 		<!-- Use alignment system to figure out how the closest rail will be concerned in track curves with cant. -->
 		<!-- Bane NOR uses LiftWithCant="true" because the sleepers are rotated with asin(cant/CantGauge) around centre track, then lifted by cant/2. -->
 		<!-- Attribute AlignmentGauge has no specific usage here. -->
-		<AlignmentSystems DefaultSystemName="Kabelføring">
-			<AlignmentSystem Name="Kabelføring"
+		<AlignmentSystems DefaultSystemName="Kabelføring, løftet med overhøyde">
+			<AlignmentSystem Name="Kabelføring, løftet med overhøyde"
 				CantGauge="1.500"
 				AlignmentGauge="0.000"
 				LiftWithCant="true"
@@ -215,8 +215,8 @@
 				function _JBTKU_KFK_Offset3dX(_position)
 					local s,e,m
 					s,e = _JBTKU_KFK_getStartEndAndJump(_position)
-					m = getAlignmentInfo(_position.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
-					return m.DistanceToAlignment
+					ai = getAlignmentInfo(_position.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
+					return ai.DistanceToAlignment
 				end	
 			</Formula>
 		</LuaFunction>
@@ -1266,13 +1266,13 @@
 
 		<LuaExpression Name="name"><Formula>code.." ("..Variant..")"</Formula></LuaExpression>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>_JBTKU_KFOE_manhole_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFOE_manhole_DistanceToAlignment()" 
+		<LuaExpression Name="LateralOffset"><Formula>_JBTKU_KFOE_manhole_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKU_KFOE_manhole_LateralOffset()" 
 				ReturnType="Double"
 				Description="Returns manhole's default distance to its alignment.">
-			<Constructor>Double _JBTKU_KFOE_manhole_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTKU_KFOE_manhole_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTKU_KFOE_manhole_DistanceToAlignment() 
+				function _JBTKU_KFOE_manhole_LateralOffset() 
 					local MinFreeProfile = 2.52 --Bane NOR TRV value
 					local d
 					if ManholeDiameter &gt; 0 then
@@ -1991,8 +1991,8 @@
 
 		<LuaExpression Name="name"><Formula>tostring(code):upper():match("UNFINISHED") and code or ""</Formula></LuaExpression>
 		<LuaExpression Name="Mileage"><Formula>RC__getMileageFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
-		<LuaExpression Name="DistanceToAlignment"><Formula>RC__getDistanceToAlignmentFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>RC__getRelativeElevationFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RC__getLateralOffsetFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>RC__getVerticalOffsetFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
 		<LuaExpression Name="dir"><Formula>RC__getDirFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
 		<LuaExpression Name="AngularOffset"><Formula>RC__getAngularOffsetFromRelatedObject(rel_OcsFoundation_AppliesTo_OcsPoleOrAnchoringFootplate)</Formula></LuaExpression>
 
@@ -2221,7 +2221,7 @@
 			</Variant>
 			<Variant Name="Betong Hs fundament på plattform">
 				<SetValue Key="name" Value="Hs-fund. på plattform"/>
-				<SetValue Key="RelativeElevation" Value="0.76"/>
+				<SetValue Key="VerticalOffset" Value="0.76"/>
 				<SetValue Key="SignalFoundationShaftHeight" Value="1000"/>
 			</Variant>
 			<Variant Name="Betong Hs fundament, Ø300/Ø680">
@@ -2592,7 +2592,7 @@
 			</Variant>
 			<Variant Name="Brakett mot vegg">
 				<SetValue Key="name" Value="Ø60/vegg"/>
-				<SetValue Key="RelativeElevation" Value="2.5"/>
+				<SetValue Key="VerticalOffset" Value="2.5"/>
 				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-KU-SKF-SKILTFESTE-BRAKETT-MOT-VEGG-Ø60-150x120x119"/>
 			</Variant>
 			<Variant Name="Brakett på annen mast">
@@ -2602,7 +2602,7 @@
 		</Variants>
 		
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="RelativeElevation"><Formula>if Variant:find("Brakett mot vegg") then return 2.5 else return 0 end</Formula></LuaExpression>
+		<LuaExpression Name="VerticalOffset"><Formula>if Variant:find("Brakett mot vegg") then return 2.5 else return 0 end</Formula></LuaExpression>
 
 		<InsertPointObject VariantName="Betongfundament (h=500mm)" DisplayBlockName="NO-BN-2D-JBTKU_SKF-SKILTFESTE-BETONGFOT-60-225-500-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
@@ -2657,7 +2657,7 @@
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" EnableDirectionSetting="true" AddAngle="0"/>
-			<SetValue Key="RelativeElevation" Value="2.5"/>
+			<SetValue Key="VerticalOffset" Value="2.5"/>
 		</InsertPointObject>
 		
 		<InsertPointObject VariantName="Brakett mot gulv" DisplayBlockName="NO-BN-2D-JBTKU_SKF-SKILTFESTE-BRAKETT-MOT-GULV-60-308-{{SymbolMode}}"

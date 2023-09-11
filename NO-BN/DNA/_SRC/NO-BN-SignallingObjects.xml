@@ -414,7 +414,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 1e-3 or -1e-3)</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 1e-3 or -1e-3)</Formula></LuaExpression>
 		
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
 		
@@ -483,13 +483,13 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<LuaExpression Name="name"><Formula>return "Sp."..code</Formula></LuaExpression>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>_JBTSA_SSP_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTSA_SSP_DistanceToAlignment()" ReturnType="Double"
+		<LuaExpression Name="LateralOffset"><Formula>_JBTSA_SSP_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_SSP_LateralOffset()" ReturnType="Double"
 			Description="Returns the XY plane distance to alignment for a derailer or catch points (cant taken into consideration).">
-			<Constructor>Double _JBTSA_SSP_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTSA_SSP_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTSA_SSP_DistanceToAlignment()
-					return NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 0.75 or -0.75)
+				function _JBTSA_SSP_LateralOffset()
+					return NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 0.75 or -0.75)
 				end
 			</Formula>
 		</LuaFunction>
@@ -1124,8 +1124,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 =========================================================================================================-->
 <!-- Note: If cant has been exaggerated, then the axle counter sensors will move with the superelevated rails and may come closer to the -->
 <!-- track / alignment axis than expected, and a model check for XY-plane distance less than 5e-3 to own alignment will flag the axle counter as misplaced... -->
-<!-- if (math.abs(math.abs(DistanceToAlignment) - cantGauge/2) &gt; 5e-3) then -->
-<!-- 	return string.format("%.3f",DistanceToAlignment)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
+<!-- if (math.abs(math.abs(LateralOffset) - cantGauge/2) &gt; 5e-3) then -->
+<!-- 	return string.format("%.3f",LateralOffset)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
 <!-- end -->
 	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterSensor" Name="JBTSA_TEL Akselteller sensor"
 				Layer="JBTSA_TEL" Color="ByLayer"
@@ -1166,17 +1166,17 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>_JBTSA_TEL_DistanceToAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTSA_TEL_DistanceToAlignment()" ReturnType="String"
+		<LuaExpression Name="LateralOffset"><Formula>_JBTSA_TEL_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_TEL_LateralOffset()" ReturnType="String"
 			Description="Returns the distance to alignment for an axle counter sensor, either +/- 1.5 in schematic drawings or  otherwise +/-0.75.">
-			<Constructor>Double _JBTSA_TEL_DistanceToAlignment()</Constructor>
+			<Constructor>Double _JBTSA_TEL_LateralOffset()</Constructor>
 			<Formula>
-				function _JBTSA_TEL_DistanceToAlignment()
+				function _JBTSA_TEL_LateralOffset()
 					cg2 = Alignment.AlignmentSystem.CantGauge/2
 					if SymbolMode == "Schematic" then 
 						return RightSided and 2 or -2  --TODO: Only guessing...
 					else 
-						return NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and cg2 or -cg2)
+						return NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and cg2 or -cg2)
 					end
 				end
 			</Formula>
@@ -1388,7 +1388,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 						hi = hi[CableLength]
 						cLen = cLen[CableLength]
 						ac = r[0] --trigger modelcheck in related objects as well
-						gridLateralOffset = math.abs(distanceToAlignment - ac.distanceToAlignment)
+						gridLateralOffset = math.abs(LateralOffset - ac.LateralOffset)
 						gridAlongOffset = math.abs(mileage - ac.mileage)
 						-- Their sum is a square-grid metric:
 						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
@@ -1581,7 +1581,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		
 		<SetValue Key="code" Value="OOO"/>
 
-		<!-- <LuaExpression Name="DistanceToAlignment"><Formula>RC__snap(getPropertyValue("DistanceToAlignment"),3)</Formula></LuaExpression> -->
+		<!-- <LuaExpression Name="LateralOffset"><Formula>RC__snap(getPropertyValue("LateralOffset"),3)</Formula></LuaExpression> -->
 
 		<CustomAttribute DataType="String" ReadOnly="true" Category="Model check" Name="mc_IsolatedJointsToBeModelchecked"
 			DisplayName="Isolated joints to modelcheck." 
@@ -1682,7 +1682,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>0</Formula></LuaExpression>
 		
 		<CustomAttribute DataType="Boolean" Name="UpSectionLeftRailDetection" DisplayName="Deteksjon venstreskinne i stigende kilometerretning" DefaultValue="false"/>
 		<CustomAttribute DataType="Boolean" Name="UpSectionRightRailDetection" DisplayName="Deteksjon høyreskinne i stigende kilometerretning" DefaultValue="false"/>
@@ -1884,8 +1884,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 =========================================================================================================-->
 <!-- Note: If cant has been exaggerated, then the axle counter sensors will move with the superelevated rails and may come closer to the -->
 <!-- track / alignment axis than expected, and a model check for XY-plane distance less than 5e-3 to own alignment will flag the axle counter as misplaced... -->
-<!-- if (math.abs(math.abs(DistanceToAlignment) - cantGauge/2) &gt; 5e-3) then -->
-<!-- 	return string.format("%.3f",DistanceToAlignment)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
+<!-- if (math.abs(math.abs(LateralOffset) - cantGauge/2) &gt; 5e-3) then -->
+<!-- 	return string.format("%.3f",LateralOffset)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
 <!-- end -->
 	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" LuaName="rctype_FtgsBond" Name="JBTSA_SFS FTGS forbinder"
 				Layer="JBTSA_SFS" Color="ByLayer"
@@ -1925,7 +1925,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Variant Name="FTGS sporkryss forbinder"/>
 		</Variants>
 
-		<LuaExpression Name="DistanceToAlignment"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
 
 		<LuaExpression Name="code"><Formula>_JBTSA_SFS_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_SFS_code()" ReturnType="String"
@@ -2172,7 +2172,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 						hi = hi[CableLength]
 						cLen = cLen[CableLength]
 						fc = r[0] --trigger modelcheck in related objects as well
-						gridLateralOffset = math.abs(distanceToAlignment - fc.distanceToAlignment)
+						gridLateralOffset = math.abs(LateralOffset - fc.LateralOffset)
 						gridAlongOffset = math.abs(mileage - fc.mileage)
 						-- Their sum is a square-grid metric:
 						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
@@ -2295,8 +2295,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
 
 
-		<LuaExpression Name="DistanceToAlignment">		   
-			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
+		<LuaExpression Name="LateralOffset">		   
+			<Formula>NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
 		</LuaExpression>
 
 		<CustomAttribute DataType="Boolean" Name="HasHeatingElement" DisplayName="Har varmeelement" DefaultValue="false">
@@ -2462,8 +2462,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
 
 
-		<LuaExpression Name="DistanceToAlignment">		   
-			<Formula>NOBN_trk_getDistanceToAlignmentFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
+		<LuaExpression Name="LateralOffset">		   
+			<Formula>NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
 		</LuaExpression>
 
 		<LuaExpression Name="code"><Formula>_JBTSA_SPD_code()</Formula></LuaExpression>	

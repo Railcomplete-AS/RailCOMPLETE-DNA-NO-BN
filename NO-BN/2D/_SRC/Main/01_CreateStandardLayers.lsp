@@ -38,7 +38,7 @@
 		; General / common layers
 		;----------------------------------------------
 		layDef_Zero
-			(list ; NOBN
+			
 				"0"
 				_colorWhite_
 				"RailCOMPLETE Felles - Default-lag"
@@ -46,7 +46,7 @@
 			)
 
 		layDef_Defpoints
-			(list ; NOBN
+			
 				"Defpoints"
 				_colorYellow_
 				"Defpoints - Objekter p" _ARING_ " Defpoints-laget vil ikke bli plottet (._LAYER _Plot _No)"
@@ -54,7 +54,7 @@
 			)
 
 		layDef_UnknownLayerNameRequested
-			(list ; NOBN
+			
 				"___UKJENT_LAGNAVN___"
 				_colorMagenta_
 				(strcat _PREFIX_ " " _RC_NAME_ " - Lagnavn som er blitt opprettet ved en Lisp programvarefeil da 2D biblioteket ble generert"
@@ -63,7 +63,7 @@
 			)
 
 		layDef_InsertionPoint
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _RC_) "$$INNSETTINGSPUNKT")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _RC_NAME_ " - Innsettingspunkt for punktobjekter")
@@ -71,7 +71,7 @@
 			)
 	
 		layDef_Description
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _RC_) "$$SYMBOLBESKRIVELSE")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _RC_NAME_ " - Symbolbeskrivelse")
@@ -79,7 +79,7 @@
 			)
 
 		layDef_MetricDetails
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _COM_) "$$METRISKE_DETALJER")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _COM_NAME_ " - Detaljer i et objekt vist i sin faktiske st" _OSLASH_ "rrelse (ikke-annotativ grafikk)")
@@ -87,7 +87,7 @@
 			)
 		
 		layDef_AnnotationTextLocator
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _RC_) "$$ANNOTERINGSTEKST_SYMBOL")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _RC_NAME_ " - Annoteringstekst-symbol for " _ARING_ " lettere gjenfinne tekstobjekter")
@@ -95,7 +95,7 @@
 			)
 
 		layDef_Cabinet_ReservedSpaceForDoors
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _COM_) "$$RESERVERT_FOR_SKAPDOERER")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _COM_NAME_ " - Reservert omr" _ARING_ "de for skapd" _OSLASH_ "rbevegelse")
@@ -103,7 +103,7 @@
 			)
 
 		layDef_Cabinet_Wipeout
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _COM_) "$$WIPEOUT_SKAP")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _COM_NAME_ " - Wipeout under skap og kabelbokser")
@@ -113,7 +113,7 @@
 		; Board or pole layers
 		;----------------------------------------------
 		layDef_BoardOrPole_Wipeout
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _BNP_) "$$WIPEOUT_SKILT")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _BNP_NAME_ " - Wipeout under skilt og stolper")
@@ -123,7 +123,7 @@
 		; Substructure layers (foundations, tunnels, roads etc)
 		;----------------------------------------------
 		layDef_FoundationLocator
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SUB_) "$$LOKALISERING_AV_FUNDAMENTER_OG_SKILTFESTER")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SUB_NAME_ " - Fundamentlokalisering - KL(KL), S(Signal), T(Tele) eller F(skiltfeste)")
@@ -133,7 +133,7 @@
 		; Superstructure (track and embankment) layers
 		;----------------------------------------------
 		layDef_Switch_LongSleepers
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _TRK_) "$$SPORVEKSEL_LANGSVILLEPARTI")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _TRK_NAME_ " - Langsvilleparti etter bakkant sporveksel (del av sporvekselsymbolet)")
@@ -141,7 +141,7 @@
 			)
 		
 		layDef_Switch_ShortSleepers
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _TRK_) "$$SPORVEKSEL_KORTSVILLEPARTI")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _TRK_NAME_ " - Kortsvilleparti etter bakkant sporveksel (del av sporvekselsymbolet)")
@@ -149,7 +149,7 @@
 			)
 
 		layDef_Switch_Geometry
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _TRK_) "$$SPORVEKSEL_GEOMETRI")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _TRK_NAME_ " - Geometri for venstre og h" _OSLASH_ "yre ben i en sporveksel")
@@ -158,8 +158,8 @@
 		
 		; Overhead Catenary System (OCS) layers
 		;----------------------------------------------
-		layDef_CatenaryIsolator_Wipeout
-			(list ; NOBN
+		layDef_CatenaryInsulator_Wipeout
+			
 				(strcat (ModifyAdmString _OCS_) "$$WIPEOUT_ISOLATOR")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _OCS_NAME_ " - Wipeout under KL-isolatorer")
@@ -167,7 +167,7 @@
 			)
 
 		layDef_AutoTransformerTerminals
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _OCS_) "$$AUTOTRANSFORMATOR_POLER")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _OCS_NAME_ " - Poler for autotransformator")
@@ -175,7 +175,7 @@
 			)
 
 		layDef_PushPullDirection
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _OCS_) "$$UTLIGGER_KRAFTRETNING")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _OCS_NAME_ " - Utligger kraftretning")
@@ -183,7 +183,7 @@
 			)
 	
 		layDef_CantileverType
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _OCS_) "$$UTLIGGER_TYPE")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _OCS_NAME_ " - Utliggertype")
@@ -191,7 +191,7 @@
 			)
 
 		layDef_HighVoltageSwitchActuator
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _OCS_) "$$MAN" "O" "VERMASKIN")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _OCS_NAME_ " - KL-bryter man"  "o" "vermaskin grafikk")
@@ -203,7 +203,7 @@
 		; Signalling
 		;----------------------------------------------
 		layDef_Switch_SigCircle_Wipeout
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_SPORVEKSEL")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Wipeout under den lille sirkelen som markerer TK (teoretisk kryss) i sporvekselsymbolets signalvisning")
@@ -211,23 +211,23 @@
 			)
 	
 		layDef_Derailer_Wipeout
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_SPORSPERRE")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Wipeout under sporsperre")
 				_ByBlock_
 			)
 
-		layDef_BaliseGroup_Wipeout
-			(list ; NOBN
-				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_BALISEGRUPPE")
+		layDef_TvpSection_Wipeout
+			
+				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_TODETEKSJONSAVSNITT")
 				_colorMetaDataLayer_
-				(strcat _PREFIX_ " " _SIG_NAME_ " - Wipeout under et balisegruppesymbol")
+				(strcat _PREFIX_ " " _SIG_NAME_ " - Wipeout under togdeteksjonsavsnitt")
 				_ByBlock_
 			)
-	
+
 		layDef_AxleCounter_Wipeout
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_AKSELTELLER")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Wipeout under akselteller")
@@ -235,7 +235,7 @@
 			)
 
 		layDef_AxleCounter_SnaplineForPositioning
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$AKSELTELLER_SNAPPELINJE")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Snappelinje for akselteller, markerer hvor i sporet akseltelleren er plassert")
@@ -243,7 +243,7 @@
 			)
 
 		layDef_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$AKSELTELLER_SIDEVEIS_MINSTEAVSTAND_INNTIL_120_KMH")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Sideveis minsteavstand fra akseltellers skinne til n" _AELIG_ "rmeste naboskinne, ved hastighet under 120 km/h")
@@ -251,7 +251,7 @@
 			)
 
 		layDef_AxleCounter_MinimumRailSeparationAtSpeedsAboveOrEqualTo_120_kmh
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$AKSELTELLER_SIDEVEIS_MINSTEAVSTAND_OVER_ELLER_VED_120_KMH")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Sideveis minsteavstand fra akseltellers skinne til n" _AELIG_ "rmeste naboskinne, ved hastighet over eller ved 120 km/h")
@@ -259,15 +259,23 @@
 			)
 
 		layDef_AxleCounter_ReservedAreaForTuningUnit
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$AKSELTELLER_RESERVERT_OMRAADE_FOR_TUNINGENHET")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Reservert omr" _ARING_ "de for akseltellerens tuning-enhet, som har en ideell standardisert kabel-lengde")
 				_ByBlock_
 			)
 
+		layDef_BaliseGroup_Wipeout
+			
+				(strcat (ModifyAdmString _SIG_) "$$WIPEOUT_BALISEGRUPPE")
+				_colorMetaDataLayer_
+				(strcat _PREFIX_ " " _SIG_NAME_ " - Wipeout under et balisegruppesymbol")
+				_ByBlock_
+			)
+	
 		layDef_Balise_MetalFreeArea
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$BALISE_METALLFRITT_PROFIL")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Metallfritt omr" _ARING_ "de omkring en balise, for " _ARING_ " hindre forstyrrelser i magnetisk balise - tog kommunikasjon")
@@ -275,7 +283,7 @@
 			)
 
 		layDef_Balise_BaliseSeparation
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$BALISE_SNAPPELINJER_3m")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Snappelinjer i 3 meters avstand fra balisesenter, som markerer anbefalt avstand mellom nabo-baliser")
@@ -283,7 +291,7 @@
 			)
 
 		layDef_Balise_ActuatorSeparation
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$BALISE_SNAPPELINJER_8m")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Snappelinjer i 8 meters avstand fra balisesenter, som markerer anbefalt minsteavstand fra en styrt balise til isolasjonen ved signal")
@@ -291,7 +299,7 @@
 			)
 
 		layDef_Balise_GroupSeparation
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$BALISE_SNAPPELINJER_12m")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Snappelinjer i 12 meters avstand fra balisesenter, som markerer anbefalt minsteavstand mellom balisegrupper")
@@ -300,7 +308,7 @@
 
 		; The three next belong to track & embankment because isolation joints are made by track people... But the layers are mainly used by signaling:
 		layDef_View_SchematicPlan
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$VISNING_SKJEMATISK_PLAN")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Grafikk for skinneskj" _OSLASH_ "t i 1-streng tegning 'Skjematisk Plan'")
@@ -308,7 +316,7 @@
 			)
 
 		layDef_View_CablePlan
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$VISNING_KABELPLAN")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Grafikk for skinneskj" _OSLASH_ "t i 1-streng tegning 'Kabelplan' og i geografiske tegninger")
@@ -316,7 +324,7 @@
 			)
 
 		layDef_View_TrackIsolationPlan ; Is also relevant for OCS return current drawings
-			(list ; NOBN
+			
 				(strcat (ModifyAdmString _SIG_) "$$VISNING_SPORISOLERING_OG_RETURKRETS")
 				_colorMetaDataLayer_
 				(strcat _PREFIX_ " " _SIG_NAME_ " - Grafikk for skinneskj" _OSLASH_ "t i 2-streng tegning 'Skjematisk sporisolering' eller 'KL returkretsskjema'")
@@ -356,7 +364,7 @@
 	(CreateLayer layDef_Switch_Geometry)
 
 	; Overhead Catenary System (OCS) layers
-	(CreateLayer layDef_CatenaryIsolator_Wipeout)
+	(CreateLayer layDef_CatenaryInsulator_Wipeout)
 	(CreateLayer layDef_AutoTransformerTerminals)
 	(CreateLayer layDef_PushPullDirection)
 	(CreateLayer layDef_CantileverType)
@@ -364,12 +372,13 @@
 
 	; Signalling
 	(CreateLayer layDef_Derailer_Wipeout)
-	(CreateLayer layDef_BaliseGroup_Wipeout)
+	(CreateLayer layDef_TvpSection_Wipeout)
 	(CreateLayer layDef_AxleCounter_Wipeout)
 	(CreateLayer layDef_AxleCounter_SnaplineForPositioning)
 	(CreateLayer layDef_AxleCounter_MinimumRailSeparationAtSpeedsBelowOrAt_120_kmh)
 	(CreateLayer layDef_AxleCounter_MinimumRailSeparationAtSpeedsAboveOrEqualTo_120_kmh)
 	(CreateLayer layDef_AxleCounter_ReservedAreaForTuningUnit)
+	(CreateLayer layDef_BaliseGroup_Wipeout)
 	(CreateLayer layDef_Balise_MetalFreeArea)
 	(CreateLayer layDef_Balise_BaliseSeparation)
 	(CreateLayer layDef_Balise_ActuatorSeparation)

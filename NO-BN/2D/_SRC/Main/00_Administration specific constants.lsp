@@ -49,7 +49,7 @@
 		_normalGauge_						1.435	; Distance between the two inner rails for this administration's network.
 		_railHeadDistance_					1.500	; Reference value when converting cant (superelevation) into rotations: atan(cant/referenceGauge).
 		_sleeperSpacing_					0.600	; This administration's normal sleeper spacing.
-		_schematicGauge_					9.000	; Spacing between rails in a schematic 2-line drawing (insulation, return current etc, showing both rails).
+		_schematicGauge_					9.000	; Spacing between rails in a schematic 2-line drawing (track circuit isolation, return current etc, showing both rails).
 		_schematicTrackSpacing_				21.000	; Standard spacing between track centerlines in a schematic 1-line or 2-line drawing (signaling isolation, return current drawing - not track schematic).
 		_geographicTrackSpacing_			4.700	; Standard spacing between track centerlines in real installations.
 	
