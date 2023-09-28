@@ -14,20 +14,20 @@
 
 ; Veisignalene er ikke reglet i TRV for jernbane (SJT TFF), men i Veitrafikkens regelverk.
 
-(defun NOBN-PLANOVERGANGSSIGNAL ( / variation yokeMounted )
+(defun NOBN-PLANOVERGANGSSIGNAL ( / variation portalMounted )
 	(foreach variation '("VS1" "VS2")			; 'VS1'= single mast, 'VS2' = forked mast (double signal)
-		(foreach yokeMounted '(nil T)			; 'nil' = upright mast, T = yoke mounting
+		(foreach portalMounted '(nil T)			; 'nil' = upright mast, T = yoke mounting
 			; Single or double road signal (for level crossing), free-standing mast or yoke mounted:
-			(TraceLevel3 (strcat "NOBN-VEISIGNAL-" variation (if yokeMounted (strcat "-AAK" ) _emptyString_ ))) (NOBN-VEISIGNAL variation yokeMounted )
+			(TraceLevel3 (strcat "NOBN-VEISIGNAL-" variation (if portalMounted (strcat "-AAK" ) _emptyString_ ))) (NOBN-VEISIGNAL variation portalMounted )
 		)
 	)
 )
 
 
 
-(defun NOBN-VEISIGNAL ( variation yokeMounted / )
+(defun NOBN-VEISIGNAL ( variation portalMounted / )
 	(setq 
-		blockName (strcat _SIG_ "SIG-" "VEISIGNAL-" variation (if (= yokeMounted nil) _ENTER_ "-AAK"))
+		blockName (strcat _SIG_ "SIG-" "VEISIGNAL-" variation (if (= portalMounted nil) _ENTER_ "-AAK"))
 		description "VEISIGNAL (SIGNAL MOT VEITRAFIKK)"
 	)
 	
@@ -36,15 +36,15 @@
 	; Schematic symbol
 	; Schematic 1-line signaling / schematic plan ('skjematisk plan') view
 	(SetLayer layDef_View_SchematicPlan)
-	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "WIDE")
+	(NOBN_DrawLevelCrossingSignalTowardsRoad variation portalMounted "LARGE" "WIDE")
 	
 	; Schematic 1-line signaling / cable plan ('plan og kabelplan') view
 	(SetLayer layDef_View_CablePlan)
-	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "SMALL" "WIDE")
+	(NOBN_DrawLevelCrossingSignalTowardsRoad variation portalMounted "SMALL" "WIDE")
 	
 	; Schematic 2-line signaling / track isolation plan OR high voltage / return current plan view
 	(SetLayer layDef_View_TrackIsolationPlan)
-	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "WIDE")
+	(NOBN_DrawLevelCrossingSignalTowardsRoad variation portalMounted "LARGE" "WIDE")
 	
 	; Create schematic symbol
 	(ThawAllLayers)
@@ -53,15 +53,15 @@
 	; Annotative symbol
 	; Geo 1-line signaling / schematic plan ('skjematisk plan') view
 	(SetLayer layDef_View_SchematicPlan)
-	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
+	(NOBN_DrawLevelCrossingSignalTowardsRoad variation portalMounted "LARGE" "NARROW")
 	
 	; Geo 1-line signaling / cable plan ('plan og kabelplan') view
 	(SetLayer layDef_View_CablePlan)
-	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "SMALL" "NARROW")
+	(NOBN_DrawLevelCrossingSignalTowardsRoad variation portalMounted "SMALL" "NARROW")
 	
 	; Geo 2-line signaling / track isolation plan OR high voltage / return current plan view
 	(SetLayer layDef_View_TrackIsolationPlan)
-	(NOBN_DrawLevelCrossingSignalTowardsRoad variation yokeMounted "LARGE" "NARROW")
+	(NOBN_DrawLevelCrossingSignalTowardsRoad variation portalMounted "LARGE" "NARROW")
 	
 	(ThawAllLayers)
 	(ScaleAll _twoThirds_)
@@ -73,7 +73,7 @@
 ;==========================
 ; Draw...X...() functions
 ;==========================
-(defun NOBN_DrawLevelCrossingSignalTowardsRoad ( variation yokeMounted size width / lowerPole upperPole topOfPole lat r x y )
+(defun NOBN_DrawLevelCrossingSignalTowardsRoad ( variation portalMounted size width / lowerPole upperPole topOfPole lat r x y )
 	; Drawn upright
 	; Argument 'width' is ignored for 'VS1' signal
 	(setq
@@ -99,7 +99,7 @@
 				_LINE_ (list (- x) (- y))   (list x (+ y)) _ENTER_
 				_LINE_ (list (- x) (+ y))   (list x (- y)) _ENTER_
 			)
-			(if yokeMounted
+			(if portalMounted
 				(progn
 					(command _MOVE_ _selectAll_ _ENTER_ _origin_ (list 0 (* -2 r)))	; shift down by one lantern
 					(NOBN_DrawVerticalPole yokePole)								; add yoke pole
@@ -130,7 +130,7 @@
 				_LINE_ (list (+ (+ lat) (- x)) (+ (+ upperPole (* 2 r)) (- y)))   (list (+ (+ lat) (+ x)) (+ (+ upperPole (* 2 r)) (+ y))) _ENTER_ ; Right '/'
 				_LINE_ (list (+ (+ lat) (- x)) (+ (+ upperPole (* 2 r)) (+ y)))   (list (+ (+ lat) (+ x)) (+ (+ upperPole (* 2 r)) (- y))) _ENTER_ ; Right '\'
 			)
-			(if yokeMounted
+			(if portalMounted
 				(progn
 					(command _MIRROR_ _selectAll_ _ENTER_ _origin_ _xAxis_ _eraseMirrorSource_)		; flip down around x=0
 					(NOBN_DrawVerticalPole yokePole)								; add yoke pole

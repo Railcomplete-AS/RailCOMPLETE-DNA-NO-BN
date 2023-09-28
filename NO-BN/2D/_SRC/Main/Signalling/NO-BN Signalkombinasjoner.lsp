@@ -25,7 +25,7 @@
 ; TODO: 2020-07-31 CLFEY Remove NOBN_DrawTVs() since signal 66 is treated in other LISP code file - or upgrade LISP code and include it (=best)
 
 
-(defun NOBN-KLASSE-B-LYSSIGNAL ( / hs fs tvs zs avs bs mks fks ls lhs ds yokeMounted )
+(defun NOBN-KLASSE-B-LYSSIGNAL ( / hs fs tvs zs avs bs mks fks ls lhs ds portalMounted )
 ;
 ; Bane NOR signal combos.
 ;
@@ -60,54 +60,54 @@
 
 	(SetCadSystemDefaults)
 	
-	(foreach yokeMounted '(nil "AAK")
+	(foreach portalMounted '(nil "AAK")
 		
 		; The 'Unknown combination' signal symbol
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   0  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   0  portalMounted)
 
 		; 0-lys Frittstående Ds (Hs=Fs=0) Ds + MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   1  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   0   1   0   0  0   1  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   0   0   0   0  0   1  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   0   1   0   0  0   1  portalMounted)
 
 		; 0-lys Frittstående Fs / Fs+MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  1  0   0  0   0   0   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  1  0   0  0   0   1   0   0  0   0  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  1  0   0  0   0   0   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  1  0   0  0   0   1   0   0  0   0  portalMounted)
 
 		; 0-lys Togvei Slutt signal (Hs=Fs=0) TVs + MKs,Ds
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   1  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   1  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   0   0   0  0   1  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  1   0  0   0   1   0   0  0   1  portalMounted)
 
 		; 0-lys Avgangsignal AVs + Ds,MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   1  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   1  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   0   0   0  0   1  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  1   0   1   0   0  0   1  portalMounted)
 		
 		; 0-lys Bremseprøvesignal BPs + Ds,MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   1  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   1  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   0   0   0  0   1  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   0  0   1   1   0   0  0   1  portalMounted)
 
 		; 0-lys Høyt skiftesignal Zs + MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   1  0   0   0   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 0  0  0   1  0   0   1   0   0  0   0  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   1  0   0   0   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 0  0  0   1  0   0   1   0   0  0   0  portalMounted)
 
 		; 1-lys RepHs / Stopplykt Hs1 + Ds,MKs
 		;---------------MB-HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS 
-		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   0  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   1  yokeMounted)
-		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   1  yokeMounted)
+		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   0  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   0   0   0  0   1  portalMounted)
+		(NOBN-COMPLEX-SIGNAL nil 1  0  0   0  0   0   1   0   0  0   1  portalMounted)
 
 		; Only needed if one or more of the "foreach" loops have been commented out, 
 		; to avoid 'nil' values for commented-out arguments:
@@ -123,9 +123,9 @@
 									(foreach lhs '(0 1)
 										(progn
 											; Zs and Ds never occur on the same mast.
-											(setq zs 0  ds 0 ) (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-											(setq zs 0  ds 1 ) (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-											(setq zs 1  ds 0 ) (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+											(setq zs 0  ds 0 ) (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+											(setq zs 0  ds 1 ) (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+											(setq zs 1  ds 0 ) (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 										)
 									);LHS
 								);LS
@@ -139,35 +139,35 @@
 	
 	; ERTMS combinations:
 	(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0)
-	(setq mb _left_  ds 0 mks 0 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _left_  ds 0 mks 1 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _left_  ds 1 mks 0 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _left_  ds 1 mks 1 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	(setq mb _left_  ds 0 mks 0 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 0 mks 1 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 1 mks 0 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 1 mks 1 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _right_ ds 0 mks 0 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _right_ ds 0 mks 1 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _right_ ds 1 mks 0 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _right_ ds 1 mks 1 yokeMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	(setq mb _right_ ds 0 mks 0 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 0 mks 1 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 1 mks 0 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 1 mks 1 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _left_  ds 0 mks 0 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _left_  ds 1 mks 0 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _left_  ds 0 mks 1 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _left_  ds 1 mks 1 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	(setq mb _left_  ds 0 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 1 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 0 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 1 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _right_ ds 0 mks 0 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _right_ ds 1 mks 0 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _right_ ds 0 mks 1 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _right_ ds 1 mks 1 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	(setq mb _right_ ds 0 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 1 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 0 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 1 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _down_  ds 0 mks 0 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _down_  ds 1 mks 0 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _down_  ds 0 mks 1 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
-	(setq mb _down_  ds 1 mks 1 yokeMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds yokeMounted)
+	(setq mb _down_  ds 0 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 1 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 0 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 1 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 )
 
 
 
-(defun NOBN-COMPLEX-SIGNAL ( MB HS FS TVS ZS AVS BPS MKS FKS LS LHS DS yokeMounted / config blockName yokePole basePole minMastWithoutDs )
+(defun NOBN-COMPLEX-SIGNAL ( MB HS FS TVS ZS AVS BPS MKS FKS LS LHS DS portalMounted / config blockName yokePole basePole minMastWithoutDs )
 	;	MB - ERTMS markerboard, stop sign (blue/yellow). Incompatible with HS and FS. One of [ nil | _left_ | _right_ | _down_ ]
 	;	HS - Number of lanterner i Hovedsignal [0..3]
 	;	FS - Number of Forsignaler [0..1]
@@ -181,24 +181,24 @@
 	;	LHS - Number of Lysende hastighetssignal (signal 68), avvikende hastighet i sporveksel (annen enn 40 km/h) [0..1]
 	;	DS -  Antall Dvergsignal [0..1]
 	;
-	;	yokeMounted - Mouting method [nil = upright mast | "AAK" = yoke mounting]
+	;	portalMounted - Mouting method [nil = upright mast | "AAK" = yoke mounting]
 	
 	;==================================================================================================================
 	; A few TEST CASES for debugging - copy into VLIDE and step through LISP program:
 	;---------------HS-FS-TVS-ZS-AVS-BPS-MKS-FKS-LS-LHS-DS
-	;(setq MB nil HS 0  FS 1  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 0 yokemounted nil) ; Freestanding distant signal
-	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 0 yokemounted nil) ; Missing symbol
-	;(setq MB nil HS 3  FS 1  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 yokemounted nil) ; Hs3+Fs+Ds+Zs
-	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 yokemounted nil) ; Ds
+	;(setq MB nil HS 0  FS 1  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 0 portalMounted nil) ; Freestanding distant signal
+	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 0 portalMounted nil) ; Missing symbol
+	;(setq MB nil HS 3  FS 1  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 portalMounted nil) ; Hs3+Fs+Ds+Zs
+	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 portalMounted nil) ; Ds
 
-	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 yokemountednil )   ; Hs3+Fs+Ds+Zs  ;Everything, upright mast
-	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 yokemounted"AAK" ) ; Hs3+Fs+Ds+Zs  ;Everything, yoke mounted
+	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMountednil )   ; Hs3+Fs+Ds+Zs  ;Everything, upright mast
+	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMounted"AAK" ) ; Hs3+Fs+Ds+Zs  ;Everything, yoke mounted
 
 	;(if _DEBUG_ <paste test case here and remove semicolon, then set _DEBUG_ to true with (setq _DEBUG_ T)>)
-	;(if _DEBUG_ (setq MB nil HS 3  FS 1  TVS 0  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 yokeMounted nil ))
-	;(if _DEBUG_ (setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 1  FKS 0  LS 0  LHS 0  DS 1 yokeMounted "AAK" ))
-	;(if _DEBUG_ (setq MB _left_ HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 1  FKS 0  LS 0  LHS 0  DS 1 yokeMounted "AAK" ))
-	;Print current setting: (defun show ( / ) (foreach x '(HS FS TVS ZS AVS BPS MKS FKS LS LHS DS yokemounted) (progn (print x) (print (eval x)))))
+	;(if _DEBUG_ (setq MB nil HS 3  FS 1  TVS 0  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMounted nil ))
+	;(if _DEBUG_ (setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 1  FKS 0  LS 0  LHS 0  DS 1 portalMounted "AAK" ))
+	;(if _DEBUG_ (setq MB _left_ HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 1  FKS 0  LS 0  LHS 0  DS 1 portalMounted "AAK" ))
+	;Print current setting: (defun show ( / ) (foreach x '(HS FS TVS ZS AVS BPS MKS FKS LS LHS DS portalMounted) (progn (print x) (print (eval x)))))
 	;==================================================================================================================
 
 	(TraceLevel3
@@ -215,7 +215,7 @@
 			" LS:"  (itoa ls)
 			" LHS:" (itoa lhs)
 			" DS:" (itoa ds)
-			" - " (if (= yokeMounted nil) "(mast)" "(yoke)")
+			" - " (if (= portalMounted nil) "(mast)" "(yoke)")
 		)
 	)
 
@@ -365,12 +365,12 @@
 	(if (= LHS 1) (setq config (strcat config "-LHS")))
 	(if (= AVS 1) (setq config (strcat config "-AVS")))
 	(if (= BPS 1) (setq config (strcat config "-BPS")))
-	(if yokeMounted (setq config (strcat config "-AAK")))
+	(if portalMounted (setq config (strcat config "-AAK")))
 	
 	(setq description (strcat description " " (substr config 2 ))); Skip first '-' character in 'config'
 
 	; Add yoke pole / add rest of main pole with Hs base
-	(if yokeMounted
+	(if portalMounted
 		(progn
 			(ShiftSignalItemsUp (- (+ yokePole totalHeight))) ; shift *down*
 			(NOBN_DrawVerticalPole (- yokePole))

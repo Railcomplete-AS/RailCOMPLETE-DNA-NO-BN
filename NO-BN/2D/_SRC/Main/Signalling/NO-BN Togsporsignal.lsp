@@ -24,34 +24,34 @@
 		(TOGSPORSIGNAL-2 "AAK")		; 2-begreps Togsporsignal i åk
 
 	(TraceLevel3 "TOGSPORSIGNAL-3")
-		(TOGSPORSIGNAL-3 "VSIDE")	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
-		(TOGSPORSIGNAL-3 "HSIDE") 	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
+		(TOGSPORSIGNAL-3 "VSIDE")	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for arm
+		(TOGSPORSIGNAL-3 "HSIDE") 	; 1-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for arm
 
 	(TraceLevel3 "TOGSPORSIGNAL-4")
-		(TOGSPORSIGNAL-4 "VSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for yokeMountedarm
-		(TOGSPORSIGNAL-4 "HSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for yokeMountedarm
+		(TOGSPORSIGNAL-4 "VSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til venstre for arm
+		(TOGSPORSIGNAL-4 "HSIDE")	; 2-begreps Togsporsignal, montert på vegg eller på siden av annet signal, lanterner til høyre for arm
 )
 
 
 
-(defun TOGSPORSIGNAL-1 ( yokeMounted / blockName )
+(defun TOGSPORSIGNAL-1 ( portalMounted / blockName )
 	; Upright mast with 2 lanterns
 	(setq 
 		blockName (strcat _SIG_ "SIG-" "SIGNAL-TOGSPORSIGNAL-1")
 	)
 
 	; Schematic symbol
-	(DrawSingleUprightTrackSignal yokeMounted)
+	(DrawSingleUprightTrackSignal portalMounted)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(DrawSingleUprightTrackSignal yokeMounted)
+	(DrawSingleUprightTrackSignal portalMounted)
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
 
 
-(defun TOGSPORSIGNAL-2 ( yokeMounted / blockName schematicSidewaysSeparation geoSidewaysSeparation )
+(defun TOGSPORSIGNAL-2 ( portalMounted / blockName schematicSidewaysSeparation geoSidewaysSeparation )
 	; Upright 'forked' mast with 2x2 lanterns
 	(setq 
 		blockName (strcat _SIG_ "SIG-" "SIGNAL-TOGSPORSIGNAL-2")
@@ -60,11 +60,11 @@
 	)
 
 	; Schematic symbol
-	(DrawForkedUprightTrackSignal yokeMounted schematicSidewaysSeparation)
+	(DrawForkedUprightTrackSignal portalMounted schematicSidewaysSeparation)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	
 	; Annotative symbol
-	(DrawForkedUprightTrackSignal yokeMounted geoSidewaysSeparation)		; A narrower version than the schematic symbol
+	(DrawForkedUprightTrackSignal portalMounted geoSidewaysSeparation)		; A narrower version than the schematic symbol
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
@@ -109,7 +109,7 @@
 ;==========================
 ; Draw...X...() functions
 ;==========================
-(defun DrawSingleUprightTrackSignal ( yokeMounted / r lowerPole upperPole )
+(defun DrawSingleUprightTrackSignal ( portalMounted / r lowerPole upperPole )
 	; Drawn lying, then rotated CCW.
 	(setq 
 		r (NOBN-GetSmallLanternRadius) ; Togsporsignal lantern radius
@@ -118,7 +118,7 @@
 	)
 	(command _CIRCLE_ (list r 0) r)
 	(command _CIRCLE_ (list (* 3 r) 0) r)
-	(if yokeMounted
+	(if portalMounted
 		(progn
 			(setq blockName (strcat blockName "-AAK"))
 			(command _MOVE_ _selectAll_ _ENTER_ _setMoveDisplacement_ (list (- (+ (* 4 r) upperPole)) 0))
@@ -135,7 +135,7 @@
 
 
 
-(defun DrawForkedUprightTrackSignal ( yokeMounted sidewaysSeparation / r lowerPole upperPole lat )
+(defun DrawForkedUprightTrackSignal ( portalMounted sidewaysSeparation / r lowerPole upperPole lat )
 	; Drawn lying, then rotated CCW (upright) or CW (yoke mounting).
 	(setq 
 		r (NOBN-GetSmallLanternRadius)					; Size relative to main signal lanterns
@@ -160,7 +160,7 @@
 	(command _CIRCLE_ (list (+ lowerPole upperPole (* 3 r)) lat) r)		; upper left lantern
 	(command _CIRCLE_ (list (+ lowerPole upperPole r) (- lat)) r)			; lower right lantern
 	(command _CIRCLE_ (list (+ lowerPole upperPole (* 3 r)) (- lat)) r)	; upper right lantern
-	(if yokeMounted
+	(if portalMounted
 		(progn ; rotate CW
 			(setq blockName (strcat blockName "-AAK"))
 			(command _ROTATE_ _selectAll_ _ENTER_ _origin_ _angleMinus90_)
