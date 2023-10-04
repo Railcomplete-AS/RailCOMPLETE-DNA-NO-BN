@@ -149,10 +149,10 @@
 
 		<!-- 3D geometries: -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFK_Geometry3DName(true)</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFK_Geometry3DName(true,true)</Formula></LuaExpression>
 		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 
-		<LuaExpression Name="IteratedGeometry3D_1.Name"><Formula>_JBTKU_KFK_Geometry3DName(false)</Formula></LuaExpression>
+		<LuaExpression Name="IteratedGeometry3D_1.Name"><Formula>_JBTKU_KFK_Geometry3DName(true,false)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Offset.X"><Formula>_JBTKU_KFK_Geometry3DOffsetX(_position)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Separation"><Formula>_JBTKU_KFK_IteratedGeometry3DSeparation(_position)</Formula></LuaExpression>
@@ -160,15 +160,23 @@
 		<LuaFunction Name="_JBTKU_KFK_Geometry3DName()" 
 				ReturnType="String"
 				HideFromUser="false"
-				Description="Returns the cable duct's default 3D geometry name. Call with boolean argument true=Swept 3D geometry or false=Iterated 3D geometry.">
-			<Constructor>String _JBTKU_KFK_Geometry3DName(boolean SweepInsteadOfIterate)</Constructor>
+				Description="Returns the cable duct's default 3D geometry name, covered or uncovered. Set second argument to 'true' if a sweep profile is needed.">
+			<Constructor>String _JBTKU_KFK_Geometry3DName([boolean Covered [, boolean Swept]])</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Geometry3DName(SweepInsteadOfIterate)
-					t = SweepInsteadOfIterate and "NO-BN-SWEEP-KU-KFØ-KABELKANAL-" or "NO-BN-3D-KU-KFØ-KABELKANAL-"
-					if Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS-MED-50-50-LOKK"
-					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS-MED-50-50-LOKK"
-					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then return t.."620x2400-2-LØPS-MED-70-70-LOKK"
-					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then return t.."620x2400-3-LØPS-MED-70-70-LOKK"
+				function _JBTKU_KFK_Geometry3DName(Covered,Swept)
+					if Covered == nil or Covered == false then Covered = false
+					elseif Covered == true then --do nothing
+					else return "Argument 'Covered' must be nil, true or false.",_error
+					end
+					if Swept == nil or Swept == false then Swept = false
+					elseif Swept == true then --do nothing
+					else return "Argument 'Swept' must be nil, true or false.",_error
+					end
+					local t = "NO-BN-"..(Swept and "2D" or "3D").."-KU-KFØ-KABELKANAL-"
+					if     Variant == "Kabelkanal, betong, 1-løps, 30 cm" then return t.."300x1000-1-LØPS"..(Covered and "-MED-50-50-LOKK" or "")
+					elseif Variant == "Kabelkanal, betong, 1-løps, 40 cm" then return t.."400x1000-1-LØPS"..(Covered and "-MED-50-50-LOKK" or "")
+					elseif Variant == "Kabelkanal, betong, 2-løps, 60 cm" then return t.."620x2400-2-LØPS"..(Covered and "-MED-70-70-LOKK" or "")
+					elseif Variant == "Kabelkanal, betong, 3-løps, 60 cm" then return t.."620x2400-3-LØPS"..(Covered and "-MED-70-70-LOKK" or "")
 					else 
 						return "", _info("Variant ["..Variant.."] has not been anticipated yet.")
 					end
@@ -206,13 +214,13 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_Offset3dX()"
+		<LuaFunction Name="_JBTKU_KFK_Geometry3DOffsetX()"
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns sideways offset for cable duct element (midway between end points on alignment). Must be called with '_position' as input argument (_position.ref = alignment GUID, _position.pos = distAlong).">
-			<Constructor>Double _JBTKU_KFK_Offset3dX(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFK_Geometry3DOffsetX(_position)</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Offset3dX(_position)
+				function _JBTKU_KFK_Geometry3DOffsetX(_position)
 					local s,e,m
 					s,e = _JBTKU_KFK_getStartEndAndJump(_position)
 					ai = getAlignmentInfo(_position.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
