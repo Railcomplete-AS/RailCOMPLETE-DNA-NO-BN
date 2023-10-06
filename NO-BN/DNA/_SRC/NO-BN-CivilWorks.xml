@@ -75,7 +75,7 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___SUB"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_WITHOUT_CANT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___ALIGNMENT_WITH_ACS"/>
 
 		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
@@ -113,7 +113,7 @@
 		</CustomAttribute>
 
 		<LuaExpression Name="Linetype"><Formula>_JBTKU_KFK_Linetype()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFK_Linetype" 
+		<LuaFunction Name="_JBTKU_KFK_Linetype()" 
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the CAD system 2D presentation line type for the cable duct, based on its Variant.">
@@ -130,7 +130,7 @@
 		</LuaFunction>
 
 		<LuaExpression Name="GlobalWidth"><Formula>_JBTKU_KFK_GlobalWidth()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTKU_KFK_GlobalWidth" 
+		<LuaFunction Name="_JBTKU_KFK_GlobalWidth()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the global width of the cable duct's 2D representation as a wide polyline.">
@@ -150,9 +150,11 @@
 		<!-- 3D geometries: -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
 		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFK_Geometry3DName(true,true)</Formula></LuaExpression>
-		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZSweep(_position)</Formula></LuaExpression>
 
 		<LuaExpression Name="IteratedGeometry3D_1.Name"><Formula>_JBTKU_KFK_Geometry3DName(true,false)</Formula></LuaExpression>
+		<LuaExpression Name="IteratedGeometry3D_1.Rotation.X"><Formula>_JBTKU_KFK_Rotation3DX(_position)</Formula></LuaExpression>
+
 		<LuaExpression Name="IteratedGeometry3D_1.Offset.X"><Formula>_JBTKU_KFK_Geometry3DOffsetX(_position)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Separation"><Formula>_JBTKU_KFK_IteratedGeometry3DSeparation(_position)</Formula></LuaExpression>
@@ -184,7 +186,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_getStartEndAndJump" 
+		<LuaFunction Name="_JBTKU_KFK_getStartEndAndJump()" 
 				ReturnType="AlignmentInfo,AlignmentInfo,Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns 'AlignmentInfo' data structures for one duct element's start and end, plus the jump length from start to end along the duct's alignment. Must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong).">
@@ -223,38 +225,84 @@
 				function _JBTKU_KFK_Geometry3DOffsetX(_position)
 					local s,e,m
 					s,e = _JBTKU_KFK_getStartEndAndJump(_position)
-					ai = getAlignmentInfo(_position.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
+
+					--Give a weighted contribution (F1*R1 = F2*R2)
+					local distA = s.LinearAddress.DistanceAlong
+					local distB = e.LinearAddress.DistanceAlong
+
+					local pos = _position.Pos
+					R1 = pos - distA
+					R2 = distB - pos
+					weight1 =  R2/(R1 + R2)
+					weight2 =  R1/(R1 + R2)
+
+					x = s.Point.X*weight1 + e.Point.X*weight2
+					y = s.Point.Y*weight1 + e.Point.Y*weight2
+					ai = getAlignmentInfo(_position.ref.id,x,y)
 					return ai.DistanceToAlignment
 				end	
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_Geometry3DOffsetZ()"
+		<LuaFunction Name="_JBTKU_KFK_Geometry3DOffsetZSweep()"
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns an extra elevation for the cable duct element in none/CCW/CW/always curve situations according to the current setting of the 'AddElevationIfCant' property. Copy cant data from closest track's cant using the RC-AssistOffsetProfile command, or RC-AlignmentManager/Alignment/Cant. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong).">
-			<Constructor>Double _JBTKU_KFK_Geometry3DOffsetZ(_position)</Constructor>
+			<Constructor>Double _JBTKU_KFK_Geometry3DOffsetZSweep(_position)</Constructor>
 			<Formula>
-				function _JBTKU_KFK_Geometry3DOffsetZ(where)
-					startAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
-					mid = getAlignmentInfo(where)
-					startElevation = startAi.Elevation
-					endElevation = endAi.Elevation
-					startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
-					endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
-					if AddElevationIfCant == "ALWAYS" then
-						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
-					elseif AddElevationIfCant == mid.CantRotation then
-						return (startElevation + endElevation)/2 + (startCant/1000 + endCant/1000)/2 - mid.Point.Z
-					else 
-						--If 'AddElevationIfCant' is "NONE" or "CW" or "CCW" but we are not currently in a curve:
-						return (startElevation + endElevation)/2 - mid.Point.Z
+				function _JBTKU_KFK_Geometry3DOffsetZSweep(where)
+					local mid = getAlignmentInfo(where)
+					if AddElevationIfCant == "ALWAYS" or AddElevationIfCant == mid.CantRotation then
+						return mid.Cant/1000
 					end
+					return 0.0
 				end
 			</Formula>
 		</LuaFunction>
 
-		<LuaFunction Name="_JBTKU_KFK_Rotation3DX" 
+		<LuaFunction Name="_JBTKU_KFK_Geometry3DOffsetZIterated()"
+				ReturnType="Double"
+				HideFromUser="false"
+				Description="Sampled formula. Returns an extra elevation for the cable duct element in none/CCW/CW/always curve situations according to the current setting of the 'AddElevationIfCant' property. Copy cant data from closest track's cant using the RC-AssistOffsetProfile command, or RC-AlignmentManager/Alignment/Cant. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong).">
+			<Constructor>Double _JBTKU_KFK_Geometry3DOffsetZIterated(_position)</Constructor>
+			<Formula>
+				function _JBTKU_KFK_Geometry3DOffsetZIterated(where)
+					local startAi,endAi = _JBTKU_KFK_getStartEndAndJump(where)
+					local mid = getAlignmentInfo(where)
+					local startElevation = startAi.Elevation
+					local endElevation = endAi.Elevation
+					local startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
+					local endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
+
+
+					local pos = _position.Pos
+
+					--Give a weighted contribution (F1*R1 = F2*R2)
+					local distA = startAi.LinearAddress.DistanceAlong
+					local distB = endAi.LinearAddress.DistanceAlong
+
+					local R1 = pos - distA
+					local R2 = distB - pos
+					local weight1 =  R2/(R1 + R2)
+					local weight2 =  R1/(R1 + R2)
+
+					local elevationContribution = startElevation*weight1 + endElevation*weight2
+
+					local cantContribution = 0
+					
+					if AddElevationIfCant == "ALWAYS" or AddElevationIfCant == startAi.CantRotation then
+						cantContribution =cantContribution + startCant/1000*weight1
+					end
+					if AddElevationIfCant == "ALWAYS" or AddElevationIfCant == endAi.CantRotation then
+						cantContribution = cantContribution + endCant/1000*weight2
+					end
+					
+					return elevationContribution + cantContribution - mid.Elevation
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTKU_KFK_Rotation3DX()" 
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns pitch (gradient) for the cable duct element. Copy the duct's vertical profile (gradient) data from the relevant tracks' vertical profile using the RC-AssistOffsetProfile command. This function must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong).">
@@ -264,17 +312,25 @@
 					local startAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
 					local startElevation = startAi.Elevation
 					local endElevation = endAi.Elevation
-					local midCantRotation = getAlignmentInfo(where).CantRotation
 					local startCant = RC__isNan(startAi.Cant) and 0 or startAi.Cant
 					local endCant = RC__isNan(endAi.Cant) and 0 or endAi.Cant
+					
 					local deltaZ
-					if AddElevationIfCant == "ALWAYS" or AddElevationIfCant == midCantRotation then
-						deltaZ = (endElevation + endCant/1000) - (startElevation + startCant/1000)
-					else
-						--If 'AddElevationIfCant' is "NONE" or "CW" or "CCW" but we are not currently in a curve:
-						deltaZ = endElevation - startElevation
+					local startHeight = startElevation
+					local endHeight = endElevation
+					
+					if AddElevationIfCant == startAi.CantRotation or AddElevationIfCant == "ALWAYS" then
+						startHeight = startHeight + startCant/1000
 					end
-					return math.deg(math.atan(deltaZ,jumpDist))
+					
+					if AddElevationIfCant == endAi.CantRotation or AddElevationIfCant == "ALWAYS" then
+						endHeight = endHeight + endCant/1000
+					end
+						
+					deltaZ = endHeight - startHeight
+
+					local gradient = math.deg(math.atan(deltaZ,jumpDist)) 
+					return gradient
 				end
 			</Formula>
 		</LuaFunction>
@@ -434,7 +490,7 @@
 
 		<DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
 			<SetValue Key="Frozen" Value="False"/>
-			<SetValue Key="CustomTransformation" Value="True"/>
+			<SetValue Key="Parent" Value="ACS"/>
 		</DynamicProperty>
 
 		<CustomAttribute DataType="Boolean" Name="UnderTrackCrossing" DisplayName="Krysser under spor" DefaultValue="true"
