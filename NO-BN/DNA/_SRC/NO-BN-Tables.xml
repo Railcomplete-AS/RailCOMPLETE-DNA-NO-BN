@@ -4378,46 +4378,43 @@ end</Data>
 					<Width>10</Width>
 					<Sort />
 					<Alignment>MiddleCenter</Alignment>
-					<Data>-- "Mastens stilling" betyr egentlig "mastesymbol med utligger".
-				--
-				--   Nedenfor vil "*" bety enten O = gittermast, X = hengemast, 8 = bjelkemast G = GMB-mast
-				--
-				--   *-   Enkel utligger til høyre side i økende km-retning
-				--  -*    Enkel utligger til venstre side i økende km-retning
-				--   *=   Dobbel utligger til høyre side i økende km-retning
-				--  =*    Dobbel utligger til venstre side i økende km-retning
-				--
-				-- Kombinasjoner er tillatt - enkel/dobbel til begge sider.
-				--
-				
-				local symbol = "*"
-				if Variant:match("Henge") ~= nil then 
-					symbol = "X"
-				elseif Variant:match("GMB") ~= nil then -- 2019-05-05 CLFEY foreslår 'G' for GMB-master. NB! Test på 'GMB' før 'B-mast'  
-					symbol = "G"
-				elseif Variant:match("B%-mast") ~= nil or Variant:match("H%-mast") ~= nil then 
-					symbol = "O"
-				elseif Variant:match("Bjelke") ~= nil then 
-					symbol = "O"
-				else
-					return "",_warning
-				end
-				
-				if (getCollectionLength(Relations[rel_OcsPole_Has_Cantilever]) == 0) then
-					return "",_warning --Har ikke utligger
-				elseif (getCollectionLength(Relations[rel_OcsPole_Has_Cantilever]) == 1) then
-					if (this.DistanceToAlignment - Relations[rel_OcsPole_Has_Cantilever][0].DistanceToAlignment &gt; 0) then
-						return "-"..symbol
-					else 
-						return symbol.."-"
-					end
-				elseif (getCollectionLength(Relations[rel_OcsPole_Has_Cantilever]) == 2) then
-					if (this.DistanceToAlignment - Relations[rel_OcsPole_Has_Cantilever][0].DistanceToAlignment &gt; 0) then
-						return "="..symbol
-					else 
-						return symbol.."="
-					end
-				end</Data>
+					<Data>--[[
+    Mastetabell/Retning (Norw).
+    ---------------------------
+    2023-10-10 CLFEY Added code to handle up to 3 cantilevers on each side of mast. 6 total.
+
+	Below, "*" means either O = OCS lattice pole, X = droparm, 8 = H- or I-beam G = "Gardermobanen" type pole.
+	
+	  *-   Single cantilever on the right side in the direction of increasing mileages.
+	 -*    Single cantilever on the left side in the direction of increasing mileages.
+	  *=   Double cantilever on the right side in the direction of increasing mileages.
+	 =*    Double cantilever on the left side in the direction of increasing mileages.
+	
+	Combinations are allowed - single/double to both sides.
+
+--]]
+
+rel_OcsPole_Has_Cantilever = "Er kl-mast for utligger"
+pol = this
+if pol.Variant:match("Henge") then polSymbol = "X"
+elseif pol.Variant:match("GMB") then polSymbol = "G"
+elseif pol.Variant:match("B%-mast") or Variant:match("H%-mast") then polSymbol = "O"
+elseif pol.Variant:match("Bjelke") then polSymbol = "8"
+else return "Unknown Variant ["..Variant.."].",_warning
+end
+
+cnt,nCnt = pol:getRelatedObjects(rel_OcsPole_Has_Cantilever)
+nLeft = 0
+for i = 0,nCnt-1 do
+	if cnt[i].LeftSided then nLeft = nLeft + 1 end
+end 
+
+cntSymbol = {"","-","=","="}
+if math.max(nLeft,nCnt-nLeft) &gt; 3 then
+    return string.format("(%d)%s(%d)",nCnt-nLeft,polSymbol,nLeft),_warning
+else
+    return string.format("%s%s%s",cntSymbol[1+nCnt-nLeft],polSymbol,cntSymbol[1+nLeft])
+end</Data>
 					</ColumnSpecification>
 					<ColumnSpecification>
 					<Guid>f3d18f52-4971-46a6-a83b-0e834c0ea2f3</Guid>
@@ -4450,16 +4447,12 @@ end</Data>
 					<Width>15</Width>
 					<Sort />
 					<Alignment>MiddleCenter</Alignment>
-					<Data>local s = rel_OcsPole_Has_Cantilever
-					local r,n = getRelatedObjects(s)
-				
-				if n == 0 or isVisible(r[0]) == false then 
-					return ""
-				elseif n == 1 then
-					return r[0].ContactWireHeight
-				elseif n == 2 then	
-				return r[0].ContactWireHeight.."/"..r[1].ContactWireHeight
-				end</Data>
+					<Data>cnt,nCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
+for i = 0,nCnt-1 do
+	s = cnt[i].ContactWireHeight
+	t = t and t.."/"..s or s
+end
+return t or ""</Data>
 					</ColumnSpecification>
 					<ColumnSpecification>
 					<Guid>8c81f720-43ed-4520-a78f-19410c849895</Guid>
@@ -4470,16 +4463,12 @@ end</Data>
 					<Width>15</Width>
 					<Sort />
 					<Alignment>MiddleCenter</Alignment>
-					<Data>local s = rel_OcsPole_Has_Cantilever
-					local r,n = getRelatedObjects(s)
-				
-				if n == 0 or isVisible(r[0]) == false then 
-					return ""
-				elseif n == 1 then
-					return r[0].SystemHeight
-				elseif n == 2 then	
-				return r[0].SystemHeight.."/"..r[1].SystemHeight
-				end</Data>
+					<Data>cnt,nCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
+for i = 0,nCnt-1 do
+	s = cnt[i].SystemHeight
+	t = t and t.."/"..s or s
+end
+return t or ""</Data>
 					</ColumnSpecification>
 					<ColumnSpecification>
 					<Guid>00e2d0b2-3318-4838-93bd-7528d83478b2</Guid>
