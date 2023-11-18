@@ -1,0 +1,381 @@
+<!--========================================================================================================
+
+    NO-BN-NRV-info.xaml
+	
+	XAML / Lua for custom tooltip in RailCOMPLETE(r)
+
+	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	
+=========================================================================================================-->
+<UserControl 
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:local="clr-namespace:RailCOMPLETE.Model.ObjectBrowser;assembly=RailCOMPLETE.Model"
+xmlns:system="clr-namespace:System;assembly=mscorlib"
+>
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="/RailCOMPLETE.Common;component/WPFStyles/StylesResources.xaml"/>
+				<ResourceDictionary Source="/RailCOMPLETE.Common;component/WPFStyles/PathScaling.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+			<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+			<local:LuaConverter x:Key="LuaConverter"/>
+			<local:NullVisibilityConverter x:Key="NullVisibilityConverter"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<Border Padding="10" CornerRadius="20" >
+		<Border.Background>
+			<SolidColorBrush Color="White" Opacity="0.9" />
+		</Border.Background>
+		<DockPanel>
+			<StackPanel>
+				<StackPanel.DataContext>
+					<Binding Path="SelectedObject" Converter="{StaticResource LuaConverter}">
+						<Binding.ConverterParameter>
+							<system:String xml:space="preserve">
+--Shows NRV (Rail System Model) information.
+
+local obj = this
+
+local rctype_Switch = "JBTKO_SPV Sporveksel"
+local rctype_Crossing = "JBTKO_SPV Sporkryss"
+local rctype_Bufferstop = "JBTKO_SST Sporstopper"
+local rctype_EtcsEoa = "JBTSA_ERT ERTMS-signal"
+local rctype_Signal = "JBTSA_SIG Signal"
+
+---------------------------------------------------------------------------------------
+
+function SwitchOrCrossingOrBufferstop(x)
+	return x.RcType == rctype_Switch or x.RcType == rctype_Crossing or x.RcType == rctype_Bufferstop
+end
+
+function getLeft(upObjectsAndPaths, downObjectsAndPaths)
+    local objectsAndPaths = obj.dir == "up" and upObjectsAndPaths or downObjectsAndPaths
+    if ConnectionCourse == "left" then
+        return table.firstOrNil(objectsAndPaths, function(x) return x.Path:contains(getAlignmentPos(TargetAlignment, 0)) or x.Path:contains(getAlignmentPos(obj.TargetAlignment, obj.TargetAlignment.RcAlignment.HorizontalProfile.Length)) end)
+    else
+        return table.firstOrNil(objectsAndPaths, function(x) return not (x.Path:contains(getAlignmentPos(TargetAlignment, 0)) or x.Path:contains(getAlignmentPos(obj.TargetAlignment, obj.TargetAlignment.RcAlignment.HorizontalProfile.Length))) end)
+    end
+end
+
+function getRight(upObjectsAndPaths, downObjectsAndPaths)
+    local objectsAndPaths = obj.dir == "up" and upObjectsAndPaths or downObjectsAndPaths
+    if ConnectionCourse == "right" then
+        return table.firstOrNil(objectsAndPaths, function(x) return x.Path:contains(getAlignmentPos(TargetAlignment, 0)) or x.Path:contains(getAlignmentPos(obj.TargetAlignment, obj.TargetAlignment.RcAlignment.HorizontalProfile.Length)) end)
+    else
+        return table.firstOrNil(objectsAndPaths, function(x) return not (x.Path:contains(getAlignmentPos(TargetAlignment, 0)) or x.Path:contains(getAlignmentPos(obj.TargetAlignment, obj.TargetAlignment.RcAlignment.HorizontalProfile.Length))) end)
+    end
+end
+
+function getTip(upObjectsAndPaths, downObjectsAndPaths)
+    local objectsAndPaths = obj.dir == "up" and downObjectsAndPaths or upObjectsAndPaths
+    return table.firstOrNil(objectsAndPaths)
+end
+
+---------------------------------------------------------------------------------------
+
+local isPointObject = obj.RcAlignment == nil
+local isAlignmentObject = obj.RcAlignment ~= nil
+
+if isAlignmentObject then
+	--Alignment
+	up = getUpObjectsWithPaths(getAlignmentPos(),function (x) return SwitchOrCrossingOrBufferstop(x) end)
+	down = getDownObjectsWithPaths(getAlignmentPos(),function (x) return SwitchOrCrossingOrBufferstop(x) end)
+else
+	up = obj:getUpObjectsWithPaths(function (x) return SwitchOrCrossingOrBufferstop(x) end)
+	down = obj:getDownObjectsWithPaths(function (x) return SwitchOrCrossingOrBufferstop(x) end)
+end
+
+nrvInfo = {}
+nrvInfo["tooltipHeader"] = "NRV info"
+nrvInfo["rcType"] = RcType
+nrvInfo["variant"] = variant
+
+nrvInfo["nrvName"] = RC__identify()
+nrvInfo["nrvCode"] = string.format("%s (%s)",FDVBaneDataObjektID,BaneNORBaneDataID) --Bane NOR Objekt-ID with syntax checking
+nrvInfo["nrvDescription"] = BaneNORBeskrivelse
+
+if isPointObject then
+	nrvInfo["nrvPosition"] = below and string.format("%.0f",below.Path.Length) or "-" --Nodes don't have positions, they are the referents.
+	nrvInfo["nrvMileage"] = string.format("%.0f",RcAlignment and 0 or ReferenceMileage)
+	nrvInfo["nrvDirection"] = dir and ((dir == "up" or dir == "down") and dir or "(neither up nor down)")
+
+	nrvInfo["nrvType"] = nrvType
+	nrvInfo["nrvFunction"] = nrvFunction
+
+	if RcType == rctype_EtcsEoa or RcType == rctype_Signal then
+		nrvType = getPropertyValue("type") 			--a railML property, but also a reserved Lua keyword
+		nrvFunction = getPropertyValue("function")	--a railML property, but also a reserved Lua keyword
+		if RcType == rctype_EtcsEoa then
+			if variant:lower():match("stop") then
+				if nrvType == "main" then
+					ruleCode = "NOR:TJN:E35a ETCS Markerboard "..nrvFunction:gsub("intermedediate","inner") --type is entry/exit/intermediate/blocking
+				end
+			end
+		elseif RcType == rctype_Signal then
+			ruleCode = "(Class B signal)"
+		else
+			--Shouldn't happen
+			ruleCode = "(undetermined)"
+		end
+	end
+	nrvInfo["nrvRuleCode"] = ruleCode
+	
+	nrvInfo["nrvOcp"] = RC_com_getOcpCode()
+	nrvInfo["nrvMount"] = (yokeMounted ~= nil or portalMounted ~= nil) --'yokeMounted' was in use up to and including DNA NO-BN 2021.a
+								and ((yokeMounted or portalMounted) and "gantry" or "pole") 
+								or (RelativeElevation &gt; 5.0 and "gantry" or "pole")
+
+	if SideOfAlignment then
+		if math.abs(DistanceToAlignment) &lt; 5e-3 then
+			objectSide = "Center"
+		elseif Rightsided then
+			if dir == "down" then
+				objectSide = "left" --in driving direction
+			else 
+				objectSide = "right" --covers also the "both" and "none" directions.
+			end
+		elseif Leftsided then
+			if dir == "down" then
+				objectSide = "right" --in driving direction
+			else 
+				objectSide = "left" --covers also the "both" and "none" directions.
+			end
+		else
+			--Should not happen.
+			objectSide = "(undetermined)"
+		end
+	end
+	nrvInfo["nrvSide"] = SideOfAlignment and objectSide
+
+	--Find neighbor nodes and edge distances to them, for point objects:
+	t = {}
+	if RcType == rctype_Switch then 
+		--NRV node with 3 legs:
+		tip = getTip(up,down)
+		left = getLeft(up,down)
+		right = getRight(up,down)
+		table.insert(t,string.format("Tip  : %s %s in %s @ %.01f m", tip.object.RcType:sub(4,9), RC__identify(tip.object), RC__identify(obj.Alignment),tip.Path.Length))
+		table.insert(t,string.format("Left : %s %s in %s @ %.01f m", left.object.RcType:sub(4,9), RC__identify(left.object),
+			RC__identify(obj.ConnectionCourse == "left" and obj.TargetAlignment or obj.Alignment),left.Path.Length))
+		table.insert(t,string.format("Right: %s %s in %s @ %.01f m", right.object.RcType:sub(4,9), RC__identify(right.object),
+			RC__identify(obj.ConnectionCourse == "right" and obj.TargetAlignment or obj.Alignment),right.Path.Length))
+	
+	elseif RcType == rctype_Bufferstop then
+		--NRV node with 1 leg:
+		neighbor = (dir == "down") and getTip(up,up) or getTip(down,down)
+		table.insert(t,string.format("Neighbor %s : %s %s in %s @ %.01f m",(dir == "down") and "above" or "below",
+			neighbor.object.RcType:sub(4,9),RC__identify(neighbor.object),RC__identify(obj.Alignment),neighbor.Path.Length))
+	
+	elseif RcType == rctype_Crossing then
+		--NRV node with 4 legs:
+		ownUp = up[0]
+		ownDown = down[0]
+		targetUp = getUpObjectsWithPaths(getAlignmentPos(obj.TargetAlignment, getAlignmentInfo(obj.TargetAlignment.id).RelativePosition), SwitchOrCrossingOrBufferstop)[0]
+		targetDown = getDownObjectsWithPaths( getAlignmentPos(obj.TargetAlignment, getAlignmentInfo(obj.TargetAlignment.id).RelativePosition), SwitchOrCrossingOrBufferstop)[0]
+		ownTangentDirection = math.deg(math.atan(getAlignmentInfo(obj.Alignment.id).Tangent.Y,getAlignmentInfo(obj.Alignment.id).Tangent.X))
+		targetTangentDirection = math.deg(math.atan(getAlignmentInfo(obj.TargetAlignment.id).Tangent.Y,getAlignmentInfo(obj.TargetAlignment.id).Tangent.X))
+		ownIsLeft = (ownTangentDirection - targetTangentDirection &gt; 0)
+		leftAlignment = ownIsLeft and obj.Alignment or obj.TargetAlignment
+		rightAlignment = ownIsLeft and obj.TargetAlignment or obj.Alignment
+		upLeft = ownIsLeft and ownUp or targetUp
+		upRight = ownIsLeft and targetUp or ownUp
+		downLeft = ownIsLeft and ownDown or targetDown
+		downRight = ownIsLeft and targetDown or ownDown
+		table.insert(t,string.format("Up left   : %s %s in %s @ %.01f m", upLeft.object.RcType:sub(4,9),RC__identify(upLeft.object),RC__identify(leftAlignment),upLeft.Path.Length))
+		table.insert(t,string.format("Up right  : %s %s in %s @ %.01f m", upRight.object.RcType:sub(4,9),RC__identify(upRight.object),RC__identify(rightAlignment),upRight.Path.Length))
+		table.insert(t,string.format("Down left : %s %s in %s @ %.01f m", downLeft.object.RcType:sub(4,9),RC__identify(downLeft.object),RC__identify(leftAlignment),downLeft.Path.Length))
+		table.insert(t,string.format("Down right: %s %s in %s @ %.01f m", downRight.object.RcType:sub(4,9),RC__identify(downRight.object),RC__identify(rightAlignment),downRight.Path.Length))
+	
+	else
+		--Not an alignment or a NRV node object, show NRV info relative to closest preceding and following node:
+		below = getTip(down,down) --Same as NRV 'Position'
+		above = getTip(up,up)
+		table.insert(t,below and 
+			string.format("%.01f m above %s %s in %s", below.Path.Length,below.object.RcType:sub(4,9),RC__identify(below.object),RC__identify(obj.Alignment))
+			or "(no NRV node below)")
+		table.insert(t,above and string.format("%.01f m below %s %s in %s", above.Path.Length,above.object.RcType:sub(4,9),RC__identify(above.object),RC__identify(obj.Alignment))
+			or "(no NRV node above)")
+	end
+	nrvInfo["nodesAndEdgeDistances"] = t
+
+else
+	--Alignment object
+	--TODO - figure how we can pick up the mouse's coordinate and from that find an alignmentPos().
+	t = {}
+	table.insert(t,"TODO: Generate a suitable NRV track name, state its length and nodes to-from")
+	nrvInfo["nrvPosition"] = nil
+	nrvInfo["nrvMileage"] = nil
+	nrvInfo["nrvDirection"] = nil
+	nrvInfo["nrvType"] = nil
+	nrvInfo["nrvFunction"] = nil
+	nrvInfo["nodesAndEdgeDistances"] = t
+end
+
+return nrvInfo
+							</system:String>
+						</Binding.ConverterParameter>
+					</Binding>
+				</StackPanel.DataContext>
+			 
+				<!-- Header -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontWeight="Bold" FontSize="18" MaxWidth="1000" TextWrapping="wrap" Text="{Binding [tooltipHeader]}" Visibility="{Binding [tooltipHeader], Converter={StaticResource NullVisibilityConverter} }"/>
+				
+				<!-- RcType -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="13" MaxWidth="1000" TextWrapping="wrap" Text="{Binding [rcType]}" Visibility="{Binding [rcType], Converter={StaticResource NullVisibilityConverter} }"/>
+				
+				<!-- Variant -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="13" MaxWidth="1000" TextWrapping="wrap" Text="{Binding [variant]}" Visibility="{Binding [variant], Converter={StaticResource NullVisibilityConverter} }"/>
+				
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"></ColumnDefinition>  
+						<ColumnDefinition Width="*"></ColumnDefinition>  
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>  
+						<!-- Add *enough* RowDefinition as resources: -->
+						<RowDefinition/>  
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+						<RowDefinition/> 
+					</Grid.RowDefinitions>  
+			   
+					<!-- NRV Name  -->
+					<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Name" Visibility="{Binding [nrvName], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvName], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="18" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvName]}" Visibility="{Binding [nrvName], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+
+					<!-- NRV Code (tag, asset management unique object ID)  -->
+					<TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Code" Visibility="{Binding [nrvCode], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="1" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvCode], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvCode]}" Visibility="{Binding [nrvCode], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+
+					<!-- NRV Description -->
+					<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Description" Visibility="{Binding [nrvDescription], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="2" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvDescription], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvDescription]}" Visibility="{Binding [nrvDescription], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+
+					<!-- NRV Position  -->
+					<TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Position" Visibility="{Binding [nrvPosition], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="3" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvPosition], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvPosition]}" Visibility="{Binding [nrvPosition], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- NRV Mileage -->
+					<TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Mileage" Visibility="{Binding [nrvMileage], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="4" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvMileage], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvMileage]}" Visibility="{Binding [nrvMileage], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- NRV Direction -->
+					<TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Direction" Visibility="{Binding [nrvDirection], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="5" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvDirection], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvDirection]}" Visibility="{Binding [nrvDirection], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- NRV RuleCode -->
+					<TextBlock Grid.Row="6" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Rule code" Visibility="{Binding [nrvRuleCode], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="6" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvRuleCode], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvRuleCode]}" Visibility="{Binding [nrvRuleCode], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- NRV OCP -->
+					<TextBlock Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="OCP" Visibility="{Binding [nrvOcp], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="7" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvOcp], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvOcp]}" Visibility="{Binding [nrvOcp], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- NRV Mount -->
+					<TextBlock Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Mount" Visibility="{Binding [nrvMount], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="8" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvMount], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvMount]}" Visibility="{Binding [nrvMount], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- NRV Side -->
+					<TextBlock Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Side" Visibility="{Binding [nrvSide], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="9" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvSide], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvSide]}" Visibility="{Binding [nrvSide], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+				
+					<!-- Neighbor NRV nodes, edge and distances, formulated along the Rail System Model graph -->
+					<TextBlock Grid.Row="10" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="75" TextWrapping="wrap" Text="Nodes and edges" Visibility="{Binding [nodesAndEdgeDistances], Converter={StaticResource NullVisibilityConverter} }"/>
+					<!-- Note: ListBox iterates over a list of items in the source item: -->
+					<ListBox Grid.Row="10" Grid.Column="1" Margin="10,2,2,2" ItemsSource="{Binding [nodesAndEdgeDistances]}" Visibility="{Binding [nodesAndEdgeDistances], 
+					Converter={StaticResource NullVisibilityConverter} }">
+						<ListBox.Template>
+							<ControlTemplate>
+							<DockPanel>
+								<Border BorderThickness="1,0,0,0" BorderBrush="Gray"/>
+								<ItemsPresenter Margin="5,0,0,0"></ItemsPresenter>
+							</DockPanel>
+							</ControlTemplate>
+						</ListBox.Template>
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Vertical"/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Orientation="Vertical">
+									<!-- Note: Binding to '.' means using C# 'tostring' method a list item, as an alternative to a predefined text: -->
+									<TextBlock MaxWidth="600" TextWrapping="wrap" Margin="0,0,0,2" Foreground="Black" FontSize="13" Text="{Binding .}"/>
+								</StackPanel>									
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+						<ListBox.ItemContainerStyle>
+							<Style TargetType="{x:Type ListBoxItem}">
+								<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="ListBoxItem">
+											<ContentPresenter/>
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</ListBox.ItemContainerStyle>
+					</ListBox>
+
+<!-- asdasdf -->
+<!-- asdasdf -->
+					
+				</Grid>
+
+			</StackPanel>
+		</DockPanel>
+	</Border>
+</UserControl>
+
