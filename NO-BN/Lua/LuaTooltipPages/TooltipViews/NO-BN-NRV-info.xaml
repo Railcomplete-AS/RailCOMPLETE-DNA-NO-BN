@@ -98,6 +98,9 @@ nrvInfo["nrvCode"] = string.format("%s (%s)",FDVBaneDataObjektID,BaneNORBaneData
 nrvInfo["nrvDescription"] = BaneNORBeskrivelse
 
 if isPointObject then
+	below = getTip(down,down) --Same as NRV 'Position'
+	above = getTip(up,up)
+
 	nrvInfo["nrvPosition"] = below and string.format("%.0f",below.Path.Length) or "-" --Nodes don't have positions, they are the referents.
 	nrvInfo["nrvMileage"] = string.format("%.0f",RcAlignment and 0 or ReferenceMileage)
 	nrvInfo["nrvDirection"] = dir and ((dir == "up" or dir == "down") and dir or "(neither up nor down)")
@@ -125,7 +128,7 @@ if isPointObject then
 	
 	nrvInfo["nrvOcp"] = type(RC_com_getOcpCode) == "function" and RC_com_getOcpCode() or NOBN_com_getOcpCode() --RC_com_getOcpCode() is in use with DNA 2021.a and older.
 
-	if RcType == rctype_EtcsEoa or RcType == rctype_Signal or RcType == rctype_Board or RcType:match("_MSS") then
+	if RcType == rctype_EtcsEoa or RcType == rctype_Signal or RcType == rctype_Board or RcType:match("_MSS") or RcType:match("_SKT Signal") then
 		nrvInfo["nrvMount"] = (yokeMounted ~= nil or portalMounted ~= nil) --'yokeMounted' was in use up to and including DNA NO-BN 2021.a
 								and ((yokeMounted or portalMounted) and "gantry" or "pole") 
 								or (RelativeElevation &gt; 5.0 and "gantry" or "pole")
@@ -160,17 +163,17 @@ if isPointObject then
 		tip = getTip(up,down)
 		left = getLeft(up,down)
 		right = getRight(up,down)
-		table.insert(t,string.format("Tip  : %s %s in %s @ %.01f m", tip.object.RcType:sub(4,9), RC__identify(tip.object), RC__identify(obj.Alignment),tip.Path.Length))
-		table.insert(t,string.format("Left : %s %s in %s @ %.01f m", left.object.RcType:sub(4,9), RC__identify(left.object),
-			RC__identify(obj.ConnectionCourse == "left" and obj.TargetAlignment or obj.Alignment),left.Path.Length))
-		table.insert(t,string.format("Right: %s %s in %s @ %.01f m", right.object.RcType:sub(4,9), RC__identify(right.object),
-			RC__identify(obj.ConnectionCourse == "right" and obj.TargetAlignment or obj.Alignment),right.Path.Length))
+		table.insert(t,tip and string.format("Tip  : %s %s in %s @ %.01f m", tip.object.RcType:sub(4,9), RC__identify(tip.object), RC__identify(obj.Alignment),tip.Path.Length) or "(no tip node)")
+		table.insert(t,left and string.format("Left : %s %s in %s @ %.01f m", left.object.RcType:sub(4,9), RC__identify(left.object),
+			RC__identify(obj.ConnectionCourse == "left" and obj.TargetAlignment or obj.Alignment),left.Path.Length) or "(no left node)")
+		table.insert(t,right and string.format("Right: %s %s in %s @ %.01f m", right.object.RcType:sub(4,9), RC__identify(right.object),
+			RC__identify(obj.ConnectionCourse == "right" and obj.TargetAlignment or obj.Alignment),right.Path.Length) or "(no right node)")
 	
 	elseif RcType == rctype_Bufferstop then
 		--NRV node with 1 leg:
 		neighbor = (dir == "down") and getTip(up,up) or getTip(down,down)
-		table.insert(t,string.format("Neighbor %s : %s %s in %s @ %.01f m",(dir == "down") and "above" or "below",
-			neighbor.object.RcType:sub(4,9),RC__identify(neighbor.object),RC__identify(obj.Alignment),neighbor.Path.Length))
+		table.insert(t,neighbor and string.format("Neighbor %s : %s %s in %s @ %.01f m",(dir == "down") and "above" or "below",
+			neighbor.object.RcType:sub(4,9),RC__identify(neighbor.object),RC__identify(obj.Alignment),neighbor.Path.Length) or "(no neighbor node)")
 	
 	elseif RcType == rctype_Crossing then
 		--NRV node with 4 legs:
@@ -187,15 +190,17 @@ if isPointObject then
 		upRight = ownIsLeft and targetUp or ownUp
 		downLeft = ownIsLeft and ownDown or targetDown
 		downRight = ownIsLeft and targetDown or ownDown
-		table.insert(t,string.format("Up left   : %s %s in %s @ %.01f m", upLeft.object.RcType:sub(4,9),RC__identify(upLeft.object),RC__identify(leftAlignment),upLeft.Path.Length))
-		table.insert(t,string.format("Up right  : %s %s in %s @ %.01f m", upRight.object.RcType:sub(4,9),RC__identify(upRight.object),RC__identify(rightAlignment),upRight.Path.Length))
-		table.insert(t,string.format("Down left : %s %s in %s @ %.01f m", downLeft.object.RcType:sub(4,9),RC__identify(downLeft.object),RC__identify(leftAlignment),downLeft.Path.Length))
-		table.insert(t,string.format("Down right: %s %s in %s @ %.01f m", downRight.object.RcType:sub(4,9),RC__identify(downRight.object),RC__identify(rightAlignment),downRight.Path.Length))
+		table.insert(t,upLeft and string.format("Up left   : %s %s in %s @ %.01f m",
+			upLeft.object.RcType:sub(4,9),RC__identify(upLeft.object),RC__identify(leftAlignment),upLeft.Path.Length), "(no up/left node)")
+		table.insert(t,upRight and string.format("Up right  : %s %s in %s @ %.01f m",
+			upRight.object.RcType:sub(4,9),RC__identify(upRight.object),RC__identify(rightAlignment),upRight.Path.Length) or "(no up/right node)")
+		table.insert(t,downLeft and string.format("Down left : %s %s in %s @ %.01f m",
+			downLeft.object.RcType:sub(4,9),RC__identify(downLeft.object),RC__identify(leftAlignment),downLeft.Path.Length) or "(no down/left node)"))
+		table.insert(t,downRight and string.format("Down right: %s %s in %s @ %.01f m",
+			downRight.object.RcType:sub(4,9),RC__identify(downRight.object),RC__identify(rightAlignment),downRight.Path.Length) or "(no down/right node)")
 	
 	else
 		--Not an alignment or a NRV node object, show NRV info relative to closest preceding and following node:
-		below = getTip(down,down) --Same as NRV 'Position'
-		above = getTip(up,up)
 		table.insert(t,below and 
 			string.format("%.01f m above %s %s in %s", below.Path.Length,below.object.RcType:sub(4,9),RC__identify(below.object),RC__identify(obj.Alignment))
 			or "(no NRV node below)")
