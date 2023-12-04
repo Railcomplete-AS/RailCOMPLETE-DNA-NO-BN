@@ -47,8 +47,8 @@
 	; Auxiliary point, to be used as a point object that the user can snap other things to (a kind of watch object).
 	; Intended for placement on the InsertionPoint layer, since these are generally not to be shown in print/PDF.
 	;
-	; NB: AutoLISP has no command-line version to se PTYP to "2" in absolute units (circle radius=1 / diameter=2),
-	; this must be done by user or preferably by RC supervising the sysvar and showing offering a flashbox, when
+	; NB: AutoLISP has no command-line version to set PTYP to "2" in absolute units (circle radius=1 / diameter=2),
+	; this must be done by user or preferably by RC supervising the sysvar and offering a flashbox, when
 	; appropriate, to let the user easily change PTYP appearance.
 	;
 	(setq blockName (strcat _RC_ "HJELPEPUNKT"		))

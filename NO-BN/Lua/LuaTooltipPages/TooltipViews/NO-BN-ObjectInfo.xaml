@@ -27,7 +27,7 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 
 	<Border Padding="10" CornerRadius="20" >
 		<Border.Background>
-			<SolidColorBrush Color="White" Opacity=".9" />
+			<SolidColorBrush Color="White" Opacity="0.9" />
 		</Border.Background>
 		<DockPanel>
 			<StackPanel>
@@ -35,38 +35,73 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 					<Binding Path="SelectedObject" Converter="{StaticResource LuaConverter}">
 						<Binding.ConverterParameter>
 							<system:String xml:space="preserve">
-								cadInfo = {}
-								cadInfo["obj"] = this
-								cadInfo["xrefPath"] = getXrefPath()
-								cadInfo["layer"] = layer
-								cadInfo["color"] = color
-								cadInfo["symbol2d"] = table.firstOrNil(getBlockNames())
-								cadInfo["linetype"] = linetype
-								cadInfo["alignment"] = alignment
-								cadInfo["refAlignment"] = referenceAlignment == null and "" or (referenceAlignment.id == alignment.id and "" or referenceAlignment)
-								cadInfo["attachment"] = attachment
-								cadInfo["attachedElements"] = attachedElements
-								cadInfo["mileage"]="Km "..(mileage == nil and "" or mileage)
-								cadInfo["refMileage"]="Km "..(ReferenceMileage == nil and "" or ReferenceMileage)
-								return cadInfo
+cadInfo = {}
+cadInfo["tooltipHeader"] = "Object info"
+cadInfo["isPointObject"] = not RcAlignment
+cadInfo["nameOrCodeorId"] = RC__identify()
+cadInfo["rcType"] = RcType
+cadInfo["variant"] = variant
+cadInfo["description"] = BaneNORBeskrivelse
+cadInfo["alignment"] = RC__identify(alignment)
+
+cadInfo["refAlignment"] = RcAlignment and 
+		RC__identify(getObjectFromId(getAlignmentInfo(RcAlignment.StartPoint).ReferenceAlignmentId))
+		.." - "..RC__identify(getObjectFromId(getAlignmentInfo(RcAlignment.EndPoint).ReferenceAlignmentId))
+	or RC__identify(referenceAlignment)
+
+cadInfo["mileage"] = RcAlignment and string.format("Pr.%.03f - %.03f (L=%.03f)",
+		RcAlignment.StartMileage, RcAlignment.EndMileage, RcAlignment.HorizontalProfile.Length)
+	or string.format("Pr.%.03f",Mileage)
+
+cadInfo["refMileage"] = RcAlignment and string.format("Km.%.03f - Km.%.03f",
+			getAlignmentInfo(getAlignmentInfo(RcAlignment.StartPoint).ReferenceAlignmentId,RcAlignment.StartPoint).Mileage/1000,
+			getAlignmentInfo(getAlignmentInfo(RcAlignment.EndPoint).ReferenceAlignmentId,RcAlignment.EndPoint).Mileage/1000)
+		or string.format("Km.%.03f",ReferenceMileage/1000)
+		
+cadInfo["xrefPath"] = getXrefPath()
+cadInfo["hasXrefPath"] = cadInfo["xrefPath"].Count &gt; 0
+cadInfo["layer"] = layer
+--cadInfo["symbol2d"] = RcAlignment and "-" or table.firstOrNil(getBlockNames())
+--cadInfo["linetype"] = linetype
+cadInfo["signSpeed"] = SignSpeed and string.format("V=%d Pluss=%d Tilt=%d",SignSpeed,SignPlusSpeed,SignTiltSpeed) or "nospeed"
+cadInfo["hasSignSpeed"] = SignSpeed ~= nil
+cadInfo["attachmentParent"] = Attachment and string.format("%s %s",Attachment.RcType:sub(1,9),RC__identify(Attachment))
+cadInfo["isAttached"] = Attachment ~= nil
+cadInfo["attachmentChildren"] = AttachedElements and table.select(AttachedElements,function (x) return string.format("%s %s",x.RcType:sub(1,9),RC__identify(x)) end)
+cadInfo["hasAttachments"] = getCollectionLength(AttachedElements) &gt; 0
+return cadInfo
 							</system:String>
 						</Binding.ConverterParameter>
 					</Binding>
 				</StackPanel.DataContext>
 			 
-			 
-			  <TextBlock Margin="0,0,0,10" Foreground="Black" FontSize="17" MaxWidth="300" TextWrapping="wrap" Text="{Binding [obj].DataObject.name}" Visibility="{Binding [obj].DataObject.name, Converter ={StaticResource NullVisibilityConverter} }"/>
-			  <TextBlock Margin="20,0,0,5" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [obj].DataObject.RcType.Name}" Visibility="{Binding [obj].DataObject.RcType.Name, Converter ={StaticResource NullVisibilityConverter} }"/>
-			  <TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [obj].DataObject.Variant}" Visibility="{Binding [obj].DataObject.Variant, Converter ={StaticResource NullVisibilityConverter} }"/>
+				<!-- Header -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontWeight="Bold" FontSize="18" MaxWidth="1000" TextWrapping="wrap" Text="{Binding [tooltipHeader]}" Visibility="{Binding [tooltipHeader], Converter={StaticResource NullVisibilityConverter} }"/>
 				
+				<!-- RcType -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [rcType]}" Visibility="{Binding [rcType], Converter={StaticResource NullVisibilityConverter} }"/>
+				
+				<!-- Name -->
+				<TextBlock Margin="20,0,0,5" Foreground="Black" FontSize="18" FontWeight="Bold" MaxWidth="300" TextWrapping="wrap" Text="{Binding [nameOrCodeorId]}" Visibility="{Binding [nameOrCodeorId], Converter={StaticResource NullVisibilityConverter} }"/>
+			  
+				<!-- Variant -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [variant]}" Visibility="{Binding [variant], Converter={StaticResource NullVisibilityConverter} }"/>
+				
+				<!-- Description -->
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [description]}" Visibility="{Binding [description], Converter={StaticResource NullVisibilityConverter} }"/>
+
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"></ColumnDefinition>  
 						<ColumnDefinition Width="*"></ColumnDefinition>  
 					</Grid.ColumnDefinitions>
 					<Grid.RowDefinitions>  
+						<!-- Add *enough* RowDefinition as resources: -->
 						<RowDefinition/>  
 						<RowDefinition/>  
+						<RowDefinition/>  
+						<RowDefinition/>  
+						<RowDefinition/>  						
 						<RowDefinition/>  
 						<RowDefinition/>  
 						<RowDefinition/>  						
@@ -80,106 +115,31 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 						<RowDefinition/> 
 					</Grid.RowDefinitions>  
 			   
-					<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Beskrivelse: " Tag = 
-						"{Binding [obj].DataObject.description}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					
-					<TextBlock Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="14" Tag="{Binding [obj].DataObject.description}"
-						MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-			   
-			   
-					<TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Objektinfo: " Tag = 
-						"{Binding [obj].DataObject.ObjektInfo}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					<TextBlock Grid.Row="1" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="14" Tag="{Binding [obj].DataObject.ObjektInfo}"
-						MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-						
-					
-					<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Festet til: " Tag = 
-						"{Binding [attachment].ToStringWithObjectType}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					<TextBlock Grid.Row="2" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="14" Tag="{Binding [attachment].ToStringWithObjectType}"
-						MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-						
-						
-					<TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Festede elementer: " 
-						Tag="{Binding [attachedElements]}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					<ListBox Grid.Row="3" Grid.Column="1" Margin="10,2,2,2" ItemsSource="{Binding Tag, RelativeSource={RelativeSource Self}}" Tag="{Binding [attachedElements]}" Visibility="{Binding 
-						RelativeSource={RelativeSource Mode=Self}, Path=ItemsSource, Converter ={StaticResource NullVisibilityConverter} }">
-						<ListBox.Template>
-							<ControlTemplate>
-							<DockPanel>
-								<Border BorderThickness="1,0,0,0" BorderBrush="Gray"/>
-								<ItemsPresenter Margin="5,0,0,0"></ItemsPresenter>
-							</DockPanel>
-							</ControlTemplate>
-						</ListBox.Template>
-						<ListBox.ItemsPanel>
-							<ItemsPanelTemplate>
-								<StackPanel Orientation="Vertical"/>
-							</ItemsPanelTemplate>
-						</ListBox.ItemsPanel>
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<StackPanel Orientation="Vertical">
-									<TextBlock MaxWidth="300" TextWrapping="wrap" Margin="0,0,0,2" Foreground="Black" FontSize="13" Text="{Binding ToStringWithObjectType}"/>
-								</StackPanel>									
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-							<ListBox.ItemContainerStyle>
-								<Style TargetType="{x:Type ListBoxItem}">
-									<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-									<Setter Property="Template">
-										<Setter.Value>
-											<ControlTemplate TargetType="ListBoxItem">
-												<ContentPresenter/>
-											</ControlTemplate>
-										</Setter.Value>
-									</Setter>
-								</Style>
-						</ListBox.ItemContainerStyle>
-					</ListBox>
-					
-			   
-			   
-					<TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Lag: " Visibility="{Binding [layer], Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					<TextBlock Grid.Row="4" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="14" 
-						MaxWidth="300" TextWrapping="wrap" Text="{Binding [layer]}" Visibility="{Binding [layer], Converter ={StaticResource NullVisibilityConverter} }"/>
-
-						
-					<TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Symbol: " Visibility="{Binding [symbol2d], Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					<TextBlock Grid.Row="5" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="14" 
-						MaxWidth="300" TextWrapping="wrap" Text="{Binding [symbol2d]}" Visibility="{Binding [layer], Converter ={StaticResource NullVisibilityConverter} }"/>
-
-						
-					<TextBlock Grid.Row="6" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Spor: " Tag="{Binding [alignment].DataObject.code}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="6" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Tag="{Binding [alignment].DataObject.code}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }" >
+					<!-- Own Alignment / Profiling -->
+					<!-- Point objects: Pr.<Mileage>     Alignments: Pr.<StartMileage> - Pr.<EndMileage> (L=Length)  -->
+					<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" 
+					TextWrapping="wrap" Text="Eget spor"/>
+					<Border Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="14" Tag="{Binding [alignment].DataObject.code}"
-								MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-							<TextBlock Margin="10,0,0,0" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="12" Tag="{Binding [mileage]}"
-								MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" Tag="{Binding [alignment]}"
+								MaxWidth="300" TextWrapping="wrap" Text="{Binding [alignment]}" Visibility="{Binding [alignment], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock Margin="10,0,0,0" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [mileage]}" Visibility="{Binding [alignment], Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>	
 					</Border>
-					<TextBlock Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Referansespor: " Tag="{Binding [refAlignment].DataObject.code}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="7" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Tag="{Binding [refAlignment].DataObject.code}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }" >
+
+					<!-- Reference Alignment / Kilometration -->
+					<!-- Point objects: Km.<Mileage>     Alignments: Km.<StartPointReferenceMileage> - Km.<EndPointReferenceMileage>  -->
+					<TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="Referanselinje" Visibility="{Binding [refAlignment], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="1" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [refAlignment], Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="14" Tag="{Binding [refAlignment].DataObject.code}"
-								MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-							<TextBlock Margin="10,0,0,0" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="12" Tag="{Binding [refMileage]}"
-								MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [refAlignment]}" Visibility="{Binding [refAlignment], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock Margin="10,0,0,0" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [refMileage]}" Visibility="{Binding [refAlignment], Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
-						
-					<TextBlock Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Hastighet: " Tag="{Binding [obj].DataObject.SignSpeed}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					<TextBlock Grid.Row="8" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="14" Tag="{Binding [obj].DataObject.SignSpeed}"
-						MaxWidth="300" TextWrapping="wrap" Text="{Binding Tag, RelativeSource={RelativeSource Self}}" Visibility="{Binding Tag, RelativeSource={RelativeSource Self}, Converter ={StaticResource NullVisibilityConverter} }"/>
-					
-					<TextBlock Grid.Row="10" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Xref sti: " Visibility="{Binding [xrefPath], Converter ={StaticResource NullVisibilityConverter} }"/>
-					<ListBox Grid.Row="10" Grid.Column="1" Margin="10,2,2,2" Style="{x:Null}" ItemsSource="{Binding [xrefPath]}" Name="RelationConnectionList" Padding="5" Visibility="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ItemsSource, Converter ={StaticResource NullVisibilityConverter} }">
+	
+					<!-- XRef  -->
+					<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="XRef" Visibility="{Binding [hasXrefPath], Converter={StaticResource BooleanToVisibilityConverter} }"/>
+					<ListBox Grid.Row="2" Grid.Column="1" Margin="10,2,2,2" Style="{x:Null}" ItemsSource="{Binding [xrefPath]}" Name="RelationConnectionList" Padding="5" Visibility="{Binding [hasXrefPath], Converter={StaticResource BooleanToVisibilityConverter} }">
 					   <ListBox.Template>
 							<ControlTemplate>
 							<DockPanel>
@@ -197,8 +157,9 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 							<DataTemplate>
 								<StackPanel Orientation="Vertical">
 									<StackPanel Orientation="Vertical">
-										<TextBlock MaxWidth="300" TextWrapping="wrap" Margin="0,0,0,2" Foreground="Black" FontSize="13" Text="{Binding Name}"/>
-										<TextBlock MaxWidth="300" TextWrapping="wrap" Margin="10,0,0,0" Foreground="Black" FontSize="10" Text="{Binding DataObject.XrefPath}" FontStyle="Italic"/>
+										<TextBlock MaxWidth="300" TextWrapping="wrap" Margin="0,0,0,2" Foreground="Black" FontSize="10" Text="{Binding name}"/>
+										<!-- Note: Bind to 'XrefPath' means checking that the object actually lies in an XRef: -->
+										<TextBlock MaxWidth="300" TextWrapping="wrap" Margin="10,0,0,0" Foreground="Black" FontSize="10" Text="{Binding XrefPath}" FontStyle="Italic"/>
 									</StackPanel>
 								</StackPanel>									
 							</DataTemplate>
@@ -216,12 +177,78 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 								</Style>
 						</ListBox.ItemContainerStyle>
 					</ListBox>
+
+					<TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="Layer" Visibility="{Binding [layer], Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="4" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [refAlignment], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [layer]}" Visibility="{Binding [layer], Converter={StaticResource NullVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+						
+					<!-- 2D symbol -->
+					<!-- <TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="14" MaxWidth="300" TextWrapping="wrap" Text="Symbol: " Visibility="{Binding [symbol2d], Converter={StaticResource NullVisibilityConverter} }"/> -->
+					<!-- <TextBlock Grid.Row="5" Grid.Column="1" Margin="10,2,2,2" HorizontalAlignment="Left" Foreground="Black" FontSize="13"  -->
+						<!-- MaxWidth="300" TextWrapping="wrap" Text="{Binding [symbol2d]}" Visibility="{Binding [symbol2d], Converter={StaticResource NullVisibilityConverter} }"/> -->
 					
+					<!-- SignSpeed (only when this is a speed board object) -->
+					<TextBlock Grid.Row="6" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="Skilt-hastighet" Visibility="{Binding [hasSignSpeed], Converter={StaticResource BooleanToVisibilityConverter} }"/>
+					<Border Grid.Row="6" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [signSpeed], Converter={StaticResource NullVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [signSpeed]}" Visibility="{Binding [hasSignSpeed], Converter={StaticResource BooleanToVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+
+					<!-- Attachment parent (for point objects only) -->
+					<TextBlock Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="Attached to" Visibility="{Binding [isAttached], Converter={StaticResource BooleanToVisibilityConverter} }"/>
+					<Border Grid.Row="7" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [isAttached], Converter={StaticResource BooleanToVisibilityConverter} }" >
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="{Binding [attachmentParent]}" Visibility="{Binding [isAttached], Converter={StaticResource BooleanToVisibilityConverter} }"/>
+						</DockPanel>
+					</Border> 
+
+					<!-- Attachment children (for point objects only) -->
+					<TextBlock Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="13" MaxWidth="300" TextWrapping="wrap" Text="Attachments" Visibility="{Binding [hasAttachments], Converter={StaticResource BooleanToVisibilityConverter} }"/>
+					<!-- Note: ListBox iterates over a list of items in the source item: -->
+					<ListBox Grid.Row="8" Grid.Column="1" Margin="10,2,2,2" ItemsSource="{Binding [attachmentChildren]}" Visibility="{Binding [hasAttachments], 
+					Converter={StaticResource BooleanToVisibilityConverter} }">
+						<ListBox.Template>
+							<ControlTemplate>
+							<DockPanel>
+								<Border BorderThickness="1,0,0,0" BorderBrush="Gray"/>
+								<ItemsPresenter Margin="5,0,0,0"></ItemsPresenter>
+							</DockPanel>
+							</ControlTemplate>
+						</ListBox.Template>
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Vertical"/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Orientation="Vertical">
+									<!-- Note: Binding to '.' means using C# 'tostring' method a list item, as an alternative to a predefined text: -->
+									<TextBlock MaxWidth="300" TextWrapping="wrap" Margin="0,0,0,2" Foreground="Black" FontSize="13" Text="{Binding .}"/>
+								</StackPanel>									
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+						<ListBox.ItemContainerStyle>
+							<Style TargetType="{x:Type ListBoxItem}">
+								<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="ListBoxItem">
+											<ContentPresenter/>
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</ListBox.ItemContainerStyle>
+					</ListBox>
 					
 				</Grid>
+				
 			</StackPanel>
-			
-			
 		</DockPanel>
 	</Border>
 </UserControl>
