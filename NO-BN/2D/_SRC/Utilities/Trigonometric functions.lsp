@@ -4,7 +4,7 @@
 ;
 ; Adapted from CADalyst tip 442, by John Howard
 ;
-; (c) Copyright Railcomplete AS, Norway, NO916118503, 2015-2024. All rights reserved.
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:

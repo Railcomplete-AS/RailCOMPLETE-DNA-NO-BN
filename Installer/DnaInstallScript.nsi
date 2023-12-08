@@ -5,7 +5,7 @@
 ;--------------------------------
 ; Last changed: 2021-05-14 THBEN/CLFEY
 ; Change: Rely on PRODUCT and BUNDLEDIR to be defined by calling YAML file
-; (c) Copyright Railcomplete AS, Norway, NO916118503, 2015-2024. All rights reserved.
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ;--------------------------------
 ;
 ;Include Modern UI

@@ -1,5 +1,5 @@
 echo OFF
-rem (c) Copyright Railcomplete AS, Norway, NO916118503, 2015-2024. All rights reserved.
+rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo ENTER MakeDnaAndTransferFilesToAppdata.bat
 
 Rem Set DNA version info in Windows environment variables:
