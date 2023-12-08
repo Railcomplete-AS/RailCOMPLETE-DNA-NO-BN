@@ -21,3 +21,7 @@ RailCOMPLETE customization for Norway, Bane NOR
 12.	"RailCOMPLETE Agent's User Guide" (TXT file). It is updated with every release of RailCOMPLETE - see railcomplete.com/download.
 13. "Introduction to RailCOMPLETE v2021.0". See railcomplete.com/download. It might not be up-to-date with the latest released RailCOMPLETE.
 14. "Instruction manual - 3D modelling with RailCOMPLETE". See railcomplete.com/download.
+
+## Main branches
+- develop: Used by developers to collaborate on ongoing work. May contain partial work or inconsistent data.
+- main: Latest stable version.
