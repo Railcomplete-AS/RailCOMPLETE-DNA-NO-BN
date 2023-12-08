@@ -16,3 +16,8 @@ RailCOMPLETE customization for Norway, Bane NOR
 11. Download the published `XX-YY` DNA installation file from the Azure cloud build pipeline site and distribute to users.
 
 **Note** Always remember to check consistency between 2D symbol names in the XML of the DNA and in the 2D DWG file. Also check consistency between all resource files and the corresponding XML element in the DNA source-XML (in `XX-YY Rootfile.xml`). The name of the 2D symbol file shall be stated as a resource in the corresponding DNA's XML root file.
+
+## Supporting documents for DNA agents / developers
+12.	"RailCOMPLETE Agent's User Guide" (TXT file). It is updated with every release of RailCOMPLETE - see railcomplete.com/download.
+13. "Introduction to RailCOMPLETE v2021.0". See railcomplete.com/download. It might not be up-to-date with the latest released RailCOMPLETE.
+14. "Instruction manual - 3D modelling with RailCOMPLETE". See railcomplete.com/download.
