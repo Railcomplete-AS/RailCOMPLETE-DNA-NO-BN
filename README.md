@@ -22,6 +22,6 @@ RailCOMPLETE customization for Norway, Bane NOR
 13. "Introduction to RailCOMPLETE v2021.0". See railcomplete.com/download. It might not be up-to-date with the latest released RailCOMPLETE.
 14. "Instruction manual - 3D modelling with RailCOMPLETE". See railcomplete.com/download.
 
-## Main branches
+## Branches
 - develop: Used by developers to collaborate on ongoing work. May contain partial work or inconsistent data.
 - main: Latest stable version.
