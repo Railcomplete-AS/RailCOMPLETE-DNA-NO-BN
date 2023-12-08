@@ -1,4 +1,5 @@
 @echo off
+rem (c) Copyright Railcomplete AS, Norway, NO916118503, 2015-2024. All rights reserved.
 @echo	ENTER CopyDnaEtcToAppdataRcBundle.bat
 @echo		Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 rem			*********************************************************************************

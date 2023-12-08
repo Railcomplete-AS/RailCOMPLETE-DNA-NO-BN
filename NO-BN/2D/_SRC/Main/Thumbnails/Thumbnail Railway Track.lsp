@@ -2,7 +2,7 @@
 ;
 ; Thumbnail Railway Track.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
+; (c) Copyright Railcomplete AS, Norway, NO916118503, 2015-2024. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
