@@ -26,12 +26,12 @@
 	<!-- Note: Functions which are called from 'JBTEH_MAS KL-mast' and 'JBTEH_MAS Hengemast for bru og tunnel' and 'JBTEH_MAS Hengemast i åk': -->
 
 	<LuaFunction Name="JBTEH_MAS_nonPortalPole_code()" ReturnType="String"
-		Description="Obtains the code for the OCS pole, as a concatenation of the pole's reference mileage km-value and the current 'seq' local variable.">
+		Description="Obtains the code for the OCS pole, as a concatenation of the pole's reference mileage km-value and the current 'Seq' local variable.">
 		<Constructor>String JBTEH_MAS_nonPortalPole_code()</Constructor>
 		<Formula>
 			function JBTEH_MAS_nonPortalPole_code()
 				entireKm = math.floor(ReferenceMileage/1000)
-				return string.format("%d-%02d",entireKm,seq), _info("Pole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable seq ("..seq..").")
+				return string.format("%d-%02d",entireKm,Seq), _info("Pole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable Seq ("..Seq..").")
 			end
 		</Formula>
 	</LuaFunction>
@@ -58,7 +58,7 @@
 			
 				--Find all cantilevers and WTBs at this OCS pole, but skip WTBs serving midpoint anchor lines or AT conductors, earthing wires etc:
 				local rCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
-				local rWtb = getNearbyPointObjects2D(tol,rctype_WireTensioner)
+				local rWtb = getNearbyPointObjects2D(tol,rctype_WireTensioningBalancer)
 								:filter(function (x) return x.Alignment == rctype_ContactWire end)
 				local items = getUnionOfCollections({rCnt,rWtb})
 				local nItems = getCollectionLength(items)
@@ -72,7 +72,7 @@
 						local thisItem = items[i]
 						local cowName
 						local p1
-						if thisItem.RcType == rctype_WireTensioner then
+						if thisItem.RcType == rctype_WireTensioningBalancer then
 							p1 = thisItem:getPoint3D()
 							cowName = thisItem.Alignment.name
 						else
@@ -84,7 +84,7 @@
 						--A WTB might be the terminal for a contact wire (at a buffer stop etc). Treat only those who possess a successor:
 						if nNextItems &gt; 0 then
 							nextItem = nextItems[0]
-							if nextItem.RcType == rctype_WireTensioner then
+							if nextItem.RcType == rctype_WireTensioningBalancer then
 								p2 = nextItem:getPoint3D()
 							else
 								--nextItem.RcType == rctype_Cantilever:
@@ -1076,7 +1076,6 @@
 							return "UNFINISHED - Cannot deduce suspended OCS pole name since portal '"..RC__identify(portals[0]).."' has no support pole yet."
 						else
 							--Find the reference support pole - being closest to the portal's own insertion point (there may be many portal support poles):
-							local i
 							local shortestDist = math.huge
 							local referenceSupportPole = nil 
 							for i = 0, nSupportPoles-1 do
@@ -1129,7 +1128,7 @@
 						local s = rel_OcsPortal_IsSupportedBy_OcsPole
 						local r,n = getRelatedObjects(s,portal)
 						if n == 0 then
-							return offset + portal.mileage,
+							return offset + portal.Mileage,
 								_info("Mileage was deduced from a portal/gantry lacking support pole(s) '"..RC__identify(portal).."'.")
 					
 						elseif n == 1 then 
@@ -1180,7 +1179,7 @@
 						e = (r[0].geoCoord.Z - getAlignmentInfo().Elevation) --Portal's elevation above this drop arm's own alignment
 						v = r[0].Variant
 						if v == "Type 12" then return e + 0.8 + extensionAboveTopOfPortal
-						elseif v == "Utliggeråk" then return e + 0.8 + extensionAboveTopOfPortal --Uses Type 12, 6m.
+						elseif v == "OCS gantry" then return e + 0.8 + extensionAboveTopOfPortal --Uses Type 12, 6m.
 						elseif v == "Type 14" then return e + 1.2 + extensionAboveTopOfPortal
 						elseif v == "Type 40" then return e + 0.4 + extensionAboveTopOfPortal
 						else
@@ -1199,8 +1198,8 @@
 			<Formula>
 				function _JBTEH_MAS_DropArmUnderPortal_AngularOffset()
 					local ps = rel_OcsPole_IsDropArmUnder_OcsPortal
-					pr,pn = getRelatedObjects(ps)
-					if yn == 0 then
+					local pr,pn = getRelatedObjects(ps)
+					if pn == 0 then
 						return getPropertyValue("AngularOffset"), _info("UNFINISHED - relate drop arm to portal with '"..ps.."'.")
 				
 					else
@@ -1390,7 +1389,7 @@
 				<Value>11m</Value>
 				<Value>10m</Value>
 			</Values>
-			<Values Variant="Utliggeråk">
+			<Values Variant="OCS gantry">
 				<Value>6m</Value>
 			</Values>
 		</CustomProperty>
@@ -1473,7 +1472,7 @@
 								return 0,_warning, _info("Bad OCS pole variant ["..mv.."].")
 							end
 							-- OCS pole and portal may belong to different tracks (when OCS pole is located between tracks):
-							mdist = getAlignmentInfo(alignment.id,pole.geoCoord.X,pole.geoCoord.Y).DistanceToAlignment --Distance from center closest OCS pole to portal's alignment
+							mdist = getAlignmentInfo(Alignment.id,pole.geoCoord.X,pole.geoCoord.Y).DistanceToAlignment --Distance from center closest OCS pole to portal's alignment
 							if (pole.RightSided) then
 								if (pole.Alignment.id == Alignment.id) then return mdist-d else return mdist+d end
 							else
@@ -1486,7 +1485,7 @@
 					local r,n = getRelatedObjects(s)
 
 					if n == 0 then
-						if Variant == "Utliggeråk" then
+						if Variant == "OCS gantry" then
 							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12.
 							return getPropertyValue("LateralOffset"),_warning, _info("UNFINISHED: Relate gantry to an OCS pole with relation '"..s.."'.")
 						else
@@ -1495,7 +1494,7 @@
 						end
 				
 					elseif n == 1 then
-						if Variant == "Utliggeråk" then 
+						if Variant == "OCS gantry" then 
 							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12.
 							return _JBTEH_AAK_get_supportPoleLateralOffset(r[0]), _info("Gantry portal (Utliggeråk) extending from pole '"..RC__identify(r[0]).."'.")
 						else
@@ -1538,7 +1537,7 @@
 					local r,n = getRelatedObjects(RelationName)
 					local L
 					if n == 0 then
-						if Variant == "Utliggeråk" then 
+						if Variant == "OCS gantry" then 
 							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12. Se sammenstillingstegning E-7507 = EH-707507, samt mellomramme 6m type 12 = EH-707448.
 							L = "6m"
 							return L,_warning, _info("UNFINISHED: Relate gantry to an OCS pole with relation '"..RelationName.."'.")
@@ -1553,7 +1552,7 @@
 				
 					elseif n == 1 then
 						local m1 = r[0]
-						if Variant == "Utliggeråk" then 
+						if Variant == "OCS gantry" then 
 							return "6m", _info("Gantry portal (Utliggeråk) extending from OCS pole "..m1.code..".")
 						else
 							if Variant == "Type 12" then L = "11m"
@@ -1684,7 +1683,7 @@
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-14-%02d-%s",Length:sub(1,-2)-27,Length))
 					elseif Variant == "Type 40" then 
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-40-%02d-%s",Length:sub(1,-2)-9,Length))
-					elseif Variant == "Utliggeråk" then
+					elseif Variant == "OCS gantry" then
 						return "NO-BN-3D-EH-AAK-UTLIGGERÅK-6M"
 					else
 						return "Bad OCS portal Variant ["..Variant.."]",_warning
@@ -1714,7 +1713,7 @@
 			<SetValue Key="VerticalOffset" Value="7.90"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Utliggeråk" DisplayBlockName="NO-BN-2D-JBTEH_AAK-UTLIGGERÅK-6000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
+		<InsertPointObject Name="OCS gantry" DisplayName="Utliggeråk" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-UTLIGGERÅK-6000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
@@ -1732,7 +1731,7 @@
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_AAK
-				{% if Variant == 'Utliggeråk' %}UTLIGGERÅK-6000
+				{% if Variant == 'OCS gantry' %}KONTAKTLEDNINGSÅK-UTLIGGERÅK-6000
 				{% elsif Length == '10m' %}KONTAKTLEDNINGSÅK-10000
 				{% elsif Length == '11m' %}KONTAKTLEDNINGSÅK-11000
 				{% elsif Length == '12m' %}KONTAKTLEDNINGSÅK-12000
