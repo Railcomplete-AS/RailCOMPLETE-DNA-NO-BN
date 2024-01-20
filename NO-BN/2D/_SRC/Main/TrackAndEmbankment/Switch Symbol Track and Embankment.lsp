@@ -45,7 +45,7 @@
 	/ 	blockName
 		description
 		switchParameters
-		SwitchDiamondType  A B C D E F L R x RailProfile ang
+		SwitchDiamondType  A B C D E F L R x RailType ang
 		zeroPad
 	)
 	(setq 
@@ -60,7 +60,7 @@
 		L			(/ (cadr (assoc "L" switchParameters)) 1000.0)
 		R			(cadr (assoc "R" switchParameters))
 		x			(cadr (assoc "x" switchParameters))
-		RailProfile	(cadr (assoc "RailProfile" switchParameters))
+		RailType	(cadr (assoc "RailType" switchParameters))
 		ang (R->D (atan (/ 1.0 x)))
 	)
 	(setq blockName1 (strcat _TRK_ "SPV-" "FORBINDELSE-SPORVEKSEL"		))
@@ -72,8 +72,8 @@
 		(setq zeroPad _emptyString_)
 	)
 	(setq 
-		blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailProfile "-" SwitchDiamondType "-" (rtos quadrant 2 0))
-		description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailProfile "-" SwitchDiamondType "-" (rtos quadrant 2 0))
+		blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailType "-" SwitchDiamondType "-" (rtos quadrant 2 0))
+		description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailType "-" SwitchDiamondType "-" (rtos quadrant 2 0))
 	)
 	(SetLayer layDef_Zero)
  	(command
