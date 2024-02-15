@@ -37,7 +37,6 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 						<Binding.ConverterParameter>
 							<system:String xml:space="preserve">
 								ai = getAlignmentInfo(_position) -- ai = CAD cursor info
-								function isNan(x) return (x) ~= (x) end
 								all = {}
 								all["AlignmentName"] = ai.AlignmentName
 								all["Mileage"] = string.format("%11.6f",ai.Mileage/1000)
@@ -127,23 +126,24 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 								all["VerticalCurveRadius"] = vr or "-"
 								all["VerticalCurveRadiusUnit"] = vText2
 								all["CurveRadius"] = ai.CurveRadius or "-"
-								if isNan(ai.Elevation) then
+								if ai.Elevation == nil then
 									ee = 0.0
 									gg = 0.0
 								else
 									ee = tonumber(ai.Elevation) * 1.0
 									gg = tonumber(ai.Gradient) * 1.0
 								end
+								
 								all["Elevation"] = ee
 								all["Gradient"] = gg
-								if isNan(ai.Cant) then
+								if ai.Cant == nil then
 									cc = 0.0
 									cg = 0.0
 									cgs = 0.0
 								else
 									cc = tonumber(ai.Cant) * 1.0
-									cg = isNan(ai.CantGradient) and 0.0 or ai.CantGradient --Undefined in Ramp Begin and Ramp End points if tangent segments
-									if isNan(ai.Speed) then
+									cg = ai.CantGradient == nil and 0.0 or ai.CantGradient --Undefined in Ramp Begin and Ramp End points if tangent segments
+									if ai.Speed == nil then
 										cgs = 0.0
 									else
 										cgs = cg * tonumber(ai.Speed) / 3.6
@@ -153,7 +153,7 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 								all["CantGradient"] = (cg == 0) and "0" or string.format("%s1:%.0f",(cg &gt; 0) and "" or "-",(0.5 + 1000/math.abs(cg)))
 
 
-								if isNan(cc) then
+								if cc == nil then
 									all["TrainRotation"] = 0.0
 								else
 									-- Exaggerated angle, max 90 decimal degrees:
@@ -169,8 +169,8 @@ xmlns:system="clr-namespace:System;assembly=mscorlib">
 
 								all["CantRotation"] = ai.CantRotation
 
-								all["Speed"] = isNan(ai.Speed) and "-" or tonumber(ai.Speed) * 1.0
-								CantDeficiency = isNan(ai.Speed) and "-" or ((ai.Speed/0.291)^2 / ai.CurveRadius - cc)
+								all["Speed"] = ai.Speed == nil and "-" or tonumber(ai.Speed) * 1.0
+								CantDeficiency = ai.Speed == nil and "-" or ((ai.Speed/0.291)^2 / ai.CurveRadius - cc)
 
 								--Ref Bane NOR TRV Overbygning Prosjektering Sporets trasé - ch. 3.1 Dimensjonerende parametre - Nye baner og linjeomlegginger"
 								ImaxNew = ai.CurveRadius &gt; 600.0 and 130 or 100 --mm cant deficiency
