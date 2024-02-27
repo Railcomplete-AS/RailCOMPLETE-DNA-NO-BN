@@ -122,7 +122,7 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___POW"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT_NO_3D"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/> <!-- will be overridden when Variant is set -->
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>
@@ -445,103 +445,246 @@
 			DefaultValue="Ukjent"
 			Description="The lighting fixture's RAL color code [ Ukjent (unknown) | &lt;RAL code text string&gt; ].">
 		</CustomProperty>
+
+
+		<CustomProperty DataType="Double" Name="EL_LYS_Var0" DisplayName="4. arm rotasjon (WIP)"
+			DefaultValue="4"
+			Description="4. arm rotasjon (WIP).">
+		</CustomProperty>
+
+
+		<CustomProperty DataType="String" Name="EL_LYS_Var1" DisplayName="Hode type"
+			DefaultValue="TYPE-A"
+			Description="Hode type (WIP).">
+		</CustomProperty>
+
+		<CustomProperty DataType="Double" Name="EL_LYS_Var2" DisplayName="Arm Vinkel (WIP)"
+			DefaultValue="30"
+			Description="Arm vinkel (WIP).">
+
+		</CustomProperty>
+		<CustomProperty DataType="String" Name="EL_LYS_Var3" DisplayName="Kappe eller ikke (WIP)"
+			DefaultValue="Kappe"
+			Description="Kappe eller ikke (WIP).">
+		</CustomProperty>
 	
 		<!-- END Banedata custom attributes (specific to this object type) -->
 		
 
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
 		
-		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEL_LYS_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEL_LYS_Geometry3DName()" ReturnType="String"
-			Description="Returns the 3D model name for an light.">
-			<Constructor>String _JBTEL_LYS_Geometry3DName()</Constructor>
-			<Formula>
-				function _JBTEL_LYS_Geometry3DName()
-					function bin(bins, ball)
-						num = tonumber(ball)
-						if num == nil then return end
-						if num &lt; bins[1] then return bins[1] end
-						for i=2,#bins do
-							if num &lt; bins[i] then
-								if num &lt;= (bins[i] + bins[i-1])/2 then
-									return bins[i-1]
-								else
-									return bins[i]
-								end
-							end
-						end
-						return bins[#bins]		
-					end
-				
-					local lysror = "NO-BN-3D-EL-LYA-LYSARMATUR-INNENDØRS-LYSSTOFFRØR-1200x2"	
-				
-					local U = bin({500, 750, 1000, 1500, 2000, 2500, 3000}, EL_LYS_Arm_Length)
-					local H = bin({4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000}, EL_LYS_PoleHeight)
-				
-					function pole3D()
-						local subVar = EL_LYS_SubVariant
-						if EL_LYS_SubVariant == "1-lys (trinnløs)" then
-							subVar = "1-LYS"
-						elseif EL_LYS_SubVariant == "2-lys" then
-							subVar = "2-LYS-V180"
-						elseif EL_LYS_SubVariant == "2-lys-V" then
-							subVar = "2-LYS-V120"
-						elseif EL_LYS_SubVariant == "3-lys" then
-							subVar = "3-LYS-V120"
-						elseif EL_LYS_SubVariant == "3-lys-T" then
-							subVar = "3-LYS-V120"
-						elseif EL_LYS_SubVariant == "4-lys" then
-							subVar = "4-LYS-X090"
-						end
-						
-						if subVar == "Ukjent" then 
-							return "NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U"..U.."-H"..H
-						else
-							return "NO-BN-3D-EL-LYS-LYSMAST-"..subVar.."-U"..U.."-H"..H
-						end
-					end
-				
-					if Variant == "Ukjent" then
-						return nil
-					elseif Variant == "Arealbelysning" then
-						return pole3D()
-					elseif Variant == "Armatur i åk" then
-						return nil
-					elseif Variant == "Belysning adkomst/gangvei, i tak" then
-						return lysror
-					elseif Variant == "Belysning adkomst/gangvei, på gulv" then
-						return lysror
-					elseif Variant == "Belysning adkomst/gangvei, på vegg" then
-						return lysror
-					elseif Variant == "Belysning for vei/parkering" then
-						return "NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U"..U.."-H"..H
-					elseif Variant == "Belysning utvendig bygg" then
-						return lysror
-					elseif Variant == "Nedfelt markeringslys på plattform" then
-						return nil
-					elseif Variant == "Nødbelysning" then
-						return lysror
-					elseif Variant == "Nødbelysning i/under/ved håndløper" then
-						return nil
-					elseif Variant == "Plattformbelysning på mast" then
-						return pole3D()
-					elseif Variant == "Plattformbelysning på vegg" then
-						return lysror
-					elseif Variant == "Plattformbelysning under tak" then
-						return lysror
-					elseif Variant == "Plattformbelysning under tak, opplys" then
-						return lysror
-					elseif Variant == "Sporvekselbelysning" then
-						return pole3D()
-					elseif Variant == "Tunnelbelysning" then
-						return lysror
-					elseif Variant == "Øvrige" then
-						return pole3D()
-					end
-				end		
-					
-			</Formula>
-		</LuaFunction>
+
+				<!--Fundament-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<LuaExpression Name="Name">
+				<Formula>if EL_LYS_Var3:lower() == "kappe" then
+					return "NO-BN-2D-EL-LYS-LYSMAST-FUNDAMENT-BETONGKAPPE"	
+				end
+
+				return ""
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+		
+
+		<!--Mast-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<SetValue Key="Name" Value="NO-BN-2D-EL-LYS-LYSMAST-FUNDAMENT-STÅLRAMME"/>
+		</DynamicProperty>
+
+		<!-- Hoved Lysmast-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-Ø164-Ø76-" .. EL_LYS_PoleHeight
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+		<!-- Arm 1-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-ARM-" .. EL_LYS_Arm_Length
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Z">
+				<Formula>EL_LYS_PoleHeight/1000
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.X">
+				<Formula>-EL_LYS_Var2
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+			<!-- Arm 2-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-ARM-" .. EL_LYS_Arm_Length
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Z">
+				<Formula>EL_LYS_PoleHeight/1000
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.X">
+				<Formula>-EL_LYS_Var2
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.Z">
+				<Formula>function GetElInt()
+		return EL_LYS_SubVariant:sub(1,1)
+	end
+
+	if EL_LYS_SubVariant == "2-lys-V" or EL_LYS_SubVariant == "3-lys-T" then
+		return -90
+	else
+		return 360/ GetElInt()
+	end
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+			<!-- Arm 3-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-ARM-" .. EL_LYS_Arm_Length
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Z">
+				<Formula>EL_LYS_PoleHeight/1000
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.X">
+				<Formula>-EL_LYS_Var2
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.Z">
+				<Formula>function GetElInt()
+	return EL_LYS_SubVariant:sub(1,1)
+end
+
+if EL_LYS_SubVariant == "3-lys-T" then
+	return 90
+else
+	return 360/ GetElInt()*2
+end
+				</Formula>
+			</LuaExpression>
+			
+		</DynamicProperty>
+
+			<!-- Arm 4-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="ACS"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-ARM-" .. EL_LYS_Arm_Length
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Z">
+				<Formula>EL_LYS_PoleHeight/1000
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.X">
+				<Formula>-EL_LYS_Var2
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Rotation.Z">
+				<Formula>360/EL_LYS_Var0*3
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+		<!-- Hode 1. should follow arm 1's coordinate system, therefore parent=3. Should be frozen if parent is frozen-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="3"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-HODE-" .. EL_LYS_Var1
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Frozen">
+				<Formula>Geometry3D_3.Frozen
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Y">
+				<Formula>-EL_LYS_Arm_Length/1000
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+
+		<!-- Hode 2. should follow arm 2's coordinate system, therefore parent=4. Should be frozen if parent is frozen-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="4"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-HODE-" .. EL_LYS_Var1
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Frozen">
+				<Formula>Geometry3D_4.Frozen
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Y">
+				<Formula>-EL_LYS_Arm_Length/1000
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+		<!-- Hode 3. should follow arm 3's coordinate system, therefore parent=5. Should be frozen if parent is frozen-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="5"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-HODE-" .. EL_LYS_Var1
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Frozen">
+				<Formula>Geometry3D_5.Frozen
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Y">
+				<Formula>-EL_LYS_Arm_Length/1000
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+		<!-- Hode 4. should follow arm 4's coordinate system, therefore parent=6. Should be frozen if parent is frozen-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="6"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-HODE-" .. EL_LYS_Var1
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Frozen">
+				<Formula>Geometry3D_6.Frozen
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Y">
+				<Formula>-EL_LYS_Arm_Length/1000
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
 
 		<!-- TODO 2020-10-12 Lag InsertPointObject for alle varianter -XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 			<!-- <Values Variant="Ukjent"> -->
@@ -571,7 +714,7 @@
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="dir" Value="both"/>
 			<SetValue Key="name" Value="Arealbelysning"/>
-			<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-EL-LYS-LYSMAST-1-LYS-U500-H4000"/>
+	
 		</InsertPointObject>
 
 		<InsertPointObject Name="Kvadratisk armatur" DisplayBlockName="NO-BN-2D-JBTEL_LYA-BELYSNING-ARMATUR-{{SymbolMode}}" 
@@ -582,9 +725,6 @@
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="dir" Value="both"/>
 			<SetValue Key="name" Value="Lysarmatur"/>
-			<SetValue Key="Geometry3D_0.PoleRouting" Value="Vertical"/>
-			<SetValue Key="Geometry3D_0.Offset.Z" Value="1.0"/>
-			<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-EL-LYA-ARMATUR-I-ÅK"/>
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTEL_LYA-BELYSNING-ARMATUR-{{SymbolMode}}" AllowSymbolMove="true">
