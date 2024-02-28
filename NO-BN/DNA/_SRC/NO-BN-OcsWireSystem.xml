@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -100,8 +100,7 @@
 								return "UNFINISHED - Relate OCS annotation with variant '"..Variant.."' to its items with '"
 									..RelationName.."' and define the 'code' or 'name' property."
 							else
-								local s,i
-								s = RC__identify(r[0])
+								local s = RC__identify(r[0])
 								for i = 1, n-1 do
 									s = s..", "..RC__identify(r[i])
 								end
@@ -996,17 +995,17 @@
 			<Formula>
 				function _JBTEH_KTL_Geometry3DName()
 					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
-						return "NO-BN-SWEEP-EH-KTL-KONTAKTTRÅD-"..Material:gsub(" ","-")
+						return "NO-BN-SWEEP-EH-KTL-KONTAKTTRÅD-"..ContactWireMaterial:gsub(" ","-")
 					elseif Variant == "Kontaktledning, avspenningsline" then
 						t = "NO-BN-SWEEP-FE-WIR-WIRE-"
-						if     Material:match("50/175 w/bitumen") then return t.."SVART-DIAMETER-013"
-						elseif Material:match("60/222 w/bitumen") then return t.."SVART-DIAMETER-014"
-						elseif Material:match("16/133") then return t.."-006"
-						elseif Material:match("30/7") then return t.."GRÅ-DIAMETER-007"
-						elseif Material:match("50/19") then return t.."GRÅ-DIAMETER-009"
-						elseif Material:match("70/19") then return t.."GRÅ-DIAMETER-011"
-						elseif Material:match("80/19") then return t.."GRÅ-DIAMETER-012" --11.5mm
-						elseif Material:match("95/19") then return t.."GRÅ-DIAMETER-013"
+						if     ContactWireMaterial:match("50/175 w/bitumen") then return t.."SVART-DIAMETER-013"
+						elseif ContactWireMaterial:match("60/222 w/bitumen") then return t.."SVART-DIAMETER-014"
+						elseif ContactWireMaterial:match("16/133") then return t.."-006"
+						elseif ContactWireMaterial:match("30/7") then return t.."GRÅ-DIAMETER-007"
+						elseif ContactWireMaterial:match("50/19") then return t.."GRÅ-DIAMETER-009"
+						elseif ContactWireMaterial:match("70/19") then return t.."GRÅ-DIAMETER-011"
+						elseif ContactWireMaterial:match("80/19") then return t.."GRÅ-DIAMETER-012" --11.5mm
+						elseif ContactWireMaterial:match("95/19") then return t.."GRÅ-DIAMETER-013"
 						end
 					else 
 						return "Bad Variant ["..Variant.."]."
@@ -1181,9 +1180,11 @@
 		<CustomProperty DataType="Enumeration" Name="AnchoringLineMaterial" DisplayName="Fixline materiale" DefaultValue="Bz II 50/19" 
 			Description="The overhead catenary system (OCS) midpoint anchoring line material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert].">
 			<!-- Fixline materials: See https://trv.banenor.no/app/kg7u5e4fv/67vku51/EH-707195-000_004_002.PDF -->
-			<Value>Bz II 50/19</Value>
-			<Value>Bz II 50/19 isolert</Value>
-			<Value>Bz II 70/19</Value>
+			<Values>
+				<Value>Bz II 50/19</Value>
+				<Value>Bz II 50/19 isolert</Value>
+				<Value>Bz II 70/19</Value>			
+			</Values>
 		</CustomProperty>
 		<LuaExpression Name="AnchoringLineMaterial"><Formula>_JBTEH_FIL_AnchoringLineMaterial()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIL_AnchoringLineMaterial()" ReturnType="String"
@@ -1254,7 +1255,6 @@
 
 		<Variants DefaultValue="Bardun">
 			<Variant Name="Bardun">
-				<SetValue Key="Material" Value="Stålwire 50mm2"/>
 			</Variant>
 		</Variants>
 
@@ -1357,9 +1357,11 @@
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
 		<CustomProperty DataType="Enumeration" Name="GuyWireMaterial" DisplayName="Bardun materiale" DefaultValue="Bz II 50/19" 
 			Description="The overhead catenary system (OCS) guywire material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert].">
-			<Value>Bz II 50/19</Value>
-			<Value>Bz II 50/19 isolert</Value>
-			<Value>Bz II 70/19</Value>
+			<Values>
+				<Value>Bz II 50/19</Value>
+				<Value>Bz II 50/19 isolert</Value>
+				<Value>Bz II 70/19</Value>		
+			</Values>			
 		</CustomProperty>
 		<LuaExpression Name="GuyWireMaterial"><Formula>_JBTEH_BAR_GuyWireMaterial()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_BAR_GuyWireMaterial()" ReturnType="String"
@@ -1427,14 +1429,11 @@
 			<Constructor>Enumeration _JBTEH_BAR_Offset3DZ()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_Offset3DZ()
-					local p1,p2,atp,gwf,L,t
-					p1 = RcAlignment.StartPoint
-					p2 = RcAlignment.EndPoint
-					atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_AnchoringToOcsPole)[0]
-					gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
-					L = RcAlignment.HorizontalProfile.Length
-					t = _position.Pos / L
-					return t * (gwf.GeoCoord.Z - atp.GeoCoord.Z) + kpm.GeoCoord.Z
+					local atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_AnchoringToOcsPole)[0]
+					local gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
+					local L = RcAlignment.HorizontalProfile.Length
+					local t = _position.Pos / L
+					return t * (gwf.geoCoord.Z - atp.geoCoord.Z) + atp.geoCoord.Z
 				end
 			</Formula>
 		</LuaFunction>
@@ -1489,7 +1488,10 @@
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner,_tr%C3%A5d,_ledning_og_kabel#EN_50149 -->
 		<CustomProperty DataType="Enumeration" Name="Material" DisplayName="Strevermateriale" DefaultValue="Firkantstål HUP120x120" 
 			Description="The overhead catenary system (OCS) spanner beam type.">
-			<Value>Firkantstål HUP120x120</Value>
+			<Values>
+				<Value>Firkantstål HUP120x120</Value>
+			</Values>
+
 		</CustomProperty>
 
 		<LuaExpression Name="code"><Formula>_JBTEH_STR_code()</Formula></LuaExpression>
@@ -1907,7 +1909,7 @@
 						if n &gt; 0 then 
 							-- Assume spanner 3D models exist in steps of 500 mm range 500..2500.
 							-- Let default spanner choice be half the height of the supported OCS drop arm.
-							local h = (math.floor((250 + (OcsPoleHeight/2)) / 500)) * 500
+							local h = (math.floor((250 + (m[0].OcsPoleHeight/2)) / 500)) * 500
 							h = (h &lt; 500) and 500 or h -- At least 500
 							h = (h &gt; 2500) and 2500 or h -- No more than 2500
 							t = "NO-BN-3D-EH-STF-STREVER-FOTPLATE-MED-STREVER-FOR-BRU-OG-TUNNEL-Ø120-H"..string.format("%03d",h)
@@ -2026,7 +2028,7 @@
 		
 		<!-- Use a guywire baseplate for , turn it to fit against wall and serve the incoming wire: -->
 		<!-- <LuaExpression Name="Geometry3D_0.Rotation.Z" ><Formula>dir == 'up' and 0 or 180</Formula></LuaExpression> NOT NEEDED - the Bane NOR anchoring baseplate is symmetrical -->
-		<LuaExpression Name="Geometry3D_0.Rotation.Y"><Formula>LeftSided and 90 or -90'</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Rotation.Y"><Formula>LeftSided and 90 or -90</Formula></LuaExpression>
 		
 		<InsertPointObject Name="Veggfeste for KL-avspenning i tunnel" DisplayBlockName="NO-BN-2D-JBTEH_TUF-TUNNELFESTE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
@@ -2121,13 +2123,13 @@
 					local s = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
 					local r,n = getRelatedObjects(s)
 					if n == 0 then 
-						return getPropertyValue("mileage"),
+						return getPropertyValue("Mileage"),
 							_info("No related OCS pole, cannot adapt mileage.")
 					elseif n == 1 then 
-						return r[0].mileage
+						return r[0].Mileage
 					else 
 						-- Two or more poles were found:
-						return r[0].mileage,
+						return r[0].Mileage,
 							_info("WARNING - Multiple OCS poles found, console uses closest pole's mileage.")
 					end
 				end
@@ -2412,7 +2414,7 @@
 							return _ok,"OK - Anchoring device on OCS pole is related to one WTB and one guywire, no spanner."
 						else
 							if nWtb ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a WTB (and guywire)." end
-							if nGWi ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a guywire (and WTB)." end
+							if nGwi ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a guywire (and WTB)." end
 							if nSpn ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a spanner." end
 						end
 					
@@ -2421,7 +2423,7 @@
 							return _ok,"OK - Anchoring device on OCS pole is related to just WTB, no guywire or spanner."
 						else
 							if nWtb ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a WTB." end
-							if nGWi ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a guywire." end
+							if nGwi ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a guywire." end
 							if nSpn ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a spanner." end
 						end
 
@@ -2431,7 +2433,7 @@
 							return _ok,"OK - Anchoring device on OCS pole is related to one or more guywires, no WTB or spanner."
 						else
 							if nWtb ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a WTB." end
-							if nGWi == 0 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to at least one guywire." end
+							if nGwi == 0 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to at least one guywire." end
 							if nSpn ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a spanner." end
 						end
 				
@@ -2441,7 +2443,7 @@
 							return _ok,"OK - Anchoring device on OCS pole is related to one spanner, no WTB or guywire."
 						else
 							if nWtb ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a WTB." end
-							if nGWi ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a guywire." end
+							if nGwi ~= 0 then return _error,"ERROR - Anchoring device on OCS pole shall not be related to a guywire." end
 							if nSpn ~= 1 then return _unfinished,"UNFINISHED - Anchoring device on OCS pole shall be related to a spanner." end
 						end
 
@@ -2613,7 +2615,7 @@
 						return _warning, "UNFINISHED: Unknown Contact Wire System - make selection."
 					else
 						if Alignment then
-							if mileage &lt; Alignment.RcAlignment.HorizontalProfile.Length/2 then
+							if Mileage &lt; Alignment.RcAlignment.HorizontalProfile.Length/2 then
 								return Alignment.code.."-start"
 							else
 								return Alignment.code.."-end"
@@ -3161,9 +3163,9 @@
 							return "Cannot connect to alignments of type '"..Alignment.RcType.."'.",_warning
 						end
 						if first.id == second.id then
-							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
+							return _error, "Own alignment and continuing alignment cannot be the same ["..first.code.."]"
 						end
-						return "["..first.Code.."] ==> ["..second.Code.."]"
+						return "["..first.code.."] ==&gt; ["..second.code.."]"
 					end
 				end
 			</Formula>
@@ -3280,9 +3282,9 @@
 							return "Cannot connect to alignments of type '"..Alignment.RcType.."'.",_warning
 						end
 						if first.id == second.id then
-							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
+							return _error, "Own alignment and continuing alignment cannot be the same ["..first.code.."]"
 						end
-						return "["..first.Code.."] ==> ["..second.Code.."]"
+						return "["..first.code.."] ==&gt; ["..second.code.."]"
 					end
 				end
 			</Formula>

@@ -1,4 +1,5 @@
 echo OFF
+rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo ENTER MakeDna.bat
 
 Rem Set DNA version and other parameters, needed by the batch files, using files with names '__xxxxx.txt':

@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -18,7 +18,7 @@
 	such that several ObjectType declarations may use theses functions.
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_sig_getCabinetName()" ReturnType="String"
-		Description="Returns a string for each cabinet variant. Keylock cabinets receive a code based on the object's OCP area and the 'seq' property.">
+		Description="Returns a string for each cabinet variant. Keylock cabinets receive a code based on the object's OCP area and the 'Seq' property.">
         <Constructor>String NOBN_sig_getCabinetName()</Constructor>
         <Formula>
 			function NOBN_sig_getCabinetName()
@@ -27,9 +27,9 @@
 				elseif string.find(Variant, "Nøkkel") then 
 					local v = "Arbeidsområde"
 					local n,a
-					n,a = RC_getAreasOfVariant(v)
+					n,a = RC__getAreasOfVariant(v)
 					if n == 1 then
-						return "Nøk."..NOBN_com_getOcpCode().." "..a[0].code.."-"..seq 
+						return "Nøk."..NOBN_com_getOcpCode().." "..a[0].code.."-"..Seq 
 					else 
 						return "*** Zero or multiple ("..n..") areas found of Variant '"..v.."' - cannot deduce a unique name for keylock cabinet." 
 					end
@@ -403,7 +403,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT_NO_3D"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
@@ -415,8 +415,6 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
 
 		<LuaExpression Name="LateralOffset"><Formula>NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 1e-3 or -1e-3)</Formula></LuaExpression>
-		
-		<DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
 		
 		<Variants>
 			<Variant Name="Avsporingsindikator">
@@ -812,13 +810,13 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="name"><Formula>NOBN_sig_getCabinetName()</Formula></LuaExpression>
 
 		<!-- NB already declared in macro -->
-		<LuaExpression Name="Tag">
+		<LuaExpression Name="BaneNORBaneDataID">
 			<Formula>
-				if Variant:lower():match("nøkkel") then return "SA-NØK-nnnnnn"
-				else if Variant:lower():match("sveiv") then return "SA-SVB-nnnnnn"
-				else if Variant:lower():match("apparat") then return "SA-APS-nnnnnn"
-				else if Variant:lower():match("boks") then return "SA-APS-nnnnnn"
-				else return "UNFINISHED - Unrecognized variant ["..Variant.."] - cannot deduce Tag - ."
+				if Variant:lower():match("nøkkel") then return "SA-NØK-000000"
+				elseif Variant:lower():match("sveiv") then return "SA-SVB-000000"
+				elseif Variant:lower():match("apparat") then return "SA-APS-000000"
+				elseif Variant:lower():match("boks") then return "SA-APS-000000"
+				else return "UNFINISHED - Unrecognized variant ["..Variant.."] - cannot deduce BaneNORBaneDataID."
 				end
 			</Formula>
 		</LuaExpression>
@@ -989,7 +987,6 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="IsyPostnotat"><Formula>name</Formula></LuaExpression> 
 
 		<SetValue Key="name" Value="Relerom"/>
-		<SetValue Key="Tag" Value="SA-TER-nnnnnn"/>
 		<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-FE-DIV-UKJENT"/>
 
 		<SetValue Key="name" Value="Relerom uten betjeningsplass"/>
@@ -1190,10 +1187,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				function _JBTSA_TEL_code()
 					first = "-"
 					shortestDistanceSoFar = math.huge
-					for i = 0, DownSections.count-1 do
+					for i = 0, DownSections.Count-1 do
 						obj = DownSections[i]
 						if obj and obj:isVisible() then
-							dist = RC__getDistance2D(obj)
+							dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
 								shortestDistanceSoFar = dist
@@ -1202,10 +1199,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					end
 					second = "-"
 					shortestDistanceSoFar = math.huge
-					for i = 0, UpSections.count-1 do
+					for i = 0, UpSections.Count-1 do
 						obj = UpSections[i]
 						if obj and obj:isVisible() then 
-							dist = RC__getDistance2D(obj)
+							dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
 								shortestDistanceSoFar = dist
@@ -1389,7 +1386,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 						cLen = cLen[CableLength]
 						ac = r[0] --trigger modelcheck in related objects as well
 						gridLateralOffset = math.abs(LateralOffset - ac.LateralOffset)
-						gridAlongOffset = math.abs(mileage - ac.mileage)
+						gridAlongOffset = math.abs(Mileage - ac.Mileage)
 						-- Their sum is a square-grid metric:
 						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
 						msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
@@ -1699,10 +1696,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				function _JBTKO_SKJ_code()
 					first = "-"
 					shortestDistanceSoFar = math.huge
-					for i = 0, DownSections.count-1 do
+					for i = 0, DownSections.Count-1 do
 						obj = DownSections[i]
 						if obj and obj:isVisible() then
-							dist = RC__getDistance2D(obj)
+							dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
 								shortestDistanceSoFar = dist
@@ -1711,10 +1708,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					end
 					second = "-"
 					shortestDistanceSoFar = math.huge
-					for i = 0, UpSections.count-1 do
+					for i = 0, UpSections.Count-1 do
 						obj = UpSections[i]
 						if obj and obj:isVisible() then 
-							dist = RC__getDistance2D(obj)
+							dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
 								shortestDistanceSoFar = dist
@@ -1935,10 +1932,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				function _JBTSA_SFS_code()
 					first = "-"
 					shortestDistanceSoFar = math.huge
-					for i = 0, DownSections.count-1 do
+					for i = 0, DownSections.Count-1 do
 						obj = DownSections[i]
 						if obj and obj:isVisible() then
-							dist = RC__getDistance2D(obj)
+							dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
 								shortestDistanceSoFar = dist
@@ -1947,10 +1944,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					end
 					second = "-"
 					shortestDistanceSoFar = math.huge
-					for i = 0, UpSections.count-1 do
+					for i = 0, UpSections.Count-1 do
 						obj = UpSections[i]
 						if obj and obj:isVisible() then 
-							dist = RC__getDistance2D(obj)
+							dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
 								shortestDistanceSoFar = dist
@@ -2173,7 +2170,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 						cLen = cLen[CableLength]
 						fc = r[0] --trigger modelcheck in related objects as well
 						gridLateralOffset = math.abs(LateralOffset - fc.LateralOffset)
-						gridAlongOffset = math.abs(mileage - fc.mileage)
+						gridAlongOffset = math.abs(Mileage - fc.Mileage)
 						-- Their sum is a square-grid metric:
 						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
 						msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
@@ -2218,11 +2215,11 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Formula>
 				function _JBTSA_SFT_Geometry3DName()
 					t = "NO-BN-3D-SA-SFT-SPORFELT-TUNINGENHET-FTGS"
-					if mounting == "FLAT" 
+					if Mounting == "FLAT" 
 						then return t.."-FLATT"
-					elseif mounting == "-UPRIGHT" then 
+					elseif Mounting == "UPRIGHT" then 
 						return t.."-OPPREIST"
-					elseif mounting == "WALL" then 
+					elseif Mounting == "WALL" then 
 						return t.."-VEGG"
 					end
 					return t.."Bad Variant ["..Variant.."]."
@@ -2323,7 +2320,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_DRV_code()</Constructor>
 			<Formula>
 				function _JBTSA_DRV_code()
-					local s,i,r,n,d,sw,pm,nPm,j
+					local s,r,n,d,sw,pm,nPm,j
 					s = rel_PointMachine_BelongsTo_Switch
 					r,n = getRelatedObjects(s)
 					if n == 0 then
@@ -2452,7 +2449,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT_NO_3D"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 
 		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
@@ -2494,8 +2491,6 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-SPD-SPORSPERREDRIVMASKIN-BELA"/> 
 			</Variant>
 		</Variants>
-
-		<DynamicProperty Type="Representation" Subtype="Geometry3D"/>
 
 		<InsertPointObject Name="BELA" DisplayBlockName="NO-BN-2D-JBTSA_SPD-SPORSPERREDRIVMASKIN-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1.75">
@@ -2628,7 +2623,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				Description="Obtains the dir (direction) for a local control panel, derived from the switch or derailer it is related to with '&quot;..rel_LocalControlPanel_Actuates_SwitchOrDerailer..&quot;'.">
 			<Constructor>String _JBTSA_LOK_dir()</Constructor>
 			<Formula>
-				function _JBTSA_SPD_code()
+				function _JBTSA_LOK_dir()
 					s = rel_LocalControlPanel_Actuates_SwitchOrDerailer
 					r,n = getRelatedObjects(s)
 					if n == 0 then

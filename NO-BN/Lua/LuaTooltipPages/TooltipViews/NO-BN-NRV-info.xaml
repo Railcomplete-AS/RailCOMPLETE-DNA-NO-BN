@@ -4,7 +4,7 @@
 	
 	XAML / Lua for custom tooltip in RailCOMPLETE(r)
 
-	(c) Railcomplete AS, Norway, 2015-2021. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <UserControl 
@@ -38,6 +38,12 @@ xmlns:system="clr-namespace:System;assembly=mscorlib"
 --Shows NRV (Rail System Model) information.
 
 local obj = this
+local pos = _position	--_position.Ref and _position.Pos: an "AlignmentPos" entity available for alignment objects.
+
+local isPointObject = geoCoord ~= nil
+local isAlignmentObject = obj.RcAlignment ~= nil
+local isTableObject = ShowInvisibleObjects ~= nil
+local isAreaObject = not (isPointObject or isAlignmentObject or isTableObject)
 
 local rctype_Switch = "JBTKO_SPV Sporveksel"
 local rctype_Crossing = "JBTKO_SPV Sporkryss"
@@ -48,7 +54,7 @@ local rctype_Signal = "JBTSA_SIG Signal"
 ---------------------------------------------------------------------------------------
 
 function SwitchOrCrossingOrBufferstop(x)
-	return x.RcType == rctype_Switch or x.RcType == rctype_Crossing or x.RcType == rctype_Bufferstop
+	return (x.RcType == rctype_Switch or x.RcType == rctype_Crossing or x.RcType == rctype_Bufferstop) and (x.id ~= this.id)
 end
 
 function getLeft(upObjectsAndPaths, downObjectsAndPaths)
@@ -76,32 +82,29 @@ end
 
 ---------------------------------------------------------------------------------------
 
-local isPointObject = obj.RcAlignment == nil
-local isAlignmentObject = obj.RcAlignment ~= nil
-
-if isAlignmentObject then
-	--Alignment
-	up = getUpObjectsWithPaths(getAlignmentPos(),function (x) return SwitchOrCrossingOrBufferstop(x)end)
-	down = getDownObjectsWithPaths(getAlignmentPos(),function (x) return SwitchOrCrossingOrBufferstop(x)end)
-else
-	--Point object
+if isPointObject then
 	up = obj:getUpObjectsWithPaths(function (x) return SwitchOrCrossingOrBufferstop(x) and x.id ~= obj.id end)
 	down = obj:getDownObjectsWithPaths(function (x) return SwitchOrCrossingOrBufferstop(x) and x.id ~= obj.id end)
+elseif isAlignmentObject then
+	up = getUpObjectsWithPaths(_position,function (x) return SwitchOrCrossingOrBufferstop(x) end)
+	down = getDownObjectsWithPaths(_position,function (x) return SwitchOrCrossingOrBufferstop(x) end)
+else
+	return nil
 end
 
+below = getTip(down,down) --Same as NRV 'Position'
+above = getTip(up,up)
+
+--Items that are common to Point objects and Alignment objects:
 nrvInfo = {}
 nrvInfo["tooltipHeader"] = "NRV info"
 nrvInfo["rcType"] = RcType
 nrvInfo["variant"] = variant
-
 nrvInfo["nrvName"] = RC__identify()
 nrvInfo["nrvCode"] = string.format("%s (%s)",FDVBaneDataObjektID,BaneNORBaneDataID) --Bane NOR Objekt-ID with syntax checking
 nrvInfo["nrvDescription"] = BaneNORBeskrivelse
 
 if isPointObject then
-	below = getTip(down,down) --Same as NRV 'Position'
-	above = getTip(up,up)
-
 	nrvInfo["nrvPosition"] = below and string.format("%.0f",below.Path.Length) or "-" --Nodes don't have positions, they are the referents.
 	nrvInfo["nrvMileage"] = string.format("%.0f",RcAlignment and 0 or ReferenceMileage)
 	nrvInfo["nrvDirection"] = dir and ((dir == "up" or dir == "down") and dir or "(neither up nor down)")
@@ -216,15 +219,15 @@ if isPointObject then
 	nrvInfo["nodesAndEdgeDistances"] = t
 
 else
-	--Alignment object
-	--TODO - figure how we can pick up the mouse's coordinate and from that find an alignmentPos().
-	t = {}
-	table.insert(t,"TODO: Generate a suitable NRV track name, state its length and nodes to-from")
-	nrvInfo["nrvPosition"] = nil
-	nrvInfo["nrvMileage"] = nil
+	--Alignment object: '_position' holds the cursor's current AlignmentPos (_position.Ref, _position.Pos)
+	nrvInfo["nrvPosition"] = below and string.format("%.0f",below.Path.Length) or "-" --Nodes don't have positions, they are the referents.
+	refId = getAlignmentInfo(_position).ReferenceAlignmentId
+	nrvInfo["nrvMileage"] = string.format("%.0f",getAlignmentInfo(refId,_position).Mileage)
 	nrvInfo["nrvDirection"] = nil
 	nrvInfo["nrvType"] = nil
 	nrvInfo["nrvFunction"] = nil
+	t = {}
+	--table.insert(t,"TODO: Generate a suitable NRV track name, state its length and nodes to-from")
 	nrvInfo["nodesAndEdgeDistances"] = t
 end
 
@@ -235,13 +238,13 @@ return nrvInfo
 				</StackPanel.DataContext>
 			 
 				<!-- Header -->
-				<TextBlock Margin="20,0,0,10" Foreground="Black" FontWeight="Bold" FontSize="16" MaxWidth="400" TextWrapping="wrap" Text="{Binding [tooltipHeader]}" Visibility="{Binding [tooltipHeader], Converter={StaticResource NullVisibilityConverter} }"/>
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontWeight="Bold" FontSize="16" MaxWidth="400" TextWrapping="wrap" Text="{Binding [tooltipHeader]}" Visibility="{Binding [tooltipHeader], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 				
 				<!-- RcType -->
-				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="12" MaxWidth="400" TextWrapping="wrap" Text="{Binding [rcType]}" Visibility="{Binding [rcType], Converter={StaticResource NullVisibilityConverter} }"/>
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="12" MaxWidth="400" TextWrapping="wrap" Text="{Binding [rcType]}" Visibility="{Binding [rcType], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 				
 				<!-- Variant -->
-				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="12" MaxWidth="400" TextWrapping="wrap" Text="{Binding [variant]}" Visibility="{Binding [variant], Converter={StaticResource NullVisibilityConverter} }"/>
+				<TextBlock Margin="20,0,0,10" Foreground="Black" FontSize="12" MaxWidth="400" TextWrapping="wrap" Text="{Binding [variant]}" Visibility="{Binding [variant], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 				
 				<Grid>
 					<Grid.ColumnDefinitions>
@@ -264,87 +267,87 @@ return nrvInfo
 					</Grid.RowDefinitions>  
 			   
 					<!-- NRV Name  -->
-					<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Name" Visibility="{Binding [nrvName], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvName], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Name" Visibility="{Binding [nrvName], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvName], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="16" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvName]}" Visibility="{Binding [nrvName], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black" FontSize="16" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvName]}" Visibility="{Binding [nrvName], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 
 					<!-- NRV Code (tag, asset management unique object ID)  -->
-					<TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Code" Visibility="{Binding [nrvCode], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="1" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvCode], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Code" Visibility="{Binding [nrvCode], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="1" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvCode], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvCode]}" Visibility="{Binding [nrvCode], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvCode]}" Visibility="{Binding [nrvCode], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 
 					<!-- NRV Description -->
-					<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Description" Visibility="{Binding [nrvDescription], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="2" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvDescription], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Description" Visibility="{Binding [nrvDescription], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="2" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvDescription], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvDescription]}" Visibility="{Binding [nrvDescription], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvDescription]}" Visibility="{Binding [nrvDescription], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 
 					<!-- NRV Position  -->
-					<TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Position" Visibility="{Binding [nrvPosition], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="3" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvPosition], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Position" Visibility="{Binding [nrvPosition], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="3" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvPosition], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvPosition]}" Visibility="{Binding [nrvPosition], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvPosition]}" Visibility="{Binding [nrvPosition], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- NRV Mileage -->
-					<TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Mileage" Visibility="{Binding [nrvMileage], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="4" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvMileage], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Mileage" Visibility="{Binding [nrvMileage], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="4" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvMileage], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvMileage]}" Visibility="{Binding [nrvMileage], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvMileage]}" Visibility="{Binding [nrvMileage], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- NRV Direction -->
-					<TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Direction" Visibility="{Binding [nrvDirection], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="5" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvDirection], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Direction" Visibility="{Binding [nrvDirection], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="5" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvDirection], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvDirection]}" Visibility="{Binding [nrvDirection], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvDirection]}" Visibility="{Binding [nrvDirection], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- NRV RuleCode -->
-					<TextBlock Grid.Row="6" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Rule code" Visibility="{Binding [nrvRuleCode], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="6" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvRuleCode], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="6" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Rule code" Visibility="{Binding [nrvRuleCode], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="6" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvRuleCode], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvRuleCode]}" Visibility="{Binding [nrvRuleCode], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvRuleCode]}" Visibility="{Binding [nrvRuleCode], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- NRV OCP -->
-					<TextBlock Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="OCP" Visibility="{Binding [nrvOcp], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="7" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvOcp], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="OCP" Visibility="{Binding [nrvOcp], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="7" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvOcp], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvOcp]}" Visibility="{Binding [nrvOcp], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvOcp]}" Visibility="{Binding [nrvOcp], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- NRV Mount -->
-					<TextBlock Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Mount" Visibility="{Binding [nrvMount], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="8" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvMount], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Mount" Visibility="{Binding [nrvMount], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="8" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvMount], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvMount]}" Visibility="{Binding [nrvMount], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvMount]}" Visibility="{Binding [nrvMount], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- NRV Side -->
-					<TextBlock Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Side" Visibility="{Binding [nrvSide], Converter={StaticResource NullVisibilityConverter} }"/>
-					<Border Grid.Row="9" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvSide], Converter={StaticResource NullVisibilityConverter} }" >
+					<TextBlock Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Side" Visibility="{Binding [nrvSide], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
+					<Border Grid.Row="9" Grid.Column="1" Margin="10,2,2,2" BorderThickness="1,0,0,0" Padding="5,0,0,0" BorderBrush="Gray" Visibility="{Binding [nrvSide], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }" >
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvSide]}" Visibility="{Binding [nrvSide], Converter={StaticResource NullVisibilityConverter} }"/>
+							<TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" Foreground="Black" FontSize="12" MaxWidth="600" TextWrapping="wrap" Text="{Binding [nrvSide]}" Visibility="{Binding [nrvSide], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 						</DockPanel>
 					</Border> 
 				
 					<!-- Neighbor NRV nodes, edge and distances, formulated along the Rail System Model graph -->
-					<TextBlock Grid.Row="10" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Nodes and edges" Visibility="{Binding [nodesAndEdgeDistances], Converter={StaticResource NullVisibilityConverter} }"/>
+					<TextBlock Grid.Row="10" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Black" FontSize="12" MaxWidth="75" TextWrapping="wrap" Text="Nodes and edges" Visibility="{Binding [nodesAndEdgeDistances], FallbackValue='Collapsed', Converter={StaticResource NullVisibilityConverter} }"/>
 					<!-- Note: ListBox iterates over a list of items in the source item: -->
 					<ListBox Grid.Row="10" Grid.Column="1" Margin="10,2,2,2" ItemsSource="{Binding [nodesAndEdgeDistances]}" Visibility="{Binding [nodesAndEdgeDistances], 
 					Converter={StaticResource NullVisibilityConverter} }">

@@ -1,4 +1,5 @@
 echo off
+rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo     ENTER DefineDnaVersion.bat
 
 rem Set LOG to no or yes to decide if logging to file is needed or not.

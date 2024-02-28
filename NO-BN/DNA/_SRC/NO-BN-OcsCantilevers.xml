@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -292,9 +292,9 @@ positive feeder in AT system				positiv leder i AT-system
 
 		<LuaExpression Name="dir"><Formula>_JBTEH_UTK_dir()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTK_dir()" 
-				ReturnType="Double"
+				ReturnType="String"
 				Description="Returns the 'dir' for this multi-cantilever console, deduced from its OCS pole and its cantilevers.">
-			<Constructor>Double _JBTEH_UTK_dir()</Constructor>
+			<Constructor>String _JBTEH_UTK_dir()</Constructor>
 			<Formula>
 				function _JBTEH_UTK_dir()
 					local sPol = rel_MultiCantileverConsole_IsInstalledOn_OcsPole
@@ -320,7 +320,6 @@ positive feeder in AT system				positiv leder i AT-system
 							--NB The cantilever may belong to a different track, e.g. at the deviating track in a switch.
 							local dPol = pol.DistanceToAlignment
 							local dCnt = cnt:getAlignmentInfo(pol.Alignment.id).DistanceToAlignment
-							local d = NOBN_ocs_getPoleHalfWidth(pol,this.VerticalOffset)
 							if math.abs(dCnt) &lt; math.abs(dPol) then
 								--Placed on front side of its OCS pole (facing the track):
 								return "both"
@@ -335,18 +334,6 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>"NO-BN-3D-EH-UTK-SEKSJONSUTLIGGERKONSOLL-1440-"..Variant:match("%a-([BH]+%-%d+)$")</Formula></LuaExpression>
-
-		<LuaExpression Name="mc_Alignment"><Formula>_JBTEH_UTK_chkAlignment()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTK_chkAlignment()" 
-				ReturnType="Double"
-				Description="Returns the 'dir' for this multi-cantilever console, deduced from its OCS pole and its cantilevers.">
-			<Constructor>Double _JBTEH_UTK_chkAlignment()</Constructor>
-			<Formula>
-				function _JBTEH_UTK_Mileage()
-					return RC__getMileageFromRelatedObject(rel_MultiCantileverConsole_IsInstalledOn_OcsPole)
-	       		end
-			</Formula>
-		</LuaFunction>
 
 <!-- TODO Seksjonsutliggerkonsoll skal snappe til mast, og skal selv tilby snapping for utliggere -->
 		<!-- TODO Seksjonsutliggerkonsoll skal bevege seg mot sporet på funksjon av mastens tykkelse (som utliggere) -->
@@ -623,7 +610,6 @@ positive feeder in AT system				positiv leder i AT-system
 						local sCnt = rel_OcsPole_Has_Cantilever
 						local rCnt,nCnt = pol:getRelatedObjects(sCnt)
 						local me = nil --who am I?
-						local i
 						for i = 0, nCnt-1 do
 							if id == rCnt[i].id then
 								me = i 
@@ -640,7 +626,7 @@ positive feeder in AT system				positiv leder i AT-system
 						for i = 0, nCnt-1 do
 							if i ~= me then
 								--find signed distance from pole to both cantilever's alignments - if same sign, then they are on the same side: 
-								local d2 = getAlignmentInfo(getObjectFromId(rCnt[i].id).Alignment.id,pol.geoCoord.X,pol.geoCoord.Y).DistanceToAlignment
+								local d2 = getAlignmentInfo(rCnt[i].Alignment.id,pol.geoCoord.X,pol.geoCoord.Y).DistanceToAlignment
 								if d1 * d2 &gt; 0 then
 									--same side
 									myLastPal = i
@@ -837,7 +823,7 @@ positive feeder in AT system				positiv leder i AT-system
 					--Previous:
 					prev = getRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
 					p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
-					if prev.RcType == rctype_WireTensioner then
+					if prev.RcType == rctype_WireTensioningBalancer then
 						--Preceded by a Wire Tension Balancer.
 						wc1 = p1
 					else
@@ -860,7 +846,7 @@ positive feeder in AT system				positiv leder i AT-system
 					--Next:
 					nxt = getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)[0]
 					p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
-					if nxt.RcType == rctype_WireTensioner then
+					if nxt.RcType == rctype_WireTensioningBalancer then
 						--Followed by a Wire Tension Balancer.
 						wc3 = p3
 					else
@@ -1189,12 +1175,12 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaFunction Name="_JBTEH_UTL_TextAttributeAcsPosition()" ReturnType="Vector2D" 
 				HideFromUser="false"
 				Description="Returns a World Coordinate System offset vector in the current drawing scale for a text attribute, placed according to there being 1, 2, 3 or 4 cantilevers. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and acsY = the longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000).">
-			<Constructor>{Double,Double} _JBTEH_UTL_TextAttributeAcsPosition(Double lateralOffset, Double longitudinalOffset)</Constructor>
+			<Constructor>{Double,Double} _JBTEH_UTL_TextAttributeAcsPosition(Double LateralOffset, Double LongitudinalOffset)</Constructor>
 			<Formula>
-				function _JBTEH_UTL_TextAttributeAcsPosition(lateralOffset,longitudinalOffset)
+				function _JBTEH_UTL_TextAttributeAcsPosition(LateralOffset,LongitudinalOffset)
 					scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
-					lateralOffset = (lateralOffset or 5)/scale
-					longitudinalOffset = (longitudinalOffset or 0)/scale
+					LateralOffset = (LateralOffset or 5)/scale
+					LongitudinalOffset = (LongitudinalOffset or 0)/scale
 					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS pole: 
 					sPole = rel_HvSwitch_IsInstalledOn_OcsPole
 					rPoles,nPoles = getRelatedObjects(sPole)
@@ -1204,8 +1190,8 @@ positive feeder in AT system				positiv leder i AT-system
 					if nCantilevers == 1 then
 						--(it is always at least 1...)
 						return RC__getWcsVectorFromAcsVector(
-							RightSided and lateralOffset or -lateralOffset, 
-							RightSided and -longitudinalOffset or longitudinalOffset)
+							RightSided and LateralOffset or -LateralOffset, 
+							RightSided and -LongitudinalOffset or LongitudinalOffset)
 
 					else
 						--Two or more cantilevers: count them and separate them in left-sided and rightsided, count each side.
@@ -1225,8 +1211,8 @@ positive feeder in AT system				positiv leder i AT-system
 							end
 						end
 						return RC__getWcsVectorFromAcsVector(
-							RightSided and lateralOffset or -lateralOffset,
-							index == 1 and longitudinalOffset or -longitudinalOffset)
+							RightSided and LateralOffset or -LateralOffset,
+							index == 1 and LongitudinalOffset or -LongitudinalOffset)
 					end
 				end
 			</Formula>

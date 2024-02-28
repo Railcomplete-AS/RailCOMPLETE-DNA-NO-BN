@@ -1,4 +1,5 @@
 echo off
+rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo	ENTER CompileDna.bat (with Adm=%ADM%, Release=%RELEASE%)
 echo		Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 rem			.

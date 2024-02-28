@@ -2,7 +2,7 @@
 ;
 ; Connector Bifurcation.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -215,26 +215,26 @@
 		(assoc switchDrawingNumber ; list was copied from Bane NOR TRV. See data source in Excel file "NO-BN Switches.xlsx" located close to this LISP source file.
 			(list	                  
 				;     Drawing number            Rail Type              Sleeper Type
-				(list "KO-800157"   (list '("RailProfile" "54E3") '("SleeperType" Betong) '("x" 7    ) '("R" 190 ) '("A" 13503 ) '("B" 13503) '("C" 13503	) '("D" 0   ) '("L" 27006 ) '("E" 3654 ) '("F" 2375) '("SwitchDiamondType" "FX")))
-				(list "KO-701334"   (list '("RailProfile" "54E3") '("SleeperType" Betong) '("x" 9    ) '("R" 190 ) '("A" 10523 ) '("B" 16616) '("C" 10523	) '("D" 6093) '("L" 27139 ) '("E" 3000 ) '("F" 3575) '("SwitchDiamondType" "FX")))
+				(list "KO-800157"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 7    ) '("R" 190 ) '("A" 13503 ) '("B" 13503) '("C" 13503	) '("D" 0   ) '("L" 27006 ) '("E" 3654 ) '("F" 2375) '("SwitchDiamondType" "FX")))
+				(list "KO-701334"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 9    ) '("R" 190 ) '("A" 10523 ) '("B" 16616) '("C" 10523	) '("D" 6093) '("L" 27139 ) '("E" 3000 ) '("F" 3575) '("SwitchDiamondType" "FX")))
 																																																				
-				(list "KO-701287"   (list '("RailProfile" "54E3") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16616 ) '("B" 16616) '("C" 16616	) '("D" 0   ) '("L" 33231 ) '("E" 3575 ) '("F" 3000) '("SwitchDiamondType" "FX")))
-				(list "KO-701306"   (list '("RailProfile" "54E3") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 20797) '("C" 20797	) '("D" 0   ) '("L" 41594 ) '("E" 5835 ) '("F" 4775) '("SwitchDiamondType" "FX")))
-				(list "KO-701319"   (list '("RailProfile" "54E3") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 3900 ) '("F" 5375) '("SwitchDiamondType" "FX")))
+				(list "KO-701287"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16616 ) '("B" 16616) '("C" 16616	) '("D" 0   ) '("L" 33231 ) '("E" 3575 ) '("F" 3000) '("SwitchDiamondType" "FX")))
+				(list "KO-701306"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 20797) '("C" 20797	) '("D" 0   ) '("L" 41594 ) '("E" 5835 ) '("F" 4775) '("SwitchDiamondType" "FX")))
+				(list "KO-701319"   (list '("RailType" "54E3") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 3900 ) '("F" 5375) '("SwitchDiamondType" "FX")))
 																																																				
-				(list "KO-701409"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 16615) '("C" 16615	) '("D" 0   ) '("L" 33230 ) '("E" 5400 ) '("F" 2350) '("SwitchDiamondType" "FX")))
-				(list "KO-800068-2" (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 11.66) '("R" 500 ) '("A" 21393 ) '("B" 21391) '("C" 21393	) '("D" 0   ) '("L" 42783 ) '("E" 7314 ) '("F" 2400) '("SwitchDiamondType" "FX")))
-				(list "KO-800068"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 21985) '("C" 20797	) '("D" 1188) '("L" 42783 ) '("E" 7200 ) '("F" 3600) '("SwitchDiamondType" "FX")))
-				(list "KO-701372"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 7200 ) '("F" 9000) '("SwitchDiamondType" "FX")))
-				(list "KO-701382"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 7200 ) '("F" 9600) '("SwitchDiamondType" "FX")))
+				(list "KO-701409"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 16615) '("C" 16615	) '("D" 0   ) '("L" 33230 ) '("E" 5400 ) '("F" 2350) '("SwitchDiamondType" "FX")))
+				(list "KO-800068-2" (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 11.66) '("R" 500 ) '("A" 21393 ) '("B" 21391) '("C" 21393	) '("D" 0   ) '("L" 42783 ) '("E" 7314 ) '("F" 2400) '("SwitchDiamondType" "FX")))
+				(list "KO-800068"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 21985) '("C" 20797	) '("D" 1188) '("L" 42783 ) '("E" 7200 ) '("F" 3600) '("SwitchDiamondType" "FX")))
+				(list "KO-701372"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 7200 ) '("F" 9000) '("SwitchDiamondType" "FX")))
+				(list "KO-701382"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 7200 ) '("F" 9600) '("SwitchDiamondType" "FX")))
 																																																				
-				(list "KO-800099"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 19760) '("C" 16615	) '("D" 3145) '("L" 36375 ) '("E" 1750 ) '("F" 2950) '("SwitchDiamondType" "BX")))
-				(list "KO-065306"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 8.21 ) '("R" 300 ) '("A" 18188 ) '("B" 18188) '("C" 18188	) '("D" 0   ) '("L" 36375 ) '("E" 3550 ) '("F" 0   ) '("SwitchDiamondType" "BX")))
-				(list "KO-800090"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 23306) '("C" 20797	) '("D" 2509) '("L" 44103 ) '("E" 5994 ) '("F" 0   ) '("SwitchDiamondType" "BX")))
-				(list "KO-800108"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 10825) '("F" 9000) '("SwitchDiamondType" "BX")))
-				(list "KO-800164"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 2400 ) '("F" 9600) '("SwitchDiamondType" "BX")))
-				(list "KO-800081"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 18.4 ) '("R" 1200) '("A" 32829 ) '("B" 34429) '("C" 34429	) '("D" 0   ) '("L" 67257 ) '("E" 10781) '("F" 3600) '("SwitchDiamondType" "BX")))
-				(list "KO-701399"   (list '("RailProfile" "60E1") '("SleeperType" Betong) '("x" 26.1 ) '("R" 2500) '("A" 48109 ) '("B" 46491) '("C" 46491	) '("D" 0   ) '("L" 94600 ) '("E" 17400) '("F" 0   ) '("SwitchDiamondType" "BX")))
+				(list "KO-800099"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 9    ) '("R" 300 ) '("A" 16615 ) '("B" 19760) '("C" 16615	) '("D" 3145) '("L" 36375 ) '("E" 1750 ) '("F" 2950) '("SwitchDiamondType" "BX")))
+				(list "KO-065306"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 8.21 ) '("R" 300 ) '("A" 18188 ) '("B" 18188) '("C" 18188	) '("D" 0   ) '("L" 36375 ) '("E" 3550 ) '("F" 0   ) '("SwitchDiamondType" "BX")))
+				(list "KO-800090"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 12   ) '("R" 500 ) '("A" 20797 ) '("B" 23306) '("C" 20797	) '("D" 2509) '("L" 44103 ) '("E" 5994 ) '("F" 0   ) '("SwitchDiamondType" "BX")))
+				(list "KO-800108"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 14   ) '("R" 760 ) '("A" 27108 ) '("B" 27108) '("C" 27108	) '("D" 0   ) '("L" 54216 ) '("E" 10825) '("F" 9000) '("SwitchDiamondType" "BX")))
+				(list "KO-800164"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 15   ) '("R" 760 ) '("A" 25305 ) '("B" 28911) '("C" 25305	) '("D" 3606) '("L" 54216 ) '("E" 2400 ) '("F" 9600) '("SwitchDiamondType" "BX")))
+				(list "KO-800081"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 18.4 ) '("R" 1200) '("A" 32829 ) '("B" 34429) '("C" 34429	) '("D" 0   ) '("L" 67257 ) '("E" 10781) '("F" 3600) '("SwitchDiamondType" "BX")))
+				(list "KO-701399"   (list '("RailType" "60E1") '("SleeperType" Betong) '("x" 26.1 ) '("R" 2500) '("A" 48109 ) '("B" 46491) '("C" 46491	) '("D" 0   ) '("L" 94600 ) '("E" 17400) '("F" 0   ) '("SwitchDiamondType" "BX")))
 			);list																														
 		);assoc
 	);cadr

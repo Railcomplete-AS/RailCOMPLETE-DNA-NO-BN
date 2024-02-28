@@ -2,7 +2,7 @@
 ;
 ; Switch Tongue.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -22,8 +22,8 @@
 	(SWITCH-TONGUE "09-R190"		"0.6490,-0.75" _left_ 9.8740)
 
 	; R300
-	(SWITCH-TONGUE "08.21-R300"	"0.8030,0.75" _right_ 15.8120)
-	(SWITCH-TONGUE "08.21-R300"	"0.8030,-0.75" _left_ 15.8120)
+	(SWITCH-TONGUE "08.21-R300"		"0.8030,0.75" _right_ 15.8120)
+	(SWITCH-TONGUE "08.21-R300"		"0.8030,-0.75" _left_ 15.8120)
 	(SWITCH-TONGUE "09-R300"		"0.8030,0.75" _right_ 15.8120)
 	(SWITCH-TONGUE "09-R300"		"0.8030,-0.75" _left_ 15.8120)
 
