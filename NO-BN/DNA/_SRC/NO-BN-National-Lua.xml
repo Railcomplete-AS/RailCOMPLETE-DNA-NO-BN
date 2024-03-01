@@ -553,6 +553,7 @@
 			function NOBN_trk_getLiftFromCant(where)
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				local ai
 				if where == nil then
 					-- can be called from point objects:
 					ai = getAlignmentInfo()
@@ -560,6 +561,7 @@
 					-- can be called from anywhere, including an alignment, as a sampled formula:
 					ai = getAlignmentInfo(where)
 				end
+				local cg, lwc, dta
 				if RcAlignment == nil then 
 					-- 'this' is a point object:
 					cg = Alignment.AlignmentSystem.CantGauge
@@ -574,7 +576,7 @@
 				if not lwc then 
 					return 0.0, _info("Alignment system does not lift with cant.")
 				end
-				c = ai.Cant
+				local c = ai.Cant
 				if c == nil or RC__isNan(c) then
 					return 0.0, _info("UNFINISHED - No cant data in alignment, assuming zero cant.")
 				elseif c == 0 then
@@ -582,18 +584,19 @@
 				else
 					-- Cant is measured in millimeter superelevation
 					-- Ask alignment system whether cant leads to lift or not:
-					h = c/1000.0 --[m]
+					local h = c/1000.0 --[m]
+					local msg
 					if h &gt; cg then 
 						h = cg - 0.001 -- Almost 90 degrees roll...
 						msg = "Cant truncated to max, "..RC__round(1000*h).." mm."
 					else
 						msg = RC__round(1000*h).." mm cant."
 					end
-					railSeparationXY = math.sqrt(cg^2 - h^2)
+					local railSeparationXY = math.sqrt(cg^2 - h^2)
 					if h == 0.0 then
 						return 0.0, _info(msg)
 					else
-						cr = ai.CantRotation
+						local cr = ai.CantRotation
 						if cr == "CCW" then
 							-- Right rail lifted above left rail
 							return h/2 + h/2 * dta / (railSeparationXY / 2)
@@ -630,6 +633,7 @@
 				end
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				local ai
 				if where == nil then
 					-- Assume function has been called from a point object:
 					ai = getAlignmentInfo()
@@ -637,7 +641,7 @@
 					ai = getAlignmentInfo(where)
 				end
 				g = ai.Gradient
-				h = ai.Cant/1000.0
+				local h = ai.Cant/1000.0
 				if RC__isNan(h) then 
 					return TrackPlaneDistance, _info("No cant data in alignment, assuming zero cant.")
 				else
@@ -657,6 +661,7 @@
 			function NOBN_trk_getRollFromCant(where)
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				local ai
 				if where == nil then
 					-- Assume function was called from a point object:
 					ai = getAlignmentInfo()
@@ -664,6 +669,7 @@
 					-- can be called from anywhere, including an alignment, as a sampled formula:
 					ai = getAlignmentInfo(where)
 				end
+				local cg
 				if RcAlignment == nil then 
 					-- 'this' is a point object:
 					cg = Alignment.AlignmentSystem.CantGauge
@@ -671,7 +677,7 @@
 					-- 'this' is an alignment:
 					cg = AlignmentSystem.CantGauge
 				end
-				c = ai.Cant
+				local c = ai.Cant
 				if c == nil or RC__isNan(c) then
 					return 0.0, _info("UNFINISHED - No cant data in alignment, assuming zero cant.")
 				elseif c == 0 then
@@ -679,9 +685,9 @@
 				else
 					-- Cant is measured in millimeter superelevation, with rotation clockwise or counterclockwise in the track's direction
 					-- Assume that only one rail is lifted at a time.
-					h = c/1000.0
-					cr = tostring(ai.CantRotation)
-					if  cr:upper() == "CW" then
+					local h = c/1000.0
+					local cr = tostring(ai.CantRotation)
+					if cr:upper() == "CW" then
 						return math.asin(h/cg)*(180/math.pi)
 					elseif cr:upper() == "CCW" then 
 						return -math.asin(h/cg)*(180/math.pi)

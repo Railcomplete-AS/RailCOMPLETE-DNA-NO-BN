@@ -565,11 +565,11 @@
 			<Constructor>String _JBTKO_HOT_Variant()</Constructor>
 			<Formula>
 				function _JBTKO_HOT_Variant()
-					ai = getAlignmentInfo()
-					nearest = ai.NearestHorizontalVertex
-					nearestCant = ai.NearestCantVertex
+					local ai = getAlignmentInfo()
+					local nearest = ai.NearestHorizontalVertex
+					local nearestCant = ai.NearestCantVertex
 					-- insert "RE,RB" if cant station is closest
-					vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+					local vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 					if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
 										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 						if math.abs(nearestCant.GradientIn) &gt; 0 and math.abs(nearestCant.GradientOut) &gt; 0 then
@@ -608,11 +608,11 @@
 			<Constructor>Double _JBTKO_HOT_Mileage()</Constructor>
 			<Formula>
 			function _JBTKO_HOT_Mileage()
-				ai = getAlignmentInfo()
-				nearest = ai.NearestHorizontalVertex
+				local ai = getAlignmentInfo()
+				local nearest = ai.NearestHorizontalVertex
 				-- insert "RE,RB" if cant station is closest
-				nearestCant = ai.NearestCantVertex
-				vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+				local nearestCant = ai.NearestCantVertex
+				local vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 				if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
 										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 					return nearestCant.Mileage
@@ -691,13 +691,13 @@
 			<Constructor>String _JBTKO_VET_Variant()</Constructor>
 			<Formula>
 				function _JBTKO_VET_Variant()
-					ai = getAlignmentInfo()
-					nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+					local ai = getAlignmentInfo()
+					local nearestDelimiter = ai.NearestVerticalSegmentDelimiter
 					if nearestDelimiter ~= nil then
 						if nearestDelimiter.Type == "CurveStart" then return "SE1" end
 						if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
 					end
-					nvv = ai.NearestVerticalVertex
+					local nvv = ai.NearestVerticalVertex
 					if nvv == nil then return "_" end
 					if nvv.Type == "Crest" then return "HBP" end
 					if nvv.Type == "Sag" then return "LBP" end
@@ -714,25 +714,20 @@
 			<Constructor>String _JBTKO_VET_PviInfo()</Constructor>
 		<Formula>
 			function _JBTKO_VET_PviInfo()
-				str = ""
-				tNil			= "?"
-				tR				= "R"
-				tAxisStartEnd	= "(Linje start/slutt)"
-				tMasl			= " moh."	--meters above [mean] sea level
+				local str = ""
+				local ai = getAlignmentInfo()					
+				local nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+				local nearestVertex = ai.NearestVerticalVertex
 					
-				ai = getAlignmentInfo()					
-				nearestDelimiter = ai.NearestVerticalSegmentDelimiter
-				nearestVertex = ai.NearestVerticalVertex
-					
-				if nearestVertex == nil then return tNil end
+				if nearestVertex == nil then return "?" end
 				if nearestDelimiter ~= nil and nearestDelimiter.Type ~= "Pvi" then
 					if nearestDelimiter.Type == "CurveStart" then str = "SE1" end
 					if nearestDelimiter.Type == "CurveEnd" then str = "SE2" end
 				else
-					if nearestVertex.Radius &lt; 0 then str = tR..string.format("%.03f", nearestVertex.Radius) end
-					if nearestVertex.Type == "None" then str = tAxisStartEnd end
+					if nearestVertex.Radius &lt; 0 then str = "R"..string.format("%.03f", nearestVertex.Radius) end
+					if nearestVertex.Type == "None" then str = "(Linje start/slutt)" end
 				end
-				return str.."\\P".."H="..string.format("%.3f", nearestDelimiter.Elevation)..tMasl
+				return str.."\\P".."H="..string.format("%.3f", nearestDelimiter.Elevation).." moh."	--meters above [mean] sea level
 			end
 		</Formula>
 		</LuaFunction>
@@ -831,7 +826,7 @@
 			<Variant Name="Kurve">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
+						local ai = getAlignmentInfo()
 						return Variant.."\\P".."L="..string.format("%.3f",ai.Segment.Length) .."\\P".."R="..string.format("%.3f",ai.Segment.RadiusStart)
 					</Formula>
 				</LuaExpression>
@@ -839,24 +834,25 @@
 			<Variant Name="Klotoide">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						segment = ai.Segment
-
-						if segment.RadiusStart == math.huge  then 
+						local ai = getAlignmentInfo()
+						local segment = ai.Segment
+						local text1
+						if segment.RadiusStart == math.huge then 
 							text1 = "RL"
 						else
 							text1 = "R"..string.format("%.3f",segment.RadiusStart)
 						end
 						
+						local text2
 						if segment.RadiusEnd == math.huge then
 							text2 = "RL"
 						else
 							text2 = "R"..string.format("%.3f",segment.RadiusEnd)
 						end
 						
-						vector = ai.Tangent
-						TangentAngle2D = math.atan(vector.Y,vector.Z)
-						if (math.cos(getUcsAngle() - TangentAngle2D) &lt; 0) then
+						local vector = ai.Tangent
+						local tangentAngle2D = math.atan(vector.Y,vector.Z)
+						if (math.cos(getUcsAngle() - tangentAngle2D) &lt; 0) then
 							text = "&lt;"..text2.."-"..text1.."&gt;"
 						else
 							text = "&lt;"..text1.."-"..text2.."&gt;"
@@ -960,12 +956,12 @@
 			<Variant Name="HBP">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						nvv = ai.NearestVerticalVertex
-						pviElevation = string.format("%.3f", nvv.Elevation)
-						trackElevation = string.format("%.3f", ai.Elevation)
-						length3D = string.format("%.3f", nvv.Length)
-						radius = string.format("%.3f", nvv.Radius)
+						local ai = getAlignmentInfo()
+						local nvv = ai.NearestVerticalVertex
+						local pviElevation = string.format("%.3f", nvv.Elevation)
+						local trackElevation = string.format("%.3f", ai.Elevation)
+						local length3D = string.format("%.3f", nvv.Length)
+						local radius = string.format("%.3f", nvv.Radius)
 						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3D.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
@@ -974,12 +970,12 @@
 			<Variant Name="LBP">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						nvv = ai.NearestVerticalVertex
-						pviElevation = string.format("%.3f", nvv.Elevation)
-						trackElevation = string.format("%.3f", ai.Elevation)
-						length3D = string.format("%.3f", nvv.Length)
-						radius = string.format("%.3f", nvv.Radius)
+						local ai = getAlignmentInfo()
+						local nvv = ai.NearestVerticalVertex
+						local pviElevation = string.format("%.3f", nvv.Elevation)
+						local trackElevation = string.format("%.3f", ai.Elevation)
+						local length3D = string.format("%.3f", nvv.Length)
+						local radius = string.format("%.3f", nvv.Radius)
 						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3D.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
