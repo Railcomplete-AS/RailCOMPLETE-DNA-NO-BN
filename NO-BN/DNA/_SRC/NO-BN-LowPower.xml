@@ -227,10 +227,12 @@
 				<SetValue Key="Geometry3D_0.Rotation.X" Value="0"/>
 				<SetValue Key="Geometry3D_0.Rotation.Y" Value="0"/>
 				<SetValue Key="Geometry3D_0.Rotation.Z" Value="0"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-EL-LYS-LYSMAST-{{LightingFixtureSubvariant}}-U{{LightingFixtureArmLength}}-H{LightingFixturePoleHeight}}{% if LightingFixtureFoundation == 'Yes' %}-{{ LightingFixtureFoundation }}{% endif %}"/>
 				<SetValue Key="Geometry3D_0.PoleRouting" Value="None"/>
 				<SetValue Key="EarthingMethod" Value="Rail"/>
 			</Variant>
+
+			<!--<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-EL-LYS-LYSMAST-{{LightingFixtureSubvariant}}-U{{LightingFixtureArmLength}}-H{LightingFixturePoleHeight}}{% if LightingFixtureFoundation == 'Yes' %}-{{ LightingFixtureFoundation }}{% endif %}"/> -->
+
 			<Variant Name="Plattformbelysning på vegg">
 				<SetValue Key="LightingFixtureSubvariant" Value="Punkt"/>
 				<SetValue Key="dir" Value="up"/>
@@ -281,11 +283,17 @@
 				<SetValue Key="LightingFixtureSubvariant" Value="Ukjent"/>
 				<SetValue Key="Geometry3D_0.Name" Value="(har ikke 3D for {{Variant}})"/>
 				<SetValue Key="Geometry3D_0.PoleRouting" Value="None"/>
+
+				<SetValue Key="Geometry3D_0.Offset.X" Value="0"/>
+				<SetValue Key="Geometry3D_0.Offset.Y" Value="0"/>
+				<SetValue Key="Geometry3D_0.Offset.Z" Value="0"/>
+				<SetValue Key="Geometry3D_0.Rotation.X" Value="0"/>
+				<SetValue Key="Geometry3D_0.Rotation.Y" Value="0"/>
+				<SetValue Key="Geometry3D_0.Rotation.Z" Value="0"/>
+
 				<SetValue Key="EarthingMethod" Value="Unknown"/>
 			</Variant>
 		</Variants>
-		
-		<SetValue Key="LightingFixtureFoundation" Value="Ja"/>
 
 		<CustomProperty DataType="Enumeration" Name="LightingFixtureSubvariant" DisplayName=" Lys type" DefaultValue="Ukjent"
 			Description="The lighting fixture subvariant (the available selections depend on the main variant).">
@@ -374,16 +382,16 @@
 			DefaultValue="5000"
 			Description="The lighting fixture's pole height [mm]. Note: 3D model name will be deduced in steps of 250 mm from 0 to 1000, thereafter in steps of 500 mm.">
 		</CustomProperty>
-		
-		<CustomProperty DataType="Enumeration" Name="LightingFixtureFoundation" DisplayName="Lysmast fundament" DefaultValue="-"
-			Description="'Ja' if the light pole comes with an integrated steel foundation, otherwise '-' (default) if no foundation is required.">
+
+		<CustomProperty DataType="Enumeration" Name="LightingFixtureFoundation" DisplayName="Lysmast fundament" DefaultValue="Kappe"
+			Description="'Stålramme' if the lighting fixture comes with an integrated steel foundation, otherwise '-' (default) if no foundation is required.">
 			<Values Variant="Ukjent">
-				<Value>Ja</Value>
-				<Value>-</Value>
+				<Value>Stålramme</Value>
+				<Value>Kappe</Value>
 			</Values>
 			<Values Variant="Arealbelysning">
-				<Value>Ja</Value>
-				<Value>-</Value>
+				<Value>Stålramme</Value>
+				<Value>Kappe</Value>
 			</Values>
 			<Values Variant="Armatur i åk">
 				<Value>-</Value>
@@ -398,8 +406,8 @@
 				<Value>-</Value>
 			</Values>
 			<Values Variant="Belysning for vei/parkering">
-				<Value>Ja</Value>
-				<Value>-</Value>
+				<Value>Stålramme</Value>
+				<Value>Kappe</Value>
 			</Values>
 			<Values Variant="Belysning utvendig bygg">
 				<Value>-</Value>
@@ -414,8 +422,8 @@
 				<Value>-</Value>
 			</Values>
 			<Values Variant="Plattformbelysning på mast">
-				<Value>Ja</Value>
-				<Value>-</Value>
+				<Value>Stålramme</Value>
+				<Value>Kappe</Value>
 			</Values>
 			<Values Variant="Plattformbelysning på vegg">
 				<Value>-</Value>
@@ -427,15 +435,15 @@
 				<Value>-</Value>
 			</Values>
 			<Values Variant="Sporvekselbelysning">
-				<Value>Ja</Value>
-				<Value>-</Value>
+				<Value>Stålramme</Value>
+				<Value>Kappe</Value>
 			</Values>
 			<Values Variant="Tunnelbelysning">
 				<Value>-</Value>
 			</Values>
 			<Values Variant="Øvrige">
-				<Value>Ja</Value>
-				<Value>-</Value>
+				<Value>Stålramme</Value>
+				<Value>Kappe</Value>
 			</Values>
 		</CustomProperty>
 		
@@ -465,12 +473,6 @@
 			Description="Arm vinkel.">
 
 		</CustomProperty>
-		<CustomProperty DataType="String" Name="LightingFixtureFoundationType" DisplayName="Fundament Type"
-			DefaultValue="Kappe"
-			Description="Fundament typen. Den eneste valgmuligheten er kappe.">
-		</CustomProperty>
-	
-		<!-- END Banedata custom attributes (specific to this object type) -->
 		
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
 
@@ -482,6 +484,10 @@ function JBTEL_LYS_Composed(lightingFixture)
 	if lightingFixture.Variant == "Sporvekselbelysning" then
 		return true
 	elseif lightingFixture.Variant == "Plattformbelysning på mast" then
+		return true
+	elseif lightingFixture.Variant == "Øvrige" then
+		return true
+	elseif lightingFixture.Variant == "Arealbelysning" then
 		return true
 	else 
 		return false
@@ -495,34 +501,23 @@ end
 			</Formula>
 		</LuaExpression>
 
-				<!--Fundament-->
+		<!--Fundament-->
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="0"/>
 			<LuaExpression Name="Name">
-				<Formula>if LightingFixtureFoundationType:lower() == "kappe" then
-					return "NO-BN-2D-EL-LYS-LYSMAST-FUNDAMENT-BETONGKAPPE"	
-				end
-
-				return ""
+				<Formula>if LightingFixtureFoundation:lower() == "kappe" then
+	return "NO-BN-2D-EL-LYS-LYSMAST-FUNDAMENT-BETONGKAPPE"
+elseif LightingFixtureFoundation:lower() == "stålramme" then
+	return "NO-BN-2D-EL-LYS-LYSMAST-FUNDAMENT-STÅLRAMME"
+end
+return ""
 				</Formula>
 			</LuaExpression>
-
 			<LuaExpression Name="Frozen">
 				<Formula>not JBTEL_LYS_Composed(this)
 				</Formula>
 			</LuaExpression>
 		</DynamicProperty>
-
-		<!--Mast-->
-		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
-			<SetValue Key="Parent" Value="0"/>
-			<SetValue Key="Name" Value="NO-BN-2D-EL-LYS-LYSMAST-FUNDAMENT-STÅLRAMME"/>
-			<LuaExpression Name="Frozen">
-				<Formula>not JBTEL_LYS_Composed(this)
-				</Formula>
-			</LuaExpression>
-		</DynamicProperty>
-	
 
 		<!-- Hoved Lysmast-->
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
@@ -674,6 +669,30 @@ end
 
 		<!-- Hode 1. should follow arm 1's coordinate system, therefore parent=3. Should be frozen if parent is frozen-->
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+			<SetValue Key="Parent" Value="3"/>
+			<SetValue Key="RotationOrder" Value="XYZ"/>
+			<SetValue Key="RotationBeforeOffset" Value="true"/>
+			<LuaExpression Name="Name">
+				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-HODE-" .. LightingFixtureHeadType
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Frozen">
+				<Formula>Geometry3D_3.Frozen
+				</Formula>
+			</LuaExpression>
+			<LuaExpression Name="Offset.Y">
+				<Formula>if LightingFixtureArmLength &lt; 1000 then
+	return -math.floor(LightingFixtureArmLength/250+0.5)*250/1000
+else
+	return -math.floor(LightingFixtureArmLength/500+0.5)*500/1000
+end
+				</Formula>
+			</LuaExpression>
+		</DynamicProperty>
+
+
+		<!-- Hode 2. should follow arm 2's coordinate system, therefore parent=4. Should be frozen if parent is frozen-->
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="4"/>
 			<SetValue Key="RotationOrder" Value="XYZ"/>
 			<SetValue Key="RotationBeforeOffset" Value="true"/>
@@ -695,8 +714,7 @@ end
 			</LuaExpression>
 		</DynamicProperty>
 
-
-		<!-- Hode 2. should follow arm 2's coordinate system, therefore parent=4. Should be frozen if parent is frozen-->
+		<!-- Hode 3. should follow arm 3's coordinate system, therefore parent=5. Should be frozen if parent is frozen-->
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="5"/>
 			<SetValue Key="RotationOrder" Value="XYZ"/>
@@ -719,7 +737,7 @@ end
 			</LuaExpression>
 		</DynamicProperty>
 
-		<!-- Hode 3. should follow arm 3's coordinate system, therefore parent=5. Should be frozen if parent is frozen-->
+		<!-- Hode 4. should follow arm 4's coordinate system, therefore parent=6. Should be frozen if parent is frozen-->
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="6"/>
 			<SetValue Key="RotationOrder" Value="XYZ"/>
@@ -730,29 +748,6 @@ end
 			</LuaExpression>
 			<LuaExpression Name="Frozen">
 				<Formula>Geometry3D_6.Frozen
-				</Formula>
-			</LuaExpression>
-			<LuaExpression Name="Offset.Y">
-				<Formula>if LightingFixtureArmLength &lt; 1000 then
-	return -math.floor(LightingFixtureArmLength/250+0.5)*250/1000
-else
-	return -math.floor(LightingFixtureArmLength/500+0.5)*500/1000
-end
-				</Formula>
-			</LuaExpression>
-		</DynamicProperty>
-
-		<!-- Hode 4. should follow arm 4's coordinate system, therefore parent=6. Should be frozen if parent is frozen-->
-		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
-			<SetValue Key="Parent" Value="7"/>
-			<SetValue Key="RotationOrder" Value="XYZ"/>
-			<SetValue Key="RotationBeforeOffset" Value="true"/>
-			<LuaExpression Name="Name">
-				<Formula>"NO-BN-3D-EL-LYS-LYSMAST-HODE-" .. LightingFixtureHeadType
-				</Formula>
-			</LuaExpression>
-			<LuaExpression Name="Frozen">
-				<Formula>Geometry3D_7.Frozen
 				</Formula>
 			</LuaExpression>
 			<LuaExpression Name="Offset.Y">
