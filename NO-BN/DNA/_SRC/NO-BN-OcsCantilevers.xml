@@ -490,18 +490,18 @@ positive feeder in AT system				positiv leder i AT-system
 	<Constructor>Double NOBN_ocs_getWireClampPoint3D(objRef Cantilever)</Constructor>
 	<Formula>
 			function NOBN_ocs_getWireClampPoint3D(cnt)
-				function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
+				local function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
 				local trackId = cnt.Alignment.id
 				local ai = getAlignmentInfo(trackId,cnt.geoCoord.X,cnt.geoCoord.Y)
 				local sign = cnt.rightsided and -1 or 1
 				local cwh = cnt.ContactWireHeight
 				local zigzag = cnt.stagger
-				local h = ai.cant/1000.0
-				local cr = ai.cantrotation
+				local h = ai.Cant/1000.0
+				local cr = ai.CantRotation
 				local theta = math.atan(h/cnt.Alignment.AlignmentSystem.CantGauge)
 				theta = cr and (cr == "CW" and theta or -theta) or 0
-				local centreTrack = ai.point  --The point where the cantilever is projected onto its track
-				local phi = math.atan(ai.tangent.Y, ai.tangent.X)  --This cantilever's track's tangential direction angle in radians in WCS
+				local centreTrack = ai.Point  --The point where the cantilever is projected onto its track
+				local phi = math.atan(ai.Tangent.Y, ai.Tangent.X)  --This cantilever's track's tangential direction angle in radians in WCS
 				--(x,0,z) -- No longitudinal wire clamp offset:
 				local x = cwh*math.sin(theta) + sign*zigzag*math.cos(theta)
 				local y = 0
@@ -1148,15 +1148,15 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>Double _JBTEH_UTL_AddVisual2dAngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_AddVisual2dAngularOffset()
-					s = rel_Cantilever_BelongsTo_OcsPole
-					r,n = getRelatedObjects(s)
+					local s = rel_Cantilever_BelongsTo_OcsPole
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal drop arm or tunnel / bridge drop arm.")
 					else 
 						--Cantilever mounted under portal?
 						--Make cantilever "rod" visible if located under a portal, by visually adding 17 degrees:
 						local pol = r[0]
-						r1,n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
+						local _r1,n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
 						if n1 == 0 then 
 							return 0, _info("No visual angular offset added since cantilever is not mounted on a drop arm (hidden by a portal).")
 						else
@@ -1182,11 +1182,11 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_TextAttributeAcsPosition(LateralOffset,LongitudinalOffset)
 					local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
-					local LateralOffset = (LateralOffset or 5)/scale
-					local LongitudinalOffset = (LongitudinalOffset or 0)/scale
+					LateralOffset = (LateralOffset or 5)/scale
+					LongitudinalOffset = (LongitudinalOffset or 0)/scale
 					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS pole: 
 					local sPole = rel_HvSwitch_IsInstalledOn_OcsPole
-					local _rPoles,nPoles = getRelatedObjects(sPole)
+					local rPoles,nPoles = getRelatedObjects(sPole)
 					local sCantilever = rel_OcsPole_Has_Cantilever
 					local rCantilevers,nCantilevers = getRelatedObjects(sCantilever,rPoles[0])
 

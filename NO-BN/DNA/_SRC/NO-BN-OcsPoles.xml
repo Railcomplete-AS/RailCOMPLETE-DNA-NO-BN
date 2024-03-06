@@ -62,7 +62,6 @@
 								:filter(function (x) return x.Alignment == rctype_ContactWire end)
 				local items = getUnionOfCollections({rCnt,rWtb})
 				local nItems = getCollectionLength(items)
-				local i
 			
 				if nItems == 0 then
 					--Poles for supporting OCS portals will exist, with neither wtbs nor cantilevers at the pole.
@@ -83,14 +82,15 @@
 						local nextItems,nNextItems = thisItem:getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)
 						--A WTB might be the terminal for a contact wire (at a buffer stop etc). Treat only those who possess a successor:
 						if nNextItems &gt; 0 then
-							nextItem = nextItems[0]
+							local nextItem = nextItems[0]
+							local p2
 							if nextItem.RcType == rctype_WireTensioningBalancer then
 								p2 = nextItem:getPoint3D()
 							else
 								--nextItem.RcType == rctype_Cantilever:
 								p2 = nextItem:NOBN_ocs_getWireClampPoint3D()
 							end
-							distance2D = RC__getDistance2D(p1,p2)
+							local distance2D = RC__getDistance2D(p1,p2)
 							table.insert(result,{Spanlength = RC__round(distance2D,1), Wirename = cowName})
 						end
 					end
@@ -118,16 +118,17 @@
 					"L30-536 -52.6- /.../  L30-537 -37.8-"		...a collection of several such dictionaries.
 				--]]
 				
-				Spanlengths = getCollectionFromTable(_JBTEH_MAS_getSpanlengths())
-				nSpanlengths = getCollectionLength(Spanlengths)
+				local Spanlengths = getCollectionFromTable(_JBTEH_MAS_getSpanlengths())
+				local nSpanlengths = getCollectionLength(Spanlengths)
+				local s
 				if nSpanlengths == 0 then
 					return "", _info("No spanlength(s) - expected format is {{Spanlength = [double], Wirename = [string]}+}")
 				elseif nSpanlengths == 1 then
-					sl = Spanlengths[0]
+					local sl = Spanlengths[0]
 					return sl.Spanlength == 0 and "" or string.format("-%.01f-",sl.Spanlength)
 				else
 					for i = 0,nSpanlengths-1 do
-						sl = Spanlengths[i]
+						local sl = Spanlengths[i]
 						if i == 0 then
 							s = string.format("%s -%.01f-",sl.Wirename,sl.Spanlength)
 						else
@@ -193,38 +194,38 @@
 		<Constructor>JBTEH_MAS_getOtherObjectsToModelcheck()</Constructor>
 		<Formula>
 			function JBTEH_MAS_getOtherObjectsToModelcheck()
-				sPortal1 = rel_OcsPole_IsSupportFor_OcsPortal
-				sPortal2 = rel_OcsPole_IsDropArmUnder_OcsPortal
-				sSupportingPole = rel_OcsPortal_IsSupportedBy_OcsPole
-				sDropArm = rel_OcsPortal_IsDropArmSupportFor_OcsPole
+				local sPortal1 = rel_OcsPole_IsSupportFor_OcsPortal
+				local sPortal2 = rel_OcsPole_IsDropArmUnder_OcsPortal
+				local sSupportingPole = rel_OcsPortal_IsSupportedBy_OcsPole
+				local sDropArm = rel_OcsPortal_IsDropArmSupportFor_OcsPole
 
-				t = {} --Collection of other objects to check
-				first = true
+				local t = {} --Collection of other objects to check
+				local first = true
 
-				rPortal1,nPortal1 = getRelatedObjects(sPortal1)
-				rPortal2,nPortal2 = getRelatedObjects(sPortal2)
-				rPortal = getUnionOfCollections({rPortal1,rPortal2})
-				nPortal = nPortal1 + nPortal2
+				local rPortal1,nPortal1 = getRelatedObjects(sPortal1)
+				local rPortal2,nPortal2 = getRelatedObjects(sPortal2)
+				local rPortal = getUnionOfCollections({rPortal1,rPortal2})
+				local nPortal = nPortal1 + nPortal2
 
 				for j = 0,nPortal-1 do
 					table.insert(t,rPortal[j])
 					txt = first and "{"..RC__identify(rPortal[j]) or txt..","..RC__identify(rPortal[j])
 					first = false
-					rSupportingPole,nSupportingPole = rPortal[j]:getRelatedObjects(sSupportingPole)
+					local rSupportingPole,nSupportingPole = rPortal[j]:getRelatedObjects(sSupportingPole)
 					for i = 0, nSupportingPole-1 do 
 						if rSupportingPole[i].id ~= this.id then
 							table.insert(t,rSupportingPole[i])
 							txt = txt..","..RC__identify(rSupportingPole[i])
 						end
 					end
-					rDropArm,nDropArm = rPortal[j]:getRelatedObjects(sDropArm)
+					local rDropArm,nDropArm = rPortal[j]:getRelatedObjects(sDropArm)
 					for i = 0, nDropArm-1 do
 						if rDropArm[i].id ~= this.id then
 							table.insert(t,rDropArm[i])
 							txt = txt..","..RC__identify(rDropArm[i])
 						end
 					end
-					n = nSupportingPole + nDropArm
+					local n = nSupportingPole + nDropArm
 					return n,t, _info(n..": "..txt.."}")
 				end
 				return 0,{}, _info(first and "{}" or txt)

@@ -20,6 +20,7 @@
         <Constructor>String NOBN_bnp_getBoardOrPoleName()</Constructor>
         <Formula>
 			function NOBN_bnp_getBoardOrPoleName()
+				local s
 				if Variant:find("ERTMS Level crossing, announcement") then 
 					return "Fs-PLO"
 				elseif Variant:find("E36 Level crossing, location") then 
@@ -65,9 +66,8 @@
 				elseif Variant:find("Anleggsområde") then
 					return "Anl.omr."
 				elseif Variant:find("Rømningsavstand") then
-					local s,r,n
-					s = rel_Anything_Has_Marker
-					r,n = getRelatedObjects(s)
+					local s = rel_Anything_Has_Marker
+					local r,n = getRelatedObjects(s)
 					if n == 0 then 
 						return "UNFINISHED - Relate with '"..s.."' to one or two marker objects (marking the escape route entrances)."
 					else
@@ -102,7 +102,6 @@
 		<Constructor>String NOBN_bnp_getEscapeDistanceBoardTexts([Int step[, Int offset]])</Constructor>
 		<Formula>
 			function NOBN_bnp_getEscapeDistanceBoardTexts(step,offset)
-				local r,n,s,t,i,k,downIndex,upIndex
 				if step == nil then 
 					step = 10
 				else
@@ -114,42 +113,42 @@
 				offset = offset or 0
 				if this.RcType ~= rctype_SignNssEscapeRouteDistance then
 					return _warning, "Bad object type ["..RcType.."], '"..rctype_SignNssEscapeRouteDistance.."' was expected"
+				end
+
+				local relationName = rel_Anything_Has_Marker
+				local r,n = getRelatedObjects(relationName)
+				local s = {}
+				local t = {}
+				for i = 1, n do
+					table.insert(t,r[i-1].ReferenceMileage) --collection r is indexed from 0
+				end
+				t = RC__SortedNumberCollection(t)
+				local k = 0
+				for i = 1, n do
+					if ReferenceMileage &gt; t[i] then
+						k = k + 1
+					end
+				end
+				if LeftSided then
+					downIndex = "Left"
+					upIndex = "Right"
 				else
-					relationName = rel_Anything_Has_Marker
-					r,n = getRelatedObjects(relationName)
-					s = {}
-					t = {}
-					for i = 1, n do
-						table.insert(t,r[i-1].ReferenceMileage) --collection r is indexed from 0
-					end
-					t = RC__SortedNumberCollection(t)
-					k = 0
-					for i = 1, n do
-						if ReferenceMileage &gt; t[i] then
-							k = k + 1
-						end
-					end
-					if leftSided then
-						downIndex = "Left"
-						upIndex = "Right"
-					else
-						downIndex = "Right"
-						upIndex = "Left"
-					end
-					if k == 0 then
-						s[downIndex] = "?"
-					elseif k == 1 then
-						s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step
-					elseif k &gt;= 1 then
-						s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step.."+"
-					end
-					if k == n then
-						s[upIndex] = "?"
-					elseif k == n-1 then
-						s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step
-					elseif k &lt;= n-2 then
-						s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step.."+"
-					end
+					downIndex = "Right"
+					upIndex = "Left"
+				end
+				if k == 0 then
+					s[downIndex] = "?"
+				elseif k == 1 then
+					s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step
+				elseif k &gt;= 1 then
+					s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step.."+"
+				end
+				if k == n then
+					s[upIndex] = "?"
+				elseif k == n-1 then
+					s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step
+				elseif k &lt;= n-2 then
+					s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step.."+"
 				end
 				return s
 			end
@@ -4800,8 +4799,8 @@
 					or Variant:find("75B") --75AB: Kilometer, ny type
 				then
 					-- Ref TRV Underbygning vedlikehold, 2.1.1 "Sikt til signaler og skilt"
-					v = math.max(40,math.min(130,DesignSpeed))
-					d = RC__round(v/3.6 * 5, 0)
+					local v = math.max(40,math.min(130,DesignSpeed))
+					local d = RC__round(v/3.6 * 5, 0)
 					return d, _info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m.")
 			
 				elseif		
