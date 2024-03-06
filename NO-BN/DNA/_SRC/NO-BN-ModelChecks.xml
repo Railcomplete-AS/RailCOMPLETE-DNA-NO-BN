@@ -32,7 +32,7 @@
         <Constructor>String NOBN_com_chkNumberOfOcpAreas()</Constructor>
         <Formula>
 			function NOBN_com_chkNumberOfOcpAreas()
-				areas = RcArea:filter(function(x) return x.RcType == rctype_OcpArea end)
+				local areas = RcArea:filter(function(x) return x.RcType == rctype_OcpArea end)
 				if (areas.Count == 0) then
 					return "0: UNFINISHED - Object does not belong to any Operation / Control area (OCP). Create an Rc-Area of type 'OCP' around the object."
 					-- NB: Just return a text, then leave it to the object's setSymbolFrame formula to define whether an '_unfinished' frame should be shown or not.
@@ -59,11 +59,11 @@
 					--Cannot do graph search without alignments:
 					return 0,{}, _info("UNFINISHED - Missing own alignment.")
 				end
-				prev = getDownObjectsWithPaths(objectType)
-				succ = getUpObjectsWithPaths(objectType)
-				all = getUnionOfCollections({prev,succ}) --all is now a collection of tuples {Object,Path}
-				n = getCollectionLength(all)
-				t = {}
+				local prev = getDownObjectsWithPaths(objectType)
+				local succ = getUpObjectsWithPaths(objectType)
+				local all = getUnionOfCollections({prev,succ}) --all is now a collection of tuples {Object,Path}
+				local n = getCollectionLength(all)
+				local t = {}
 				for i = 0,n-1 do
 					table.insert(t,all[i].Object)
 				end
@@ -91,12 +91,12 @@
 				if Alignment == nil then
 					return "UNFINISHED - Missing own alignment.",_error
 				end
-				closest = (searchDir == "down") and getDownObject(objectType) or getUpObject(objectType)
+				local closest = (searchDir == "down") and getDownObject(objectType) or getUpObject(objectType)
 				if closest == nil then
 					return "OK - No "..objectType:sub(10).." within reach in the '"..searchDir.."' direction.",_ok
 				end
-				dist = getDistance(closest)
-				t = string.format("%.3f", dist)
+				local dist = getDistance(closest)
+				local t = string.format("%.3f", dist)
 				if dist &lt; errorThreshold then 
 					return string.format("%.03f: ERROR - %s '%s' too close in '%s' direction, outside tolerance %0.3f m.",
 						dist,objectType:sub(10),RC__identify(closest),searchDir,errorThreshold),_error
@@ -197,15 +197,15 @@
 					return "UNFINISHED - Missing own alignment."
 				end
 				if RcType == rctype_OcsIsolator then
-					compatibility = { 
+					local compatibility = { 
 						{ a="Kontaktledning, avspenningsline", ta={"Kontaktledning, kjørbar", "Kontaktledning, ikke kjørbar", "Kontaktledning, avspenningsline", "-"}},
 						{ a="Kontaktledning, kjørbar", ta={"Kontaktledning, avspenningsline"}},
 						{ a="Kontaktledning, ikke kjørbar", ta={"Kontaktledning, avspenningsline"}},
 						{ a="Fixline", ta={"Fixline","-"}},
 						{ a="Bardun", ta={"Bardun","-"}}
 					}
-					v1 = Alignment.Variant
-					v2 = TargetAlignment and TargetAlignment.Variant or "-"
+					local v1 = Alignment.Variant
+					local v2 = TargetAlignment and TargetAlignment.Variant or "-"
 					for i = 1,5 do
 						if compatibility[i].a == v1 then
 							if RC__isMemberOf(compatibility[i].ta,v2) then
@@ -236,7 +236,7 @@
 		<Constructor>String NOBN_com_chkConnectionContinuity()</Constructor>
 		<Formula>
 			function NOBN_com_chkConnectionContinuity()
-				tol = 0.030 -- meter
+				local tol = 0.030 -- meter
 				if Alignment == nil then
 					return "UNFINISHED - Missing own alignment."
 				end
@@ -244,12 +244,15 @@
 					return "UNFINISHED - Missing target alignment."
 				end
 
+				local delta
+
 				if RcType == rctype_OcsIsolator then 
 					if TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 					elseif TargetAlignment and Alignment.id == TargetAlignment.id then 
 						return "-: OK - This object type accepts that target alignment is same as own alignment.",_ok
 					else
+						local p1, p2
 						if ExtendingFromEnd then 
 							p1 = Alignment.RcAlignment.EndPoint
 						else
@@ -263,7 +266,8 @@
 						delta = RC__getDistance2D(p1,p2)
 					end
 
-				elseif RcType == rctype_TrackContinuation or RcType == rctype_HighVoltageConductorContinuation or RcType == rctype_ContactWireContinuation then 
+				elseif RcType == rctype_TrackContinuation or RcType == rctype_HighVoltageConductorContinuation or RcType == rctype_ContactWireContinuation then
+					local p1, p2
 					if ExtendingFromEnd then 
 						p1 = Alignment.RcAlignment.EndPoint
 					else
@@ -280,9 +284,9 @@
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
-					p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
-					d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
-					d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
+					local p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
+					local d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
+					local d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
 					delta = d1 &lt; d2 and d1 or d2
 
 				elseif RcType == rctype_SwitchCrossing then
@@ -323,14 +327,16 @@
 		<Constructor>String NOBN_trk_chkConnectionTangentMatch()</Constructor>
 		<Formula>
 			function NOBN_trk_chkConnectionTangentMatch()
-				tol = 1.0  -- decimal degrees (Deutsche Bahn allegedly allows 1 degree in discontinuities)
-				maxNumber = 20 -- 2:(maxNumber*2) is the steepest crossing that we will classify as a crossing and not as an engineering error
+				local tol = 1.0  -- decimal degrees (Deutsche Bahn allegedly allows 1 degree in discontinuities)
+				local maxNumber = 20 -- 2:(maxNumber*2) is the steepest crossing that we will classify as a crossing and not as an engineering error
 				if Alignment == nil then
 					return "UNFINISHED - Missing own alignment."
 				end
 				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
 					return "UNFINISHED - Missing target alignment."
 				end
+
+				local delta, crossingNumber
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 					return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
@@ -340,6 +346,7 @@
 				or RcType == rctype_ContactWireContinuation 
 				or RcType == rctype_OcsIsolator
 				then
+					local t1, t2
 					if ExtendingFromEnd then 
 						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.EndDir)
 					else
@@ -364,10 +371,11 @@
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
-					p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
-					d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
-					d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
-					t1 = math.deg(math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X)) -- Can disregard Tangent.Z here, since only relative zize Y:X matters
+					local p1 = getAlignmentInfo().Point --Projection of stock rail joint onto own alignment (2D)
+					local d1 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.StartPoint)
+					local d2 = RC__getDistance2D(p1,TargetAlignment.RcAlignment.EndPoint)
+					local t1 = math.deg(math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X)) -- Can disregard Tangent.Z here, since only relative zize Y:X matters
+					local t2
 					if d1 &lt; d2 then
 						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.StartDir)
 					else
@@ -391,19 +399,19 @@
 						return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
 					end
 					-- Can disregard Tangent.Z here, since only relative size Y:X matters:
-					t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi)
-					t2 = math.deg(math.atan(getAlignmentInfo(TargetAlignment.id).Tangent.Y, getAlignmentInfo(TargetAlignment.id).Tangent.X))
+					local t1 = math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X) * (180/math.pi)
+					local t2 = math.deg(math.atan(getAlignmentInfo(TargetAlignment.id).Tangent.Y, getAlignmentInfo(TargetAlignment.id).Tangent.X))
 			
-					x_1_9 = math.deg(math.atan(1/9)) -- Single or double slip 1:9 point
-					x_1_12 = math.deg(math.atan(1/12)) -- Single or double slip 1:12 point
-					x_2_9 = 2*math.deg(math.atan(1/9)) -- Crossing between four 1:9 switches in parallel tracks
-					x_2_12 = 2*math.deg(math.atan(1/12)) -- Crossing between four 1:12 switches in parallel tracks
+					local x_1_9 = math.deg(math.atan(1/9)) -- Single or double slip 1:9 point
+					local x_1_12 = math.deg(math.atan(1/12)) -- Single or double slip 1:12 point
+					local x_2_9 = 2*math.deg(math.atan(1/9)) -- Crossing between four 1:9 switches in parallel tracks
+					local x_2_12 = 2*math.deg(math.atan(1/12)) -- Crossing between four 1:12 switches in parallel tracks
 			
 					delta = math.abs(((90 + t2 - t1) % 180) - 90) --decimal degrees difference (alignments may be counterdirected)
-					d_1_9 = delta - x_1_9
-					d_1_12 = delta - x_1_12
-					d_2_9 = delta - x_2_9
-					d_2_12 = delta - x_2_12
+					local d_1_9 = delta - x_1_9
+					local d_1_12 = delta - x_1_12
+					local d_2_9 = delta - x_2_9
+					local d_2_12 = delta - x_2_12
 					crossingNumber = 1/math.tan(math.abs(math.rad(delta))) --Add the angles between each track to the centerline between the tracks
 				
 					-- If angle is close to 1:9 or 1:12 then the crossing is probably part of an Englishman (EKW, DKW), and not a crossing:
@@ -473,6 +481,8 @@
 					return "UNFINISHED - Missing target alignment."
 				end
 
+				local delta, z1, z2
+
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 					return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
 			
@@ -497,9 +507,9 @@
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
-					p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
-					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					local p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
+					local d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					local d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
 					z1 = p1.Z 							--TopOfRail where StockRailJoint is projected onto own alignment
 					if d1 &lt; d2 then
 						z2 = TargetAlignment.RcAlignment.StartPoint.Z
@@ -541,13 +551,15 @@
 		<Constructor>NOBN_trk_chkConnectionGradientMatch()</Constructor>
 		<Formula>
 			function NOBN_trk_chkConnectionGradientMatch()
-				tol = 1.0  -- o/oo (per mille, elevation change per thousand meters running length)
+				local tol = 1.0  -- o/oo (per mille, elevation change per thousand meters running length)
 				if Alignment == nil then
 					return "UNFINISHED - Missing own alignment."
 				end
 				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
 					return "UNFINISHED - Missing target alignment."
 				end
+
+				local delta, t1, t2, g1, g2
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
@@ -559,20 +571,20 @@
 				then
 					--find gradient in o/oo from the tangent vector at the alignment's ends, where there ends are closest
 					if ExtendingFromEnd then 
-						t = Alignment.RcAlignment.EndTangent
+						local t = Alignment.RcAlignment.EndTangent
 						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 						t1 = Alignment.RcAlignment.HorizontalProfile.EndDir
 					else
-						t = Alignment.RcAlignment.StartTangent
+						local t = Alignment.RcAlignment.StartTangent
 						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 						t1 = Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir
 					end 
 					if ContinuingWithBegin then
-						t = TargetAlignment.RcAlignment.StartTangent
+						local t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 						t2 = TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir
 					else 
-						t = TargetAlignment.RcAlignment.EndTangent
+						local t = TargetAlignment.RcAlignment.EndTangent
 						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 						t2 = TargetAlignment.RcAlignment.HorizontalProfile.EndDir
 					end
@@ -583,14 +595,14 @@
 					end
 			
 					--Own alignment's gradient and direction at stock rail joint:
-					t = getAlignmentInfo().Tangent
+					local t = getAlignmentInfo().Tangent
 					g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 					t1 = math.deg(math.atan(t.Y,t.X))
 			
 					--Target alignment's gradient and direction where branch track takes off from own alignment:
-					p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
-					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					local p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
+					local d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					local d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
 					if d1 &lt; d2 then
 						t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
@@ -631,14 +643,16 @@
 		<Constructor>NOBN_trk_chkConnectionCantMatch()</Constructor>
 		<Formula>
 			function NOBN_trk_chkConnectionCantMatch()
-				tol = 0.010  -- cant (superelevation) [m]
-				msg = ""
+				local tol = 0.010  -- cant (superelevation) [m]
+				local msg = ""
 				if Alignment == nil then
 					return "UNFINISHED - Missing own alignment."
 				end
 				if RcType ~= rctype_OcsIsolator and TargetAlignment == nil then
 					return "UNFINISHED - Missing target alignment."
 				end
+
+				local delta, z1, z2
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 					return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
@@ -648,6 +662,7 @@
 				or RcType == rctype_ContactWireContinuation 
 				or RcType == rctype_OcsIsolator
 				then
+					local p1, p2
 					if ExtendingFromEnd then
 						p1 = Alignment.RcAlignment.EndPoint
 					else
@@ -665,9 +680,9 @@
 					if not getAlignmentInfo().NormalProjectionExists then
 						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
 					end
-					p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
-					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					local p1 = getAlignmentInfo().Point		--The projection of the StockRailJoint onto its own alignment
+					local d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					local d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
 					z1 = getAlignmentInfo().Cant
 					if d1 &lt; d2 then
 						z2 = getAlignmentInfo(TargetAlignment.id,TargetAlignment.RcAlignment.StartPoint).Cant		
@@ -704,14 +719,16 @@
 		<Formula>
 			function NOBN_trk_chkConnectionGradientAndCantMatch(CallingProperty)
 				-- 'CallingProperty' ["Var0" | "Var1"] identifies the intended custom property where the result is to be returned (since this function does not know otherwise who is calling)
-				tol = 0.300  -- Decimal degrees
-				msg = "" -- to be returned with _info(msg)
+				local tol = 0.300  -- Decimal degrees
+				local msg = "" -- to be returned with _info(msg)
 				if Alignment == nil then
 					return "UNFINISHED - Missing own alignment."
 				end
 				if TargetAlignment == nil then
 					return "UNFINISHED - Missing target alignment."
 				end
+
+				local delta
 
 				if RcType == rctype_SwitchCrossing then
 					if not getAlignmentInfo().NormalProjectionExists then
@@ -721,27 +738,27 @@
 						return TargetAlignment.code..": WARNING - Connection object has no projection onto its target alignment (cannot compute mileage).",_warning
 					end
 					-- Get info about the projections of the Crossing onto its own / its target alignment
-					a1 = getAlignmentInfo() --own alignment
-					a2 = getAlignmentInfo(TargetAlignment.id) --target alignment
+					local a1 = getAlignmentInfo() --own alignment
+					local a2 = getAlignmentInfo(TargetAlignment.id) --target alignment
 			
 					-- Crossing's projection onto own and target alignments [3D vector {X,Y,Z}]:
-					p1 = a1.Point						
-					p2 = a2.Point
+					local p1 = a1.Point						
+					local p2 = a2.Point
 					
 					-- Alignments' tangential, normalized, vectors at projection points [3D vector {X,Y,Z}]:
-					t1 = getAlignmentInfo().Tangent
-					t2 = getAlignmentInfo(TargetAlignment.id).Tangent
+					local t1 = getAlignmentInfo().Tangent
+					local t2 = getAlignmentInfo(TargetAlignment.id).Tangent
 					if t1 == nil or t2 == nil then
 						return "UNFINISHED - Missing elevation data, cannot compute normal vector(s)."
 					end
 			
 					-- Alignment direction phi wrt WCS East [rad]:
-					phi1 = math.atan(a1.Tangent.y,a1.Tangent.x)
-					phi2 = math.atan(a2.Tangent.y,a2.Tangent.x)
+					local phi1 = math.atan(a1.Tangent.y,a1.Tangent.x)
+					local phi2 = math.atan(a2.Tangent.y,a2.Tangent.x)
 					
 					-- JigSymbolAppearance angle rho ("rholl"...) theta (zenith angles) due to cant [rad] (roll with cant):
-					h1 = a1.Cant/1000.0
-					h2 = a2.Cant/1000.0
+					local h1 = a1.Cant/1000.0
+					local h2 = a2.Cant/1000.0
 					if RC__isNan(h1) and RC__isNan(h2) then 
 						msg = "UNFINISHED -  Missing cant data in both alignments, assuming zero cant."
 					elseif RC__isNan(h1) then 
@@ -750,11 +767,12 @@
 						msg = "UNFINISHED -  Missing cant data in crossing (target) alignment, assuming zero cant."
 					end
 					-- 'this' is a point object:
-					cg = Alignment.AlignmentSystem.CantGauge
-					tcg = TargetAlignment.AlignmentSystem.CantGauge
+					local cg = Alignment.AlignmentSystem.CantGauge
+					local tcg = TargetAlignment.AlignmentSystem.CantGauge
 					if tcg ~= cg then
 						return ": ERROR - cant gauges are not identical in the two alignments: "..string.format("%.3f / %.3f",cg,tcg),_error
-					end 
+					end
+					local rho1, rho2
 					if RC__isNan(h1) then 
 						h1 = 0.0
 						rho1 = 0.0
@@ -769,51 +787,51 @@
 					end
 					
 					-- Rotation angle theta ('thilt'...) around the Alignment Coordinate System Y-axis (perp to track direction), Z pointing straight up (pitch with gradient)
-					theta1 = math.atan(t1.z,math.sqrt(t1.x^2+t1.y^2)) 
-					theta2 = math.atan(t2.z,math.sqrt(t2.x^2+t2.y^2)) 
+					local theta1 = math.atan(t1.z,math.sqrt(t1.x^2+t1.y^2)) 
+					local theta2 = math.atan(t2.z,math.sqrt(t2.x^2+t2.y^2)) 
 			
 					--Start with normal vector (0,0,1)
-					n = {x="0.0",y="0.0",z="1.0"}
+					local n = {x="0.0",y="0.0",z="1.0"}
 			
 					--Then, apply zenith angle rho (roll) in the coordinate system where the 'x' axis points along the track direction:
-					u1 = {x="0.0",y="0.0",z="0.0"}
+					local u1 = {x="0.0",y="0.0",z="0.0"}
 					u1.x = 0.0
 					u1.y = math.cos(rho1)*n.y - math.sin(rho1)*n.z
 					u1.z = math.sin(rho1)*n.y + math.cos(rho1)*n.z
 			
-					u2 = {x="0.0",y="0.0",z="0.0"}
+					local u2 = {x="0.0",y="0.0",z="0.0"}
 					u2.x = 0.0
 					u2.y = math.cos(rho2)*n.y - math.sin(rho2)*n.z
 					u2.z = math.sin(rho2)*n.y + math.cos(rho2)*n.z
 			
 					--Then, pitch the rolled normal vector with theta (tilt) around the second axis in the same axis system (perpendicular to the track direction):
-					v1 = {x="0.0",y="0.0",z="0.0"}
+					local v1 = {x="0.0",y="0.0",z="0.0"}
 					v1.x = math.cos(theta1)*u1.x - math.sin(theta1)*u1.z
 					v1.y = u1.y
 					v1.z = math.sin(theta1)*u1.x + math.cos(theta1)*u1.z
 				
-					v2 = {x="0.0",y="0.0",z="0.0"}
+					local v2 = {x="0.0",y="0.0",z="0.0"}
 					v2.x = math.cos(theta2)*u2.x - math.sin(theta2)*u2.z
 					v2.y = u2.y
 					v2.z = math.sin(theta2)*u2.x + math.cos(theta2)*u2.z
 						
 					--Finally, express vectors in WCS coordinates, i.e rotate by phi (the forward direction in the WCS XY plane) around the WCS Z axis:
-					w1 = {x="0.0",y="0.0",z="0.0"}
+					local w1 = {x="0.0",y="0.0",z="0.0"}
 					w1.x = math.cos(phi1)*v1.x - math.sin(phi1)*v1.y
 					w1.y = math.sin(phi1)*v1.x + math.cos(phi1)*v1.y 
 					w1.z = v1.z 
 				
-					w2 = {x="0.0",y="0.0",z="0.0"}
+					local w2 = {x="0.0",y="0.0",z="0.0"}
 					w2.x = math.cos(phi2)*v2.x - math.sin(phi2)*v2.y 
 					w2.y = math.sin(phi2)*v2.x + math.cos(phi2)*v2.y 
 					w2.z = v2.z
 				
 					--Assert normalized vectors:
-					d1 = math.sqrt(w1.x^2+w1.y^2+w1.z^2)
+					local d1 = math.sqrt(w1.x^2+w1.y^2+w1.z^2)
 					if math.abs(d1-1.000) &gt; 4e-4 then
 						return RC__round(d1,3)..": ERROR - w1 not unit vector.",_error
 					end 
-					d2 = math.sqrt(w2.x^2+w2.y^2+w2.z^2)
+					local d2 = math.sqrt(w2.x^2+w2.y^2+w2.z^2)
 					if math.abs(d2-1.000) &gt; 4e-4 then
 						return RC__round(d2,3)..": ERROR - w2 not unit vector.",_error
 					end 

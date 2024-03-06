@@ -93,7 +93,7 @@
 		<LuaExpression Name="LateralOffset"><Formula>RC__getNearestSnapDistance(getPropertyValue("LateralOffset"),5)</Formula></LuaExpression>
 		<LuaExpression Name="ReferenceMileage">
 			<Formula>
-				r = getRelatedObjects(rel_Label_AppliesTo_Anything)
+				local r = getRelatedObjects(rel_Label_AppliesTo_Anything)
 				return r[0] and r[0].ReferenceMileage or getPropertyValue(ReferenceMileage)
 			</Formula>
 		</LuaExpression>
@@ -467,22 +467,22 @@
 					if alg == nil then alg = this end
 					if alg.RcAlignment == nil then return "ERROR - Bad argument ["..RC__identify(alg).."] - has no RcAlignment." end
 					local tol = 0.050 --[m]
-					ps = alg.RcAlignment.StartPoint
-					pe = alg.RcAlignment.EndPoint
-					trackGauge = alg.AlignmentSystemAlignmentGauge
+					local ps = alg.RcAlignment.StartPoint
+					local pe = alg.RcAlignment.EndPoint
+					local trackGauge = alg.AlignmentSystemAlignmentGauge
 					--Get point near midpoint of rail:
-					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
+					local pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
 					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
-					ts = getNearbyAlignments(getPoint3D(ps.X,ps.Y)):
+					local ts = getNearbyAlignments(getPoint3D(ps.X,ps.Y)):
 						filter(function (x)
 								local d = getAlignmentInfo(x.id,ps.X,ps.Y).DistanceToAlignment
 								return math.abs(math.abs(d) - trackGauge/2.0) &lt; tol
 							end)
-					n = getCollectionLength(ts)
+							local n = getCollectionLength(ts)
 					if n == 0  then
 						return "UNFINISHED - Did not find a track associated with this rail."
 					elseif n == 1  then
-						ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
+						local ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
 						return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[0].code
 					else
 						--Switch, or continuation in a crossing - more than one
@@ -490,8 +490,8 @@
 						--Note: We cannot use start+end point, since the rail's associated 
 						--track may deviate from the same track axis in both ends.
 						for i=0,n-1 do
-							ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
-							dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
+							local ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
+							local dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
 							if math.abs(ds-dm) &lt; tol then
 								--We have probably found two parallel rails with suitable gauge distance:
 								return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[i].code
@@ -875,9 +875,9 @@
 		
 		<LuaExpression Name="LateralOffset">
 			<Formula>
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				local sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("LateralOffset")
+					local d = getPropertyValue("LateralOffset")
 					if d == 0 then 
 						return -6/sc
 					else
@@ -984,7 +984,7 @@
 		
 		<LuaExpression Name="Variant">		   
 			<Formula>
-				nvv = getAlignmentInfo().NearestVerticalVertex
+				local nvv = getAlignmentInfo().NearestVerticalVertex
 				if nvv.Type == "None" then return "Gradient"
 				elseif nvv.Type == "Crest" then return nvv.Radius &lt; 4e-4 and "Gradient" or "HBP"
 				elseif nvv.Type == "Sag" then return nvv.Radius &lt; 4e-4 and "Gradient" or "LBP"
@@ -995,9 +995,9 @@
 
 		<LuaExpression Name="LateralOffset">
 			<Formula>
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				local sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("LateralOffset")
+					local d = getPropertyValue("LateralOffset")
 					if d == 0 then 
 						return -6/sc
 					else

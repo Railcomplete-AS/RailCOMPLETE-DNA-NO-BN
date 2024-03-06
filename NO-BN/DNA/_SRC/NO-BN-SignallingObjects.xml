@@ -1169,7 +1169,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>Double _JBTSA_TEL_LateralOffset()</Constructor>
 			<Formula>
 				function _JBTSA_TEL_LateralOffset()
-					cg2 = Alignment.AlignmentSystem.CantGauge/2
+					local cg2 = Alignment.AlignmentSystem.CantGauge/2
 					if SymbolMode == "Schematic" then 
 						return RightSided and 2 or -2  --TODO: Only guessing...
 					else 
@@ -1185,24 +1185,24 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>_JBTSA_TEL_code()</Constructor>
 			<Formula>
 				function _JBTSA_TEL_code()
-					first = "-"
-					shortestDistanceSoFar = math.huge
+					local first = "-"
+					local shortestDistanceSoFar = math.huge
 					for i = 0, DownSections.Count-1 do
-						obj = DownSections[i]
+						local obj = DownSections[i]
 						if obj and obj:isVisible() then
-							dist = getDistance(obj)
+							local dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
 								shortestDistanceSoFar = dist
 							end
 						end
 					end
-					second = "-"
+					local second = "-"
 					shortestDistanceSoFar = math.huge
 					for i = 0, UpSections.Count-1 do
-						obj = UpSections[i]
+						local obj = UpSections[i]
 						if obj and obj:isVisible() then 
-							dist = getDistance(obj)
+							local dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
 								shortestDistanceSoFar = dist
@@ -1372,25 +1372,25 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Formula>
 				function _JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()
 					--Assume tuning unit has same own alignment and approximate position as the axle counter it belongs to:
-					s = rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter
-					r,n = getRelatedObjects(s)
+					local s = rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
 					else
-						tol = 1.0 -- meter
-						lo = { SHORT = 2.5, MEDIUM = 3.0, LONG = 4.5, EXTRALONG = 6.0 }
-						hi = { SHORT = 3.0, MEDIUM = 4.5, LONG = 6.0, EXTRALONG = 14.0 }
-						cLen = { SHORT = "short", MEDIUM = "medium", LONG = "long", EXTRALONG = "extra long" }
+						local tol = 1.0 -- meter
+						local lo = { SHORT = 2.5, MEDIUM = 3.0, LONG = 4.5, EXTRALONG = 6.0 }
+						local hi = { SHORT = 3.0, MEDIUM = 4.5, LONG = 6.0, EXTRALONG = 14.0 }
+						local cLen = { SHORT = "short", MEDIUM = "medium", LONG = "long", EXTRALONG = "extra long" }
 						lo = lo[CableLength]
 						hi = hi[CableLength]
 						cLen = cLen[CableLength]
-						ac = r[0] --trigger modelcheck in related objects as well
-						gridLateralOffset = math.abs(LateralOffset - ac.LateralOffset)
-						gridAlongOffset = math.abs(Mileage - ac.Mileage)
+						local ac = r[0] --trigger modelcheck in related objects as well
+						local gridLateralOffset = math.abs(LateralOffset - ac.LateralOffset)
+						local gridAlongOffset = math.abs(Mileage - ac.Mileage)
 						-- Their sum is a square-grid metric:
-						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
-						msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
-						gt = string.format("%.1f=%.03f+%.03f", gridDistance, gridLateralOffset, gridAlongOffset)
+						local gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
+						local msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
+						local gt = string.format("%.1f=%.03f+%.03f", gridDistance, gridLateralOffset, gridAlongOffset)
 						if (gridDistance &lt; lo-tol) then return gt..": ERROR - Tuner is located too close to axle counter wrt minimum tolerance, change prefab cable length.",{ac},_error, _info(msg)
 						elseif (gridDistance &gt;= lo-tol and gridDistance &lt; lo) then return gt..": WARNING - Tuner is located close to axle counter but above the minimum - try increase to " ..lo..".",{ac},_warning, _info(msg)
 						elseif (gridDistance &gt;= lo and gridDistance &lt; hi) then return gt..": OK - Distance from tuner to axle counter is suitable for the "..cLen.." cable type",{ac},_ok, _info(msg)
@@ -1409,8 +1409,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_TET_code()</Constructor>
 			<Formula>
 				function _JBTSA_TET_code()
-					s = rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter
-					r,n = getRelatedObjects(s)
+					local s = rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
 					else
@@ -1496,12 +1496,13 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_TET_NamePlateText3D()</Constructor>
 			<Formula>
 				function _JBTSA_TET_NamePlateText3D()
-					s = rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter
-					r,n = getRelatedObjects(s)
+					local s = rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its axle counter sensor."
 					else
-						acc = r[0].code
+						local acc = r[0].code
+						local lo, hi
 						if acc == "-/-" then
 							return "-/-"
 						elseif acc:match("%w+/%-") then
@@ -1592,12 +1593,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 					if Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
 					local n = 0
 					local t = {}
-					prev = getDownObject(rctype_InsulatedRailJoint)
+					local prev = getDownObject(rctype_InsulatedRailJoint)
 					if prev then 
 						n = n + 1
 						table.insert(t,prev)
 					end
-					next = getUpObject(rctype_InsulatedRailJoint)
+					local next = getUpObject(rctype_InsulatedRailJoint)
 					if next then 
 						n = n + 1
 						table.insert(t,next)
@@ -1694,24 +1695,24 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>_JBTKO_SKJ_code()</Constructor>
 			<Formula>
 				function _JBTKO_SKJ_code()
-					first = "-"
-					shortestDistanceSoFar = math.huge
+					local first = "-"
+					local shortestDistanceSoFar = math.huge
 					for i = 0, DownSections.Count-1 do
-						obj = DownSections[i]
+						local obj = DownSections[i]
 						if obj and obj:isVisible() then
-							dist = getDistance(obj)
+							local dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
 								shortestDistanceSoFar = dist
 							end
 						end
 					end
-					second = "-"
+					local second = "-"
 					shortestDistanceSoFar = math.huge
 					for i = 0, UpSections.Count-1 do
-						obj = UpSections[i]
+						local obj = UpSections[i]
 						if obj and obj:isVisible() then 
-							dist = getDistance(obj)
+							local dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
 								shortestDistanceSoFar = dist
@@ -1736,7 +1737,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="UpSectionRightRailDetection"><Formula>insulatedRail == "right" or insulatedRail == "both"</Formula></LuaExpression>
 		<LuaExpression Name="DownSectionLeftRailDetection">
 			<Formula>
-				prev = getDownObject(RcType)
+				local prev = getDownObject(RcType)
 				if prev == nil then return false 
 				else
 					return prev.insulatedRail == "left" or prev.insulatedRail == "both"
@@ -1745,7 +1746,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</LuaExpression>
 		<LuaExpression Name="DownSectionRightRailDetection">
 			<Formula>
-				prev = getDownObject(RcType)
+				local prev = getDownObject(RcType)
 				if prev == nil then return false 
 				else
 					return prev.insulatedRail == "right" or prev.insulatedRail == "both"
@@ -1930,24 +1931,24 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>_JBTSA_SFS_code()</Constructor>
 			<Formula>
 				function _JBTSA_SFS_code()
-					first = "-"
-					shortestDistanceSoFar = math.huge
+					local first = "-"
+					local shortestDistanceSoFar = math.huge
 					for i = 0, DownSections.Count-1 do
-						obj = DownSections[i]
+						local obj = DownSections[i]
 						if obj and obj:isVisible() then
-							dist = getDistance(obj)
+							local dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								first = DownSections[i].code
 								shortestDistanceSoFar = dist
 							end
 						end
 					end
-					second = "-"
+					local second = "-"
 					shortestDistanceSoFar = math.huge
 					for i = 0, UpSections.Count-1 do
-						obj = UpSections[i]
+						local obj = UpSections[i]
 						if obj and obj:isVisible() then 
-							dist = getDistance(obj)
+							local dist = getDistance(obj)
 							if dist &lt; shortestDistanceSoFar then
 								second = UpSections[i].code
 								shortestDistanceSoFar = dist
@@ -2156,25 +2157,25 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Formula>
 				function _JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()
 					--Assume FTGS mushroom has same own alignment and approximate position as the FTGS feed / return it belongs to:
-					s = rel_FtgsSbond_IsFedAndReadBy_FtgsTuningUnit
-					r,n = getRelatedObjects(s)
+					local s = rel_FtgsSbond_IsFedAndReadBy_FtgsTuningUnit
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its FTGS connector."
 					else
-						tol = 1.0 -- meter
-						lo = { SHORT = 2.5, MEDIUM = 3.0, LONG = 4.5, EXTRALONG = 6.0 }
-						hi = { SHORT = 3.0, MEDIUM = 4.5, LONG = 6.0, EXTRALONG = 14.0 }
-						cLen = { SHORT = "short", MEDIUM = "medium", LONG = "long", EXTRALONG = "extra long" }
+						local tol = 1.0 -- meter
+						local lo = { SHORT = 2.5, MEDIUM = 3.0, LONG = 4.5, EXTRALONG = 6.0 }
+						local hi = { SHORT = 3.0, MEDIUM = 4.5, LONG = 6.0, EXTRALONG = 14.0 }
+						local cLen = { SHORT = "short", MEDIUM = "medium", LONG = "long", EXTRALONG = "extra long" }
 						lo = lo[CableLength]
 						hi = hi[CableLength]
 						cLen = cLen[CableLength]
-						fc = r[0] --trigger modelcheck in related objects as well
-						gridLateralOffset = math.abs(LateralOffset - fc.LateralOffset)
-						gridAlongOffset = math.abs(Mileage - fc.Mileage)
+						local fc = r[0] --trigger modelcheck in related objects as well
+						local gridLateralOffset = math.abs(LateralOffset - fc.LateralOffset)
+						local gridAlongOffset = math.abs(Mileage - fc.Mileage)
 						-- Their sum is a square-grid metric:
-						gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
-						msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
-						gt = string.format("%.1f=%.03f+%.03f", gridDistance, gridLateralOffset, gridAlongOffset)
+						local gridDistance = RC__round(gridLateralOffset + gridAlongOffset,1)
+						local msg = "Grid distance is the sum of "..RC__round(gridLateralOffset,1).." (perpendicular to alignment) and "..RC__round(gridAlongOffset,1).." (along the alignment)"
+						local gt = string.format("%.1f=%.03f+%.03f", gridDistance, gridLateralOffset, gridAlongOffset)
 						if (gridDistance &lt; lo-tol) then return gt..": ERROR - Tuner is located too close to axle counter wrt minimum tolerance, change prefab cable length.",{fc},_error, _info(msg)
 						elseif (gridDistance &gt;= lo-tol and gridDistance &lt; lo) then return gt..": WARNING - Tuner is located close to axle counter but above the minimum - try increase to " ..lo..".",{fc},_warning, _info(msg)
 						elseif (gridDistance &gt;= lo and gridDistance &lt; hi) then return gt..": OK - Distance from tuner to axle counter is suitable for the "..cLen.." cable type",{ac},_ok, _info(msg)
@@ -2193,8 +2194,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_SFT_code()</Constructor>
 			<Formula>
 				function _JBTSA_SFT_code()
-					s = rel_FtgsSbond_IsFedAndReadBy_FtgsTuningUnit
-					r,n = getRelatedObjects(s)
+					local s = rel_FtgsSbond_IsFedAndReadBy_FtgsTuningUnit
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to  its FTGS connector."
 					elseif n == 1 then
@@ -2214,7 +2215,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_SFT_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTSA_SFT_Geometry3DName()
-					t = "NO-BN-3D-SA-SFT-SPORFELT-TUNINGENHET-FTGS"
+					local t = "NO-BN-3D-SA-SFT-SPORFELT-TUNINGENHET-FTGS"
 					if Mounting == "FLAT" 
 						then return t.."-FLATT"
 					elseif Mounting == "UPRIGHT" then 
@@ -2470,8 +2471,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_SPD_code()</Constructor>
 			<Formula>
 				function _JBTSA_SPD_code()
-					s = rel_DerailerMachine_BelongsTo_Derailer
-					r,n = getRelatedObjects(s)
+					local s = rel_DerailerMachine_BelongsTo_Derailer
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Missing relation '"..s.."' to derailer object.",_warning
 					else
@@ -2624,8 +2625,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Constructor>String _JBTSA_LOK_dir()</Constructor>
 			<Formula>
 				function _JBTSA_LOK_dir()
-					s = rel_LocalControlPanel_Actuates_SwitchOrDerailer
-					r,n = getRelatedObjects(s)
+					local s = rel_LocalControlPanel_Actuates_SwitchOrDerailer
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "unknown"
 					else
