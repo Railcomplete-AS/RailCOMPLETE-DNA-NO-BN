@@ -371,26 +371,48 @@ end
 		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
 
 		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>_JBTSA_ERT_Offset3DZ()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTSA_ERT_Offset3DZ" 
+		<LuaFunction Name="_JBTSA_ERT_Offset3DZ()" 
 				ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the standard height of the board's pole.">
+				Description="Returns the height of the stop sign, placing it right under the corresponding ID sign (if it exists).">
 			<Constructor>Double _JBTSA_ERT_Offset3DZ()</Constructor>
 			<Formula>
 				function _JBTSA_ERT_Offset3DZ()
+					function getAttachedIdSign()
+						if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
 					
-					if Variant == "ERTMS E35 Stoppskilt, sidestilt med dverg" then
-						return PortalMounted and -3.2 or 1.9
-					
-					elseif Variant == "ERTMS E35 Stoppskilt, sidestilt med lav dverg" then
-						return PortalMounted and -3.0 or 0.2
+						for i = 0, AttachedElements.Count - 1 do
+							if AttachedElements[i].RcType == rctype_SignEtcsId then
+								if (AttachedElements[i].Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" 
+								or AttachedElements[i].Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" 
+								or AttachedElements[i].Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" 
+								or AttachedElements[i].Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit") then
+									return AttachedElements[i]
+								end
+							end
+						end
 						
-					elseif Variant == "ERTMS dverg" then
-						return PortalMounted and -2.6 or 1.3
-
-					else
-						return PortalMounted and -3.0 or 3.3
+						return nil
 					end
+
+					local idSign = getAttachedIdSign()
+					if idSign == nil then return 2.88 end -- Corresponds to idSignZOffset = 2.5 and idSignHeight = 0.325.
+
+					local idSignZOffset = idSign.Geometry3D_0.Offset.Z
+
+					local idSignHeight = 0.325 -- Default height
+					if idSign.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then idSignHeight = 0.325
+					elseif idSign.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then idSignHeight = 0.325
+					elseif idSign.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then idSignHeight = 0.400
+					elseif idSign.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then idSignHeight = 0.400 end
+
+					local stopSignHeight = 0.400
+					local minimumGap = 0.010
+
+					local nominalZOffset = idSignZOffset + idSignHeight / 2+ stopSignHeight / 2 + minimumGap 
+					local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset + 0.005)) -- Round up to nearest cm.
+
+					return roundedZOffset
 				end
 			</Formula>
 		</LuaFunction>
