@@ -451,7 +451,7 @@
 					if not RC__isMemberOf(Types, type) then 
 						return 0,_warning, _info("Bad wire type ["..type.."]. ")
 					end
-					t = {
+					local t = {
 						["axcesq-al-36 kv 1x400/35"] = {material= "aluminium", insulation=36 , cross_section=400, strands=35 },
 						["axlj - al - 24 kv - 1x240/25"] = {material= "aluminium", insulation=24, cross_section=240, strands=25 },
 						["bsfi - cu - 1 kv - 3x10"] = {material= "kobber", insulation= 1},
@@ -908,7 +908,7 @@
 						<!-- w = getClosestAlignments(RcType) -->
 						<!-- wColors = {"Sort", "Blå", "Lilla", "Rød", "Brun", "Oransje", "Grønn"} -->
 						<!-- wUsed = {} -->
-						<!-- for i = 0,w.count do -->
+						<!-- for i = 0,w.Count do -->
 							<!-- if RC_isw[0].Wire2dColor -->
 							<!-- etc -->
 						<!-- end -->
@@ -997,7 +997,7 @@
 					if Variant == "Kontaktledning, kjørbar" or Variant == "Kontaktledning, ikke kjørbar" then
 						return "NO-BN-SWEEP-EH-KTL-KONTAKTTRÅD-"..ContactWireMaterial:gsub(" ","-")
 					elseif Variant == "Kontaktledning, avspenningsline" then
-						t = "NO-BN-SWEEP-FE-WIR-WIRE-"
+						local t = "NO-BN-SWEEP-FE-WIR-WIRE-"
 						if     ContactWireMaterial:match("50/175 w/bitumen") then return t.."SVART-DIAMETER-013"
 						elseif ContactWireMaterial:match("60/222 w/bitumen") then return t.."SVART-DIAMETER-014"
 						elseif ContactWireMaterial:match("16/133") then return t.."-006"
@@ -1022,9 +1022,9 @@
 			<Constructor>String _JBTEH_KTL_chkRelations()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_chkRelations()
-					rWtb,nWtb = getRelatedObjects(rel_ContactWireOrMidpointAnchoringLineOrHvConductor_IsTensionedBy_Wtb)
-					rCnt,nCnt = getRelatedObjects(rel_ContactWire_IsHeldBy_Cantilever)
-					rMap,nMap = getRelatedObjects(rel_ContactWire_IsLockedBy_MidpointAnchor)
+					local _rWtb,nWtb = getRelatedObjects(rel_ContactWireOrMidpointAnchoringLineOrHvConductor_IsTensionedBy_Wtb)
+					local _rCnt,nCnt = getRelatedObjects(rel_ContactWire_IsHeldBy_Cantilever)
+					local _rMap,nMap = getRelatedObjects(rel_ContactWire_IsLockedBy_MidpointAnchor)
 					
 					--Tensioning wire end of CW:
 					if Variant == "Kontaktledning, avspenningsline" then
@@ -1087,8 +1087,8 @@
 			<Constructor>_JBTEH_KTL_getOtherObjectsToModelcheck()</Constructor>
 			<Formula>
 				function _JBTEH_KTL_getOtherObjectsToModelcheck()
-					t = getNearbyPointObjects2D(0.10)
-					n = t.Count
+					local t = getNearbyPointObjects2D(0.10)
+					local n = t.Count
 					return n,t, _info(n.." objects close to this contact wire have been modelchecked.")
 				end
 			</Formula>
@@ -1203,12 +1203,12 @@
 			<Constructor>String _JBTEH_FIL_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIL_code()
-					sMal = rel_MidpointAnchoringLine_Anchors_MidpointAnchor
-					rMal,nMal = getRelatedObjects(sMal)
+					local sMal = rel_MidpointAnchoringLine_Anchors_MidpointAnchor
+					local rMal,nMal = getRelatedObjects(sMal)
 					if nMal == 0 then
 						return "UNFINISHED - Relate contact wire midpoint anchoring line with '"..sMal.."' to its midpoint anchor object."
 					elseif nMal == 1 then
-						mal = rMal[0]
+						local mal = rMal[0]
 						return mal.code, _info("Midpoint anchoring line's code was deduced from its midpoint anchor.")
 					else
 						return _error,"ERROR - Midpoint anchoring line shall relate to just one contact wire midpoint with '"..sMal.."' ("..nMal.." were found)."
@@ -1272,12 +1272,12 @@
 				function _JBTEH_BAR_code()
 					local t
 					--TODO: Take into consideration more than one anchoring device to same OCS pole, add a unique suffix number to the code for all the guywires present.
-					sAnp = rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole
-					rAnp,nAnp = getRelatedObjects(sAnp)
+					local sAnp = rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole
+					local rAnp,nAnp = getRelatedObjects(sAnp)
 					if nAnp == 0 then
 						return _unfinished,"UNFINISHED - Relate to its anchoring device on OCS pole."
 					else
-						anp = rAnp[0]
+						local anp = rAnp[0]
 
 						if anp.Variant == "Forankring på mast for avspenning med bardun" then
 							--guywire to counteract the WTB's forces on OCS pole:
@@ -1285,7 +1285,7 @@
 
 						elseif anp.Variant == "Forankring på mast for kurvebardun" then
 							--One or two guywires to compensate for large lateral forces on OCS pole, e.g., due to track curvature, AT wires changing side-of-track, or other issue:
-							rBar,nBar = getRelatedObjects(rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb,anp)
+							local rBar,nBar = getRelatedObjects(rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb,anp)
 							if nBar == 1 then
 								--The anchor device has at least one guywire (this):
 								t = "-KB"
@@ -1309,8 +1309,8 @@
 							return _error,"ERROR - Unrecognized Variant '"..Variant.."'."
 						end
 
-						sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
-						rPol,nPol = getRelatedObjects(sPol,rAnp[0])
+						local sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
+						local rPol,nPol = getRelatedObjects(sPol,rAnp[0])
 						if nPol == 0 then
 							return _unfinished,"UNFINISHED - The related anchoring device has no relation to a its OCS pole, cannot deduce guywire's code."
 						else
@@ -1405,9 +1405,9 @@
 			<Constructor>String _JBTEH_BAR_chkRelations()</Constructor>
 			<Formula>
 				function _JBTEH_BAR_chkRelations()
-					rAnp,nAnp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
-					rAnt,nAnt = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_TunnelFootplate)
-					rAng,nAng = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)
+					local _rAnp,nAnp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
+					local _rAnt,nAnt = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_TunnelFootplate)
+					local _rAng,nAng = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)
 				
 					if (nAnp + nAnt) == 1 and nAng == 1 then
 						return _ok,"OK - Guywire alignment is related to an anchoring device on OCS pole or to a tunnel wall anchor, and to its footplate."
@@ -1500,13 +1500,13 @@
 			<Constructor>String _JBTEH_STR_code()</Constructor>
 			<Formula>
 				function _JBTEH_STR_code()
-					sAnp = rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole
-					rAnp,nAnp = getRelatedObjects(sAnp)
+					local sAnp = rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole
+					local rAnp,nAnp = getRelatedObjects(sAnp)
 					if nAnp == 0 then
 						return _unfinished,"UNFINISHED - A related anchoring device on OCS pole is missing."
 					else
-						sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
-						rPol,nPol = getRelatedObjects(sPol,rAnp[0])
+						local sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
+						local rPol,nPol = getRelatedObjects(sPol,rAnp[0])
 						if nPol == 0 then
 							return _unfinished,"UNFINISHED - The related anchoring device has no relation to a its OCS pole, cannot deduce spanner's code."
 						else
@@ -1545,9 +1545,9 @@
 			<Constructor>String _JBTEH_STR_chkRelations()</Constructor>
 			<Formula>
 				function _JBTEH_STR_chkRelations()
-					rAnp,nAnp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
-					rAnt,nAnt = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_TunnelFootplate)
-					rAns,nAns = getRelatedObjects(rel_Spanner_IsAnchoredBy_SpannerFootplate)
+					local _rAnp,nAnp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
+					local _rAnt,nAnt = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_TunnelFootplate)
+					local _rAns,nAns = getRelatedObjects(rel_Spanner_IsAnchoredBy_SpannerFootplate)
 				
 					if (nAnp + nAnt) == 1 and nAns == 1 then
 						return _ok,"OK - Spanner alignment is related to an anchoring device on OCS pole or to a tunnel wall anchor, and to its footplate."
@@ -1634,7 +1634,7 @@
 					if nAng == 0 then 
 						return _unfinished,"UNFINISHED - Relate guywire to its own alignment '"..Alignment.code.."'."
 					else
-						gwi = rAng[0]
+						local gwi = rAng[0]
 						--(No need to test for more than 1 related object, this is checked by the SymbolFrame code against the relations' cardinalities).
 						if gwi.id ~= Alignment.id then
 							return _error,"ERROR - Anchoring device's own alignment '"..Alignment.code.."' differs from related alignment '"..gwi.code.."'."
@@ -1697,7 +1697,6 @@
 			<Formula>
 				function _JBTEH_BAF_Geometry3DName()
 					--Look for pole near start of associated wire (alignment).
-					tol = 0.5 --[m]
 					local t
 					if Variant:match("Bardun fotplate, enkel") then 
 						t = "NO-BN-3D-EH-BAF-BARDUN-FOTPLATE-191x374xM36"
@@ -1823,7 +1822,7 @@
 					if nAns == 0 then 
 						return _unfinished,"UNFINISHED - Relate spanner to its own alignment '"..Alignment.code.."'."
 					else
-						spn = rAns[0]
+						local spn = rAns[0]
 						--(No need to test for more than 1 related object, this is checked by the SymbolFrame code against the relations' cardinalities).
 						if spn.id ~= Alignment.id then
 							return _error,"ERROR - Anchoring device's own alignment '"..Alignment.code.."' differs from related alignment '"..spn.code.."'."
@@ -1870,7 +1869,7 @@
 			<Constructor>Double _JBTEH_STF_VerticalOffset()</Constructor>
 			<Formula>
 				function _JBTEH_STF_VerticalOffset()
-					tol = 0.5 --[m]
+					local tol = 0.5 --[m]
 					local Pe = Alignment.RcAlignment.EndPoint
 					local f = getNearbyPointObjects2D(tol,rctype_OcsPoleFoundation,Pe)
 					local e --absolute elevation
@@ -1895,7 +1894,7 @@
 			<Formula>
 				function _JBTEH_STF_Geometry3DName()
 					--Look for pole near start of associated wire alignment.
-					tol = 0.5 --[m]
+					local tol = 0.5 --[m]
 					local t
 					if Variant == "Strever fotplate (uten streveren)" then
 						t = "NO-BN-3D-EH-STF-STREVER-FOTPLATE-525x350-191x374xM36"
@@ -2166,10 +2165,10 @@
 			<Constructor>String _JBTEH_FPM_code()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_code()
-					sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
-					sObj = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
-					rPol,nPol = getRelatedObjects(sPol)
-					rObj,nObj = getRelatedObjects(sObj)
+					local sPol = rel_AnchoringToOcsPole_IsInstalledOn_OcsPole
+					local sObj = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
+					local rPol,nPol = getRelatedObjects(sPol)
+					local rObj,nObj = getRelatedObjects(sObj)
 					
 					if nPol == 0 then 
 						return _unfinished,"UNFINISHED - Relate anchoring device to its OCS pole with "..sPol.."."
@@ -2206,20 +2205,23 @@
 			<Formula>
 				function _JBTEH_FPM_dir()
 					local s = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
-					tmp,nTmp = getRelatedObjects(s)
-					rWtb = tmp:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
-					nWtb = getCollectionLength(rWtb)
+					local tmp,nTmp = getRelatedObjects(s)
+					local rWtb = tmp:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
+					local nWtb = getCollectionLength(rWtb)
 					if nTmp == 0 then
 						return _unfinished,getPropertyValue("dir"), _info("No related WTB, guywire or spanner - cannot deduce anchor device's direction.")
 					end
+
+					local alg
 					if nWtb == 1 then
 						alg = rWtb[0].Alignment
 					else
 						--no wtb, just spanner / guywire alignment as first item:
 						alg = tmp[0]
 					end
-					wireDir = math.deg(math.atan(alg.RcAlignment.StartTangent.Y,alg.RcAlignment.StartTangent.X))
-					trackDir = math.deg(math.atan(getAlignmentInfo().Tangent.Y,getAlignmentInfo().Tangent.X))
+					local wireDir = math.deg(math.atan(alg.RcAlignment.StartTangent.Y,alg.RcAlignment.StartTangent.X))
+					local trackDir = math.deg(math.atan(getAlignmentInfo().Tangent.Y,getAlignmentInfo().Tangent.X))
+					local angDiff
 					if RC__getDistance2D(alg.RcAlignment.StartPoint) &lt; RC__getDistance2D(alg.RcAlignment.EndPoint) then
 						angDiff = (360 + wireDir - trackDir) % 360
 					else
@@ -2248,7 +2250,7 @@
 					if n == 0 then
 						return 0,_unfinished, _info("UNFINISHED - relate with '"..s.."'.")
 					elseif n == 1 then 
-						pol = r[0]
+						local pol = r[0]
 						return this.VerticalOffset - pol.VerticalOffset,
 							_info("Anchoring device's mounting height on OCS pole "..RC__identify(pol))
 					else
@@ -2267,33 +2269,35 @@
 			<Constructor>Double _JBTEH_FPM_VerticalOffset()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_VerticalOffset()
-					defaultGuywireHeight = 6.50 --TODO: Check value
-					defaultSpannerHeight = 4.80 --TODO: Check value
+					local defaultGuywireHeight = 6.50 --TODO: Check value
+					local defaultSpannerHeight = 4.80 --TODO: Check value
 					
-					s = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
-					r,n = getRelatedObjects(s)
+					local s = rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb
+					local r,_n = getRelatedObjects(s)
 
 					if Variant == "Forankring på mast for avspenning med bardun" or Variant == "Forankring på mast for avspenning uten bardun" then
-						rWtb = r:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
-						nWtb = getCollectionLength(rWtb)
+						local rWtb = r:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+						local nWtb = getCollectionLength(rWtb)
 						if nWtb == 0 then
 							return 0,_warning, _info("WARNING - No related WTB")
 						end
 
-						wtb = rWtb[0]
-						sWir = rel_Wtb_Tensions_ContactWireOrMidpointAnchoringLineOrHvConductor
-						rWir,nWir = getRelatedObjects(sWir,wtb)
+						local wtb = rWtb[0]
+						local sWir = rel_Wtb_Tensions_ContactWireOrMidpointAnchoringLineOrHvConductor
+						local rWir,nWir = getRelatedObjects(sWir,wtb)
 						if nWir == 0 then
 							return 0,_warning, _info("WARNING - Related WTB has no related wire")
 						end
 
-						wir = rWir[0]
+						local wir = rWir[0]
 						if wir.RcType == rctype_ContactWire then
 							--Ref Bane NOR Elkraftportalen, EH-707469 (S20) or EH-707487 (S25). 
 							--Standard for weighted WTB: 0.235m  = 0.150 + 0.085 (from anchoring device's mounting on 
 							--the OCS pole down to the center of the pulley wheel, minus 0.085 radius of small pulley wheel).
 							--Note: The standard pulley wheel has 3:1 gearing. Other gearing numbers are allowed at Bane NOR,
 							--but only subject to derogation acceptance.
+
+							local offset = 0.0
 							if wtb.Variant:match("Lodd") then
 								offset = 0.235
 							elseif wtb.Variant:match("Fjær") then
@@ -2305,35 +2309,35 @@
 							end
 							
 							--Find associated neighbor cantilever:
-							sCnt1 = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
-							sCnt2 = rel_CantileverOrWtb_HasNext_CantileverOrWtb
-							rCnt1,nCnt1 = getRelatedObjects(sCnt1,wtb)
-							rCnt2,nCnt2 = getRelatedObjects(sCnt2,wtb)
+							local sCnt1 = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
+							local sCnt2 = rel_CantileverOrWtb_HasNext_CantileverOrWtb
+							local rCnt1,nCnt1 = getRelatedObjects(sCnt1,wtb)
+							local rCnt2,nCnt2 = getRelatedObjects(sCnt2,wtb)
 							if nCnt1 + nCnt2 == 0 then
 								return 0,_warning, _info("WARNING - WTB has no neighbour cantilever - cannot deduce anchoring device's height.")
 							else
-								cnt = getUnionOfCollections({rCnt1,rCnt2})[0] --must be one of them
-								wcvo = cnt.WireClampVerticalOffset
+								local cnt = getUnionOfCollections({rCnt1,rCnt2})[0] --must be one of them
+								local wcvo = cnt.WireClampVerticalOffset
 								return RC__round(wcvo + offset,2),
 									_info("Anchoring device's height deduced from contact wire clamp's relative elevation "..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
 							end
 
 						elseif wir.RcType == rctype_MidpointAnchorLine then
 							--Locate the cantilever at the midopint anchor:
-							mal = rWir[0]
-							sMap = rel_MidpointAnchoringLine_Anchors_MidpointAnchor
-							rMap,nMap = getRelatedObjects(sMap,mal)
+							local mal = rWir[0]
+							local sMap = rel_MidpointAnchoringLine_Anchors_MidpointAnchor
+							local rMap,nMap = getRelatedObjects(sMap,mal)
 							if nMap == 0 then
 								return 0,_warning, _info("WARNING - Related WTB tensions a midpoint anchor line which has no midpoint anchor (FIXPUNKT)")
 							else
-								map = rMap[0]
-								sCnt = rel_Cantilever_IsLockedBy_MidpointAnchor
-								rCnt,nCnt = getRelatedObjects(sCnt,map)
+								local map = rMap[0]
+								local sCnt = rel_Cantilever_IsLockedBy_MidpointAnchor
+								local rCnt,nCnt = getRelatedObjects(sCnt,map)
 								if nCnt == 0 then
 									return 0,_warning, _info("WARNING - Related WTB tensions a midpoint anchor line which at its midpoint anchor has no related cantilever")
 								else
-									cnt = rCnt[0]
-									wcvo = cnt.WireClampVerticalOffset
+									local cnt = rCnt[0]
+									local wcvo = cnt.WireClampVerticalOffset
 									return RC__round(wcvo,2),
 										_info("Anchoring device's height deduced from its midpoint's cantilever's contact wire clamp's relative elevation "
 										..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
@@ -2394,15 +2398,15 @@
 			<Constructor>String _JBTEH_FPM_chkRelations()</Constructor>
 			<Formula>
 				function _JBTEH_FPM_chkRelations()
-					rCow,nCow = getRelatedObjects(rel_AnchoringToOcsPole_IsInstalledOn_OcsPole)
+					local _rCow,nCow = getRelatedObjects(rel_AnchoringToOcsPole_IsInstalledOn_OcsPole)
 				
-					tmp = getRelatedObjects(rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb)
-					rWtb = tmp:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
-					nWtb = getCollectionLength(rWtb)
-					rGwi = tmp:filter(function (x) return x.RcType:match("JBTEH_BAR") end)
-					nGwi = getCollectionLength(rGwi)
-					rSpn = tmp:filter(function (x) return x.RcType:match("JBTEH_STR") end)
-					nSpn = getCollectionLength(rSpn)
+					local tmp = getRelatedObjects(rel_AnchoringToOcsPole_Anchors_GuyWireOrSpannerOrWtb)
+					local rWtb = tmp:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+					local nWtb = getCollectionLength(rWtb)
+					local rGwi = tmp:filter(function (x) return x.RcType:match("JBTEH_BAR") end)
+					local nGwi = getCollectionLength(rGwi)
+					local rSpn = tmp:filter(function (x) return x.RcType:match("JBTEH_STR") end)
+					local nSpn = getCollectionLength(rSpn)
 				
 					if nCow == 0 then
 						return _unfinished,"UNFINISHED - Anchoring device on OCS pole must relate to its OCS upright pole or suspension pole."
@@ -2652,7 +2656,7 @@
 			<Formula>
 				function _JBTEH_AEH_Mileage()
 					--Assume it runs from 0 (at pole or continuation) to L (at pole or continuation)
-					ai = getAlignmentInfo() --Own alignment is a contact wire object type
+					local ai = getAlignmentInfo() --Own alignment is a contact wire object type
 					if RC__isNan(ai.RelativePosition) then
 						return nil, _info("Position not found - move object inside the extent of its own alignment.")
 					end
@@ -2774,7 +2778,7 @@
 					if OcsSystem == "Unknown" then
 						return "?/? kN", _info("OcsSystem has not been selected")
 					end
-					tf = NOBN_ocs_getWireTensioningDataTable(OcsSystem)
+					local tf = NOBN_ocs_getWireTensioningDataTable(OcsSystem)
 					if Variant == "Fastavspenning, enkel" then
 						 --Assume that this is an anchoring wire, for the midpoint anchor (but it MIGHT be a CW or MW in a narrow tunnel):
 						return tf.awtf.." kN (fix)", _info("Midpoint anchor wire")
@@ -2802,7 +2806,7 @@
 			<Constructor>String _JBTEH_AEH_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_Geometry3DName()
-					t = "NO-BN-3D-EH-AEH-AVSPENNING"
+					local t = "NO-BN-3D-EH-AEH-AVSPENNING"
 					if Variant:match("Fjær") then
 						t = t.."-FJÆR"
 					elseif Variant:match("Fast") then
@@ -2831,10 +2835,10 @@
 			<Constructor>String _JBTEH_AEH_chkCantileverSequence()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_chkCantileverSequence()
-					sPrev = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
-					rPrev,nPrev = getRelatedObjects(sPrev)
-					sNext = rel_CantileverOrWtb_HasNext_CantileverOrWtb
-					rNext,nNext = getRelatedObjects(sNext)
+					local sPrev = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
+					local rPrev,nPrev = getRelatedObjects(sPrev)
+					local sNext = rel_CantileverOrWtb_HasNext_CantileverOrWtb
+					local rNext,nNext = getRelatedObjects(sNext)
 					if nPrev == 0 and nNext == 0 then
 						return _unfinished,"UNFINISHED - Relate to preceding / following cantilever"
 					elseif nPrev == 1 and nNext == 0 then
@@ -2858,9 +2862,9 @@
 			<Constructor>String _JBTEH_AEH_chkRelations()</Constructor>
 			<Formula>
 				function _JBTEH_AEH_chkRelations()
-					r1,n1 = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_TunnelFootplate)
-					r2,n2 = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
-					sum = n1 + n2
+					local _r1,n1 = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_TunnelFootplate)
+					local _r2,n2 = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
+					local sum = n1 + n2
 					if sum == 1 then
 						return _ok,"OK - Wire Tension Balancer shall relate to an anchoring device on OCS pole (JBTEH_FPM) or to a tunnel wall/ceiling (JBTEH_TUF)."
 					else
@@ -2987,20 +2991,19 @@
 			<Constructor>String _JBTEH_FIX_code()</Constructor>
 			<Formula>
 				function _JBTEH_FIX_code()
-					sCnt = rel_MidpointAnchor_Locks_Cantilever
-					rCnt,nCnt = getRelatedObjects(sCnt)
+					local sCnt = rel_MidpointAnchor_Locks_Cantilever
+					local _rCnt,nCnt = getRelatedObjects(sCnt)
 					if nCnt == 0 then
 						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
 					elseif nCnt == 1 then
-						cnt = rCnt[0]
-						sCow = rel_MidpointAnchor_Locks_ContactWire
-						rCow,nCow = getRelatedObjects(sCow)
+						local sCow = rel_MidpointAnchor_Locks_ContactWire
+						local rCow,nCow = getRelatedObjects(sCow)
 						if nCow == 0 then
 							return _unfinished,"UNFINISHED - Relate midpoint anchor to its contact wire with '" ..sCow.."'."
 						elseif nCow == 1 then
-							cow = rCow[0]
+							local cow = rCow[0]
 							--Filter out the suffix letter 'a'..'e', if present:
-							tmp = cow.code:match("(.-)[abcde]$") and cow.code:sub(1,-2) or cow.code
+							local tmp = cow.code:match("(.-)[abcde]$") and cow.code:sub(1,-2) or cow.code
 							return tmp, _info("Code was deduced from related contact wire "..cow.code..".")
 						else
 							return _error,"ERROR - Midpoint anchor is related to more than one visible contact wire."
@@ -3031,8 +3034,8 @@
 			<Constructor>String _JBTEH_FIX_ReferenceMileage()</Constructor>
 			<Formula>
 				function _JBTEH_FIX_ReferenceMileage()
-					s = rel_MidpointAnchor_Locks_Cantilever
-					r,n = getRelatedObjects(s)
+					local s = rel_MidpointAnchor_Locks_Cantilever
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("ReferenceMileage"),_warning, _info("UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'.")
 					elseif n == 1 then
@@ -3051,12 +3054,12 @@
 			<Constructor>String _JBTEH_FIX_LateralOffset()</Constructor>
 			<Formula>
 				function _JBTEH_FIX_LateralOffset()
-					sCnt = rel_MidpointAnchor_Locks_Cantilever
-					rCnt,nCnt = getRelatedObjects(sCnt)
+					local sCnt = rel_MidpointAnchor_Locks_Cantilever
+					local rCnt,nCnt = getRelatedObjects(sCnt)
 					if nCnt == 0 then
 						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
 					elseif nCnt == 1 then
-						cnt = rCnt[0]
+						local cnt = rCnt[0]
 						return cnt.Stagger, _info("LateralOffset was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
 					else
 						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
@@ -3179,7 +3182,7 @@
 			<Constructor>Double _JBTEH_LEF_mileage()</Constructor>
 			<Formula>
 				function _JBTEH_LEF_mileage()
-					ai = getAlignmentInfo()
+					local ai = getAlignmentInfo()
 					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
 					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalGeometry.Length - ai.RelativePosition)
 							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
@@ -3298,7 +3301,7 @@
 			<Constructor>Double _JBTEH_KTF_mileage()</Constructor>
 			<Formula>
 				function _JBTEH_KTF_mileage()
-					ai = getAlignmentInfo()
+					local ai = getAlignmentInfo()
 					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found.") end
 					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalGeometry.Length - ai.RelativePosition)
 							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
@@ -3323,10 +3326,10 @@
 			<Constructor>ObjRef _JBTEH_KTF_TargetAlignment()</Constructor>
 			<Formula>
 				function _JBTEH_KTF_TargetAlignment()
-					tol = 1 --[m]
-					ta = getNearbyAlignments(rctype_ContactWire):filter(function (x) return x.id ~= Alignment.id end)[0]
-					d1 = RC__getDistance2D(this,ta.RcAlignment.StartPoint)
-					d2 = RC__getDistance2D(this,ta.RcAlignment.EndPoint)
+					local tol = 1 --[m]
+					local ta = getNearbyAlignments(rctype_ContactWire):filter(function (x) return x.id ~= Alignment.id end)[0]
+					local d1 = RC__getDistance2D(this,ta.RcAlignment.StartPoint)
+					local d2 = RC__getDistance2D(this,ta.RcAlignment.EndPoint)
 					if math.min(d1,d2) &lt; tol then
 						return ta, _info("Target alignment is the closest alignment with a start or end point within "..tol.." m from this contact wire continuation.")
 					else

@@ -93,7 +93,7 @@
 		<LuaExpression Name="LateralOffset"><Formula>RC__getNearestSnapDistance(getPropertyValue("LateralOffset"),5)</Formula></LuaExpression>
 		<LuaExpression Name="ReferenceMileage">
 			<Formula>
-				r = getRelatedObjects(rel_Label_AppliesTo_Anything)
+				local r = getRelatedObjects(rel_Label_AppliesTo_Anything)
 				return r[0] and r[0].ReferenceMileage or getPropertyValue(ReferenceMileage)
 			</Formula>
 		</LuaExpression>
@@ -467,22 +467,22 @@
 					if alg == nil then alg = this end
 					if alg.RcAlignment == nil then return "ERROR - Bad argument ["..RC__identify(alg).."] - has no RcAlignment." end
 					local tol = 0.050 --[m]
-					ps = alg.RcAlignment.StartPoint
-					pe = alg.RcAlignment.EndPoint
-					trackGauge = alg.AlignmentSystemAlignmentGauge
+					local ps = alg.RcAlignment.StartPoint
+					local pe = alg.RcAlignment.EndPoint
+					local trackGauge = alg.AlignmentSystemAlignmentGauge
 					--Get point near midpoint of rail:
-					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
+					local pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
 					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
-					ts = getNearbyAlignments(getPoint3D(ps.X,ps.Y)):
+					local ts = getNearbyAlignments(getPoint3D(ps.X,ps.Y)):
 						filter(function (x)
 								local d = getAlignmentInfo(x.id,ps.X,ps.Y).DistanceToAlignment
 								return math.abs(math.abs(d) - trackGauge/2.0) &lt; tol
 							end)
-					n = getCollectionLength(ts)
+							local n = getCollectionLength(ts)
 					if n == 0  then
 						return "UNFINISHED - Did not find a track associated with this rail."
 					elseif n == 1  then
-						ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
+						local ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
 						return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[0].code
 					else
 						--Switch, or continuation in a crossing - more than one
@@ -490,8 +490,8 @@
 						--Note: We cannot use start+end point, since the rail's associated 
 						--track may deviate from the same track axis in both ends.
 						for i=0,n-1 do
-							ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
-							dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
+							local ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
+							local dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
 							if math.abs(ds-dm) &lt; tol then
 								--We have probably found two parallel rails with suitable gauge distance:
 								return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[i].code
@@ -565,11 +565,11 @@
 			<Constructor>String _JBTKO_HOT_Variant()</Constructor>
 			<Formula>
 				function _JBTKO_HOT_Variant()
-					ai = getAlignmentInfo()
-					nearest = ai.NearestHorizontalVertex
-					nearestCant = ai.NearestCantVertex
+					local ai = getAlignmentInfo()
+					local nearest = ai.NearestHorizontalVertex
+					local nearestCant = ai.NearestCantVertex
 					-- insert "RE,RB" if cant station is closest
-					vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+					local vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 					if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
 										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 						if math.abs(nearestCant.GradientIn) &gt; 0 and math.abs(nearestCant.GradientOut) &gt; 0 then
@@ -608,11 +608,11 @@
 			<Constructor>Double _JBTKO_HOT_Mileage()</Constructor>
 			<Formula>
 			function _JBTKO_HOT_Mileage()
-				ai = getAlignmentInfo()
-				nearest = ai.NearestHorizontalVertex
+				local ai = getAlignmentInfo()
+				local nearest = ai.NearestHorizontalVertex
 				-- insert "RE,RB" if cant station is closest
-				nearestCant = ai.NearestCantVertex
-				vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+				local nearestCant = ai.NearestCantVertex
+				local vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 				if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
 										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 					return nearestCant.Mileage
@@ -691,13 +691,13 @@
 			<Constructor>String _JBTKO_VET_Variant()</Constructor>
 			<Formula>
 				function _JBTKO_VET_Variant()
-					ai = getAlignmentInfo()
-					nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+					local ai = getAlignmentInfo()
+					local nearestDelimiter = ai.NearestVerticalSegmentDelimiter
 					if nearestDelimiter ~= nil then
 						if nearestDelimiter.Type == "CurveStart" then return "SE1" end
 						if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
 					end
-					nvv = ai.NearestVerticalVertex
+					local nvv = ai.NearestVerticalVertex
 					if nvv == nil then return "_" end
 					if nvv.Type == "Crest" then return "HBP" end
 					if nvv.Type == "Sag" then return "LBP" end
@@ -714,25 +714,20 @@
 			<Constructor>String _JBTKO_VET_PviInfo()</Constructor>
 		<Formula>
 			function _JBTKO_VET_PviInfo()
-				str = ""
-				tNil			= "?"
-				tR				= "R"
-				tAxisStartEnd	= "(Linje start/slutt)"
-				tMasl			= " moh."	--meters above [mean] sea level
+				local str = ""
+				local ai = getAlignmentInfo()					
+				local nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+				local nearestVertex = ai.NearestVerticalVertex
 					
-				ai = getAlignmentInfo()					
-				nearestDelimiter = ai.NearestVerticalSegmentDelimiter
-				nearestVertex = ai.NearestVerticalVertex
-					
-				if nearestVertex == nil then return tNil end
+				if nearestVertex == nil then return "?" end
 				if nearestDelimiter ~= nil and nearestDelimiter.Type ~= "Pvi" then
 					if nearestDelimiter.Type == "CurveStart" then str = "SE1" end
 					if nearestDelimiter.Type == "CurveEnd" then str = "SE2" end
 				else
-					if nearestVertex.Radius &lt; 0 then str = tR..string.format("%.03f", nearestVertex.Radius) end
-					if nearestVertex.Type == "None" then str = tAxisStartEnd end
+					if nearestVertex.Radius &lt; 0 then str = "R"..string.format("%.03f", nearestVertex.Radius) end
+					if nearestVertex.Type == "None" then str = "(Linje start/slutt)" end
 				end
-				return str.."\\P".."H="..string.format("%.3f", nearestDelimiter.Elevation)..tMasl
+				return str.."\\P".."H="..string.format("%.3f", nearestDelimiter.Elevation).." moh."	--meters above [mean] sea level
 			end
 		</Formula>
 		</LuaFunction>
@@ -743,7 +738,7 @@
 			<Constructor>Double _JBTKO_VET_Mileage()</Constructor>
 			<Formula>
 				function _JBTKO_VET_Mileage()
-					nearestDelimiter = getAlignmentInfo().NearestVerticalSegmentDelimiter
+					local nearestDelimiter = getAlignmentInfo().NearestVerticalSegmentDelimiter
 					return nearestDelimiter == nil and nil or nearestDelimiter.Mileage
 				end
 			</Formula>
@@ -831,7 +826,7 @@
 			<Variant Name="Kurve">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
+						local ai = getAlignmentInfo()
 						return Variant.."\\P".."L="..string.format("%.3f",ai.Segment.Length) .."\\P".."R="..string.format("%.3f",ai.Segment.RadiusStart)
 					</Formula>
 				</LuaExpression>
@@ -839,24 +834,25 @@
 			<Variant Name="Klotoide">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						segment = ai.Segment
-
-						if segment.RadiusStart == math.huge  then 
+						local ai = getAlignmentInfo()
+						local segment = ai.Segment
+						local text1
+						if segment.RadiusStart == math.huge then 
 							text1 = "RL"
 						else
 							text1 = "R"..string.format("%.3f",segment.RadiusStart)
 						end
 						
+						local text2
 						if segment.RadiusEnd == math.huge then
 							text2 = "RL"
 						else
 							text2 = "R"..string.format("%.3f",segment.RadiusEnd)
 						end
 						
-						vector = ai.Tangent
-						TangentAngle2D = math.atan(vector.Y,vector.Z)
-						if (math.cos(getUcsAngle() - TangentAngle2D) &lt; 0) then
+						local vector = ai.Tangent
+						local tangentAngle2D = math.atan(vector.Y,vector.Z)
+						if (math.cos(getUcsAngle() - tangentAngle2D) &lt; 0) then
 							text = "&lt;"..text2.."-"..text1.."&gt;"
 						else
 							text = "&lt;"..text1.."-"..text2.."&gt;"
@@ -879,9 +875,9 @@
 		
 		<LuaExpression Name="LateralOffset">
 			<Formula>
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				local sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("LateralOffset")
+					local d = getPropertyValue("LateralOffset")
 					if d == 0 then 
 						return -6/sc
 					else
@@ -960,12 +956,12 @@
 			<Variant Name="HBP">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						nvv = ai.NearestVerticalVertex
-						pviElevation = string.format("%.3f", nvv.Elevation)
-						trackElevation = string.format("%.3f", ai.Elevation)
-						length3D = string.format("%.3f", nvv.Length)
-						radius = string.format("%.3f", nvv.Radius)
+						local ai = getAlignmentInfo()
+						local nvv = ai.NearestVerticalVertex
+						local pviElevation = string.format("%.3f", nvv.Elevation)
+						local trackElevation = string.format("%.3f", ai.Elevation)
+						local length3D = string.format("%.3f", nvv.Length)
+						local radius = string.format("%.3f", nvv.Radius)
 						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3D.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
@@ -974,12 +970,12 @@
 			<Variant Name="LBP">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						nvv = ai.NearestVerticalVertex
-						pviElevation = string.format("%.3f", nvv.Elevation)
-						trackElevation = string.format("%.3f", ai.Elevation)
-						length3D = string.format("%.3f", nvv.Length)
-						radius = string.format("%.3f", nvv.Radius)
+						local ai = getAlignmentInfo()
+						local nvv = ai.NearestVerticalVertex
+						local pviElevation = string.format("%.3f", nvv.Elevation)
+						local trackElevation = string.format("%.3f", ai.Elevation)
+						local length3D = string.format("%.3f", nvv.Length)
+						local radius = string.format("%.3f", nvv.Radius)
 						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3D.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
@@ -988,7 +984,7 @@
 		
 		<LuaExpression Name="Variant">		   
 			<Formula>
-				nvv = getAlignmentInfo().NearestVerticalVertex
+				local nvv = getAlignmentInfo().NearestVerticalVertex
 				if nvv.Type == "None" then return "Gradient"
 				elseif nvv.Type == "Crest" then return nvv.Radius &lt; 4e-4 and "Gradient" or "HBP"
 				elseif nvv.Type == "Sag" then return nvv.Radius &lt; 4e-4 and "Gradient" or "LBP"
@@ -999,9 +995,9 @@
 
 		<LuaExpression Name="LateralOffset">
 			<Formula>
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				local sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("LateralOffset")
+					local d = getPropertyValue("LateralOffset")
 					if d == 0 then 
 						return -6/sc
 					else
