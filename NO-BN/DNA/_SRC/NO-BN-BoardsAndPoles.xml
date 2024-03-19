@@ -620,35 +620,77 @@
 			Description="Returns the ERTMS ID board's placement above its insertion point.">
 		<Constructor>String _JBTSA_MSS_E101_Offset3DZ()</Constructor>
 			<Formula>
-				function _JBTSA_MSS_E101_Offset3DZ()
-					local pm = Attachment and Attachment.PortalMounted or PortalMounted
-					
-					if Variant =="Signal E101-A ID-skilt, Indre, 400x325, hvit" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-B ID-skilt, Innkjør, 400x325, gul" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-C ID-skilt, Utkjør, Ø400, gul" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-D ID-skilt, Blokk, Ø400, hvit" then
-						return pm and -2.5 or 2.5					
-					elseif Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then
-						return pm and -1.2 or 1.2
-					elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then
-						return pm and -1.2 or 1.2
-					elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 160x150" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 160x150" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 160x150" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 160x150" then
-						return pm and -2.5 or 2.5
-					elseif Variant =="Signal E101-L ID-skilt, Frostport, 160x150" then
-						return pm and -2.5 or 2.5
-					else
-						return pm and -2.5 or 2.5
-					end
-				end
+function _JBTSA_MSS_E101_Offset3DZ()
+	local pm = Attachment and Attachment.PortalMounted or PortalMounted
+
+	-- ID sign governs Z offset for Attachment.
+	if Variant =="Signal E101-A ID-skilt, Indre, 400x325, hvit" then
+		return pm and -2.5 or 2.5
+	elseif Variant =="Signal E101-B ID-skilt, Innkjør, 400x325, gul" then
+		return pm and -2.5 or 2.5
+	elseif Variant =="Signal E101-C ID-skilt, Utkjør, Ø400, gul" then
+		return pm and -2.5 or 2.5
+	elseif Variant =="Signal E101-D ID-skilt, Blokk, Ø400, hvit" then
+		return pm and -2.5 or 2.5
+	end
+	
+	-- Missing Attachment
+	if Attachment == nil then
+		if Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then
+			return pm and -1.2 or 1.2
+		elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then
+			return pm and -1.2 or 1.2
+		elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 160x150" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 160x150" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 160x150" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 160x150" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-L ID-skilt, Frostport, 160x150" then
+			return pm and -2.5 or 2.5
+		else
+			return pm and -2.5 or 2.5
+		end
+	end
+
+	-- Attachment governs Z offset for ID sign.
+	local attachmentZOffset = Attachment.Geometry3D_0.Offset.Z
+
+	local attachmentHeight = nil	
+	if Attachment.Variant == "E106 Stop for shunting" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E107 Unsecured area with handoperated points" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E36 Level crossing, location" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E36 Level crossing, announcement" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E38 Avalanche area" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E39 Frost gate" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction 10" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction 20" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction 30" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction lifted" then attachmentHeight = 0.400
+	end
+
+	local thisBoardHeight = nil
+	if Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then thisBoardHeight = 0.150
+	elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then thisBoardHeight = 0.150
+	elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 160x150" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 160x150" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 160x150" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 160x150" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-L ID-skilt, Frostport, 160x150" then thisBoardHeight = 0.325
+	end
+	
+	if attachmentZOffset ~= nil and attachmentHeight ~= nil and thisBoardHeight ~= nil then
+		local minimumGap = 0.010
+		local nominalZOffset = attachmentZOffset - attachmentHeight/2 - minimumGap - thisBoardHeight/2
+		local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset - 0.005)) -- Round down to nearest cm.
+		return roundedZOffset
+	end
+	
+	-- Default
+	return pm and -2.5 or 2.5
+end
 			</Formula>
 		</LuaFunction>
 
