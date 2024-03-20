@@ -4730,49 +4730,180 @@ end
 		Description="Returns the default pole 3D offset Z, i.e. the height of the pole.">
 		<Constructor>Double NOBN_bnp_getBoardOffset3DZ()</Constructor>
 		<Formula>
-			function NOBN_bnp_getBoardOffset3DZ()
-				-- To be mounted below other board on common pole:
-				if Variant:find("Meterangivelse") then return 2.6 --May be placed under 68F
-				elseif Variant:find("68F") then return 2.8 --Tilleggshastighet, to be placed under 68
-			
-				--To be mounted relatively low on NSI63 optical signal's mast:
-				elseif Variant:find("62") then return 2.85 --Ugyldighetssignal på standard Bane NOR signalmast alternativ 2
-				elseif Variant:find("72") then return 2.45 --FJS begynner/slutter
-				elseif Variant:find("73") then return 2.45 --Rasvarsling
-				elseif Variant:find("F-ATC") or Variant:find("D-ATC") then return 2.9
-			
-				--To be mounted on front/top of optical light signal's sunscreen:
-				elseif Variant:find("60E") then return 5.80 --ATC Varsel. Remember to adjust Offset.Y as well.
-			
-				--Close to track, low placement, with pole:
-				elseif Variant:find("Bevegelig kryss") then return 0.5 --Short vertical pole close to track
-				elseif Variant:find("69") then return 1.5 --Temporary speed restriction, to be mounted with horizontal pole to track/sleeper
-			
-				--Close to track, low placement, no pole:
-				elseif Variant:find("Baliseskilt") then return 0.0 --Mounted on platform element's side towards track, at A-balise
-			
-				--May be hanging from portal, othwerwise on own pole:
-				elseif Variant:find("Spornummer") then return PortalMounted and -1 or 3.5
-				-- TODO elseif Variant:find("E34") then return PortalMounted and -1 or 3.5 --ERTMS Stedsskilt
-				elseif Variant:find("E35") then return PortalMounted and -1 or 3.5 --ERTMS Stoppskilt
-			
-				--To be read by train driver sitting in train, AND by walking people:
-				elseif Variant:find("1000V") then return 2.5
-				elseif Variant:find("kjedebrudd") then return 2.5
-			
-				--To be read by walking people:
-				elseif Variant:find("Nødtelefon") then return 2.00
-				elseif Variant:find("Stopp se og lytt") then return 2.00 --Skilt langs bilvei, for mennesker
-				elseif Variant:find("Arbeidsområde") then return 2.02 --Tenkt montert på et NSI hovedsignal
-			
-				-- High relative Elevations, no pole:
-				elseif Variant:find("75B") then return 0.0 --Old km board type, directly on tunnel wall (high VerticalOffset)
-				elseif Variant:find("Rømningsavstand") then return 0.0 --Escape route distance / direction board, directly on tunnel wall
-			
-				else 
-					return 3.5
-				end
+-- This formula does not catch all board configurations. If you have a complicated board configuration it's likely that you will have to delete it and configure the Z offset manually to get the right behaviour for your 3D model.
+-- The formula is intended to handle the following cases: i) rctype_SignEtcsSignal alone, ii) rctype_SignEtcsSignal with attached rctype_SignEtcsId, iii) rctype_SignEtcsSignal attached to rctype_EtcsEoA, iv) rctype_SignEtcsSignal attached to rctype_EtcsEoA, with attached rctype_SignEtcsId.
+-- Note in particular that the formula does not handle the case where two rctype_SignEtcsSignal are attached to a single stop sign (rctype_EtcsEoA).
+--
+-- Returns the height of the Attachment board, if any.
+function getAttachmentBoardHeight()
+	if Attachment == nil then return nil
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt med dverg" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt med lav dverg" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, over sporet" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, over sporet med dverg" then return 0.400
+	else return nil
+	end
+end
+--
+-- If Attachment has an attached board that should be placed between it and this board, then this function returns it.
+function getIntermediateBoard()
+	if Attachment == nil or Attachment.AttachedElements == nil or Attachment.AttachedElements.Count == 0 then return nil end
+	
+	for i = 0, Attachment.AttachedElements.Count - 1 do
+		if Attachment.AttachedElements[i].RcType == rctype_SignEtcsId then
+			local kake = Attachment.AttachedElements[i]
+			if (Attachment.AttachedElements[i].Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" 
+			or Attachment.AttachedElements[i].Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" 
+			or Attachment.AttachedElements[i].Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" 
+			or Attachment.AttachedElements[i].Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit") then
+				return Attachment.AttachedElements[i]
 			end
+		end
+	end
+end
+--
+-- Returns the height of this board.
+function getThisBoardHeight()
+	if Variant == "E106 Stop for shunting" then return 0.400
+	elseif Variant == "E107 Unsecured area with handoperated points" then return 0.400
+	elseif Variant == "E36 Level crossing, location" then return 0.400
+	elseif Variant == "E36 Level crossing, announcement" then return 0.400
+	elseif Variant == "E38 Avalanche area" then return 0.400
+	elseif Variant == "E39 Frost gate" then return 0.400
+	elseif Variant == "E202 Speed restriction 10" then return 0.400
+	elseif Variant == "E202 Speed restriction 20" then return 0.400
+	elseif Variant == "E202 Speed restriction 30" then return 0.400
+	elseif Variant == "E202 Speed restriction lifted" then return 0.400
+	end
+end
+--
+-- Of the ID signs attached to this board, returns the first one, if any.
+function getFirstAttachedIdSign()
+	if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
+	
+	for i = 0, AttachedElements.Count - 1 do
+		if AttachedElements[i].RcType == rctype_SignEtcsId then	return AttachedElements[i] end
+	end
+end
+--
+-- If this board has an attached ID sign, then this function returns the Z offset that placed this board just below that ID sign.
+function getZOffsetFromIdSign(thisBoardHeight)
+	local idSign = getFirstAttachedIdSign()
+	if idSign == nil then return nil end
+	
+	local idSignZOffset = idSign.Geometry3D_0.Offset.Z
+	
+	local idSignHeight = nil
+	if idSign.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then idSignHeight = 0.400
+	elseif idSign.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then idSignHeight = 0.400
+	elseif idSign.Variant == "Signal E101-E ID-skilt, Dverg, 160x150" then idSignHeight = 0.150
+	elseif idSign.Variant == "Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then idSignHeight = 0.150
+	elseif idSign.Variant == "Signal E101-G ID-skilt, Stopp for skift, 160x150" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-H ID-skilt, Forriglet område, 160x150" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-J ID-skilt, Veisikringsanlegg, 160x150" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-K ID-skilt, Snøskredområde, 160x150" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-L ID-skilt, Frostport, 160x150" then idSignHeight = 0.325
+	end
+
+	local minimumGap = 0.010
+	local nominalZOffset = idSignZOffset + idSignHeight/2 + thisBoardHeight/2 + minimumGap 
+	local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset + 0.005)) -- Round up to nearest cm.
+	return roundedZOffset
+end
+--
+-- If this board is an ERTMS board, then this function attempts to to calculate its Z offset.
+function getErtmsBoardZOffset()
+	local thisBoardHeight = getThisBoardHeight()
+		
+	if Attachment == nil then
+		local zOffsetFromIdSign = getZOffsetFromIdSign()
+		
+		if zOffsetFromIdSign ~= nil then return zOffsetFromIdSign
+		else return 2.88  -- Default value. Corresponds to idSignZOffset = 2.5 and idSignHeight = 0.325.
+		end
+	else
+		local minimumGap = 0.010
+		local intermediateBoard = getIntermediateBoard()
+		local intermediateBoardHeight = nil
+		
+		if intermediateBoard ~= nil then
+			intermediateBoardZOffset = intermediateBoard.Geometry3D_0.Offset.Z
+			
+			if intermediateBoard.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then intermediateBoardHeight = 0.325
+			elseif intermediateBoard.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then intermediateBoardHeight = 0.325
+			elseif intermediateBoard.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then intermediateBoardHeight = 0.400
+			elseif intermediateBoard.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then intermediateBoardHeight = 0.400 
+			end
+
+			if intermediateBoardZOffset ~= nil and thisBoardHeight ~= nil then
+				local nominalZOffset = intermediateBoardZOffset - intermediateBoardHeight/2 - minimumGap - thisBoardHeight/2
+				local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset - 0.005)) -- Round down to nearest cm.
+				return roundedZOffset
+			end
+		else
+			local attachmentZOffset = Attachment.Geometry3D_0.Offset.Z
+			local attachmentBoardHeight = getAttachmentBoardHeight()
+			intermediateBoardHeight = 0.325 -- Default height.
+			
+			if attachmentZOffset ~= nil and attachmentBoardHeight ~= nil and thisBoardHeight ~= nil then
+				local nominalZOffset = attachmentZOffset - attachmentBoardHeight/2 - minimumGap - intermediateBoardHeight - minimumGap - thisBoardHeight/2
+				local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset - 0.005)) -- Round down to nearest cm.
+				return roundedZOffset
+			end
+		end
+	end
+end
+--
+-- First tries to calculate the Z offset of this board by using the above ERTMS rules. If this fails then the below heuristics are used.
+function NOBN_bnp_getBoardOffset3DZ()
+	local ertmsBoardZOffset = getErtmsBoardZOffset()
+	if ertmsBoardZOffset ~= nil then return ertmsBoardZOffset end
+
+	-- To be mounted below other board on common pole:
+	if Variant:find("Meterangivelse") then return 2.6 --May be placed under 68F
+	elseif Variant:find("68F") then return 2.8 --Tilleggshastighet, to be placed under 68
+
+	--To be mounted relatively low on NSI63 optical signal's mast:
+	elseif Variant:find("62") then return 2.85 --Ugyldighetssignal på standard Bane NOR signalmast alternativ 2
+	elseif Variant:find("72") then return 2.45 --FJS begynner/slutter
+	elseif Variant:find("73") then return 2.45 --Rasvarsling
+	elseif Variant:find("F-ATC") or Variant:find("D-ATC") then return 2.9
+
+	--To be mounted on front/top of optical light signal's sunscreen:
+	elseif Variant:find("60E") then return 5.80 --ATC Varsel. Remember to adjust Offset.Y as well.
+
+	--Close to track, low placement, with pole:
+	elseif Variant:find("Bevegelig kryss") then return 0.5 --Short vertical pole close to track
+	elseif Variant:find("69") then return 1.5 --Temporary speed restriction, to be mounted with horizontal pole to track/sleeper
+
+	--Close to track, low placement, no pole:
+	elseif Variant:find("Baliseskilt") then return 0.0 --Mounted on platform element's side towards track, at A-balise
+
+	--May be hanging from portal, othwerwise on own pole:
+	elseif Variant:find("Spornummer") then return PortalMounted and -1 or 3.5
+	-- TODO elseif Variant:find("E34") then return PortalMounted and -1 or 3.5 --ERTMS Stedsskilt
+	elseif Variant:find("E35") then return PortalMounted and -1 or 3.5 --ERTMS Stoppskilt
+
+	--To be read by train driver sitting in train, AND by walking people:
+	elseif Variant:find("1000V") then return 2.5
+	elseif Variant:find("kjedebrudd") then return 2.5
+
+	--To be read by walking people:
+	elseif Variant:find("Nødtelefon") then return 2.00
+	elseif Variant:find("Stopp se og lytt") then return 2.00 --Skilt langs bilvei, for mennesker
+	elseif Variant:find("Arbeidsområde") then return 2.02 --Tenkt montert på et NSI hovedsignal
+
+	-- High relative Elevations, no pole:
+	elseif Variant:find("75B") then return 0.0 --Old km board type, directly on tunnel wall (high VerticalOffset)
+	elseif Variant:find("Rømningsavstand") then return 0.0 --Escape route distance / direction board, directly on tunnel wall
+
+	else 
+		return 3.5
+	end
+end
 		</Formula>
 	</LuaFunction>
 
