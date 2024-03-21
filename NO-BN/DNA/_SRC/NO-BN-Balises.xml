@@ -30,12 +30,12 @@
 			function NOBN_sig_getBaliseGroupDirection(balise)
 				--TODO: Replace with a function which finds out where the closest cable duct is, and rotates the balise with the cable towards that duct.
 				balise = balise or this
-				s = balise.RcType:match("ETCS") and rel_EtcsBalise_BelongsTo_EtcsBaliseGroup or rel_NssBalise_BelongsTo_NssBaliseGroup
-				r,n = getRelatedObjects(s,balise)
+				local s = balise.RcType:match("ETCS") and rel_EtcsBalise_BelongsTo_EtcsBaliseGroup or rel_NssBalise_BelongsTo_NssBaliseGroup
+				local r,n = getRelatedObjects(s,balise)
 				if n == 0 then
 					return "unknown", _info("UNFINISHED - Relate balise with '"..s.."' to a balise group to inherit direction.")
 				else
-					return r[0].Dir
+					return r[0].dir
 				end
 			end
 		</Formula>
@@ -49,12 +49,12 @@
 		<Formula>
 			function NOBN_sig_chkBaliseDistanceToPreviousBalise(balise)
 				balise = balise or this
-				searchDir = "down"
+				local searchDir = "down"
 				if balise.Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
-				nextBalise = getDownObject(balise.RcType)
+				local nextBalise = getDownObject(balise.RcType)
 				if nextBalise == nil then return "OK - No "..balise.RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
-				dist = getDistance(balise,nextBalise)
-				t = string.format("%.03f", dist)
+				local dist = getDistance(balise,nextBalise)
+				local t = string.format("%.03f", dist)
 			
 				if (dist &lt; 2.35 ) then
 					return t..": ERROR - Balise magnetic fields may merge - increase distance.",{nextBalise},_error
@@ -86,12 +86,12 @@
 		<Formula>
 			function NOBN_sig_chkBaliseDistanceToNextBalise(balise)
 				balise = balise or this
-				searchDir = "up"
+				local searchDir = "up"
 				if balise.Alignment == nil then return "UNFINISHED - Missing own alignment.",_error end
-				nextBalise = getUpObject(balise.RcType)
+				local nextBalise = getUpObject(balise.RcType)
 				if nextBalise == nil then return "OK - No "..balise.RcType:sub(8).." within reach in the '"..searchDir.."' direction.",_ok end
-				dist = getDistance(balise,nextBalise)
-				t = string.format("%.03f", dist)
+				local dist = getDistance(balise,nextBalise)
+				local t = string.format("%.03f", dist)
 			
 				if (dist &lt; 2.35 ) then
 					return t..": ERROR - Balise magnetic fields may merge - increase distance.",{nextBalise},_error
@@ -124,10 +124,10 @@
 			function NOBN_sig_chkBaliseDistanceToTrackVertically(balise)
 				balise = balise or this
 				if (balise.Alignment == nil) then return "UNFINISHED - Missing own alignment.",_error end
-				closestTracks = getClosestTracks(balise,rctype_Track)
-				nearestId = ""
-				nearestDist = math.huge
-				i = 0
+				local closestTracks = getNearbyAlignments(balise,rctype_Track)
+				local nearestId = ""
+				local nearestDist = math.huge
+				local i = 0
 				while (closestTracks[i]) do
 					local aId = closestTracks[i].id
 					local sDist = math.abs(getAlignmentInfo(balise,aId).DistanceToAlignment)
@@ -140,7 +140,7 @@
 				end
 				-- Consider only other alignments being no more than 5 meter sideways apart from balise 
 				if (nearestDist &gt; 3.0) then return "OK - No conflicting tracks within 3 meters sideways.",_ok end
-				hDiff = math.abs(getAlignmentInfo(balise).Elevation - getAlignmentInfo(balise,nearestId).Elevation)
+				local hDiff = math.abs(getAlignmentInfo(balise).Elevation - getAlignmentInfo(balise,nearestId).Elevation)
 				if (hDiff &lt;= 0.8) then
 					-- Assume that closest other track is part of a point or crossing, but still accept 80 cm difference for diverging track profiles
 					return string.format("%.3f",hDiff)..": OK - Balise is close to a neighbouring track which we consider to be part of a switch or crossing.",_ok
@@ -164,9 +164,9 @@
 			function NOBN_sig_chkBaliseDistanceToTrackSideways(balise)
 				balise = balise or this
 				if (balise.Alignment == nil) then return "UNFINISHED - Missing own alignment.",_error end
-				closestTracks = getClosestTracks(balise,rctype_Track)
-				nearestId = ""
-				i = 0
+				local closestTracks = getNearbyAlignments(balise,rctype_Track)
+				local nearestId = ""
+				local i = 0
 				while (closestTracks[i]) do
 					if (balise.Alignment.id ~= closestTracks[i].id) then
 						nearestId = closestTracks[i].id
@@ -176,7 +176,7 @@
 					end
 				end
 				if (nearestId == "") then return "OK - No neighbouring track(s).",_ok end
-				sDist = math.abs(getAlignmentInfo(balise,nearestId).DistanceToAlignment)
+				local sDist = math.abs(getAlignmentInfo(balise,nearestId).DistanceToAlignment)
 				if RC__isNan(sDist) then return "No sideways distance found.", _noSymbol end
 				if (sDist &lt; 1.4) then 
 					return string.format("%.3f",sDist)..": ERROR – Balise may be read by a train in a neighbouring track – increase distance.",_error
@@ -252,6 +252,7 @@
         <Constructor>String _JBTSA_ATC_code()</Constructor>
         <Formula>
 			function _JBTSA_ATC_code()
+				local a
 				if Variant == "Hastighetsbalisegruppe" then
 					a = "-H"
 				elseif Variant == "Signalhøyningsbalisegruppe" then
@@ -273,10 +274,10 @@
 						-- Balise group has no relation to a signal yet:
 						return "UNFINISHED - Relate with '"..s.."'."
 					else
-						sig = r[0] --should be a signal here, repeater groups don't repeat switches directly
-						bg = getRelatedObjects(rel_Object_Has_NssBaliseGroup,sig)
+						local sig = r[0] --should be a signal here, repeater groups don't repeat switches directly
+						local bg = getRelatedObjects(rel_Object_Has_NssBaliseGroup,sig)
 						bg = bg:filter(function (x) return x.Variant == "Repeterbalisegruppe" end)
-						nbg = getCollectionLength(bg)
+						local nbg = getCollectionLength(bg)
 
 						if nbg == 0 then
 							--I am here, so n *must* be greater than zero:
@@ -288,8 +289,8 @@
 
 						elseif nbg == 2 then
 							-- Assign 'R' to the one farthest away, 'U' to the one closest to signal: 
-							b1 = bg[0]
-							b2 = bg[1]
+							local b1 = bg[0]
+							local b2 = bg[1]
 							if getDistance(b1,sig) &lt; getDistance(b2,sig) then
 								b1,b2 = b2,b1
 								--Now b1 is the first repeater group in the driving direction
@@ -304,9 +305,9 @@
 
 						elseif nbg == 3 then
 							-- Assign 'R' to the one farthest away, then 'U' and then 'V' to the one closest to signal:
-							b1 = bg[0]
-							b2 = bg[1]
-							b3 = bg[2]
+							local b1 = bg[0]
+							local b2 = bg[1]
+							local b3 = bg[2]
 							--Bubble sort, n=3
 							if getDistance(b1,sig) &lt; getDistance(b2,sig) then b1,b2 = b2,b1 end	-- Pass 1
 							if getDistance(b2,sig) &lt; getDistance(b3,sig) then b2,b3 = b3,b2 end	-- Pass 1
@@ -321,12 +322,12 @@
 								a = "V"
 							end
 
-						elseif nbg == 3 then
+						elseif nbg == 4 then
 							-- Assign 'R' to the one farthest away, then 'U', 'V' and then 'W' to the one closest to signal:
-							b1 = bg[0]
-							b2 = bg[1]
-							b3 = bg[2]
-							b4 = bg[3]
+							local b1 = bg[0]
+							local b2 = bg[1]
+							local b3 = bg[2]
+							local b4 = bg[3]
 							--Bubble sort, n=4
 							if getDistance(b1,sig) &lt; getDistance(b2,sig) then b1,b2 = b2,b1 end	-- Pass 1
 							if getDistance(b2,sig) &lt; getDistance(b3,sig) then b2,b3 = b3,b2 end	-- Pass 1
@@ -350,9 +351,10 @@
 						end
 					end
 				end
-				ocpMsg = "Create an Operation / Control Point (OCP) area around your object and refresh it to replace '???' with the relevant OCP's codes."
+				local ocpMsg = "Create an Operation / Control Point (OCP) area around your object and refresh it to replace '???' with the relevant OCP's codes."
 				if Variant == "Hastighetsbalisegruppe" then
-					r,n = getRelatedObjects(rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup)
+					local r,n = getRelatedObjects(rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup)
+					local ocp
 					if n == 0 then
 						--Group is braking curve target:
 						ocp = NOBN_com_getOcpCode(getObjectFromId(id))
@@ -362,15 +364,16 @@
 					end
 					return ocp..a..string.format("%02d",Seq)
 				elseif Variant == "Signalhøyningsbalisegruppe" or Variant == "Sporvekselbalisegruppe" then
-					ocp = NOBN_com_getOcpCode(this)
+					local ocp = NOBN_com_getOcpCode(this)
 					if Seq == 0 then
 						return ocp..a.."UNFINISHED - Set balise group's 'Seq' property to the required balise group number (01..99), use '100' for '0'."
 					else
 						return ocp..a..string.format("%02d",Seq%100)
 					end
 				elseif Variant =="Lenkingsbalisegruppe" or Variant == "Grensebalisegruppe" then
-					s = rel_NssBaliseGroup_LinksTo_NssBaliseGroup
-					r,n = getRelatedObjects(s)
+					local s = rel_NssBaliseGroup_LinksTo_NssBaliseGroup
+					local r,n = getRelatedObjects(s)
+					local ocp
 					if n == 0 then
 						ocp = NOBN_com_getOcpCode(getObjectFromId(id))
 					else
@@ -382,13 +385,13 @@
 						return ocp..a..string.format("%02d",Seq%100)
 					end
 				else
-					s = rel_NssBaliseGroup_AppliesTo_Object
-					r,n = getRelatedObjects(s)
+					local s = rel_NssBaliseGroup_AppliesTo_Object
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."'."
 					else
 						--Assume r[0] holds object dictating the group's number:
-						ocp = NOBN_com_getOcpCode(r[0])
+						local ocp = NOBN_com_getOcpCode(r[0])
 						if r[0].code == nil then 
 							return ocp..a.."???", _info(ocpMsg)
 						elseif tostring(r[0].code):match("%d+") == nil then
@@ -397,7 +400,6 @@
 							return ocp..a..tostring(r[0].code):match("%d+"):sub(-3) 
 						end 
 					end
-					return ocp..a..code:match("%d+"):sub(-3)
 				end
 			end
         </Formula>
@@ -410,8 +412,9 @@
         <Constructor>String _JBTSA_ATB_code()</Constructor>
         <Formula>
 			function _JBTSA_ATB_code()
-				s = rel_NssBalise_BelongsTo_NssBaliseGroup
-				r,n = getRelatedObjects(s)
+				local s = rel_NssBalise_BelongsTo_NssBaliseGroup
+				local r,n = getRelatedObjects(s)
+				local bg
 				if n == 0 then  
 					return "UNFINISHED - Relate with '"..s.."' to balise group.",
 							_info("Balises derive their ID (code property) from their balise group's code, direction, and the balise's relative position within the balise group. The 'A' balise must be related to the balise group using the relation for position defining balise.")
@@ -422,16 +425,21 @@
 					return "Bad direction ["..bg.dir.."]",_warning 
 				end
 				
-				sq = rel_NssBaliseGroup_HasPositionDeterminedBy_NssBalise
-				q,nq = getRelatedObjects(sq,bg)
+				local sq = rel_NssBaliseGroup_HasPositionDeterminedBy_NssBalise
+				local q,nq = getRelatedObjects(sq,bg)
+				local isA
+				local siblings, nsiblings
+				local Abalise
 				if nq == 0 then 
 					return "UNFINISHED - No A-balise in balise group - relate to balise group with '"..sq.."'."
 				else
 					Abalise = q[0]
-					qq,nqq = getRelatedObjects(rel_NssBalise_DeterminesPositionFor_NssBaliseGroup)
+					local _qq,nqq = getRelatedObjects(rel_NssBalise_DeterminesPositionFor_NssBaliseGroup)
 					isA = (nqq == 1) --it's me...
 					siblings,nsiblings = getRelatedObjects(rel_NssBaliseGroup_Contains_NssBalise,bg)
 				end
+
+				local suffix
 			
 				if isA == true then
 					suffix = "A"
@@ -439,11 +447,11 @@
 					if nsiblings == 2 then
 						suffix = "B"            
 					elseif nsiblings &gt; 2 then
-						Pbalise={id=0, diff=math.huge}
-						Bbalise={id=0, diff=math.huge}
-						Cbalise={id=0, diff=math.huge}
+						local Pbalise={id=0, diff=math.huge}
+						local Bbalise={id=0, diff=math.huge}
+						local Cbalise={id=0, diff=math.huge}
 						for i = 0, nsiblings-1 do
-							diff = (bg.dir == "up") and (siblings[i].ReferenceMileage - Abalise.ReferenceMileage) or (Abalise.ReferenceMileage - siblings[i].ReferenceMileage)
+							local diff = (bg.dir == "up") and (siblings[i].ReferenceMileage - Abalise.ReferenceMileage) or (Abalise.ReferenceMileage - siblings[i].ReferenceMileage)
 							if (diff &lt; 0) then
 								if Pbalise.id == 0 then
 									Pbalise.id = siblings[i].id
@@ -480,7 +488,7 @@
 						end
 					end
 				end
-				groupId = RC__identify(bg)
+				local groupId = RC__identify(bg)
 				return groupId:sub(1,2):lower():match("unfinished") and suffix or groupId..suffix
 			end 
 		</Formula>
@@ -493,13 +501,13 @@
         <Constructor>String _JBTSA_ATB_TextAbove()</Constructor>
         <Formula>
 			function _JBTSA_ATB_TextAbove()
-				s = rel_NssBalise_BelongsTo_NssBaliseGroup
-				r,n = getRelatedObjects(s)
+				local s = rel_NssBalise_BelongsTo_NssBaliseGroup
+				local r,n = getRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."' to NSS balise group."
 				else
-					bg = r[0]
-					t = code:sub(-1)
+					local bg = r[0]
+					local t = code:sub(-1)
 					if bg.Variant == "Hastighetsbalisegruppe" then
 						if t == "A" then
 							return "H"
@@ -545,7 +553,7 @@
         <Constructor>String _JBTSA_ATB_TextBelow()</Constructor>
         <Formula>
 			function _JBTSA_ATB_TextBelow()
-				r,n = getRelatedObjects(rel_EtcsBalise_DeterminesPositionFor_EtcsBaliseGroup)
+				local r,n = getRelatedObjects(rel_EtcsBalise_DeterminesPositionFor_EtcsBaliseGroup)
 				if n &gt; 0 then
 					return RC__identify(r[0])
 				else
@@ -705,7 +713,7 @@
 			<Constructor>String _JBTSA_ETB_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTSA_ETB_Geometry3DName()
-					s = "NO-BN-3D-SA-ETB-ETCS"
+					local s = "NO-BN-3D-SA-ETB-ETCS"
 					if BaliseType == "ETCS Eurobalise" then s = s.."-EUROBALISE"
 					else return "Unknown BaliseType ["..BaliseType.."].",_warning
 					end
@@ -1059,7 +1067,7 @@
 			<Constructor>String _JBTSA_ATB_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTSA_ATB_Geometry3DName()
-					s = "NO-BN-3D-SA-ATB-NSS"
+					local s = "NO-BN-3D-SA-ATB-NSS"
 					if BaliseType == "NSS parallellbalise" then s = s.."-PARALLELLBALISE"
 					elseif BaliseType == "NSS seriebalise, stor" then s = s.."-SERIEBALISE"
 					elseif BaliseType == "NSS seriebalise, mini" then s = s.."-MINIBALISE"

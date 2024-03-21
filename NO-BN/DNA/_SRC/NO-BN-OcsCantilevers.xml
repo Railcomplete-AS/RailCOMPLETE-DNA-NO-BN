@@ -490,25 +490,25 @@ positive feeder in AT system				positiv leder i AT-system
 	<Constructor>Double NOBN_ocs_getWireClampPoint3D(objRef Cantilever)</Constructor>
 	<Formula>
 			function NOBN_ocs_getWireClampPoint3D(cnt)
-				function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
-				trackId = cnt.Alignment.id
-				ai = getAlignmentInfo(trackId,cnt.geoCoord.X,cnt.geoCoord.Y)
-				sign = cnt.rightsided and -1 or 1
-				cwh = cnt.ContactWireHeight
-				zigzag = cnt.stagger
-				h = ai.cant/1000.0
-				cr = ai.cantrotation
-				theta = math.atan(h/cnt.Alignment.AlignmentSystem.CantGauge)
+				local function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
+				local trackId = cnt.Alignment.id
+				local ai = getAlignmentInfo(trackId,cnt.geoCoord.X,cnt.geoCoord.Y)
+				local sign = cnt.rightsided and -1 or 1
+				local cwh = cnt.ContactWireHeight
+				local zigzag = cnt.stagger
+				local h = ai.Cant/1000.0
+				local cr = ai.CantRotation
+				local theta = math.atan(h/cnt.Alignment.AlignmentSystem.CantGauge)
 				theta = cr and (cr == "CW" and theta or -theta) or 0
-				centreTrack = ai.point  --The point where the cantilever is projected onto its track
-				phi = math.atan(ai.tangent.Y, ai.tangent.X)  --This cantilever's track's tangential direction angle in radians in WCS
+				local centreTrack = ai.Point  --The point where the cantilever is projected onto its track
+				local phi = math.atan(ai.Tangent.Y, ai.Tangent.X)  --This cantilever's track's tangential direction angle in radians in WCS
 				--(x,0,z) -- No longitudinal wire clamp offset:
-				x = cwh*math.sin(theta) + sign*zigzag*math.cos(theta)
-				y = 0
-				z = h/2 + cwh*math.cos(theta) - sign*zigzag*math.sin(theta)
+				local x = cwh*math.sin(theta) + sign*zigzag*math.cos(theta)
+				local y = 0
+				local z = h/2 + cwh*math.cos(theta) - sign*zigzag*math.sin(theta)
 				--(X,Y,Z):
-				X,Y = rot(-y,x,phi) -- Adjust for potential cosmetic angular offset (typically adding 17 degrees visually in 2D to better show cantilevers under portals)
-				Z = z
+				local X,Y = rot(-y,x,phi) -- Adjust for potential cosmetic angular offset (typically adding 17 degrees visually in 2D to better show cantilevers under portals)
+				local Z = z
 				return getPoint3D(centreTrack.X + X, centreTrack.Y + Y, centreTrack.Z + Z)
 			end
 		</Formula>
@@ -662,8 +662,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_code()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_code()
-					pol = getRelatedObjects(rel_Cantilever_BelongsTo_OcsPole)[0]
-					cow = getRelatedObjects(rel_Cantilever_Holds_ContactWire)[0]
+					local pol = getRelatedObjects(rel_Cantilever_BelongsTo_OcsPole)[0]
+					local cow = getRelatedObjects(rel_Cantilever_Holds_ContactWire)[0]
 					return (pol and pol.code or "?") .."/".. (cow and cow.code or "?")
 				end
 			</Formula>
@@ -677,7 +677,7 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>Double _JBTEH_UTL_LateralOffset(ObjRef Cantilever = this)</Constructor>
 			<Formula>
 				function _JBTEH_UTL_LateralOffset(cnt)
-					local cnt = cnt or this
+					cnt = cnt or this
 					if (Alignment == nil) then 
 						--If cantilever has no alignment, set insignificant but noticeable value (maintain sideOfAlignment)
 						return RightSided and 1e-3 or -1e-3,_warning, _info("Cantilever is not connected to a track (own alignment).")
@@ -818,34 +818,37 @@ positive feeder in AT system				positiv leder i AT-system
 						.
 						.   All coordinates are in WCS.
 					--]=]
-					function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Used for debugging purposes, pretty-print 2D point
+					local function p2s(u) return string.format(" (%.03f,%.03f)",u.X,u.Y) end --Used for debugging purposes, pretty-print 2D point
 				
 					--Previous:
-					prev = getRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
-					p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
+					local prev = getRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
+					local p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
+
+					local wc1
 					if prev.RcType == rctype_WireTensioningBalancer then
 						--Preceded by a Wire Tension Balancer.
 						wc1 = p1
 					else
 						--Preceded by a cantilever.
 						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-						t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
-						tg = math.atan(t.Y,t.X)
-						U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+						local t = getAlignmentInfo(prev.Alignment.id,p1).Tangent
+						local tg = math.atan(t.Y,t.X)
+						local U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
 						wc1 = getVectorSum(p1,U)
 					end
 				
 					--This:
-					p2 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+					local p2 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
 					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
-					t = getAlignmentInfo(this.Alignment.id,p2).Tangent
-					tg = math.atan(t.Y,t.X)
-					V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
-					wc2 = getVectorSum(p2,V)
+					local t = getAlignmentInfo(this.Alignment.id,p2).Tangent
+					local tg = math.atan(t.Y,t.X)
+					local V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
+					local wc2 = getVectorSum(p2,V)
 				
 					--Next:
-					nxt = getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)[0]
-					p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
+					local nxt = getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)[0]
+					local p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
+					local wc3
 					if nxt.RcType == rctype_WireTensioningBalancer then
 						--Followed by a Wire Tension Balancer.
 						wc3 = p3
@@ -858,26 +861,26 @@ positive feeder in AT system				positiv leder i AT-system
 						wc3 = getVectorSum(p3,W)
 					end
 				
-					toPrev = getVectorDifference(wc1,wc2)
-					toNext = getVectorDifference(wc3,wc2)
-					crossProduct = getVectorCrossProduct(toPrev,toNext)
+					local toPrev = getVectorDifference(wc1,wc2)
+					local toNext = getVectorDifference(wc3,wc2)
+					local crossProduct = getVectorCrossProduct(toPrev,toNext)
 				
 					--Find contact wire lateral force:
-					contactWireTension = NOBN_ocs_getWireTensioningDataTable(Variant).cwtf * 1000 --Table contains kN values
-					toPrevForceVector =  getVectorScalarProduct(contactWireTension,getVectorNormalized(toPrev))
-					toNextForceVector = getVectorScalarProduct(contactWireTension,getVectorNormalized(toNext))
-					lateralForceVector = getVectorSum(toPrevForceVector,toNextForceVector)
-					lateralForce = getVectorModulus(lateralForceVector)
-					directionChangeDD = (crossProduct.Z &gt; 0 and -1 or 1) * getVectorAngleDD(getVectorScalarProduct(-1,toPrev),toNext)
-					forceDirection = (RightSided and crossProduct.Z &gt; 0 or LeftSided and crossProduct.Z &lt; 0) and "Push" or "Pull"
+					local contactWireTension = NOBN_ocs_getWireTensioningDataTable(Variant).cwtf * 1000 --Table contains kN values
+					local toPrevForceVector =  getVectorScalarProduct(contactWireTension,getVectorNormalized(toPrev))
+					local toNextForceVector = getVectorScalarProduct(contactWireTension,getVectorNormalized(toNext))
+					local lateralForceVector = getVectorSum(toPrevForceVector,toNextForceVector)
+					local lateralForce = getVectorModulus(lateralForceVector)
+					local directionChangeDD = (crossProduct.Z &gt; 0 and -1 or 1) * getVectorAngleDD(getVectorScalarProduct(-1,toPrev),toNext)
+					local forceDirection = (RightSided and crossProduct.Z &gt; 0 or LeftSided and crossProduct.Z &lt; 0) and "Push" or "Pull"
 					--if true then return p2s(toPrevForceVector),p2s(toNextForceVector),p2s(lateralForceVector),lateralForce,directionChangeDD end
 				
-					t = string.format("'%s' with lateral force %.01f Newton and direction change %.03f decimal degrees"
+					local msg = string.format("'%s' with lateral force %.01f Newton and direction change %.03f decimal degrees"
 						.." was deduced from previous cantilever/WTB '%s', this cantilever '%s'"
 						.." and next cantilever/WTB '%s'.",
 						forceDirection,lateralForce,directionChangeDD,RC__identify(prev),RC__identify(this),RC__identify(nxt))
 				
-					return forceDirection, _info(t)
+					return forceDirection, _info(msg)
 				end
 			</Formula>
 		</LuaFunction>
@@ -912,7 +915,7 @@ positive feeder in AT system				positiv leder i AT-system
 					if Variant == "Cariboni" then
 						return 1.200
 					else
-						cl = math.abs(DistanceToAlignment) + Stagger
+						local cl = math.abs(DistanceToAlignment) + Stagger
 						return string.format("%.03f",cl)
 					end
 				end
@@ -933,9 +936,9 @@ positive feeder in AT system				positiv leder i AT-system
 						return "1200"
 					else
 						--NB! Step size, minimum and maximum lengths must be consistent with the 2D library file:
-						step = 10 --mm (10mm in DNA NO-BN-2023.a, was 50 mm in 2021.a)
-						minL = 1000 --mm
-						maxL = 6000 --mm
+						local step = 10 --mm (10mm in DNA NO-BN-2023.a, was 50 mm in 2021.a)
+						local minL = 1000 --mm
+						local maxL = 6000 --mm
 						local L = step * ((1000*CantileverLength + step/2)//step)
 						if L &lt; minL then 
 							return minL
@@ -1010,8 +1013,8 @@ positive feeder in AT system				positiv leder i AT-system
 					if cantilever.RcType ~= rctype_Cantilever then
 						return nil, _info("Unrecognised calling object type ["..cantilever.RcType.."].")
 					end
-					s = rel_Cantilever_Holds_ContactWire
-					r,n = getRelatedObjects(s)
+					local s = rel_Cantilever_Holds_ContactWire
+					local r,n = getRelatedObjects(s)
 					if n == 1 then return 
 						RC__identify(r[0])
 					else
@@ -1031,14 +1034,14 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_WireClampLateralOffset()
 					--TODO: Adapt function to dual cant.
-					ai = getAlignmentInfo()
-					c = ai.Cant
-					h = RC__isNan(c) and 0 or c/1000.0
+					local ai = getAlignmentInfo()
+					local c = ai.Cant
+					local h = RC__isNan(c) and 0 or c/1000.0
 					if h == 0 then 
 						return (LeftSided and 1 or -1)*Stagger
 					else
-						ss = h/Alignment.AlignmentSystem.CantGauge --sin(theta)
-						cc = math.sqrt(1 - ss^2) --cos(theta)
+						local ss = h/Alignment.AlignmentSystem.CantGauge --sin(theta)
+						local cc = math.sqrt(1 - ss^2) --cos(theta)
 						return RC__round((ai.CantRotation == "CW" and 1 or -1)*ss*ContactWireHeight + (LeftSided and 1 or -1)*cc*Stagger,3)
 					end
 				end
@@ -1055,14 +1058,14 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_WireClampVerticalOffset()
 					--TODO: Adapt function to dual cant.
-					ai = getAlignmentInfo()
-					c = ai.Cant
-					h = RC__isNan(c) and 0 or c/1000.0
+					local ai = getAlignmentInfo()
+					local c = ai.Cant
+					local h = RC__isNan(c) and 0 or c/1000.0
 					if h == 0 then 
 						return RC__round(ContactWireHeight,3)
 					else
-						ss = h/Alignment.AlignmentSystem.CantGauge --sine
-						cc = math.sqrt(1 - ss^2) --cosine
+						local ss = h/Alignment.AlignmentSystem.CantGauge --sine
+						local cc = math.sqrt(1 - ss^2) --cosine
 						return RC__round(h/2 + cc*ContactWireHeight + (ai.CantRotation == "CW" and -1 or 1)*ss*Stagger,3)
 					end
 				end
@@ -1145,15 +1148,15 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>Double _JBTEH_UTL_AddVisual2dAngularOffset()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_AddVisual2dAngularOffset()
-					s = rel_Cantilever_BelongsTo_OcsPole
-					r,n = getRelatedObjects(s)
+					local s = rel_Cantilever_BelongsTo_OcsPole
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal drop arm or tunnel / bridge drop arm.")
 					else 
 						--Cantilever mounted under portal?
 						--Make cantilever "rod" visible if located under a portal, by visually adding 17 degrees:
-						pol = r[0]
-						r1,n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
+						local pol = r[0]
+						local _r1,n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
 						if n1 == 0 then 
 							return 0, _info("No visual angular offset added since cantilever is not mounted on a drop arm (hidden by a portal).")
 						else
@@ -1166,26 +1169,26 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<!-- Text attributes and their positions -->
-		<TextPositionLuaExpression Name="UTLIGGER_LEDNING"><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-9,-4)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="SIKKSAKK"><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-11,-4)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTNAVN"><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-14,-4)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTID"><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-16,-4)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTINFO"><Formula>_JBTEH_UTL_TextAttributeAcsPosition(-18,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="UTLIGGER_LEDNING"><Formula>_JBTEH_UTL_TextAttributeAcsToWcsPosition(-9,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="SIKKSAKK"><Formula>_JBTEH_UTL_TextAttributeAcsToWcsPosition(-11,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTNAVN"><Formula>_JBTEH_UTL_TextAttributeAcsToWcsPosition(-14,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTID"><Formula>_JBTEH_UTL_TextAttributeAcsToWcsPosition(-16,-4)</Formula></TextPositionLuaExpression>
+		<TextPositionLuaExpression Name="OBJEKTINFO"><Formula>_JBTEH_UTL_TextAttributeAcsToWcsPosition(-18,-4)</Formula></TextPositionLuaExpression>
 
-		<LuaFunction Name="_JBTEH_UTL_TextAttributeAcsPosition()" ReturnType="Vector2D" 
+		<LuaFunction Name="_JBTEH_UTL_TextAttributeAcsToWcsPosition()" ReturnType="Vector2D" 
 				HideFromUser="false"
 				Description="Returns a World Coordinate System offset vector in the current drawing scale for a text attribute, placed according to there being 1, 2, 3 or 4 cantilevers. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and acsY = the longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000).">
-			<Constructor>{Double,Double} _JBTEH_UTL_TextAttributeAcsPosition(Double LateralOffset, Double LongitudinalOffset)</Constructor>
+			<Constructor>{Double,Double} _JBTEH_UTL_TextAttributeAcsToWcsPosition(Double LateralOffset, Double LongitudinalOffset)</Constructor>
 			<Formula>
-				function _JBTEH_UTL_TextAttributeAcsPosition(LateralOffset,LongitudinalOffset)
-					scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
+				function _JBTEH_UTL_TextAttributeAcsToWcsPosition(LateralOffset,LongitudinalOffset)
+					local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
 					LateralOffset = (LateralOffset or 5)/scale
 					LongitudinalOffset = (LongitudinalOffset or 0)/scale
 					--Place text as a function of rightsided/leftsided, and move sideways if two cantilevers on same side of OCS pole: 
-					sPole = rel_HvSwitch_IsInstalledOn_OcsPole
-					rPoles,nPoles = getRelatedObjects(sPole)
-					sCantilever = rel_OcsPole_Has_Cantilever
-					rCantilevers,nCantilevers = getRelatedObjects(sCantilever,rPoles[0])
+					local sPole = rel_HvSwitch_IsInstalledOn_OcsPole
+					local rPoles,nPoles = getRelatedObjects(sPole)
+					local sCantilever = rel_OcsPole_Has_Cantilever
+					local rCantilevers,nCantilevers = getRelatedObjects(sCantilever,rPoles[0])
 
 					if nCantilevers == 1 then
 						--(it is always at least 1...)
@@ -1195,13 +1198,13 @@ positive feeder in AT system				positiv leder i AT-system
 
 					else
 						--Two or more cantilevers: count them and separate them in left-sided and rightsided, count each side.
-						nRightSided = 0 --Cantilevers placed to the right of its own alignment, regardless of what alignment the OCS pole has.
+						local nRightSided = 0 --Cantilevers placed to the right of its own alignment, regardless of what alignment the OCS pole has.
 						for i = 0,nCantilevers-1 do
 							if rCantilevers[i].RightSided then
 								nRightSided = nRightSided + 1
 							end
 						end
-						index = 1 --Sort the cantilevers on the same side as 'this' cantilever
+						local index = 1 --Sort the cantilevers on the same side as 'this' cantilever
 						for i = 0,nCantilevers-1 do
 							Cantilever = rCantilevers[i]
 							if (this.id ~= Cantilever.id) and (this.SideOfAlignment == Cantilever.SideOfAlignment) then
@@ -1320,10 +1323,10 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_chkSystemHeight()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_chkSystemHeight()
-					min = NOBN_ocs_getCantileverStandardValues(Variant)["shmin"]
-					max = NOBN_ocs_getCantileverStandardValues(Variant)["shmax"]
-					sh = SystemHeight
-					v = Variant
+					local min = NOBN_ocs_getCantileverStandardValues(Variant)["shmin"]
+					local max = NOBN_ocs_getCantileverStandardValues(Variant)["shmax"]
+					local sh = SystemHeight
+					local v = Variant
 					if sh &lt; min then
 						return string.format("%.02f: WARNING - system height is below %s limit (%.02f).",sh,v,min),_warning
 					elseif sh &gt; max then
@@ -1347,11 +1350,11 @@ positive feeder in AT system				positiv leder i AT-system
 			<Formula>
 				function _JBTEH_UTL_chkUpperTubeAngle()
 					-- Assume that the catenary wire clamp holds the catenary 11.7 cm above the upper tube's center:
-					vDiff = CatenaryClampVerticalOffset - 0.117 - VerticalOffset
-					hDiff = math.abs(CatenaryClampLateralOffset - DistanceToAlignment)
-					angle = math.deg(math.atan(vDiff,hDiff))
-					min = -5.0 --Decimal Degrees
-					max = 5.0 --Decimal Degrees
+					local vDiff = CatenaryClampVerticalOffset - 0.117 - VerticalOffset
+					local hDiff = math.abs(CatenaryClampLateralOffset - DistanceToAlignment)
+					local angle = math.deg(math.atan(vDiff,hDiff))
+					local min = -5.0 --Decimal Degrees
+					local max = 5.0 --Decimal Degrees
 					if angle &lt; min then
 						return string.format("%.01f: WARNING - upper tube angle is below low limit (%.01f DD).",angle,min),_warning
 					elseif angle &gt; max then
@@ -1374,10 +1377,10 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_chkCantileverSequence()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_chkCantileverSequence()
-					sPrev = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
-					rPrev,nPrev = getRelatedObjects(sPrev)
-					sNext = rel_CantileverOrWtb_HasNext_CantileverOrWtb
-					rNext,nNext = getRelatedObjects(sNext)
+					local sPrev = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
+					local rPrev,nPrev = getRelatedObjects(sPrev)
+					local sNext = rel_CantileverOrWtb_HasNext_CantileverOrWtb
+					local rNext,nNext = getRelatedObjects(sNext)
 					if nPrev == 1 and nNext == 1 then
 						return string.format("%d / %d: OK - Preceded by %s '%s' / followed by %s '%s'.", nPrev,nNext,
 								rPrev[0].RcType == this.RcType and "cantilever" or "wire tension balancer", RC__identify(rPrev[0]),
@@ -1404,20 +1407,20 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_getContactWireHeightFromRelatedContactWireClamp()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_getContactWireHeightFromRelatedContactWireClamp()
-					s = rel_Cantilever_Has_OcsWireClamp
-					r,n = getRelatedObjects(s)
+					local s = rel_Cantilever_Has_OcsWireClamp
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						p = r[0].geoCoord --CW clamp coordinates in WCS
-						ai = getAlignmentInfo(p.X,p.Y) --Project CW clamp onto the cantilever's alignment
-						h = (ai.Cant or 0) / 1000.0 --[m] Could be nil
-						H = p.Z - (ai.Point.Z + h/2) --survey point Z relative to this track's center track after cant
-						d = ai.DistanceToAlignment
-						ss = h / Alignment.AlignmentSystem.CantGauge -- equals the sine of the cant angle
+						local p = r[0].geoCoord --CW clamp coordinates in WCS
+						local ai = getAlignmentInfo(p.X,p.Y) --Project CW clamp onto the cantilever's alignment
+						local h = (ai.Cant or 0) / 1000.0 --[m] Could be nil
+						local H = p.Z - (ai.Point.Z + h/2) --survey point Z relative to this track's center track after cant
+						local d = ai.DistanceToAlignment
+						local ss = h / Alignment.AlignmentSystem.CantGauge -- equals the sine of the cant angle
 						ss = ss * (ai.CantRotation == "CW" and 1 or -1)
-						cc = math.sqrt(1 - ss^2) --the cosine
-						cwh = ss*d + cc*H
+						local cc = math.sqrt(1 - ss^2) --the cosine
+						local cwh = ss*d + cc*H
 						return cwh --Intended for the ContactWireHeight property
 					end
 				end
@@ -1430,19 +1433,19 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_UTL_getStaggerFromRelatedContactWireClamp()</Constructor>
 			<Formula>
 				function _JBTEH_UTL_getStaggerFromRelatedContactWireClamp()
-					s = rel_Cantilever_Has_OcsWireClamp
-					r,n = getRelatedObjects(s)
+					local s = rel_Cantilever_Has_OcsWireClamp
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
-						p = r[0].geoCoord --CW clamp coordinates in WCS
-						ai = getAlignmentInfo(p.X,p.Y) --Project CW clamp onto the cantilever's alignment
-						h = (ai.Cant or 0) / 1000.0 --[m] Could be nil
-						H = p.Z - (ai.Point.Z + h/2) --survey point Z relative to this track's center track after cant
-						d = ai.DistanceToAlignment
-						ss = h / Alignment.AlignmentSystem.CantGauge -- equals the sine of the cant angle
-						cc = math.sqrt(1 - ss^2) --the cosine
-						zigzag = (ss*H - cc*d) * (RightSided and 1 or -1)
+						local p = r[0].geoCoord --CW clamp coordinates in WCS
+						local ai = getAlignmentInfo(p.X,p.Y) --Project CW clamp onto the cantilever's alignment
+						local h = (ai.Cant or 0) / 1000.0 --[m] Could be nil
+						local H = p.Z - (ai.Point.Z + h/2) --survey point Z relative to this track's center track after cant
+						local d = ai.DistanceToAlignment
+						local ss = h / Alignment.AlignmentSystem.CantGauge -- equals the sine of the cant angle
+						local cc = math.sqrt(1 - ss^2) --the cosine
+						local zigzag = (ss*H - cc*d) * (RightSided and 1 or -1)
 						return zigzag --Intended for the Stagger property
 					end
 				end
@@ -1604,8 +1607,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_KLK_code()</Constructor>
 			<Formula>
 				function _JBTEH_KLK_code()
-					s = rel_OcsWireClamp_BelongsTo_Cantilever
-					r,n = getRelatedObjects(s)
+					local s = rel_OcsWireClamp_BelongsTo_Cantilever
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1622,8 +1625,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>String _JBTEH_KLK_Alignment()</Constructor>
 			<Formula>
 				function _JBTEH_KLK_Alignment()
-					s = rel_OcsWireClamp_BelongsTo_Cantilever
-					r,n = getRelatedObjects(s)
+					local s = rel_OcsWireClamp_BelongsTo_Cantilever
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1640,11 +1643,10 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>Double _JBTEH_KLK_Mileage()</Constructor>
 			<Formula>
 				function _JBTEH_KLK_Mileage()
-					s = rel_OcsWireClamp_BelongsTo_Cantilever
-					r,n = getRelatedObjects(s)
+					local s = rel_OcsWireClamp_BelongsTo_Cantilever
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
-						return _info("INCOMPLET - Relier par '"..s.."' à son armement.")
-						--return "UNFINISHED - Relate with '"..s.."' to its cantilever."
+						return _info("UNFINISHED - Relate with '"..s.."' to its cantilever.")
 					else
 						return r[0].Mileage
 					end
@@ -1659,8 +1661,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>Double _JBTEH_KLK_LateralOffset()</Constructor>
 			<Formula>
 				function _JBTEH_KLK_LateralOffset()
-					s = rel_OcsWireClamp_BelongsTo_Cantilever
-					r,n = getRelatedObjects(s)
+					local s = rel_OcsWireClamp_BelongsTo_Cantilever
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else
@@ -1677,8 +1679,8 @@ positive feeder in AT system				positiv leder i AT-system
 			<Constructor>Double _JBTEH_KLK_VerticalOffset()</Constructor>
 			<Formula>
 				function _JBTEH_KLK_VerticalOffset()
-					s = rel_OcsWireClamp_BelongsTo_Cantilever
-					r,n = getRelatedObjects(s)
+					local s = rel_OcsWireClamp_BelongsTo_Cantilever
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return "UNFINISHED - Relate with '"..s.."' to its cantilever."
 					else

@@ -20,6 +20,7 @@
         <Constructor>String NOBN_bnp_getBoardOrPoleName()</Constructor>
         <Formula>
 			function NOBN_bnp_getBoardOrPoleName()
+				local s
 				if Variant:find("ERTMS Level crossing, announcement") then 
 					return "Fs-PLO"
 				elseif Variant:find("E36 Level crossing, location") then 
@@ -65,9 +66,8 @@
 				elseif Variant:find("Anleggsområde") then
 					return "Anl.omr."
 				elseif Variant:find("Rømningsavstand") then
-					local s,r,n
-					s = rel_Anything_Has_Marker
-					r,n = getRelatedObjects(s)
+					local s = rel_Anything_Has_Marker
+					local r,n = getRelatedObjects(s)
 					if n == 0 then 
 						return "UNFINISHED - Relate with '"..s.."' to one or two marker objects (marking the escape route entrances)."
 					else
@@ -102,7 +102,6 @@
 		<Constructor>String NOBN_bnp_getEscapeDistanceBoardTexts([Int step[, Int offset]])</Constructor>
 		<Formula>
 			function NOBN_bnp_getEscapeDistanceBoardTexts(step,offset)
-				local r,n,s,t,i,k,downIndex,upIndex
 				if step == nil then 
 					step = 10
 				else
@@ -114,42 +113,42 @@
 				offset = offset or 0
 				if this.RcType ~= rctype_SignNssEscapeRouteDistance then
 					return _warning, "Bad object type ["..RcType.."], '"..rctype_SignNssEscapeRouteDistance.."' was expected"
+				end
+
+				local relationName = rel_Anything_Has_Marker
+				local r,n = getRelatedObjects(relationName)
+				local s = {}
+				local t = {}
+				for i = 1, n do
+					table.insert(t,r[i-1].ReferenceMileage) --collection r is indexed from 0
+				end
+				t = RC__SortedNumberCollection(t)
+				local k = 0
+				for i = 1, n do
+					if ReferenceMileage &gt; t[i] then
+						k = k + 1
+					end
+				end
+				if LeftSided then
+					downIndex = "Left"
+					upIndex = "Right"
 				else
-					relationName = rel_Anything_Has_Marker
-					r,n = getRelatedObjects(relationName)
-					s = {}
-					t = {}
-					for i = 1, n do
-						table.insert(t,r[i-1].ReferenceMileage) --collection r is indexed from 0
-					end
-					t = RC__SortedNumberCollection(t)
-					k = 0
-					for i = 1, n do
-						if ReferenceMileage &gt; t[i] then
-							k = k + 1
-						end
-					end
-					if leftSided then
-						downIndex = "Left"
-						upIndex = "Right"
-					else
-						downIndex = "Right"
-						upIndex = "Left"
-					end
-					if k == 0 then
-						s[downIndex] = "?"
-					elseif k == 1 then
-						s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step
-					elseif k &gt;= 1 then
-						s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step.."+"
-					end
-					if k == n then
-						s[upIndex] = "?"
-					elseif k == n-1 then
-						s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step
-					elseif k &lt;= n-2 then
-						s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step.."+"
-					end
+					downIndex = "Right"
+					upIndex = "Left"
+				end
+				if k == 0 then
+					s[downIndex] = "?"
+				elseif k == 1 then
+					s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step
+				elseif k &gt;= 1 then
+					s[downIndex] = math.floor((offset + ReferenceMileage - t[k] + step/2)/step)*step.."+"
+				end
+				if k == n then
+					s[upIndex] = "?"
+				elseif k == n-1 then
+					s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step
+				elseif k &lt;= n-2 then
+					s[upIndex] = math.floor((offset + t[k+1] - ReferenceMileage + step/2)/step)*step.."+"
 				end
 				return s
 			end
@@ -350,7 +349,7 @@
 			<Formula>
 				function _JBTSA_MSS_ertms_signalBoard_Geometry3DName()
 					--Board type:
-					t = "NO-BN-3D-SA-MSS"
+					local t = "NO-BN-3D-SA-MSS"
 					
 					if Variant == "E106 Stop for shunting" then 
 						return t.."-E106-STOP-FOR-SHUNTING"
@@ -479,9 +478,9 @@
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>skilt</RelationSpace>
-		<AttachmentCategory Name="skilt" PassAttachmentToTarget="true"/>
-		<AttachTo Category="skilt"/>
+		<RelationSpace>ertms_skilt</RelationSpace>
+		<AttachmentCategory Name="ertms_skilt" PassAttachmentToTarget="true"/>
+		<AttachTo Category="ertms_skilt"/>
 		<AttachTo Category="markerboard" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
@@ -506,57 +505,36 @@
 			<Variant Name="Signal E101-A ID-skilt, Indre, 400x325, hvit">
 				<SetValue Key="name" Value="ID ERTMS (Indre)"/>
 				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101A-400x325-ERTMS-ID-INNER-MARKER-BOARD-90-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
 			<Variant Name="Signal E101-B ID-skilt, Innkjør, 400x325, gul">
 				<SetValue Key="name" Value="ID ERTMS (Innkjør)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101B-400x325-ERTMS-ID-ENTRANCE-MARKER-BOARD-90-90-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
 			<Variant Name="Signal E101-C ID-skilt, Utkjør, Ø400, gul">
 				<SetValue Key="name" Value="ID ERTMS (Utkjør)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101C-Ø400-ERTMS-ID-EXIT-MARKER-BOARD-90-90-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
 			<Variant Name="Signal E101-D ID-skilt, Blokk, Ø400, hvit">
 				<SetValue Key="name" Value="ID ERTMS (Blokk)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101D-Ø400-ERTMS-ID-BLOCK-MARKER-BOARD-90-90-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
 			<Variant Name="Signal E101-E ID-skilt, Dverg, 160x150">
 				<SetValue Key="name" Value="ID ERTMS (Dverg)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101E-160x150-ERTMS-ID-FREE-STANDING-SHUNTING-SIGNAL-60"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
 			<Variant Name="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150">
 				<SetValue Key="name" Value="ID ERTMS (Dverg i åk)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101F-160x150-ERTMS-ID-SHUNTING-SIGNAL-BELOW-MB-IN-PORTAL-45"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="-1.7"/>
 			</Variant>
-			<Variant Name="Signal E101-G ID-skilt, Stopp for skift, 160x150">
+			<Variant Name="Signal E101-G ID-skilt, Stopp for skift, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Stopp for skift)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101G-400x325-ERTMS-ID-STOP-FOR-SHUNTING-90-90-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
-			<Variant Name="Signal E101-H ID-skilt, Forriglet område, 160x150">
+			<Variant Name="Signal E101-H ID-skilt, Forriglet område, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Forriglet område)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101H-400x325-ERTMS-ID-INTERLOCKED-AREA-90-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
-			<Variant Name="Signal E101-J ID-skilt, Veisikringsanlegg, 160x150">
+			<Variant Name="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Veisikringsanlegg)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101J-400x325-ERTMS-ID-LEVEL-CROSSING-90-60-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
-			<Variant Name="Signal E101-K ID-skilt, Snøskredområde, 160x150">
+			<Variant Name="Signal E101-K ID-skilt, Snøskredområde, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Snøskredområde)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101K-400x325-ERTMS-ID-AVALANCHE-AREA-60-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
-			<Variant Name="Signal E101-L ID-skilt, Frostport, 160x150">
+			<Variant Name="Signal E101-L ID-skilt, Frostport, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Frostport)"/>
-				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-MSS-E101L-400x325-ERTMS-ID-FROST-GATE-60-90"/>
-				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.7"/>
 			</Variant>
 		</Variants>
 
@@ -602,21 +580,117 @@
 			</Formula>
 		</LuaFunction>
 		
+		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_E101_3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_MSS_E101_3DName()" ReturnType="String" 
+			Description="Returns the ERTMS ID board's 3D model name.">
+		<Constructor>String _JBTSA_MSS_E101_3DName()</Constructor>
+			<Formula>
+				function _JBTSA_MSS_E101_3DName()
+					if Variant =="Signal E101-A ID-skilt, Indre, 400x325, hvit" then 
+						return "NO-BN-3D-SA-MSS-E101A-400x325-ERTMS-ID-INNER-MARKER-BOARD-90-90"
+					elseif Variant =="Signal E101-B ID-skilt, Innkjør, 400x325, gul" then 
+						return "NO-BN-3D-SA-MSS-E101B-400x325-ERTMS-ID-ENTRANCE-MARKER-BOARD-90-90-90"
+					elseif Variant =="Signal E101-C ID-skilt, Utkjør, Ø400, gul" then 
+						return "NO-BN-3D-SA-MSS-E101C-Ø400-ERTMS-ID-EXIT-MARKER-BOARD-90-90-90"
+					elseif Variant =="Signal E101-D ID-skilt, Blokk, Ø400, hvit" then 
+						return "NO-BN-3D-SA-MSS-E101D-Ø400-ERTMS-ID-BLOCK-MARKER-BOARD-90-90-90"
+					elseif Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then 
+						return "NO-BN-3D-SA-MSS-E101E-160x150-ERTMS-ID-FREE-STANDING-SHUNTING-SIGNAL-60"
+					elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then 
+						return "NO-BN-3D-SA-MSS-E101F-160x150-ERTMS-ID-SHUNTING-SIGNAL-BELOW-MB-IN-PORTAL-45"
+					elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 400x325" then 
+						return "NO-BN-3D-SA-MSS-E101G-400x325-ERTMS-ID-STOP-FOR-SHUNTING-90-90-90"
+					elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 400x325" then 
+						return "NO-BN-3D-SA-MSS-E101H-400x325-ERTMS-ID-INTERLOCKED-AREA-90-90"
+					elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then 
+						return "NO-BN-3D-SA-MSS-E101J-400x325-ERTMS-ID-LEVEL-CROSSING-90-60-90"
+					elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 400x325" then 
+						return "NO-BN-3D-SA-MSS-E101K-400x325-ERTMS-ID-AVALANCHE-AREA-60-90"
+					elseif Variant =="Signal E101-L ID-skilt, Frostport, 400x325" then 
+						return "NO-BN-3D-SA-MSS-E101L-400x325-ERTMS-ID-FROST-GATE-60-90"
+					else
+						return "Could not find 3D model name for variant"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
 		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>_JBTSA_MSS_E101_Offset3DZ()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_Offset3DZ()" ReturnType="String" 
 			Description="Returns the ERTMS ID board's placement above its insertion point.">
 		<Constructor>String _JBTSA_MSS_E101_Offset3DZ()</Constructor>
 			<Formula>
-				function _JBTSA_MSS_E101_Offset3DZ()
-					ym = Attachment and Attachment.PortalMounted or PortalMounted
-					if Variant == "Signal E101-E ID-skilt, Dverg, 160x150" 
-					or Variant == "Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150"
-					then
-						return ym and -1.2 or 1.2
-					else
-						return ym and -2.6 or 2.6
-					end
-				end
+function _JBTSA_MSS_E101_Offset3DZ()
+	local pm = Attachment and Attachment.PortalMounted or PortalMounted
+
+	-- ID sign governs Z offset for Attachment.
+	if Variant =="Signal E101-A ID-skilt, Indre, 400x325, hvit" then
+		return pm and -2.5 or 2.5
+	elseif Variant =="Signal E101-B ID-skilt, Innkjør, 400x325, gul" then
+		return pm and -2.5 or 2.5
+	elseif Variant =="Signal E101-C ID-skilt, Utkjør, Ø400, gul" then
+		return pm and -2.5 or 2.5
+	elseif Variant =="Signal E101-D ID-skilt, Blokk, Ø400, hvit" then
+		return pm and -2.5 or 2.5
+	end
+	
+	-- Missing Attachment
+	if Attachment == nil then
+		if Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then
+			return pm and -1.2 or 1.2
+		elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then
+			return pm and -1.2 or 1.2
+		elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 400x325" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 400x325" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 400x325" then
+			return pm and -2.5 or 2.5
+		elseif Variant =="Signal E101-L ID-skilt, Frostport, 400x325" then
+			return pm and -2.5 or 2.5
+		else
+			return pm and -2.5 or 2.5
+		end
+	end
+
+	-- Attachment governs Z offset for ID sign.
+	local attachmentZOffset = Attachment.Geometry3D_0.Offset.Z
+
+	local attachmentHeight = nil	
+	if Attachment.Variant == "E106 Stop for shunting" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E107 Unsecured area with handoperated points" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E36 Level crossing, location" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E36 Level crossing, announcement" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E38 Avalanche area" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E39 Frost gate" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction 10" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction 20" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction 30" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E202 Speed restriction lifted" then attachmentHeight = 0.400
+	end
+
+	local thisBoardHeight = nil
+	if Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then thisBoardHeight = 0.150
+	elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then thisBoardHeight = 0.150
+	elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="Signal E101-L ID-skilt, Frostport, 400x325" then thisBoardHeight = 0.325
+	end
+	
+	if attachmentZOffset ~= nil and attachmentHeight ~= nil and thisBoardHeight ~= nil then
+		local minimumGap = 0.010
+		local nominalZOffset = attachmentZOffset - attachmentHeight/2 - minimumGap - thisBoardHeight/2
+		local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset - 0.005)) -- Round down to nearest cm.
+		return roundedZOffset
+	end
+	
+	-- Default
+	return pm and -2.5 or 2.5
+end
 			</Formula>
 		</LuaFunction>
 
@@ -652,27 +726,27 @@
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-G ID-skilt, Stopp for skift, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="Signal E101-G ID-skilt, Stopp for skift, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-H ID-skilt, Forriglet område, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="Signal E101-H ID-skilt, Forriglet område, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-J ID-skilt, Veisikringsanlegg, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-K ID-skilt, Snøskredområde, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="Signal E101-K ID-skilt, Snøskredområde, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-L ID-skilt, Frostport, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="Signal E101-L ID-skilt, Frostport, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
@@ -696,11 +770,11 @@
 				{% elsif Variant == 'Signal E101-D ID-skilt, Blokk, Ø400, hvit' %}101-3-ID-RUNDT
 				{% elsif Variant == 'Signal E101-E ID-skilt, Dverg, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
 				{% elsif Variant == 'Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
-				{% elsif Variant == 'Signal E101-G ID-skilt, Stopp for skift, 160x150' %}101-2-ID-2-LINJER
-				{% elsif Variant == 'Signal E101-H ID-skilt, Forriglet område, 160x150' %}101-1-ID-3-LINJER
-				{% elsif Variant == 'Signal E101-J ID-skilt, Veisikringsanlegg, 160x150' %}101-2-ID-2-LINJER
-				{% elsif Variant == 'Signal E101-K ID-skilt, Snøskredområde, 160x150' %}101-2-ID-2-LINJER
-				{% elsif Variant == 'Signal E101-L ID-skilt, Frostport, 160x150' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'Signal E101-G ID-skilt, Stopp for skift, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'Signal E101-H ID-skilt, Forriglet område, 400x325' %}101-1-ID-3-LINJER
+				{% elsif Variant == 'Signal E101-J ID-skilt, Veisikringsanlegg, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'Signal E101-K ID-skilt, Snøskredområde, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'Signal E101-L ID-skilt, Frostport, 400x325' %}101-2-ID-2-LINJER
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -844,7 +918,7 @@
 			<Constructor>String _JBTSA_MSS_Refleks_paa_lyssignal_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTSA_MSS_Refleks_paa_lyssignal_Geometry3DName()
-					t = "NO-BN-3D-SA-MSS-REFLEKS-"
+					local t = "NO-BN-3D-SA-MSS-REFLEKS-"
 					if Variant == "Hel refleksring for Ø127 signalmast" then 
 						return t.."HEL-RING-Ø127"
 					elseif Variant == "Halv refleksring for Ø127 signalmast" then 
@@ -1426,7 +1500,7 @@
 			<Constructor>String _JBTKO_SKT_68_69_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTKO_SKT_68_69_Geometry3DName()
-					t = "NO-BN-3D-KO-SKT-SKILT-"
+					local t = "NO-BN-3D-KO-SKT-SKILT-"
 					if Variant == "Signal 68A Nedsatt hastighet"						then return t.."68A-NEDSATT-KJØREHASTIGHET"
 					elseif Variant == "Signal 68B Økt hastighet"						then return t.."68B-ØKT-KJØREHASTIGHET"
 					elseif Variant == "Signal 68C Avvikende hastighet"					then return t.."68C-AVVIKENDE-HASTIGHET"
@@ -2661,7 +2735,7 @@
 			<Constructor>String _JBTKO_SKT_74_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTKO_SKT_74_Geometry3DName()
-					t = "NO-BN-3D-KO-SKT-SKILT-74-"
+					local t = "NO-BN-3D-KO-SKT-SKILT-74-"
 					if Variant == "Signal 74-1 Toglengde (bred type)" then 
 						return t.."1-TOGLENGDESKILT-ALT-1"
 					elseif Variant == "Signal 74-2 Toglengde (smal type)" then 
@@ -2801,7 +2875,7 @@
 			</Variant>
 		</Variants>
 
-		<LuaExpression Name="code"><Formula>getClosestTracks()[0].code</Formula></LuaExpression>
+		<LuaExpression Name="code"><Formula>getNearbyAlignments()[0].code</Formula></LuaExpression>
 		
 		<!-- NB: Already defined in macro -->
 		<!-- Assume portal placement, but stay away from exact ventre track in order to keep the tail drawing in place: -->
@@ -3814,6 +3888,7 @@
 			<Constructor>String _JBTKO_SKT_75CD_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTKO_SKT_75CD_Geometry3DName()
+					local side, number
 					if RightSided then 
 						side = (dir == 'up' and "VSIDE" or "VSIDE")
 						number = (dir == 'up' and 1 or 2)
@@ -3939,8 +4014,8 @@
 			<Constructor>String _JBTKO_SKT_75E_Geometry3DName()</Constructor>
 			<Formula>
 				function _JBTKO_SKT_75E_Geometry3DName()
-					t = "NO-BN-3D-KO-SKT-SKILT-75E-"
-					if Variant == "Signal 75E-1 Kjedebrudd"  then 
+					local t = "NO-BN-3D-KO-SKT-SKILT-75E-"
+					if Variant == "Signal 75E-1 Kjedebrudd" then 
 						return t.."1-KJEDEBRUDD"
 					elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then 
 						return t.."2-KJEDEBRUDD-EKSAKT"
@@ -4059,19 +4134,19 @@
 			</BlockNameFormat>
 
 			<SymbolAttribute Tag="FRA_1">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}</Value>
 			</SymbolAttribute>
 			<SymbolAttribute Tag="FRA_2">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}</Value>
 			</SymbolAttribute>
 			<SymbolAttribute Tag="TIL_1">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_1}},{% else %}{{TIL_1}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_1}},{% else %}{{TIL_1}}{% endif %}</Value>
 			</SymbolAttribute>
 			<SymbolAttribute Tag="TIL_2">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_3}},{% else %}{{TIL_2}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_3}},{% else %}{{TIL_2}}{% endif %}</Value>
 			</SymbolAttribute>
 			<SymbolAttribute Tag="SPRANG">
-				<Value>{% if sprang &gt; 0 %}+{% endif %}{{SPRANG}} m"</Value>
+				<Value>{% if sprang &gt; 0 %}+{% endif %}{{SPRANG}} m</Value>
 			</SymbolAttribute>
 		</SymbolDefinition>
 
@@ -4080,16 +4155,16 @@
 				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}"</Value>
 			</Attribute>
 			<Attribute Tag="T02">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}</Value>
 			</Attribute>
 			<Attribute Tag="T03">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_1}},{% else %}{{TIL_1}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_1}},{% else %}{{TIL_1}}{% endif %}</Value>
 			</Attribute>
 			<Attribute Tag="T04">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_3}},{% else %}{{TIL_2}}{% endif %}"</Value>
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_3}},{% else %}{{TIL_2}}{% endif %}</Value>
 			</Attribute>
 			<Attribute Tag="T05">
-				<Value>{% if sprang &gt; 0 %}+{% endif %}{{SPRANG}} m"</Value>
+				<Value>{% if sprang &gt; 0 %}+{% endif %}{{SPRANG}} m</Value>
 			</Attribute>
 		</Annotation3DTagDefinition>
 		
@@ -4655,49 +4730,180 @@
 		Description="Returns the default pole 3D offset Z, i.e. the height of the pole.">
 		<Constructor>Double NOBN_bnp_getBoardOffset3DZ()</Constructor>
 		<Formula>
-			function NOBN_bnp_getBoardOffset3DZ()
-				-- To be mounted below other board on common pole:
-				if Variant:find("Meterangivelse") then return 2.6 --May be placed under 68F
-				elseif Variant:find("68F") then return 2.8 --Tilleggshastighet, to be placed under 68
-			
-				--To be mounted relatively low on NSI63 optical signal's mast:
-				elseif Variant:find("62") then return 2.85 --Ugyldighetssignal på standard Bane NOR signalmast alternativ 2
-				elseif Variant:find("72") then return 2.45 --FJS begynner/slutter
-				elseif Variant:find("73") then return 2.45 --Rasvarsling
-				elseif Variant:find("F-ATC") or Variant:find("D-ATC") then return 2.9
-			
-				--To be mounted on front/top of optical light signal's sunscreen:
-				elseif Variant:find("60E") then return 5.80 --ATC Varsel. Remember to adjust Offset.Y as well.
-			
-				--Close to track, low placement, with pole:
-				elseif Variant:find("Bevegelig kryss") then return 0.5 --Short vertical pole close to track
-				elseif Variant:find("69") then return 1.5 --Temporary speed restriction, to be mounted with horizontal pole to track/sleeper
-			
-				--Close to track, low placement, no pole:
-				elseif Variant:find("Baliseskilt") then return 0.0 --Mounted on platform element's side towards track, at A-balise
-			
-				--May be hanging from portal, othwerwise on own pole:
-				elseif Variant:find("Spornummer") then return PortalMounted and -1 or 3.5
-				-- TODO elseif Variant:find("E34") then return PortalMounted and -1 or 3.5 --ERTMS Stedsskilt
-				elseif Variant:find("E35") then return PortalMounted and -1 or 3.5 --ERTMS Stoppskilt
-			
-				--To be read by train driver sitting in train, AND by walking people:
-				elseif Variant:find("1000V") then return 2.5
-				elseif Variant:find("kjedebrudd") then return 2.5
-			
-				--To be read by walking people:
-				elseif Variant:find("Nødtelefon") then return 2.00
-				elseif Variant:find("Stopp se og lytt") then return 2.00 --Skilt langs bilvei, for mennesker
-				elseif Variant:find("Arbeidsområde") then return 2.02 --Tenkt montert på et NSI hovedsignal
-			
-				-- High relative Elevations, no pole:
-				elseif Variant:find("75B") then return 0.0 --Old km board type, directly on tunnel wall (high VerticalOffset)
-				elseif Variant:find("Rømningsavstand") then return 0.0 --Escape route distance / direction board, directly on tunnel wall
-			
-				else 
-					return 3.5
-				end
+-- This formula does not catch all board configurations. If you have a complicated board configuration it's likely that you will have to delete it and configure the Z offset manually to get the right behaviour for your 3D model.
+-- The formula is intended to handle the following cases: i) rctype_SignEtcsSignal alone, ii) rctype_SignEtcsSignal with attached rctype_SignEtcsId, iii) rctype_SignEtcsSignal attached to rctype_EtcsEoA, iv) rctype_SignEtcsSignal attached to rctype_EtcsEoA, with attached rctype_SignEtcsId.
+-- Note in particular that the formula does not handle the case where two rctype_SignEtcsSignal are attached to a single stop sign (rctype_EtcsEoA).
+--
+-- Returns the height of the Attachment board, if any.
+function getAttachmentBoardHeight()
+	if Attachment == nil then return nil
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt med dverg" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt med lav dverg" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, over sporet" then return 0.400
+	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, over sporet med dverg" then return 0.400
+	else return nil
+	end
+end
+--
+-- If Attachment has an attached board that should be placed between it and this board, then this function returns it.
+function getIntermediateBoard()
+	if Attachment == nil or Attachment.AttachedElements == nil or Attachment.AttachedElements.Count == 0 then return nil end
+	
+	for i = 0, Attachment.AttachedElements.Count - 1 do
+		if Attachment.AttachedElements[i].RcType == rctype_SignEtcsId then
+			local kake = Attachment.AttachedElements[i]
+			if (Attachment.AttachedElements[i].Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" 
+			or Attachment.AttachedElements[i].Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" 
+			or Attachment.AttachedElements[i].Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" 
+			or Attachment.AttachedElements[i].Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit") then
+				return Attachment.AttachedElements[i]
 			end
+		end
+	end
+end
+--
+-- Returns the height of this board.
+function getThisBoardHeight()
+	if Variant == "E106 Stop for shunting" then return 0.400
+	elseif Variant == "E107 Unsecured area with handoperated points" then return 0.400
+	elseif Variant == "E36 Level crossing, location" then return 0.400
+	elseif Variant == "E36 Level crossing, announcement" then return 0.400
+	elseif Variant == "E38 Avalanche area" then return 0.400
+	elseif Variant == "E39 Frost gate" then return 0.400
+	elseif Variant == "E202 Speed restriction 10" then return 0.400
+	elseif Variant == "E202 Speed restriction 20" then return 0.400
+	elseif Variant == "E202 Speed restriction 30" then return 0.400
+	elseif Variant == "E202 Speed restriction lifted" then return 0.400
+	end
+end
+--
+-- Of the ID signs attached to this board, returns the first one, if any.
+function getFirstAttachedIdSign()
+	if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
+	
+	for i = 0, AttachedElements.Count - 1 do
+		if AttachedElements[i].RcType == rctype_SignEtcsId then	return AttachedElements[i] end
+	end
+end
+--
+-- If this board has an attached ID sign, then this function returns the Z offset that placed this board just below that ID sign.
+function getZOffsetFromIdSign(thisBoardHeight)
+	local idSign = getFirstAttachedIdSign()
+	if idSign == nil then return nil end
+	
+	local idSignZOffset = idSign.Geometry3D_0.Offset.Z
+	
+	local idSignHeight = nil
+	if idSign.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then idSignHeight = 0.400
+	elseif idSign.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then idSignHeight = 0.400
+	elseif idSign.Variant == "Signal E101-E ID-skilt, Dverg, 160x150" then idSignHeight = 0.150
+	elseif idSign.Variant == "Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then idSignHeight = 0.150
+	elseif idSign.Variant == "Signal E101-G ID-skilt, Stopp for skift, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-H ID-skilt, Forriglet område, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-K ID-skilt, Snøskredområde, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "Signal E101-L ID-skilt, Frostport, 400x325" then idSignHeight = 0.325
+	end
+
+	local minimumGap = 0.010
+	local nominalZOffset = idSignZOffset + idSignHeight/2 + thisBoardHeight/2 + minimumGap 
+	local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset + 0.005)) -- Round up to nearest cm.
+	return roundedZOffset
+end
+--
+-- If this board is an ERTMS board, then this function attempts to to calculate its Z offset.
+function getErtmsBoardZOffset()
+	local thisBoardHeight = getThisBoardHeight()
+		
+	if Attachment == nil then
+		local zOffsetFromIdSign = getZOffsetFromIdSign()
+		
+		if zOffsetFromIdSign ~= nil then return zOffsetFromIdSign
+		else return 2.88  -- Default value. Corresponds to idSignZOffset = 2.5 and idSignHeight = 0.325.
+		end
+	else
+		local minimumGap = 0.010
+		local intermediateBoard = getIntermediateBoard()
+		local intermediateBoardHeight = nil
+		
+		if intermediateBoard ~= nil then
+			intermediateBoardZOffset = intermediateBoard.Geometry3D_0.Offset.Z
+			
+			if intermediateBoard.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then intermediateBoardHeight = 0.325
+			elseif intermediateBoard.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then intermediateBoardHeight = 0.325
+			elseif intermediateBoard.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then intermediateBoardHeight = 0.400
+			elseif intermediateBoard.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then intermediateBoardHeight = 0.400 
+			end
+
+			if intermediateBoardZOffset ~= nil and thisBoardHeight ~= nil then
+				local nominalZOffset = intermediateBoardZOffset - intermediateBoardHeight/2 - minimumGap - thisBoardHeight/2
+				local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset - 0.005)) -- Round down to nearest cm.
+				return roundedZOffset
+			end
+		else
+			local attachmentZOffset = Attachment.Geometry3D_0.Offset.Z
+			local attachmentBoardHeight = getAttachmentBoardHeight()
+			intermediateBoardHeight = 0.325 -- Default height.
+			
+			if attachmentZOffset ~= nil and attachmentBoardHeight ~= nil and thisBoardHeight ~= nil then
+				local nominalZOffset = attachmentZOffset - attachmentBoardHeight/2 - minimumGap - intermediateBoardHeight - minimumGap - thisBoardHeight/2
+				local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset - 0.005)) -- Round down to nearest cm.
+				return roundedZOffset
+			end
+		end
+	end
+end
+--
+-- First tries to calculate the Z offset of this board by using the above ERTMS rules. If this fails then the below heuristics are used.
+function NOBN_bnp_getBoardOffset3DZ()
+	local ertmsBoardZOffset = getErtmsBoardZOffset()
+	if ertmsBoardZOffset ~= nil then return ertmsBoardZOffset end
+
+	-- To be mounted below other board on common pole:
+	if Variant:find("Meterangivelse") then return 2.6 --May be placed under 68F
+	elseif Variant:find("68F") then return 2.8 --Tilleggshastighet, to be placed under 68
+
+	--To be mounted relatively low on NSI63 optical signal's mast:
+	elseif Variant:find("62") then return 2.85 --Ugyldighetssignal på standard Bane NOR signalmast alternativ 2
+	elseif Variant:find("72") then return 2.45 --FJS begynner/slutter
+	elseif Variant:find("73") then return 2.45 --Rasvarsling
+	elseif Variant:find("F-ATC") or Variant:find("D-ATC") then return 2.9
+
+	--To be mounted on front/top of optical light signal's sunscreen:
+	elseif Variant:find("60E") then return 5.80 --ATC Varsel. Remember to adjust Offset.Y as well.
+
+	--Close to track, low placement, with pole:
+	elseif Variant:find("Bevegelig kryss") then return 0.5 --Short vertical pole close to track
+	elseif Variant:find("69") then return 1.5 --Temporary speed restriction, to be mounted with horizontal pole to track/sleeper
+
+	--Close to track, low placement, no pole:
+	elseif Variant:find("Baliseskilt") then return 0.0 --Mounted on platform element's side towards track, at A-balise
+
+	--May be hanging from portal, othwerwise on own pole:
+	elseif Variant:find("Spornummer") then return PortalMounted and -1 or 3.5
+	-- TODO elseif Variant:find("E34") then return PortalMounted and -1 or 3.5 --ERTMS Stedsskilt
+	elseif Variant:find("E35") then return PortalMounted and -1 or 3.5 --ERTMS Stoppskilt
+
+	--To be read by train driver sitting in train, AND by walking people:
+	elseif Variant:find("1000V") then return 2.5
+	elseif Variant:find("kjedebrudd") then return 2.5
+
+	--To be read by walking people:
+	elseif Variant:find("Nødtelefon") then return 2.00
+	elseif Variant:find("Stopp se og lytt") then return 2.00 --Skilt langs bilvei, for mennesker
+	elseif Variant:find("Arbeidsområde") then return 2.02 --Tenkt montert på et NSI hovedsignal
+
+	-- High relative Elevations, no pole:
+	elseif Variant:find("75B") then return 0.0 --Old km board type, directly on tunnel wall (high VerticalOffset)
+	elseif Variant:find("Rømningsavstand") then return 0.0 --Escape route distance / direction board, directly on tunnel wall
+
+	else 
+		return 3.5
+	end
+end
 		</Formula>
 	</LuaFunction>
 
@@ -4799,9 +5005,9 @@
 					or Variant:find("75B") --75AB: Kilometer, ny type
 				then
 					-- Ref TRV Underbygning vedlikehold, 2.1.1 "Sikt til signaler og skilt"
-					v = math.max(40,math.min(130,DesignSpeed))
-					d = RC__round(v/3.6 * 5, 0)
-					return d, _info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m.")
+					local v = math.max(40,math.min(130,DesignSpeed))
+					local d = RC__round(v/3.6 * 5, 0)
+					return d, _info(d.."m required at "..DesignSpeed.." km/h (5 seconds unbroken sighting, min. 56m, max. 181m).")
 			
 				elseif		
 					--Krav som til dvergsignaler pga kun aktuelle å observere under skifting (40 km/h / 50 meter)

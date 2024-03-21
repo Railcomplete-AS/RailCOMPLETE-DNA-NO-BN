@@ -35,11 +35,11 @@
 		<Constructor>String NOBN_com_mileageIncreasesTowardsLeft()</Constructor>
 		<Formula>
 			function NOBN_com_mileageIncreasesTowardsLeft()
-				acsYaxisTangent = getAlignmentInfo().Tangent
-				acsYaxisWcsAngle = math.deg(math.atan(acsYaxisTangent.Y,acsYaxisTangent.X))
-				cs = DocumentData.Document.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d
-				ucsXaxisWcsAngle = math.deg(math.atan(cs.Xaxis.Y,cs.Xaxis.X))
-				diffAngModulo360 = (acsYaxisWcsAngle - ucsXaxisWcsAngle) % 360
+				local acsYaxisTangent = getAlignmentInfo().Tangent
+				local acsYaxisWcsAngle = math.deg(math.atan(acsYaxisTangent.Y,acsYaxisTangent.X))
+				local cs = DocumentData.Document.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d
+				local ucsXaxisWcsAngle = math.deg(math.atan(cs.Xaxis.Y,cs.Xaxis.X))
+				local diffAngModulo360 = (acsYaxisWcsAngle - ucsXaxisWcsAngle) % 360
 				return diffAngModulo360 &gt; 90 and diffAngModulo360 &lt; 270
 			end
 		</Formula>
@@ -86,8 +86,8 @@
 		<Formula>
 			function NOBN_com_setSymbolFrame()
 				-- More symbol frame types may be available - see the appropriate Style Definitions file.
-				_language = 2 -- 1:English, 2:Norwegian, 3:French, 4:German
-				_frames = { 
+				local language = 2 -- 1:English, 2:Norwegian, 3:French, 4:German
+				local frames = { 
 					HISTORIC	= { "Historic",				"Historic",				"Historique",			"Historisch"			},
 					UNFINISHED	= { "Unfinished",			"Unfinished",			"Incomplet",			"Unvollständig"			},
 					WARNING		= { "Warning",				"Warning",				"Avertissement",		"Warnung"				},
@@ -102,50 +102,50 @@
 				--Priority: Show HISTORIC then UNFINISHED then ERROR then WARNING then OTHERs then NO_FRAME
 				-- By convention, historic layers have names starting with a double 'at' character '@@':
 				if (tostring(Layer):sub(1,2) == '@@') then
-					return _frames.HISTORIC[_language]
+					return frames.HISTORIC[language]
 				end
 			
 				--Check code and name for keywords:
 				--(inhibit evaluation of 'code' and 'name', since RC will not allow us to nest Lua calls too deep, 5 levels max)
 				local thisCode = getPropertyValue("code")
 				local thisName = getPropertyValue("name")
-				local t
-				t = _frames["UNFINISHED"][_language]
+			
+				local t = frames["UNFINISHED"][language]
 				if tostring(thisCode):upper():match(t:upper()) or tostring(thisName):upper():match(t:upper()) then 
 					return t
 				end
 			
-				t = _frames["WARNING"][_language]
+				t = frames["WARNING"][language]
 				if tostring(thisCode):upper():match(t:upper()) or tostring(thisName):upper():match(t:upper()) then 
 					return t
 				end
 			
-				t = _frames["ERROR"][_language]
+				t = frames["ERROR"][language]
 				if tostring(thisCode):upper():match(t:upper()) or tostring(thisName):upper():match(t:upper()) then 
 					return t
 				end
 
 				--Then scan the modelchecks for unfished items, warnings or errors - but suppress the symbolframe if a derogation
 				--has been requested or has been granted:
-				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
+				local modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
 				if (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
-					return _frames.UNFINISHED[_language]
-				elseif Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
-				elseif Derogation == "GRANTED" then return _frames.GRANTED[_language]
+					return frames.UNFINISHED[language]
+				elseif Derogation == "REQUESTED" then return frames.REQUESTED[language]
+				elseif Derogation == "GRANTED" then return frames.GRANTED[language]
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then
-					return _frames.ERROR[_language] --Deviating, no derogation requested or granted
+					return frames.ERROR[language] --Deviating, no derogation requested or granted
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count &gt; 0) then
-					return _frames.WARNING[_language] --Deviating, no derogation requested or granted
+					return frames.WARNING[language] --Deviating, no derogation requested or granted
 				else
 					--do nothing, fall through to next check
 				end
 			
 				--Then scan the various relations and their cardinalities to check for unsatisfied minimum requirements:
-				ss = Relations.SourceSpace
-				rel = Relations.ObjectRelations
-				nRel = getCollectionLength(rel)
+				local ss = Relations.SourceSpace
+				local rel = Relations.ObjectRelations
+				local nRel = getCollectionLength(rel)
 				for i = 0,nRel-1 do
-					r = rel[i]
+					local r = rel[i]
 					--[[
 						Example - object is a high voltage switch (Norw: Bryter)
 						r = this.Relations.Objectrelations
@@ -162,52 +162,52 @@
 						I.e., our search pattern must be followed by either slash '/' or end-of-line '$'.
 						Also, we must start by substitution of all '-' with '%-', since '-' is a special character for match().
 					--]]
-					ss1 = ss:gsub("%-","%%-").."/" 
-					ss2 = ss:gsub("%-","%%-").."$"
-					t1 = (r.ReverseRelationPromptText:match(ss1) == ss)
-					t2 = (r.ReverseRelationPromptText:match(ss2) == ss)
+					local ss1 = ss:gsub("%-","%%-").."/" 
+					local ss2 = ss:gsub("%-","%%-").."$"
+					local t1 = (r.ReverseRelationPromptText:match(ss1) == ss)
+					local t2 = (r.ReverseRelationPromptText:match(ss2) == ss)
 					--if true then return "Someone points to me = ".. ((t1 or t2) and "Yes" or "No") end
 					if t1 or t2 then
-						nForward = getCollectionLength(r.Relations)
-						minForward = r.Relation.RelatesTo.Min
+						local nForward = getCollectionLength(r.Relations)
+						local minForward = r.Relation.RelatesTo.Min
 						--if true then return nRel,i,"---",nForward,minForward,r.RelationPromptText,"---",nReverse,minReverse,r.ReverseRelationPromptText end
-						if nForward &lt; minForward then return _frames.UNFINISHED[_language] end
+						if nForward &lt; minForward then return frames.UNFINISHED[language] end
 					end
 			
-					t3 = (r.RelationPromptText:match(ss1) == ss)
-					t4 = (r.RelationPromptText:match(ss2) == ss)
+					local t3 = (r.RelationPromptText:match(ss1) == ss)
+					local t4 = (r.RelationPromptText:match(ss2) == ss)
 					--if true then return "I point to someone = ".. ((t3 or t4) and "Yes" or "No") end
 					if t3 or t4 then
-						nReverse = getCollectionLength(r.ReverseRelations)
-						minReverse = r.Relation.ReverseRelatesTo.Min
+						local nReverse = getCollectionLength(r.ReverseRelations)
+						local minReverse = r.Relation.ReverseRelatesTo.Min
 						--if true then return nRel,i,"---",nForward,minForward,r.RelationPromptText,"---",nReverse,minReverse,r.ReverseRelationPromptText end
-						if nReverse &lt; minReverse then return _frames.UNFINISHED[_language] end
+						if nReverse &lt; minReverse then return frames.UNFINISHED[language] end
 					end
 				end
 			
 				--Now, look for derogations or else look for unsatisfied modelchecks:
 				modelChecks = LuaExpressions:filter(function(x) return x.IsModelCheck end)
-				if Derogation == "REQUESTED" then return _frames.REQUESTED[_language]
-				elseif Derogation == "GRANTED" then return _frames.GRANTED[_language]
+				if Derogation == "REQUESTED" then return frames.REQUESTED[language]
+				elseif Derogation == "GRANTED" then return frames.GRANTED[language]
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_error" end).Count &gt; 0) then
-					return _frames.ERROR[_language] --Deviating, no derogation requested or granted
+					return frames.ERROR[language] --Deviating, no derogation requested or granted
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_warning" end).Count &gt; 0) then
-					return _frames.WARNING[_language] --Deviating, no derogation requested or granted
+					return frames.WARNING[language] --Deviating, no derogation requested or granted
 				elseif (modelChecks:filter(function(x) return x.Symbol == "_unfinished" end).Count &gt; 0) then
-					return _frames.UNFINISHED[_language]
+					return frames.UNFINISHED[language]
 				else
 					--do nothing, fall through to next check
 				end
 			
 				--If no problems remain, go on to show 'normal behaviour' frame for objects that feature a frame:
 				--Deal with axle counter special section objects (the layer name will depend on the DNA in use):
-				if RcType:upper():match(_frames.SECTION_TAG[_language]:upper()) then 
-					return _frames.SECTION[_language]
+				if RcType:upper():match(frames.SECTION_TAG[language]:upper()) then 
+					return frames.SECTION[language]
 				end
 			
 				--Deal with characteristic point special section objects (the layer name will depend on the DNA in use):
-				if RcType:upper():match(_frames.SEGMENT_TAG[_language]:upper()) then 
-					return _frames.SEGMENT[_language]
+				if RcType:upper():match(frames.SEGMENT_TAG[language]:upper()) then 
+					return frames.SEGMENT[language]
 				end
 			
 				--Nothing recognised:
@@ -235,13 +235,12 @@
 		<Constructor>String NOBN_com_getLabelItem2()</Constructor>
 		<Formula>
 			function NOBN_com_getLabelItem2()
-				local r,n,s,i
-				s = rel_Label_AppliesTo_Anything
-				r,n = getRelatedObjects(s)
+				local s = rel_Label_AppliesTo_Anything
+				local r,n = getRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."'."
 				else
-					t = "("..r[0].code
+					local t = "("..r[0].code
 					for i = 1, n-1 do
 						t = t..", "..r[i].code
 					end
@@ -274,9 +273,9 @@
 				if obj == nil then obj = this end
 			
 				--Gauge tolerance when looking for rails belonging to the same track:
-				gaugeTolerance = 0.030 --[m]
+				local gaugeTolerance = 0.030 --[m]
 				--If not too far away, we prefer a dedicated earth rail over double insulated track, where you should consider not earthing to both rails:
-				railDistanceTolerance = 6.000  --[m]
+				local railDistanceTolerance = 6.000  --[m]
 			
 				if EarthingMethod == "None" then 
 					return
@@ -285,7 +284,8 @@
 					return _info("UNFINISHED - Earthing method is Unknown, cannot deduce EarthingAlignment.")
 					
 				elseif EarthingMethod == "Rail" then
-					r = getClosestAlignments(rctype_InnerRailAndInsulation,obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
+					local r = getNearbyAlignments(obj, rctype_InnerRailAndInsulation):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
+					local d
 					if getAlignmentInfo(r[0].id,obj).NormalProjectionExists then
 						--Find distance sideways to closest insulated rail:
 						d = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
@@ -300,10 +300,9 @@
 						--...otherwise, check if the two closest *un*insulated rails belong to the same track, asuuming both are (through use of impedances) carrying return current:
 						--Btw, this proceudre fails if the object is between two tracks where insulated rail distances are just above the tolerance, so that the two closest 
 						--return rails belong to two *different* railway tracks.
-						r = getClosestAlignments(rctype_InnerRailAndInsulation):filter(function (x) return getAlignmentInfo(x.id).NormalProjectionExists and x.color:upper() == "GREEN" end)
-						n = getCollectionLength(r)
-						d0 = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
-						d1 = getAlignmentInfo(r[1].id,obj).DistanceToAlignment
+						r = getNearbyAlignments(rctype_InnerRailAndInsulation):filter(function (x) return getAlignmentInfo(x.id).NormalProjectionExists and x.color:upper() == "GREEN" end)
+						local d0 = getAlignmentInfo(r[0].id,obj).DistanceToAlignment
+						local d1 = getAlignmentInfo(r[1].id,obj).DistanceToAlignment
 						if math.abs(math.abs(d0-d1) - r[0].AlignmentSystem.AlignmentGauge) &lt; gaugeTolerance then
 							--Pick closest un-insulated rail, although it is 'bad taste' if we thereby end up
 							--with objects earthed to both rails within one double-insulated track circuit:
@@ -312,11 +311,9 @@
 							return _info("Search for nearby rails suitable for protective earthing failed (i.e., rails of type '"..rctype_InnerRailAndInsulation.."', carrying return current).")
 						end
 					end
-					r = getClosestAlignments(rctype_InnerRailAndInsulation,obj):filter(function (x) return x:getPropertyValue("Color"):upper() == "RED" end)
-					return r[0]
 			
 				elseif EarthingMethod == "Wire" then 
-					r = getClosestAlignments(rctype_EarthingConductor,obj)
+					local r = getNearbyAlignments(obj, rctype_EarthingConductor)
 					return r[0]
 					
 				elseif EarthingMethod == "Object" then 
@@ -436,15 +433,15 @@
 						return 0
 					else 
 						--Move earth connection a little past insulation along insulated rail's tangent direction (at start or end of rail): 
-						ps = obj.EarthingAlignment.RcAlignment.StartPoint
-						pe = obj.EarthingAlignment.RcAlignment.EndPoint
-						ds = RC__getDistance2D(ps,obj)
-						de = RC__getDistance2D(pe,obj)
+						local ps = obj.EarthingAlignment.RcAlignment.StartPoint
+						local pe = obj.EarthingAlignment.RcAlignment.EndPoint
+						local ds = RC__getDistance2D(ps,obj)
+						local de = RC__getDistance2D(pe,obj)
 						if ds &lt; de then
-							u = obj.EarthingAlignment.RcAlignment.StartTangent
+							local u = obj.EarthingAlignment.RcAlignment.StartTangent
 							return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) &gt; 0 and offset or -offset 
 						else
-							u = obj.EarthingAlignment.RcAlignment.EndTangent
+							local u = obj.EarthingAlignment.RcAlignment.EndTangent
 							return ((ps.X-geoCoord.X)*u.X + (ps.Y-geoCoord.Y)*u.Y) &gt; 0 and offset or -offset 
 						end
 					end
@@ -553,6 +550,7 @@
 			function NOBN_trk_getLiftFromCant(where)
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				local ai
 				if where == nil then
 					-- can be called from point objects:
 					ai = getAlignmentInfo()
@@ -560,6 +558,7 @@
 					-- can be called from anywhere, including an alignment, as a sampled formula:
 					ai = getAlignmentInfo(where)
 				end
+				local cg, lwc, dta
 				if RcAlignment == nil then 
 					-- 'this' is a point object:
 					cg = Alignment.AlignmentSystem.CantGauge
@@ -574,7 +573,7 @@
 				if not lwc then 
 					return 0.0, _info("Alignment system does not lift with cant.")
 				end
-				c = ai.Cant
+				local c = ai.Cant
 				if c == nil or RC__isNan(c) then
 					return 0.0, _info("UNFINISHED - No cant data in alignment, assuming zero cant.")
 				elseif c == 0 then
@@ -582,18 +581,19 @@
 				else
 					-- Cant is measured in millimeter superelevation
 					-- Ask alignment system whether cant leads to lift or not:
-					h = c/1000.0 --[m]
+					local h = c/1000.0 --[m]
+					local msg
 					if h &gt; cg then 
 						h = cg - 0.001 -- Almost 90 degrees roll...
 						msg = "Cant truncated to max, "..RC__round(1000*h).." mm."
 					else
 						msg = RC__round(1000*h).." mm cant."
 					end
-					railSeparationXY = math.sqrt(cg^2 - h^2)
+					local railSeparationXY = math.sqrt(cg^2 - h^2)
 					if h == 0.0 then
 						return 0.0, _info(msg)
 					else
-						cr = ai.CantRotation
+						local cr = ai.CantRotation
 						if cr == "CCW" then
 							-- Right rail lifted above left rail
 							return h/2 + h/2 * dta / (railSeparationXY / 2)
@@ -630,14 +630,15 @@
 				end
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				local ai
 				if where == nil then
 					-- Assume function has been called from a point object:
 					ai = getAlignmentInfo()
 				else
 					ai = getAlignmentInfo(where)
 				end
-				g = ai.Gradient
-				h = ai.Cant/1000.0
+				local g = ai.Gradient
+				local h = ai.Cant/1000.0
 				if RC__isNan(h) then 
 					return TrackPlaneDistance, _info("No cant data in alignment, assuming zero cant.")
 				else
@@ -657,6 +658,7 @@
 			function NOBN_trk_getRollFromCant(where)
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC as 'where', sampled along the alignment.
 				--'where' is a data structure, if present, consisting of .Pos and .Ref
+				local ai
 				if where == nil then
 					-- Assume function was called from a point object:
 					ai = getAlignmentInfo()
@@ -664,6 +666,7 @@
 					-- can be called from anywhere, including an alignment, as a sampled formula:
 					ai = getAlignmentInfo(where)
 				end
+				local cg
 				if RcAlignment == nil then 
 					-- 'this' is a point object:
 					cg = Alignment.AlignmentSystem.CantGauge
@@ -671,7 +674,7 @@
 					-- 'this' is an alignment:
 					cg = AlignmentSystem.CantGauge
 				end
-				c = ai.Cant
+				local c = ai.Cant
 				if c == nil or RC__isNan(c) then
 					return 0.0, _info("UNFINISHED - No cant data in alignment, assuming zero cant.")
 				elseif c == 0 then
@@ -679,9 +682,9 @@
 				else
 					-- Cant is measured in millimeter superelevation, with rotation clockwise or counterclockwise in the track's direction
 					-- Assume that only one rail is lifted at a time.
-					h = c/1000.0
-					cr = tostring(ai.CantRotation)
-					if  cr:upper() == "CW" then
+					local h = c/1000.0
+					local cr = tostring(ai.CantRotation)
+					if cr:upper() == "CW" then
 						return math.asin(h/cg)*(180/math.pi)
 					elseif cr:upper() == "CCW" then 
 						return -math.asin(h/cg)*(180/math.pi)
@@ -701,12 +704,13 @@
 		<Formula>
 			function NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(where)
 				--If called to express e.g. a road, or OCS wire clamps or sweeping a contact wire, then '_position' is provided by RC, sampled along the alignment.
+				local ai
 				if where == nil then
 					ai = getAlignmentInfo()
 				else
 					ai = getAlignmentInfo(where)
 				end
-				angleInDecimalDegrees = ai.Cant --  NB! Cant is interpreted as decimal degrees CW/CCW.
+				local angleInDecimalDegrees = ai.Cant --  NB! Cant is interpreted as decimal degrees CW/CCW.
 				if (RC__isNan(angleInDecimalDegrees)) then
 					return 0, _info("UNFINISHED - No cant (to be interpreted as an angle in decimal degrees) data in non-track alignment, assuming zero cant.")
 				elseif angleInDecimalDegrees == 0 then
@@ -714,13 +718,13 @@
 				else
 					-- Cant is measured in millimeter superelevation, with rotation clockwise or counterclockwise in the track's direction
 					-- Assume that only one rail is lifted at a time.
-					cr = tostring(ai.CantRotation)
+					local cr = tostring(ai.CantRotation or "No data")
 					if  cr:upper() == "CW" then
 						return angleInDecimalDegrees
 					elseif cr:upper() == "CCW" then 
 						return -angleInDecimalDegrees
 					else
-						return 90.0,_error, _info("Bad cant rotation data ["..ai.CantRotation.."], assuming 90 degrees roll as a visual warning.")
+						return 90.0,_error, _info("Bad cant rotation data ["..cr.."], assuming 90 degrees roll as a visual warning.")
 					end
 				end
 			end
@@ -735,6 +739,7 @@
 		<Formula>
 			function NOBN_trk_getPitchFromGradient(where)
 				--If called to express e.g. sleepers and rails for a 3D alignment, then '_position' is provided by RC, sampled along the alignment.
+				local g
 				if where == nil then
 					g = getAlignmentInfo().Gradient
 				else
@@ -756,7 +761,7 @@
         <Constructor>Double NOBN_trk_getYawFromDir([Double rotation])</Constructor>
 		<Formula>
 			function NOBN_trk_getYawFromDir(rotation)
-				d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
+				local d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
 				if d == nil then return 0 end
 				if rotation == nil and AngularOffset == nil then
 					-- No argument given, and no standard property 'AngularOffset' exists for the current object
