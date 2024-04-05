@@ -1,4 +1,5 @@
 echo off
+rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
 echo        Settings Adm=%ADM% 
 rem			*********************************************************************************

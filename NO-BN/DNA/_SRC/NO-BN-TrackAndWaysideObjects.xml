@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -93,7 +93,7 @@
 		<LuaExpression Name="LateralOffset"><Formula>RC__getNearestSnapDistance(getPropertyValue("LateralOffset"),5)</Formula></LuaExpression>
 		<LuaExpression Name="ReferenceMileage">
 			<Formula>
-				r = getRelatedObjects(rel_Label_AppliesTo_Anything)
+				local r = getRelatedObjects(rel_Label_AppliesTo_Anything)
 				return r[0] and r[0].ReferenceMileage or getPropertyValue(ReferenceMileage)
 			</Formula>
 		</LuaExpression>
@@ -283,7 +283,7 @@
 		<LuaExpression Name="GlobalWidth"><Formula>_JBTKO_SPO_GlobalWidth()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPO_GlobalWidth()" ReturnType="String"
 			Description="Returns the CAD system Global Width (modelspace / paperspace line thickness) for railway track alignments.">
-			<Constructor>_JBTKO_SPO_GlobalWidth()</Constructor>
+			<Signature>_JBTKO_SPO_GlobalWidth()</Signature>
 			<Formula>
 				function _JBTKO_SPO_GlobalWidth()
 					if SymbolMode == 'Geographic' then
@@ -434,7 +434,7 @@
 		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKO_KJK_SweptGeometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_KJK_SweptGeometry3DName()" ReturnType="String"
 				Description="Returns the 3D model name [String] for the rail edge and rail isolation state.">
-			<Constructor>String _JBTKO_KJK_SweptGeometry3DName()</Constructor>
+			<Signature>String _JBTKO_KJK_SweptGeometry3DName()</Signature>
 			<Formula>
 				function _JBTKO_KJK_SweptGeometry3DName()
 					local iso = getDownObject(rctype_InsulatedRailJoint)
@@ -449,7 +449,7 @@
 						return "NO-BN-SWEEP-FE-WIR-WIRE-GRØNN-DIAMETER-050"
 					else
 						--unknown color code:
-						return "NO-BN-SWEEP-FE-WIR-WIRE-"..iso.color.."-DIAMETER-050"
+						return "NO-BN-SWEEP-FE-WIR-WIRE-"..iso.Color.."-DIAMETER-050"
 					end
 				end
 			</Formula>
@@ -461,28 +461,28 @@
 		<LuaExpression Name="code"><Formula>_JBTKO_KJK_PointOfContact_code(nil)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_KJK_PointOfContact_code()" ReturnType="String"
 			Description="Obtains the code for a rail point-of-contact alignment, deduced from an insulation in the associated track at the rail's start point.">
-			<Constructor>String _JBTKO_KJK_PointOfContact_code([AlignmentRef alg])</Constructor>
+			<Signature>String _JBTKO_KJK_PointOfContact_code([AlignmentRef alg])</Signature>
 			<Formula>
 				function _JBTKO_KJK_PointOfContact_code(alg)
 					if alg == nil then alg = this end
 					if alg.RcAlignment == nil then return "ERROR - Bad argument ["..RC__identify(alg).."] - has no RcAlignment." end
 					local tol = 0.050 --[m]
-					ps = alg.RcAlignment.StartPoint
-					pe = alg.RcAlignment.EndPoint
-					trackGauge = alg.AlignmentSystemAlignmentGauge
+					local ps = alg.RcAlignment.StartPoint
+					local pe = alg.RcAlignment.EndPoint
+					local trackGauge = alg.AlignmentSystemAlignmentGauge
 					--Get point near midpoint of rail:
-					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
+					local pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
 					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
-					ts = getClosestTracks(ps.X,ps.Y):
+					local ts = getNearbyAlignments(getPoint3D(ps.X,ps.Y)):
 						filter(function (x)
 								local d = getAlignmentInfo(x.id,ps.X,ps.Y).DistanceToAlignment
 								return math.abs(math.abs(d) - trackGauge/2.0) &lt; tol
 							end)
-					n = getCollectionLength(ts)
+							local n = getCollectionLength(ts)
 					if n == 0  then
 						return "UNFINISHED - Did not find a track associated with this rail."
 					elseif n == 1  then
-						ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
+						local ds = getAlignmentInfo(ts[0].id,ps.X,ps.Y).DistanceToAlignment
 						return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[0].code
 					else
 						--Switch, or continuation in a crossing - more than one
@@ -490,8 +490,8 @@
 						--Note: We cannot use start+end point, since the rail's associated 
 						--track may deviate from the same track axis in both ends.
 						for i=0,n-1 do
-							ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
-							dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
+							local ds = getAlignmentInfo(ts[i].id,ps.X,ps.Y).DistanceToAlignment
+							local dm = getAlignmentInfo(ts[i].id,pm.X,pm.Y).DistanceToAlignment
 							if math.abs(ds-dm) &lt; tol then
 								--We have probably found two parallel rails with suitable gauge distance:
 								return (ds &lt; 0 and "V. skinne " or "H. skinne ")..ts[i].code
@@ -525,7 +525,7 @@
 				Layer="JBTKO_HOT" Color="ByLayer"
 				Group="Overbygning/Karakteristiske trasépunkter"
 				AttAddX="0"
-				AttAddY="{% assign mitl = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if mitl == 'True' %}180{% else %}0{% endif %}"
+				AttAddY="0"
 				>
 				
 		<RelationSpace>horisontaltrasépunkt</RelationSpace>
@@ -562,14 +562,14 @@
 		<LuaExpression Name="Variant"><Formula>_JBTKO_HOT_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_HOT_Variant()" ReturnType="String"
 				Description="Analyzes local alignment geometry and cant and returns nearest vertex' Variant, i.e. type of geometric vertex/cant.">
-			<Constructor>String _JBTKO_HOT_Variant()</Constructor>
+			<Signature>String _JBTKO_HOT_Variant()</Signature>
 			<Formula>
 				function _JBTKO_HOT_Variant()
-					ai = getAlignmentInfo()
-					nearest = ai.NearestHorizontalVertex
-					nearestCant = ai.NearestCantVertex
+					local ai = getAlignmentInfo()
+					local nearest = ai.NearestHorizontalVertex
+					local nearestCant = ai.NearestCantVertex
 					-- insert "RE,RB" if cant station is closest
-					vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+					local vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 					if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
 										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 						if math.abs(nearestCant.GradientIn) &gt; 0 and math.abs(nearestCant.GradientOut) &gt; 0 then
@@ -605,21 +605,21 @@
 		<LuaExpression Name="Mileage"><Formula>_JBTKO_HOT_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_HOT_Mileage()" ReturnType="Double"
 				Description="Analyzes local alignment geometry and cant and returns nearest vertex' mileage.">
-			<Constructor>Double _JBTKO_HOT_Mileage()</Constructor>
+			<Signature>Double _JBTKO_HOT_Mileage()</Signature>
 			<Formula>
 			function _JBTKO_HOT_Mileage()
-				ai = getAlignmentInfo()
-				nearest = ai.NearestHorizontalVertex
+				local ai = getAlignmentInfo()
+				local nearest = ai.NearestHorizontalVertex
 				-- insert "RE,RB" if cant station is closest
-				nearestCant = ai.NearestCantVertex
-				vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
+				local nearestCant = ai.NearestCantVertex
+				local vertexMileage = nearest.Item1 and nearest.Item1.EndMileage or nearest.Item2.StartMileage
 				if nearestCant ~= nil and math.abs(nearestCant.Mileage - ai.Mileage) &lt; math.abs(vertexMileage - ai.Mileage)
 										and math.abs(vertexMileage - ai.Mileage) &gt; 1 then
 					return nearestCant.Mileage
 				else
 					if nearest.Item2 ~= nil then return nearest.Item2.StartMileage end
 					if nearest.Item1 ~= nil then return nearest.Item1.EndMileage end
-					return 0.0,error_info("Bad data for function _JBTKO_HOT_Mileage().")
+					return 0.0,_error, _info("Bad data for function _JBTKO_HOT_Mileage().")
 				end
 			end
 			</Formula>
@@ -655,7 +655,7 @@
 				Layer="JBTKO_VET" Color="ByLayer"
 				Group="Overbygning/Karakteristiske trasépunkter"
 				AttAddX="0"
-				AttAddY="{% assign bool = {{alignmentRotation | minus:ucsRotation | cosisnegative}} %}{% if bool == 'True' %}180{% else %}0{% endif %}"
+				AttAddY="0"
 				>
 				
 		<RelationSpace>vertikaltrasépunkt</RelationSpace>
@@ -688,16 +688,16 @@
 		<LuaExpression Name="Variant"><Formula>_JBTKO_VET_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_Variant()" ReturnType="String"
 				Description="Analyzes local alignment vertical profile and returns nearest segment delimiters or vertex' 'Variant', i.e. type of vertical vertex.">
-			<Constructor>String _JBTKO_VET_Variant()</Constructor>
+			<Signature>String _JBTKO_VET_Variant()</Signature>
 			<Formula>
 				function _JBTKO_VET_Variant()
-					ai = getAlignmentInfo()
-					nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+					local ai = getAlignmentInfo()
+					local nearestDelimiter = ai.NearestVerticalSegmentDelimiter
 					if nearestDelimiter ~= nil then
 						if nearestDelimiter.Type == "CurveStart" then return "SE1" end
 						if nearestDelimiter.Type == "CurveEnd" then return "SE2" end
 					end
-					nvv = ai.NearestVerticalVertex
+					local nvv = ai.NearestVerticalVertex
 					if nvv == nil then return "_" end
 					if nvv.Type == "Crest" then return "HBP" end
 					if nvv.Type == "Sag" then return "LBP" end
@@ -711,28 +711,23 @@
 		<LuaExpression Name="PviInfo"><Formula>_JBTKO_VET_PviInfo()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_PviInfo()" ReturnType="String"
 				Description="Returns vertical profile info for crests and sags.">
-			<Constructor>String _JBTKO_VET_PviInfo()</Constructor>
+			<Signature>String _JBTKO_VET_PviInfo()</Signature>
 		<Formula>
 			function _JBTKO_VET_PviInfo()
-				str = ""
-				tNil			= "?"
-				tR				= "R"
-				tAxisStartEnd	= "(Linje start/slutt)"
-				tMasl			= " moh."	--meters above [mean] sea level
+				local str = ""
+				local ai = getAlignmentInfo()					
+				local nearestDelimiter = ai.NearestVerticalSegmentDelimiter
+				local nearestVertex = ai.NearestVerticalVertex
 					
-				ai = getAlignmentInfo()					
-				nearestDelimiter = ai.NearestVerticalSegmentDelimiter
-				nearestVertex = ai.NearestVerticalVertex
-					
-				if nearestVertex == nil then return tNil end
+				if nearestVertex == nil then return "?" end
 				if nearestDelimiter ~= nil and nearestDelimiter.Type ~= "Pvi" then
 					if nearestDelimiter.Type == "CurveStart" then str = "SE1" end
 					if nearestDelimiter.Type == "CurveEnd" then str = "SE2" end
 				else
-					if nearestVertex.Radius &lt; 0 then str = tR..string.format("%.03f", nearestVertex.Radius) end
-					if nearestVertex.Type == "None" then str = tAxisStartEnd end
+					if nearestVertex.Radius &lt; 0 then str = "R"..string.format("%.03f", nearestVertex.Radius) end
+					if nearestVertex.Type == "None" then str = "(Linje start/slutt)" end
 				end
-				return str.."\\P".."H="..string.format("%.3f", nearestDelimiter.Elevation)..tMasl
+				return str.."\\P".."H="..string.format("%.3f", nearestDelimiter.Elevation).." moh."	--meters above [mean] sea level
 			end
 		</Formula>
 		</LuaFunction>
@@ -740,10 +735,10 @@
 		<LuaExpression Name="Mileage"><Formula>_JBTKO_VET_Mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_Mileage()" ReturnType="Double"
 				Description="Analyzes local alignment profile and returns nearest vertex' mileage.">
-			<Constructor>Double _JBTKO_VET_Mileage()</Constructor>
+			<Signature>Double _JBTKO_VET_Mileage()</Signature>
 			<Formula>
 				function _JBTKO_VET_Mileage()
-					nearestDelimiter = getAlignmentInfo().NearestVerticalSegmentDelimiter
+					local nearestDelimiter = getAlignmentInfo().NearestVerticalSegmentDelimiter
 					return nearestDelimiter == nil and nil or nearestDelimiter.Mileage
 				end
 			</Formula>
@@ -752,7 +747,7 @@
 		<LuaExpression Name="code"><Formula>_JBTKO_VET_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_VET_code()" ReturnType="String"
 				Description= "Analyzes local alignment vertical profile and returns code for the nearest characteristic point.">
-			<Constructor>String _JBTKO_VET_code()</Constructor>
+			<Signature>String _JBTKO_VET_code()</Signature>
 			<Formula>
 				function _JBTKO_VET_code()
 					return Variant
@@ -831,7 +826,7 @@
 			<Variant Name="Kurve">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
+						local ai = getAlignmentInfo()
 						return Variant.."\\P".."L="..string.format("%.3f",ai.Segment.Length) .."\\P".."R="..string.format("%.3f",ai.Segment.RadiusStart)
 					</Formula>
 				</LuaExpression>
@@ -839,24 +834,25 @@
 			<Variant Name="Klotoide">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						segment = ai.Segment
-
-						if segment.RadiusStart == math.huge  then 
+						local ai = getAlignmentInfo()
+						local segment = ai.Segment
+						local text1
+						if segment.RadiusStart == math.huge then 
 							text1 = "RL"
 						else
 							text1 = "R"..string.format("%.3f",segment.RadiusStart)
 						end
 						
+						local text2
 						if segment.RadiusEnd == math.huge then
 							text2 = "RL"
 						else
 							text2 = "R"..string.format("%.3f",segment.RadiusEnd)
 						end
 						
-						vector = ai.Tangent
-						TangentAngle2D = math.atan(vector.Y,vector.Z)
-						if (math.cos(getUcsAngle() - TangentAngle2D) &lt; 0) then
+						local vector = ai.Tangent
+						local tangentAngle2D = math.atan(vector.Y,vector.Z)
+						if (math.cos(getUcsAngle() - tangentAngle2D) &lt; 0) then
 							text = "&lt;"..text2.."-"..text1.."&gt;"
 						else
 							text = "&lt;"..text1.."-"..text2.."&gt;"
@@ -870,7 +866,7 @@
 		
 		<LuaExpression Name="Variant">		   
 			<Formula>
-				type = getAlignmentInfo().segment.Type
+				type = getAlignmentInfo().Segment.Type
 				if type == "Straight" then return "Rettlinje" end
 				if type == "Curve" then return "Kurve" end
 				if type == "Clothoid" then return "Klotoide" end
@@ -879,9 +875,9 @@
 		
 		<LuaExpression Name="LateralOffset">
 			<Formula>
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				local sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("LateralOffset")
+					local d = getPropertyValue("LateralOffset")
 					if d == 0 then 
 						return -6/sc
 					else
@@ -953,19 +949,19 @@
 			<Variant Name="Gradient">
 				<LuaExpression Name="code">
 					<Formula>
-						Variant.."\\P"..string.format("%.1f",getAlignmentInfo().gradient).." {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00}"
+						Variant.."\\P"..string.format("%.1f",getAlignmentInfo().Gradient).." {\\H0.5x;\\A2;0}/{\\H0.5x;\\A0;00}"
 					</Formula>
 				</LuaExpression>
 			</Variant>
 			<Variant Name="HBP">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						nvv = ai.NearestVerticalVertex
-						pviElevation = string.format("%.3f", nvv.Elevation)
-						trackElevation = string.format("%.3f", ai.Elevation)
-						length3D = string.format("%.3f", nvv.Length)
-						radius = string.format("%.3f", nvv.Radius)
+						local ai = getAlignmentInfo()
+						local nvv = ai.NearestVerticalVertex
+						local pviElevation = string.format("%.3f", nvv.Elevation)
+						local trackElevation = string.format("%.3f", ai.Elevation)
+						local length3D = string.format("%.3f", nvv.Length)
+						local radius = string.format("%.3f", nvv.Radius)
 						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3D.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
@@ -974,12 +970,12 @@
 			<Variant Name="LBP">
 				<LuaExpression Name="code">
 					<Formula>
-						ai = getAlignmentInfo()
-						nvv = ai.NearestVerticalVertex
-						pviElevation = string.format("%.3f", nvv.Elevation)
-						trackElevation = string.format("%.3f", ai.Elevation)
-						length3D = string.format("%.3f", nvv.Length)
-						radius = string.format("%.3f", nvv.Radius)
+						local ai = getAlignmentInfo()
+						local nvv = ai.NearestVerticalVertex
+						local pviElevation = string.format("%.3f", nvv.Elevation)
+						local trackElevation = string.format("%.3f", ai.Elevation)
+						local length3D = string.format("%.3f", nvv.Length)
+						local radius = string.format("%.3f", nvv.Radius)
 						return Variant.."\\P".."Hpvi="..pviElevation.."\\P".."Hspor="..trackElevation.."\\P".."L3D="..length3D.."\\P".."R="..radius
 					</Formula>
 				</LuaExpression>
@@ -988,7 +984,7 @@
 		
 		<LuaExpression Name="Variant">		   
 			<Formula>
-				nvv = getAlignmentInfo().NearestVerticalVertex
+				local nvv = getAlignmentInfo().NearestVerticalVertex
 				if nvv.Type == "None" then return "Gradient"
 				elseif nvv.Type == "Crest" then return nvv.Radius &lt; 4e-4 and "Gradient" or "HBP"
 				elseif nvv.Type == "Sag" then return nvv.Radius &lt; 4e-4 and "Gradient" or "LBP"
@@ -999,9 +995,9 @@
 
 		<LuaExpression Name="LateralOffset">
 			<Formula>
-				sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
+				local sc = DocumentData.Document.Database.Cannoscale.Scale --Annotative scale
 				if RcType:upper():match("SEGMENT") then
-					d = getPropertyValue("LateralOffset")
+					local d = getPropertyValue("LateralOffset")
 					if d == 0 then 
 						return -6/sc
 					else
@@ -1124,7 +1120,7 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___TRK"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT_NO_3D"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>

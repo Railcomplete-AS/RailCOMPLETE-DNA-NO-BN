@@ -2,7 +2,7 @@
 ;
 ; NO-BN Fundament for mast.lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -872,7 +872,7 @@
 (defun NOBN-KL-FUNDAMENT-METALL-VEGGKONSOLL ( / blockName description wx wy cx cy sx sy bx by bd )
 	; Scale is mandated by Bane NOR symbol catalogue, "EH-KL_Strekningsplan.dwg" found as download at the TRV web site.
 	; Bane NOR 2D layer/symbol: JBTEH_Komponenter / EH_Fund_Konsoll
-	; Ref EH.xxxxx / Multiconsult drawing IAT-20-R-00006, ref email 2020-09-29 MB-CF (Marita Bjorøy) - RE Watch - SV Fjellbrakett railscomplete
+	; Ref EH.xxxxx / Multiconsult drawing IAT-20-R-00006, ref email 2020-09-29 MB-CF (Marita Bjorøy) - RE Watch - SV Fjellbrakett railcomplete
 	; Foundation for OCS masts with standard 191x374 bolt group.
 	; Symbol: A wall mount bracket with a bolt group, and an "X" in the middle.
 	; Insertion direction is "both" in a track.

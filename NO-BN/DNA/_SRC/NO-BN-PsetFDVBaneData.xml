@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -196,10 +196,10 @@
 
     <LuaFunction Name="NOBN_com_FDVBaneDataObjektID()" ReturnType="String"
 		Description="Returnerer BaneData Objekt-ID og utfører en formatkontroll 'ff-ttt-nnnnnn'.">
-        <Constructor>String NOBN_com_FDVBaneDataObjektID()</Constructor>
+        <Signature>String NOBN_com_FDVBaneDataObjektID()</Signature>
         <Formula>
 			function NOBN_com_FDVBaneDataObjektID()
-				a,b,c = BaneNORBaneDataID:upper():match("^(%a%a)%-(%a%a%a)%-(%d%d%d%d%d%d)$")
+				local a,b,c = BaneNORBaneDataID:upper():match("^(%a%a)%-(%a%a%a)%-(%d%d%d%d%d%d)$")
 				if a and b and c then 
 					--Syntax OK, check semantics:
 					if a == "KU" or a == "KO" or a == "EH" or a == "SA" or a == "TE" or a == "EL" then
@@ -228,7 +228,7 @@
 
     <LuaFunction Name="NOBN_com_FDVBaneDataBeskrivelse()" ReturnType="String"
 		Description="Returnerer en beskrivelse, hentet fra [Pset Bane NOR].BaneNORBeskrivelse. Verdien kan være blank (tomt felt).">
-        <Constructor>String NOBN_com_FDVBaneDataBeskrivelse()</Constructor>
+        <Signature>String NOBN_com_FDVBaneDataBeskrivelse()</Signature>
         <Formula>
 			function NOBN_com_FDVBaneDataBeskrivelse()
 				return BaneNORBeskrivelse, _info("Verdi er hentet fra [Pset Bane NOR].Beskrivelse")
@@ -240,15 +240,15 @@
 
     <LuaFunction Name="NOBN_com_Pset_FDVBaneDataReferansesporFra()" ReturnType="String"
 		Description="Returnerer referansespor for punktobjekt, eller referansespor i linjeobjekts startpunkt. MERK: For at referansespor-Km skal kunne utledes korrekt så må (1) absolutt alle punktobjekter tilhøre en egen linje (property [Plassering langs linje].[Egen linje]), og (2) absolutt alle linjer må definere hvilket referansespor de avhenger av. For å definere et linjeobjekts referansespor: (a) Start kommando 'RC-AlignmentManager' (b) Åpne flik 'Reference Alignment' (c) Aktiver editeringsmodus (d) Selekter linjeobjektet (e) Editer radene i tabellvisningen. Dersom tabellen er tom så er sporet sin egen referanse (og kan være referanse for andre linjer). Hver rad i tabellen angir et startsted i linjen samt hvilken linje som er dens referansespor herfra. Angivelsen gjelder fram til neste rads startpunkt, eller til linjens ende.">
-        <Constructor>String NOBN_com_Pset_FDVBaneDataReferansesporFra()</Constructor>
+        <Signature>String NOBN_com_Pset_FDVBaneDataReferansesporFra()</Signature>
         <Formula>
 			function NOBN_com_Pset_FDVBaneDataReferansesporFra()
 				if RcAlignment then 
 					--Linjeobjekt:
-					x = RcAlignment.StartPoint.X
-					y = RcAlignment.StartPoint.Y
-					refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
-					alg = getObjectFromId(refId)
+					local x = RcAlignment.StartPoint.X
+					local y = RcAlignment.StartPoint.Y
+					local refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
+					local alg = getObjectFromId(refId)
 					if alg.RcType ~= rctype_Track and alg.RcType ~= rctype_AuxiliaryLine then
 						return _warning, RC__identify(alg),
 							_info("Referansesporet "..RC__identify(alg).." som er angitt i linjeobjektets startpunkt må ha RcType '"..rctype_Track.." eller "..rctype_AuxiliaryLine.."'.")
@@ -262,14 +262,14 @@
 
 				elseif Alignment then 
 					--Punktobjekt som tilhører en linje:
-					x = geoCoord.X
-					y = geoCoord.Y
+					local x = geoCoord.X
+					local y = geoCoord.Y
 					if not getAlignmentInfo(Alignment.id,x,y).NormalProjectionExists then
 						return _warning, "Ukjent",
 						_info("Punktobjektet har ingen projeksjon på [Plassering langs linje].[Egen linje], kan ikke utlede hvilket referansespor som er gjeldende.")
 					end
-					refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
-					alg = getObjectFromId(refId)
+					local refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
+					local alg = getObjectFromId(refId)
 					if alg.RcType ~= rctype_Track and alg.RcType ~= rctype_AuxiliaryLine then
 						return _warning, RC__identify(alg),
 							_info("Referansesporet "..RC__identify(alg).." som er angitt i linjeobjektets startpunkt må ha RcType '"..rctype_Track.." eller "..rctype_AuxiliaryLine.."'.")
@@ -290,15 +290,15 @@
 
     <LuaFunction Name="NOBN_com_Pset_FDVBaneDataKmFra()" ReturnType="String"
 		Description="Returnerer Km [Km] (ReferenceMileage). Punktobjekt: objektets Km målt som projeksjon på referansporet. Linjeobjekt: Startpunktets Km målt som projeksjon på linjens referansespor.">
-        <Constructor>String NOBN_com_Pset_FDVBaneDataKmFra()</Constructor>
+        <Signature>String NOBN_com_Pset_FDVBaneDataKmFra()</Signature>
         <Formula>
 			function NOBN_com_Pset_FDVBaneDataKmFra()
 				if RcAlignment then 
 					--Linjeobjekt:
-					x = RcAlignment.StartPoint.X
-					y = RcAlignment.StartPoint.Y
-					refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
-					ai = getAlignmentInfo(refId,x,y)
+					local x = RcAlignment.StartPoint.X
+					local y = RcAlignment.StartPoint.Y
+					local refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
+					local ai = getAlignmentInfo(refId,x,y)
 					if ai.NormalProjectionExists then
 						return string.format("%.03f",ai.Mileage/1000,3), 
 							_info("Ref. "..RC__identify(getObjectFromId(refId)))
@@ -309,14 +309,14 @@
 
 				elseif Alignment then 
 					--Punktobjekt som tilhører en linje:
-					x = geoCoord.X
-					y = geoCoord.Y
+					local x = geoCoord.X
+					local y = geoCoord.Y
 					if not getAlignmentInfo(Alignment.id,x,y).NormalProjectionExists then
 						return _warning, "Ukjent",
 							_info("Punktobjektet har ingen projeksjon på [Plassering langs linje].[Egen linje], kan ikke utlede Km.")
 					end
-					refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
-					ai = getAlignmentInfo(refId,x,y)
+					local refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
+					local ai = getAlignmentInfo(refId,x,y)
 					if ai.NormalProjectionExists then
 						return string.format("%.03f",ai.Mileage/1000,3), 
 							_info("Ref. "..RC__identify(getObjectFromId(refId)))
@@ -338,19 +338,19 @@
 
 	<LuaFunction Name="NOBN_com_Pset_FDVBaneDataSideFra()" ReturnType="String"
 		Description="Returnerer side av spor [Ukjent | Senter | Venstre | Høyre]. Punktobjekt: side i forhold til eget spor, eller side av nærmeste spor dersom objektet ikke tilhører et bestemt spor. Linjeobjekt: startpunktets side av referansesporet. Merk: 'Ukjent' er ikke en gyldig kategori ved levering til BaneData.">
-        <Constructor>String NOBN_com_Pset_FDVBaneDataSideFra()</Constructor>
+        <Signature>String NOBN_com_Pset_FDVBaneDataSideFra()</Signature>
         <Formula>
 			function NOBN_com_Pset_FDVBaneDataSideFra()
-				eps = 4e-4
+				local eps = 4e-4
 				if RcAlignment then 
 					--Linjeobjekt:
-					x = RcAlignment.StartPoint.X
-					y = RcAlignment.StartPoint.Y
-					refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
-					ai = getAlignmentInfo(refId,x,y)
+					local x = RcAlignment.StartPoint.X
+					local y = RcAlignment.StartPoint.Y
+					local refId = getAlignmentInfo(this.id,x,y).ReferenceAlignmentId
+					local ai = getAlignmentInfo(refId,x,y)
 					if ai.NormalProjectionExists then
-						d = ai.DistanceToAlignment
-						t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
+						local d = ai.DistanceToAlignment
+						local t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
 						return t, _info(t.." i forhold til referansespor "..RC__identify(getObjectFromId(refId))..".")
 					else
 						return _warning, "Ukjent",
@@ -358,24 +358,24 @@
 					end
 				elseif Alignment then 
 					--Punktobjekt som tilhører en linje:
-					x = geoCoord.X
-					y = geoCoord.Y
+					local x = geoCoord.X
+					local y = geoCoord.Y
 					if not getAlignmentInfo(Alignment.id,x,y).NormalProjectionExists then
 						return _warning, "Ukjent",
 							_info("Punktobjektet har ingen projeksjon på [Plassering langs linje].[Egen linje], kan ikke utlede side av spor.")
 					end
 					if Alignment.RcType == rctype_Track then
 						--Punktobjekt som tilhører et jernbanespor:
-						d = getAlignmentInfo(Alignment.id,x,y).DistanceToAlignment
-						t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
+						local d = getAlignmentInfo(Alignment.id,x,y).DistanceToAlignment
+						local t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
 						return t, _info(t.." i forhold til eget spor "..RC__identify(Alignment))
 					else
 						--Punktobjekt som tilhører en linje som ikke er et jernbanespor:
-						refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
-						ai = getAlignmentInfo(refId,x,y)
+						local refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
+						local ai = getAlignmentInfo(refId,x,y)
 						if ai.NormalProjectionExists then
-							d = ai.DistanceToAlignment
-							t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
+							local d = ai.DistanceToAlignment
+							local t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
 							return t, _info(t.." i forhold til referansespor "..RC__identify(getObjectFromId(refId))..".")
 						else
 							return _warning, "Ukjent",
@@ -395,7 +395,7 @@
 
 	<LuaFunction Name="NOBN_com_Pset_FDVBaneDataSportypeFra()" ReturnType="String"
 		Description="Identifiserer eget spors anvendelsestype [Ukjent | Hovedspor | Høyre hovedspor | Sidespor | Venstre hovedspor | Overkjøringsspor | Togspor | Øvrige spor]. Sporbjekter: sporets anvendelsestype. Øvrige linjeobjekter: nærmeste spors anvendelsestype ved linjens startpunkt. Punktobjekter: eget spors anvendelsestype, evt. nærmeste spors anvendelsestype dersom objektet ikke tilhører et bestemt spor. Merk: 'Ukjent' er ikke en gyldig kategori ved levering til BaneData.">
-        <Constructor>String NOBN_com_Pset_FDVBaneDataSportypeFra()</Constructor>
+        <Signature>String NOBN_com_Pset_FDVBaneDataSportypeFra()</Signature>
         <Formula>
 			function NOBN_com_Pset_FDVBaneDataSportypeFra()
 				if RcAlignment and RcType == rctype_Track then 
@@ -409,6 +409,7 @@
 					
 				else
 					--Ingen direkte angivelse av sportilhørighet:
+					local x, y
 					if RcAlignment then
 						--Linjetype av annen type enn jernbanespor:
 						x = RcAlignment.StartPoint.X
@@ -418,11 +419,11 @@
 						x = geoCoord.X
 						y = geoCoord.Y
 					end
-					t = getClosestTracks(x,y)
-					n = getCollectionLength(t)
+					local t = getNearbyAlignments(getPoint3D(x,y))
+					local n = getCollectionLength(t)
 					--Exploit the fact that closest tracks are sorted by proximity:
 					for i = 0,n-1 do
-						ai = getAlignmentInfo(t[i].id,x,y)
+						local ai = getAlignmentInfo(t[i].id,x,y)
 						if ai.NormalProjectionExists then  
 							return t[i].FDVBaneDataSporTypeFra
 						end
@@ -444,7 +445,7 @@
 
 	<LuaFunction Name="NOBN_com_Pset_FDVBaneDataSporNrFra()" ReturnType="String"
 		Description="Identifiserer sportilhørighet. Sporbjekter: sporets navn/kode/id. Øvrige linjeobjekter: nærmeste spors navn/kode/id ved linjens startpunkt. Punktobjekter: eget spors navn/kode/id, eller til nærmeste spors navn/kode/id dersom objektet ikke tilhører et bestemt spor.">
-        <Constructor>String NOBN_com_Pset_FDVBaneDataSporNrFra()</Constructor>
+        <Signature>String NOBN_com_Pset_FDVBaneDataSporNrFra()</Signature>
         <Formula>
 			function NOBN_com_Pset_FDVBaneDataSporNrFra()
 				if RcAlignment and RcType == rctype_Track then 
@@ -457,6 +458,7 @@
 					
 				else
 					--Ingen direkte angivelse av sportilhørighet:
+					local x, y
 					if RcAlignment then
 						--Linjetype av annen type enn jernbanespor:
 						x = RcAlignment.StartPoint.X
@@ -466,11 +468,11 @@
 						x = geoCoord.X
 						y = geoCoord.Y
 					end
-					t = getClosestTracks(x,y)
-					n = getCollectionLength(t)
+					local t = getNearbyAlignments(getPoint3D(x,y))
+					local n = getCollectionLength(t)
 					--Exploit the fact that closest tracks are sorted by proximity:
 					for i = 0,n-1 do
-						ai = getAlignmentInfo(t[i].id,x,y)
+						local ai = getAlignmentInfo(t[i].id,x,y)
 						if ai.NormalProjectionExists then  
 							return RC__identify(t[i])
 						end
@@ -490,7 +492,7 @@
 
 	<LuaFunction Name="NOBN_com_Pset_FDVBaneDataAvstSpormidtFra()" ReturnType="String"
 		Description="Retunerer vinkelrett avstand i meter til eget spor. Sporbjekter: Alltid null. Punktobjekter: vinkelrett avstand til eget spor eller til nærmeste spor dersom objektet ikke tilhører et bestemt spor. Øvrige linjeobjekter: vinkelrett sideveis avstand fra linjens startpunkt til nærmeste spor.">
-        <Constructor>String NOBN_com_Pset_FDVBaneDataAvstSpormidtFra()</Constructor>
+        <Signature>String NOBN_com_Pset_FDVBaneDataAvstSpormidtFra()</Signature>
         <Formula>
 			function NOBN_com_Pset_FDVBaneDataAvstSpormidtFra()
 				if RcAlignment and RcType == rctype_Track then 
@@ -503,6 +505,7 @@
 					
 				else
 					--Ingen direkte angivelse av sportilhørighet:
+					local x, y
 					if RcAlignment then
 						--Linjetype av annen type enn jernbanespor:
 						x = RcAlignment.StartPoint.X
@@ -512,11 +515,11 @@
 						x = geoCoord.X
 						y = geoCoord.Y
 					end
-					t = getClosestTracks(x,y)
-					n = getCollectionLength(t)
+					local t = getNearbyAlignments(getPoint3D(x,y))
+					local n = getCollectionLength(t)
 					--Exploit the fact that closest tracks are sorted by proximity:
 					for i = 0,n-1 do
-						ai = getAlignmentInfo(t[i].id,x,y)
+						local ai = getAlignmentInfo(t[i].id,x,y)
 						if ai.NormalProjectionExists then  
 							return string.format("%.03f",RC__round(ai.DistanceToAlignment)), _info("Avstand til spor "..RC__identify(t[i]))
 						end
@@ -536,7 +539,7 @@
 
 	<LuaFunction Name="NOBN_com_FDVBaneDataNordFra()" ReturnType="String"
 		Description="Returnerer nord-koordinat. Punktobjekt: Y-koordinat i gjeldende horisontalt datum. Linjeobjekt: startpunktets Y-koordinat i gjeldende horisontalt datum.">
-        <Constructor>String NOBN_com_FDVBaneDataNordFra()</Constructor>
+        <Signature>String NOBN_com_FDVBaneDataNordFra()</Signature>
         <Formula>
 			function NOBN_com_FDVBaneDataNordFra()
 				if RcAlignment then
@@ -554,7 +557,7 @@
 
 	<LuaFunction Name="NOBN_com_FDVBaneDataOestFra()" ReturnType="String"
 		Description="Returnerer øst-koordinat. Punktobjekt: X-koordinat i gjeldende horisontalt datum. Linjeobjekt: startpunktets X-koordinat i gjeldende horisontalt datum.">
-        <Constructor>String NOBN_com_FDVBaneDataOestFra()</Constructor>
+        <Signature>String NOBN_com_FDVBaneDataOestFra()</Signature>
         <Formula>
 			function NOBN_com_FDVBaneDataOestFra()
 				if RcAlignment then
@@ -572,7 +575,7 @@
 
 	<LuaFunction Name="NOBN_com_FDVBaneDataHoeydeFra()" ReturnType="String"
 		Description="Returnerer høyde over midlere havnivå. Punktobjekt: Z-koordinat i gjeldende vertikalt datum. Linjeobjekt: startpunktets Z-koordinat i gjeldende vertikalt datum.">
-        <Constructor>String NOBN_com_FDVBaneDataHoeydeFra()</Constructor>
+        <Signature>String NOBN_com_FDVBaneDataHoeydeFra()</Signature>
         <Formula>
 			function NOBN_com_FDVBaneDataHoeydeFra()
 				if RcAlignment then

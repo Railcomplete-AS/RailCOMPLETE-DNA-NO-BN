@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -15,21 +15,59 @@
     RC general and railway-independent Lua
 	NB! These Lua functions shall not rely on RailCOMPLETE custom-specific attributes, only inherent ones.
 =========================================================================================================-->
-	<LuaFunction Name="RC__getDnaVersion()" ReturnType="String"
-		Description="Returns a collection of objects connected through the specified relation, and the number of related objects found. Source object and visibility are optional arguments.">
-		<Constructor>int RC__getDnaVersion(double x)</Constructor>
+
+<!--========================================================================================================
+    RC GENERAL CONSTANTS
+	These are written in all-uppercase with underscore as word separator, returning a fixed value.
+=========================================================================================================-->
+	<LuaFunction Name="RC__COPYRIGHT_STATEMENT()" ReturnType="String"
+		Description="Returns a copyright statement concerning the current document's DNA.">
+		<Signature>string RC__COPYRIGHT_STATEMENT()</Signature>
 		<Formula>
-			function RC__getDnaVersion()
-				return DocumentData.DnaIri:match("^(.-);.-$") .."-".. DocumentData.DnaIri:match(".+;(.+)$")
+			function RC__COPYRIGHT_STATEMENT()
+				return 
+					"============================================\n"..
+					"  Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503\n"..
+					"  The NO-BN DNA is MIT licensed, publicly available on GitHub; see\n"..
+					"  https://github.com/Railcomplete-AS/RailCOMPLETE-DNA-NO-BN\n"..
+					"============================================\n"
 			end
 		</Formula>
 	</LuaFunction>
 
 
 
+	<LuaFunction Name="RC__DNA_VERSION()" ReturnType="String"
+		Description="Returns the current document's DNAs unique version string. Also returns an info message contaning its alias name.">
+		<Signature>string RC__DNA_VERSION()</Signature>
+		<Formula>
+			function RC__DNA_VERSION()
+				--Deprecated code: return DocumentData.DnaIri:match("^(.-);.-$") .."-".. DocumentData.DnaIri:match(".+;(.+)$")
+				return DocumentData.DnaIri,_info(DocumentData.DnaName)
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="RC__LUA_VERSION()" ReturnType="String"
+		Description="Returns the current RailCOMPLETE installation's Lua version.">
+		<Signature>string RC__LUA_VERSION()</Signature>
+		<Formula>
+			function RC__LUA_VERSION()
+				return _VERSION --A Lua environment constant.
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+<!--========================================================================================================
+    RC GENERAL FUNCTIONS
+=========================================================================================================-->
 	<LuaFunction Name="RC__toInt()" ReturnType="Int"
 		Description="Returns an integer from an integer or floating-point input.">
-		<Constructor>int RC__toInt(double x)</Constructor>
+		<Signature>int RC__toInt(double x)</Signature>
 		<Formula>function RC__toInt(x) return string.format("%.0f",x) end</Formula>
 	</LuaFunction>
 
@@ -37,15 +75,26 @@
 
 	<LuaFunction Name="RC__TextAttributePosition()" ReturnType="Vector2D" 
 			HideFromUser="false"
-			Description="Returns a WCS offset vector for placing a text attribute relative to its object's insertion point. The text changes side of alignment if the object changes side.
-			\n\nReturns a World Coordinate System offset vector in the current drawing scale for a text attribute. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and the acsY = longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000).">
-		<Constructor>{Double,Double} RC__TextAttributePosition(Double lateralOffset, Double longitudinalOffset)</Constructor>
+			Description="Returns a World Coordinate System offset vector in the current drawing scale for a text attribute. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and the acsY = longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000).">
+		<Signature>{Double ACS.X,Double ACS.Y} RC__TextAttributePosition(Double LateralOffset = 0, Double LongitudinalOffset = 0)</Signature>
 		<Formula>
-			function RC__TextAttributePosition(lateralOffset,longitudinalOffset)
-				scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
-				lateralOffset = (lateralOffset or 5)/scale
-				longitudinalOffset = (longitudinalOffset or 0)/scale
-				return RC__getWcsVectorFromAcsVector(RightSided and lateralOffset or -lateralOffset,longitudinalOffset)
+			function RC__TextAttributePosition(LateralOffset, LongitudinalOffset)
+				local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
+				LateralOffset = (LateralOffset or 0)/scale
+				LongitudinalOffset = (LongitudinalOffset or 0)/scale
+				return RC__getWcsVectorFromAcsVector((RightSided and 1 or -1) * LateralOffset, LongitudinalOffset)
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="RC__TextAttributeRotation()" ReturnType="String"
+			Description="Returns the rotation of the text element in the world coordinate system. The input argument specifies the angle between the tangent direction of the object axis and the axis of the text. The default value is -90 decimal degrees.">
+		<Signature>DecimalDegrees RC__TextAttributeRotation(Double RelativeAngle = -90)</Signature>
+		<Formula>
+			function RC__TextAttributeRotation(RelativeAngle)
+				return math.deg(AlignmentTangent) + (RelativeAngle or -90.0)
 			end
 		</Formula>
 	</LuaFunction>
@@ -54,7 +103,7 @@
 
 	<LuaFunction Name="RC__getAngleFromDir()" ReturnType="Double"
 		Description="Returns the angle in Decimal Degrees corresponding to the given direction [up | down | both | none | unknown]. 'Direction' and 'Rightsided' are optional arguments.">
-		<Constructor>Double RC__getAngleFromDir([LaxDirection Direction [,Boolean RightSided]])</Constructor>
+		<Signature>Double RC__getAngleFromDir([LaxDirection Direction = InheritedDirection [, Boolean RightSided = false]])</Signature>
 		<Formula>
 			function RC__getAngleFromDir(d,rs)
 				if d == nil then
@@ -78,7 +127,7 @@
 
 	<LuaFunction Name="RC__getMileageFromRelatedObject()" ReturnType="Double"
 		Description="Returns the mileage for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
-		<Constructor>Double RC__getMileageFromRelatedObject(String RelationName [,Reference SourceObject])</Constructor>
+		<Signature>Double RC__getMileageFromRelatedObject(String RelationName [,Reference SourceObject = this])</Signature>
 		<Formula>
 			function RC__getMileageFromRelatedObject(RelationName,Source)
 				Source = Source or this
@@ -104,7 +153,7 @@
 
 	<LuaFunction Name="RC__getLateralOffsetFromRelatedObject()" ReturnType="Double"
 		Description="Returns the distance to alignment for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
-		<Constructor>Double RC__getLateralOffsetFromRelatedObject(String RelationName [,Reference SourceObject])</Constructor>
+		<Signature>Double RC__getLateralOffsetFromRelatedObject(String RelationName [,Reference SourceObject = this])</Signature>
 		<Formula>
 			function RC__getLateralOffsetFromRelatedObject(RelationName,Source)
 				local r,n
@@ -131,7 +180,7 @@
 
 	<LuaFunction Name="RC__getVerticalOffsetFromRelatedObject()" ReturnType="Double"
 		Description="Returns the relative elevation above for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
-		<Constructor>Double RC__getVerticalOffsetFromRelatedObject(String RelationName [,Reference SourceObject])</Constructor>
+		<Signature>Double RC__getVerticalOffsetFromRelatedObject(String RelationName [,Reference SourceObject = this])</Signature>
 		<Formula>
 			function RC__getVerticalOffsetFromRelatedObject(RelationName,Source)
 				local r,n
@@ -158,7 +207,7 @@
 
 	<LuaFunction Name="RC__getAngularOffsetFromRelatedObject()" ReturnType="Double"
 		Description="Returns the angular offset for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
-		<Constructor>Double RC__getAngularOffsetFromRelatedObject(String RelationName [,Reference SourceObject])</Constructor>
+		<Signature>Double RC__getAngularOffsetFromRelatedObject(String RelationName [,Reference SourceObject = this])</Signature>
 		<Formula>
 			function RC__getAngularOffsetFromRelatedObject(RelationName,Source)
 				local r,n
@@ -185,7 +234,7 @@
 
 	<LuaFunction Name="RC__getDirFromRelatedObject()" ReturnType="Double"
 		Description="Returns the direction (Dir) from related object. Source object is an optional argument.">
-		<Constructor>Double RC__getDirFromRelatedObject(String RelationName [,Reference SourceObject])</Constructor>
+		<Signature>Double RC__getDirFromRelatedObject(String RelationName [,Reference SourceObject = this])</Signature>
 		<Formula>
 			function RC__getDirFromRelatedObject(RelationName,Source)
 				local r,n
@@ -197,7 +246,7 @@
 				if n == 0 then 
 					return getPropertyValue("Dir"), _info("Object has no visible relation of type '"..RelationName.."'.")
 				elseif n == 1 then
-					return r[0].Dir, _info("Direction (Dir) deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return r[0].dir, _info("Direction (Dir) deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
 				else
 					return _warning,
 						r[0].AngularOffset + (r[0].AlignmentTangent - Source.AlignmentTangent) * 180.0/math.pi,
@@ -210,16 +259,16 @@
 
 
 	<LuaFunction Name="RC__getWcsVectorFromAcsVector()" ReturnType="String"
-		Description="Converts an Alignment Coordinate System (ACS) 2D vector into a World Coordinate System (WCS) 2D vector. Usage: wx,wy = RC__getWcsVectorFromAcsVector(lateralOffset,longitudinalOffset) or wx,wy = RC__getWcsVectorFromAcsVector(lateralOffset,longitudinalOffset,alongAxisWcsAngleInRadians).">
-		<Constructor>{Double,Double} RC__getWcsVectorFromAcsVector(lateralOffset,longitudinalOffset [,alongAxisWcsAngleInRadians = this.AlignmentTangent])</Constructor>
+		Description="Converts an Alignment Coordinate System (ACS) 2D vector {acsX,acsY} = {LateralOffset,LongitudinalOffset} into a World Coordinate System (WCS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
+		<Signature>{Double,Double} RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
 		<Formula>
-			function RC__getWcsVectorFromAcsVector(acsX,acsY,alongAxisWcsAngleInRadians)
+			function RC__getWcsVectorFromAcsVector(acsX,acsY,AlongAxisWcsAngleInRadians)
 				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
 				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept:
 				--	Argument acsX = Lateral offset to the right, perpendicular to the object's alignment axis.
 				--	Argument acsY = Along offset in the direction of increasing distAlong, along the object's alignment axis.
-				--	Optional argument alongAxisWcsAngleInRadians = angle in Decimal Degrees between WCS East (X-axis) and the alignment's tangent direction.
-				local angle = alongAxisWcsAngleInRadians or AlignmentTangent
+				--	Optional argument AlongAxisWcsAngleInRadians = angle in Decimal Degrees between WCS East (X-axis) and the alignment's tangent direction.
+				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
 				return  acsX*math.sin(angle) + acsY*math.cos(angle), -acsX*math.cos(angle) + acsY*math.sin(angle)
 			end
 		</Formula>
@@ -229,16 +278,16 @@
 
 	<LuaFunction Name="RC__identify()" ReturnType="String"
 		Description="Returns the object's name if non-empty, or its code if non-empty, otherwise returns its ID. Addresses the calling object if no object reference is given.">
-		<Constructor>String RC__identify([Reference obj])</Constructor>
+		<Signature>String RC__identify(Reference obj = this)</Signature>
 		<Formula>
 			function RC__identify(obj)
 				obj = obj or this
 				if type(obj) ~= "userdata" then
 					return "ERROR: RC__identify() called with a bad argument type '"..type(obj).."', an objRef was expected."
 				end
-				objName = obj:getPropertyValue("name")
-				objCode = obj:getPropertyValue("code")
-				objId = obj:getPropertyValue("id")
+				local objName = obj:getPropertyValue("name")
+				local objCode = obj:getPropertyValue("code")
+				local objId = obj:getPropertyValue("id")
 				if objName ~= nil and objName ~= "" then return objName
 				elseif objCode ~= nil and objCode  ~= "" then return objCode
 				else return tostring(objId)
@@ -249,82 +298,14 @@
 
 
 
-	<LuaFunction Name="RC__isNan()" ReturnType="Bool"
+	<LuaFunction Name="RC__isNan()" ReturnType="Boolean"
 		Description="Returns true if input value is NaN (not a number), otherwise returns false.">
-		<Constructor>Bool RC__isNan(Double value)</Constructor>
+		<Signature>Boolean RC__isNan(Double value)</Signature>
 		<Formula>function RC__isNan(x) return x ~= x end</Formula>
 	</LuaFunction>
 
 
 	
-	<LuaFunction Name="RC__getUrlExtension()" ReturnType="String"
-		Description="Returns filename extension (file type). Default url is the current document.">
-		<Constructor>String RC__getUrlExtension([String url])</Constructor>
-		<Formula>
-			function RC__getUrlExtension(url)
-				if url == nil then url = DocumentData.DocumentName end
-				return url:match("[%.]([^%.]-)$") -- Extension
-			end
-		</Formula>
-	</LuaFunction>
-
-	<LuaFunction Name="RC__getUrlDriveAndFolderAndFilename()" ReturnType="String"
-		Description="Returns drive letter, folder name and file name. Default url is the current document.">
-		<Constructor>String RC__getUrlDriveAndFolderAndFilename([String url])</Constructor>
-		<Formula>
-			function RC__getUrlDriveAndFolderAndFilename(url)
-				if url == nil then url = DocumentData.DocumentName end
-				return url:match("(.-)[%.][^%.]-$") -- Drive letter, folder and filename without extension
-			end
-		</Formula>
-	</LuaFunction>
-
-	<LuaFunction Name="RC__getUrlDriveAndFolder()" ReturnType="String"
-		Description="Returns drive letter and folder name. Default url is the current document.">
-		<Constructor>String RC__getUrlDriveAndFolder([String url])</Constructor>
-		<Formula>
-			function RC__getUrlDriveAndFolder(url)
-				if url == nil then url = DocumentData.DocumentName end
-				return url:match("(.-)[\\/][^\\/]-$") -- Drive letter and folder name
-			end
-		</Formula>
-	</LuaFunction>
-
-	<LuaFunction Name="RC__getUrlDrive()" ReturnType="String"
-		Description="Returns drive letter. Default url is the current document.">
-		<Constructor>String RC__getUrlDrive([String url])</Constructor>
-		<Formula>
-			function RC__getUrlDrive(url)
-				if url == nil then url = DocumentData.DocumentName end
-				return url:match("(.-)[:][^:]-$") -- Drive letter(s)
-			end
-		</Formula>
-	</LuaFunction>
-
-	<LuaFunction Name="RC__getUrlFilename()" ReturnType="String"
-		Description="Returns filename without extension. Default url is the current document.">
-		<Constructor>String RC__getUrlFilename([String url])</Constructor>
-		<Formula>
-			function RC__getUrlFilename(url)
-				if url == nil then url = DocumentData.DocumentName end
-				return url:match("[\\/]?([^\\/]-)[%.][^%.]-$") -- Filename without extension
-			end
-		</Formula>
-	</LuaFunction>
-
-	<LuaFunction Name="RC__getUrlFilenameAndExtension()" ReturnType="String"
-		Description="Returns filename with extension. Default url is the current document.">
-		<Constructor>String RC__getUrlFilenameAndExtension([String url])</Constructor>
-		<Formula>
-			function RC__getUrlFilenameAndExtension(url)
-				if url == nil then url = DocumentData.DocumentName end
-				return url:match("[\\/]?([^\\/]-)$") -- Filename and extension
-			end
-		</Formula>
-	</LuaFunction>
-
-
-
 	<!-- Special sub() pattern control characters are introduced with a byte in the range from 128 to 191, followed by a second byte that gives the  -->
 	<!-- actual character, in combination with the first character. -->
 	<!-- ^ anchors to start of string. \nnn means "byte contents nnn in decimal". * means "zero or more occurrences". $ means "pattern is anchored to end of string". -->
@@ -339,7 +320,7 @@
 	<!-- RC__sub() == "" -->
 	<LuaFunction Name="RC__sub()" ReturnType="String"
 		Description="Returns a substring of the input string, starting with its i-th multibyte letter and ending with its j-th multibyte letter (the built-in Lua method sub() will treat a string just as an array of individual bytes). By default, i=1 and j=i.">
-		<Constructor>String RC__sub(String s [,Int i [,Int j]])</Constructor>
+		<Signature>String RC__sub(String s [,Int i [,Int j]])</Signature>
 		<Formula>
 			function RC__sub(s,i,j)
 				return s, _info("*** Function RC__sub(String s [,Int i [,Int j]]) has not been implemented yet"),_warning
@@ -347,11 +328,11 @@
         </Formula>
 	</LuaFunction>
 
-  
+
 
 	<LuaFunction Name="RC__round()" ReturnType="String"
 		Description="Rounds floating point input x to p [-6..6] decimal places. Default precision is 0 decimals.">
-		<Constructor>Double RC__round(Double x [, Int p])</Constructor>
+		<Signature>Double RC__round(Double x, Int p = 0)</Signature>
 		<Formula>
 			function RC__round(x,p) 
 				if math.abs(x) == math.huge then return x end --plus/minus Inf
@@ -359,30 +340,19 @@
 				p = math.floor(p)
 				if p &lt; -6 or p &gt; 6 then
 					return "Precision ["..p.."] must be from -6 to 6, cannot format value ["..x.."]",_warning
-				elseif p == 6 then x = string.format("%.6f",math.floor((x+0.5*1e-6)*1e6)/1e6)
-				elseif p == 5 then x = string.format("%.5f",math.floor((x+0.5*1e-5)*1e5)/1e5) 
-				elseif p == 4 then x = string.format("%.4f",math.floor((x+0.5*1e-4)*1e4)/1e4) 
-				elseif p == 3 then x = string.format("%.3f",math.floor((x+0.5*1e-3)*1e3)/1e3) 
-				elseif p == 2 then x = string.format("%.2f",math.floor((x+0.5*1e-2)*1e2)/1e2) 
-				elseif p == 1 then x = string.format("%.1f",math.floor((x+0.5*1e-1)*1e1)/1e1) 
-				elseif p == 0 then x = string.format("%d",math.floor((x+0.5*1e0)*1e0)/1e0)
-				elseif p == -1 then x = string.format("%d",math.floor((x+0.5*1e1)*1e-1)/1e-1) 
-				elseif p == -2 then x = string.format("%d",math.floor((x+0.5*1e2)*1e-2)/1e-2)
-				elseif p == -3 then x = string.format("%d",math.floor((x+0.5*1e3)*1e-3)/1e-3)
-				elseif p == -4 then x = string.format("%d",math.floor((x+0.5*1e4)*1e-4)/1e-4)
-				elseif p == -5 then x = string.format("%d",math.floor((x+0.5*1e5)*1e-5)/1e-5)
-				elseif p == -6 then x = string.format("%d",math.floor((x+0.5*1e6)*1e-6)/1e-6)
+				else
+					x = string.format("%."..p.."f",x)
 				end
 				return tonumber(x)
 			end
-        </Formula>
+       </Formula>
 	</LuaFunction>
 
   
   
 	<LuaFunction Name="RC__getNearestSnapDistance()" ReturnType="String"
 		Description="Returns nearest multiple of step size. Default step size is 3. E.g., '4.51' => '6' and '-7.49' => '-6'.">
-		<Constructor>Double RC__getNearestSnapDistance(Double x [, Double stepSize])</Constructor>
+		<Signature>Double RC__getNearestSnapDistance(Double x, Double stepSize = 3])</Signature>
 		<Formula>
 			function RC__getNearestSnapDistance(x,stepSize) 
 				if stepSize == nil then 
@@ -407,16 +377,15 @@
 
 	<LuaFunction Name="RC__isMemberOf()" ReturnType="Boolean" 
 		Description="Returns true if table/collection/dictionary contains item. The item may be part of a numbered Lua sequence {2,3,5,7,11} or a value in a key/value pair {x=1,y=1,z=2,t=3,u=5}. Advice: When looking for objects, look for its id property item.id (a text string) rather than an object reference, as objects may be relocated in memory for each Lua execution.">
-		<Constructor>Boolean RC__isMemberOf(Table t, Item item)</Constructor>
+		<Signature>Boolean RC__isMemberOf(Table t, Item item)</Signature>
 		<Formula>
-			function RC__isMemberOf(t,item) 
-				local i
+			function RC__isMemberOf(t,item)
 				if type(t) == "table" then
 					-- A genuine Lua table, convert it to RailCOMPLETE/C# collection object (deleting the keys from key/value pairs):
 					t = getCollectionFromTable(t)
 				end
-				--Collections respond correctly to the '.count' attribute:
-				for i = 0, t.count-1 do
+				--Collections respond correctly to the '.Count' attribute:
+				for i = 0, t.Count-1 do
 					if type(item) == "string" or type(item) == "number" then
 						if t[i] == item then
 							return true
@@ -436,7 +405,7 @@
 
 	<LuaFunction Name="RC__SortedNumberCollection()" ReturnType="Table"
 		Description="Returns a sorted table (indexed 1,2,...).">
-		<Constructor>table RC__SortedNumberCollection(table t)</Constructor>
+		<Signature>table RC__SortedNumberCollection(table t)</Signature>
 		<Formula>
 			function RC__SortedNumberCollection(t)
 				local u,v,n,i,j,k,lo
@@ -470,7 +439,7 @@
 	
 	<LuaFunction Name="RC__getDistance2D()" ReturnType="Double"
 		Description="Returns the Euclidian distance in the XY plane between inputs p1 and p2 (point objects or Point3D), each being geoCoord or table {['X']=x,['Y']=y}. p2 is by default the calling object. Z's are ignored.">
-		<Constructor>Double RC__getDistance2D(Point p1 [,Point p2])</Constructor>
+		<Signature>Double RC__getDistance2D(Point p1, Point p2 = this)</Signature>
 		<Formula>
 			function RC__getDistance2D(p1,p2) 
 				local x1,x2,y1,y2
@@ -510,7 +479,7 @@
 	
 	<LuaFunction Name="RC__getDistance3D()" ReturnType="Double"
 		Description="Returns the Euclidian distance in XYZ space between inputs p1 and p2 (point objects or Point3D), each being geoCoord or table {['X']=x,['Y']=y,['Z']=z}. p2 is by default the calling object. Z's are 0 if missing.">
-		<Constructor>Double RC__getDistance3D(Point p1 [,Point p2])</Constructor>
+		<Signature>Double RC__getDistance3D(Point p1, Point p2 = this)</Signature>
 		<Formula>
 			function RC__getDistance3D(p1,p2) 
 				local x1,x2,y1,y2,z1,z2
@@ -549,14 +518,14 @@
 
 
 	
-	<LuaFunction Name="RC_getAreasOfVariant()" ReturnType="Collection of RcArea"
+	<LuaFunction Name="RC__getAreasOfVariant()" ReturnType="Collection of RcArea"
 		Description="Returns a count and a collection of visible areas of the given variant, enclosing the object.">
-        <Constructor>Int, Collection of RcArea RC_getAreasOfVariant(String areaVariantName [, String guidString])</Constructor>
+        <Signature>{Int, Collection of RcArea} RC__getAreasOfVariant(String areaVariantName, String guidString = this.Id)</Signature>
         <Formula>
-			function RC_getAreasOfVariant(areaVariantName, guidString)
+			function RC__getAreasOfVariant(areaVariantName, guidString)
 				local obj = guidString and getObjectFromId(guidString) or this
 				local areas = obj.RcArea:filter(function (x) return x:isVisible() and x.Variant:match(areaVariantName) end)
-				return areas.count,areas
+				return areas.Count,areas
 			end
         </Formula>
     </LuaFunction>
@@ -574,7 +543,7 @@
 =========================================================================================================-->
     <LuaFunction Name="RC__getOcpStationReference()" ReturnType="ObjRef"
 		Description="Returns an object reference for the current Operation Control Point (OCP) area, or nil if not contained in any (visible) OCP area.">
-        <Constructor>ObjRef RC__getOcpStationReference()</Constructor>
+        <Signature>ObjRef RC__getOcpStationReference()</Signature>
 		<Formula>
 			function RC__getOcpStationReference()
 				local OcpAreas = RcArea:filter(function (x) return x:isVisible() and x.Variant:lower():match("ocp") end)
@@ -585,32 +554,32 @@
 
 
 
-	<LuaFunction Name="RC__scale()" ReturnType="Vector2D" 
+	<LuaFunction Name="RC__scale()" ReturnType="{Double,Double}" 
 			HideFromUser="false" 
 			Description="Scales a 2D vector intended for 1:1 drawing scale into the corresponding vector for the current drawing scale.">
-		<Constructor>{Double,Double} RC__scale([Double offsetLateral [,Double offsetAlong]])</Constructor>
+		<Signature>{Double,Double} RC__scale(Double LateralOffset = 0, Double LongitudinalOffset = 0)</Signature>
 		<Formula>
 			function RC__scale( LateralOffset, LongitudinalOffset )
 				local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
 				LateralOffset = (LateralOffset or 0)/scale
 				LongitudinalOffset = (LongitudinalOffset or 0)/scale
-				local worldOffsetX,worldOffsetY = RC__getWcsVectorFromAcsVector(LateralOffset,LongitudinalOffset)
-				return { SymbolOffset.X + worldOffsetX, SymbolOffset.Y + worldOffsetY }
+				local wcsX,wcsY = RC__getWcsVectorFromAcsVector(LateralOffset,LongitudinalOffset)
+				return { SymbolOffset.X + wcsX, SymbolOffset.Y + wcsY }
 			end
 		</Formula>
 	</LuaFunction>
 
 
-	
+
 	<LuaFunction Name="RC__assessDerogation()" ReturnType="Enumeration"
 		Description="Checks object model check attributes for warnings and errors, sets the derogation state accordingly to [ Normed | Deviating | Requested | Granted].">
-		<Constructor>Enumeration RC__assessDerogation()</Constructor>
+		<Signature>Enumeration RC__assessDerogation()</Signature>
 		<Formula>
 			function RC__assessDerogation()
 				--The Derogation state variable influences the SymbolFrame function.
 				--Warnings do not affect the derogation state, only errors do:
-				errors = LuaExpressions:filter(function(x) return x.IsModelCheck and x.Symbol == "_error" end)
-				d = getPropertyValue("Derogation") --Read property, do not refresh the entire object
+				local errors = LuaExpressions:filter(function(x) return x.IsModelCheck and x.Symbol == "_error" end)
+				local d = getPropertyValue("Derogation") --Read property, do not refresh the entire object
 				if errors.Count == 0 then
 					if d == "DEVIATING" then
 						return "NORMED" --Problem has disappeared

@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -18,18 +18,18 @@
 	<!-- INFO: Function used e.g. when computing info for switch tables: -->
 	<LuaFunction Name="NOBN_trk_getFoulingPointReferenceMileage()" ReturnType="String"
 		Description="Returns the reference mileage for the fouling point being farthest from the stock rail joint, using reference alignment mileage. Assumes caller is a switch unless argument 'v' is given.">
-		<Constructor>String NOBN_trk_getFoulingPointReferenceMileage(tSwitch v)</Constructor>
+		<Signature>String NOBN_trk_getFoulingPointReferenceMileage(tSwitch v)</Signature>
 		<Formula>
 			function NOBN_trk_getFoulingPointReferenceMileage(v)
 				if v == nil then v = getObjectFromId(id) end
 				if v.RcType ~= rctype_Switch then
 					return "Bad object type ["..RcType.."], '"..rctype_Switch.."' was expected"
 				else
-					local fp,dmax,w,i,d
+					local fp,dmax,w,d
 					fp = getFoulingPoints(v)
 					dmax = 0
 					w = nil
-					for i = 0,fp.count-1 do
+					for i = 0,fp.Count-1 do
 						d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
 						if d &gt; dmax then
 							dmax = d
@@ -51,7 +51,7 @@
 	<!-- INFO: Function used e.g. when computing info for switch tables: -->
 	<LuaFunction Name="NOBN_trk_getFoulingPointMileage()" ReturnType="String"
 		Description="Returns the own alignment mileage for the fouling point being farthest from the stock rail joint, using own alignment mileage. Assumes caller is a switch unless argument 'v' is given.">
-		<Constructor>String NOBN_trk_getFoulingPointMileage(tSwitch v)</Constructor>
+		<Signature>String NOBN_trk_getFoulingPointMileage(tSwitch v)</Signature>
 		<Formula>
 			function NOBN_trk_getFoulingPointMileage(v)
 				if v == nil then v = getObjectFromId(id) end
@@ -62,7 +62,7 @@
 					fp = getFoulingPoints(v)
 					dmax = 0
 					w = nil
-					for i = 0,fp.count-1 do
+					for i = 0,fp.Count-1 do
 						d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
 						if d &gt; dmax then
 							dmax = d
@@ -120,14 +120,11 @@
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
 			<SetValue Key="Parent" Value="CCS"/>
 		</DynamicProperty>
-		
-		<!-- TODO 2022-11-12 CLFEY - What is this one good for? Still in use?: -->
-		<!-- <SetValue Key="ConnectedAlignmentType" Value=rctype_Track /> -->
 
 		<LuaExpression Name="code"><Formula>_JBTKO_SPF_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPF_code()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] --- [Code2]' for the two tracks that meet in a track continuation.">
-			<Constructor>String _JBTKO_SPF_code()</Constructor>
+			<Signature>String _JBTKO_SPF_code()</Signature>
 			<Formula>
 				function _JBTKO_SPF_code()
 					local first,second
@@ -144,16 +141,16 @@
 						if second == nil then
 							return "Bad or missing continuing alignment reference",_warning
 						elseif TargetAlignment.RcType ~= rctype_Track then
-							return "Cannot connect to alignments of type '"..Alignment.RcType.."'.",_warning
+							return "Cannot connect to alignments of type '"..TargetAlignment.RcType.."'.",_warning
 						end
 						if first.id == second.id then
-							return _error, "Own alignment and continuing alignment cannot be the same ["..first.Code.."]"
+							return _error, "Own alignment and continuing alignment cannot be the same ["..first.code.."]"
 						end
 						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
 						--if MileageIncreasesTowardsLeft then
 						--	first,second = second,first 
 						--end
-						return "["..first.Code.."] ==> ["..second.Code.."]"
+						return "["..first.code.."] ==&gt; ["..second.code.."]"
 					end
 				end
 			</Formula>
@@ -164,12 +161,12 @@
 		<LuaExpression Name="Mileage"><Formula>_JBTKO_SPF_mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPF_mileage()" ReturnType="Double"
 				Description="Obtains the mileage from its alignment.">
-			<Constructor>Double _JBTKO_SPF_mileage()</Constructor>
+			<Signature>Double _JBTKO_SPF_mileage()</Signature>
 			<Formula>
 				function _JBTKO_SPF_mileage()
-					ai = getAlignmentInfo()
+					local ai = getAlignmentInfo()
 					if RC__isNan(ai.RelativePosition) then return nil, _info("Position not found - move object inside the extent of its own alignment.") end
-					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalProfile.Length - ai.RelativePosition)
+					return ai.RelativePosition &lt; (Alignment.RcAlignment.HorizontalGeometry.Length - ai.RelativePosition)
 							and Alignment.RcAlignment.StartMileage or Alignment.RcAlignment.EndMileage
 				end
 			</Formula>
@@ -178,10 +175,10 @@
 		<LuaExpression Name="TargetAlignment"><Formula>_JBTKO_SPF_TargetAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPF_TargetAlignment()" ReturnType="Double"
 				Description="Obtains the target alignment, as long as its snaps to own alignment close to this continuation object.">
-			<Constructor>Double _JBTKO_SPF_TargetAlignment()</Constructor>
+			<Signature>Double _JBTKO_SPF_TargetAlignment()</Signature>
 			<Formula>
 				function _JBTKO_SPF_TargetAlignment()
-					return getClosestAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
+					return getNearbyAlignments(Alignment.RcType):filter(function (x) return x.id ~= Alignment.id end)[0]
 				end
 			</Formula>
 		</LuaFunction>
@@ -252,17 +249,11 @@
 			<Variant Name="Sporkryss">
 			</Variant>
 		</Variants>
-		
-		<DynamicProperty Type="Representation3D" Subtype="Geometry3D">
-			<SetValue Key="Parent" Value="CCS"/>
-		</DynamicProperty>
-	
-		<LuaExpression Name="ConnectedAlignmentType"><Formula>rctype_Track</Formula></LuaExpression>
 
 		<LuaExpression Name="code"><Formula>_JBTKO_SPV_crossingCode()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPV_crossingCode()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing.">
-			<Constructor>String _JBTKO_SPV_crossingCode()</Constructor>
+			<Signature>String _JBTKO_SPV_crossingCode()</Signature>
 			<Formula>
 				function _JBTKO_SPV_crossingCode()
 					local first,second
@@ -278,19 +269,18 @@
 							return "Bad or missing intersecting alignment reference",_warning
 						end
 						if first.id == second.id then
-							return "Alignment and intersecting alignment cannot be the same ["..first.Code.."]"
+							return "Alignment and intersecting alignment cannot be the same ["..first.code.."]"
 						end
 						if MileageIncreasesTowardsLeft then
 							first,second = second,first 
 						end
-						return "["..first.Code.."] -X- ["..second.Code.."]"
+						return "["..first.code.."] -X- ["..second.code.."]"
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
 		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
-		<LuaExpression Name="dir"><Formula>"none"</Formula></LuaExpression>
 		
 		<InsertPointObject Name="Sporkryss" DisplayBlockName="NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORKRYSS-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
@@ -595,7 +585,7 @@
 		<LuaExpression Name="code"><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPV_switchCode()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing.">
-			<Constructor>String _JBTKO_SPV_switchCode()</Constructor>
+			<Signature>String _JBTKO_SPV_switchCode()</Signature>
 			<Formula>
 				function _JBTKO_SPV_switchCode()
 					local first,second
@@ -611,7 +601,7 @@
 							return "Bad or missing branching alignment reference",_warning
 						end
 						if first.id == second.id then
-							return "Alignment and branching alignment cannot be the same ["..first.Code.."]"
+							return "Alignment and branching alignment cannot be the same ["..first.code.."]"
 						end
 						return "["..Alignment.code.."] -&gt; ["..TargetAlignment.code.."]"
 					end
@@ -624,7 +614,7 @@
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTKO_SPV_switchGeometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPV_switchGeometry3DName()" ReturnType="String"
 				Description="Returns 3D geometry's 'Name' according to switch variant.">
-			<Constructor>String _JBTKO_SPV_switchGeometry3DName(tSwitch v)</Constructor>
+			<Signature>String _JBTKO_SPV_switchGeometry3DName(tSwitch v)</Signature>
 			<Formula>
 				function _JBTKO_SPV_switchGeometry3DName(v)
 					v = v or this
@@ -692,7 +682,7 @@
 		<LuaExpression Name="trackContinueCourse"><Formula>_JBTKO_SPV_trackContinueCourse()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPV_trackContinueCourse()" ReturnType="String"
 			Description="Returns a string holding either 'left' or 'right'. At present, 3-way switches (allowed in railML) are not modeled in RailCOMPLETE, i.e. ConnectionCourse being 'straight' leads to an error message.">
-			<Constructor>String _JBTKO_SPV_trackContinueCourse()</Constructor>
+			<Signature>String _JBTKO_SPV_trackContinueCourse()</Signature>
 			<Formula>
 				function _JBTKO_SPV_trackContinueCourse()
 					if (ConnectionCourse == "right") then 
@@ -1311,15 +1301,15 @@
 		<LuaExpression Name="Variant"><Formula>_JBTKO_TNG_Variant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_Variant()" ReturnType="ObjRef"
 				Description="Obtains the Variant from its related switch.">
-			<Constructor>Enumeration _JBTKO_TNG_Variant()</Constructor>
+			<Signature>Enumeration _JBTKO_TNG_Variant()</Signature>
 			<Formula>
 				function _JBTKO_TNG_Variant()
-					s = rel_SwitchTongues_BelongTo_Switch
-					r,n = getRelatedObjects(s)
+					local s = rel_SwitchTongues_BelongTo_Switch
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("Variant"), _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
 					else 
-						switch = r[0]
+						local switch = r[0]
 						return switch.Variant:match("(1:%d+ R%d+)"), _info("Variant inherited with relation '"..s.."' from switch '"..RC__identify(switch).."' ")
 					end
 				end
@@ -1329,11 +1319,11 @@
 		<LuaExpression Name="Alignment"><Formula>_JBTKO_TNG_alignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_alignment()" ReturnType="ObjRef"
 				Description="Obtains the alignment [ObjRef] from its switch, related with 'Er tunge for sporveksel'.">
-			<Constructor>ObjRef _JBTKO_TNG_alignment()</Constructor>
+			<Signature>ObjRef _JBTKO_TNG_alignment()</Signature>
 			<Formula>
 				function _JBTKO_TNG_alignment()
-					s = rel_SwitchTongues_BelongTo_Switch
-					r,n = getRelatedObjects(s)
+					local s = rel_SwitchTongues_BelongTo_Switch
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("Alignment"), _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
 					else
@@ -1346,13 +1336,13 @@
 		<LuaExpression Name="Mileage"><Formula>_JBTKO_TNG_mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_mileage()" ReturnType="Double"
 				Description="Obtains the mileage from its switch, related with 'Er tunge for sporveksel'.">
-			<Constructor>Double _JBTKO_TNG_mileage()</Constructor>
+			<Signature>Double _JBTKO_TNG_mileage()</Signature>
 			<Formula>
 				function _JBTKO_TNG_mileage()
-					s = rel_SwitchTongues_BelongTo_Switch
-					r,n = getRelatedObjects(s)
+					local s = rel_SwitchTongues_BelongTo_Switch
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
-						return getPropertyValue("mileage"), _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
+						return getPropertyValue("Mileage"), _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
 					else
 						return r[0].Mileage, _info("Mileage inherited with relation '"..s.."' from switch '"..RC__identify(r[0]).."' ")
 					end
@@ -1363,11 +1353,11 @@
 		<LuaExpression Name="code"><Formula>_JBTKO_TNG_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_code()" ReturnType="String"
 				Description="Obtains the code from its switch, related with 'Er tunge for sporveksel'.">
-			<Constructor>Double _JBTKO_TNG_code()</Constructor>
+			<Signature>Double _JBTKO_TNG_code()</Signature>
 			<Formula>
 				function _JBTKO_TNG_code()
-					s = rel_SwitchTongues_BelongTo_Switch
-					r,n = getRelatedObjects(s)
+					local s = rel_SwitchTongues_BelongTo_Switch
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
 					else
@@ -1382,11 +1372,11 @@
 		<LuaExpression Name="dir"><Formula>_JBTKO_TNG_dir()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_dir()" ReturnType="Enum"
 				Description="Obtains the direction (dir) [up | down] enum from its switch, related with 'Er tunge for sporveksel'.">
-			<Constructor>Double _JBTKO_TNG_dir()</Constructor>
+			<Signature>Double _JBTKO_TNG_dir()</Signature>
 			<Formula>
 				function _JBTKO_TNG_dir()
-					s = rel_SwitchTongues_BelongTo_Switch
-					r,n = getRelatedObjects(s)
+					local s = rel_SwitchTongues_BelongTo_Switch
+					local r,n = getRelatedObjects(s)
 					if n == 0 then
 						return _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
 					else
@@ -1426,7 +1416,7 @@
 			</Values>
 		</CustomProperty>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:9 R190" Name="1:9 R190" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-09-R190-V-Metric" 
+		<InsertPointObject DisplayName="Sporvekseltunger 1:9 R190" Name="1:9 R190" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R190-V-Metric" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1434,7 +1424,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:9 R300" Name="1:9 R300" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-09-R300-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:9 R300" Name="1:9 R300" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R300-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1442,7 +1432,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:11.66 R500" Name="1:11.66 R500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-11.66-R500-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:11.66 R500" Name="1:11.66 R500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-11.66-R500-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1450,7 +1440,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:12 R500" Name="1:12 R500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-12-R500-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:12 R500" Name="1:12 R500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-12-R500-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1458,7 +1448,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:14 R760" Name="1:14 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-14-R760-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:14 R760" Name="1:14 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-14-R760-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1466,7 +1456,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 		
-		<InsertPointObject DisplayName="Sporvekseltunger 1:15 R760" Name="1:15 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-15-R760-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:15 R760" Name="1:15 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-15-R760-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1474,7 +1464,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:18.4 R1200" Name="1:18.4 R1200" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-18.4-R1200-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:18.4 R1200" Name="1:18.4 R1200" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-18.4-R1200-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1482,7 +1472,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:26.1 R2500" Name="1:26.1 R2500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER-26.1-R2500-V-Metric"
+		<InsertPointObject DisplayName="Sporvekseltunger 1:26.1 R2500" Name="1:26.1 R2500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-26.1-R2500-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1493,7 +1483,7 @@
 		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false">
 			<Rotation Add180DegreesIfDirIsDown="true"/>
 			<BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGER
+				NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE
 				{% if Variant == '1:7 R190' %}07-R190
 				{% elsif Variant == '1:9 R190' %}09-R190
 				{% elsif Variant == '1:8.21 R300' %}08.21-R300

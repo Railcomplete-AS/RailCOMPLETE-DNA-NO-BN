@@ -2,7 +2,7 @@
 ;
 ; Switch Symbol Signalling.Lsp
 ;
-; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
@@ -83,7 +83,7 @@
 	/	blockName
 		description
 		switchParameters
-		switchDiamondType  A B C D E F L R x railProfile ang
+		switchDiamondType  A B C D E F L R x RailType ang
 		zeroPad 
 		variation
 	)
@@ -94,7 +94,7 @@
 		B					(/ (cadr (assoc "B" switchParameters)) 1000.0)
 		R 					(cadr (assoc "R" switchParameters))
 		x					(cadr (assoc "x" switchParameters))
-		railProfile			(cadr (assoc "RailProfile" switchParameters))
+		RailType			(cadr (assoc "RailType" switchParameters))
 		ang					(R->D (atan (/ 1.0 x))) ; sporvekselsymbol
 		radius				0.75
 	)
@@ -105,8 +105,8 @@
 	)
 	(foreach variation '("REMOTE_CONTROLLED" "KEYLOCKED" "NOT_INTERLOCKED")
 		(setq
-			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
-			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
+			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailType "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
+			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailType "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
 		)
 		; A circle marks the theoretical crossing (where the two end-of-switch tangent extensions meet);
 		(SetLayer layDef_Zero)
@@ -160,8 +160,8 @@
 	;
 	(foreach variation '("REMOTE_CONTROLLED" "KEYLOCKED" "NOT_INTERLOCKED")
 		(setq
-			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
-			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" railProfile "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
+			blockName	(strcat blockName1 "-"    zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailType "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
+			description	(strcat description1 ", " zeroPad (rtos x 2 2) "-R" (rtos R 2 0) "-" RailType "-" switchDiamondType "-" variation "-" (rtos quadrant 2 0))
 		)
 		; Switch symbol - from the Signalling discipline's viewpoint:
 		(command 

@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -16,28 +16,27 @@
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_trk_getSwitchLabelItem1()" ReturnType="String"
 		Description="Returns the Fouling Point and Stock Rail joint reference mileages for a related switch.">
-		<Constructor>String NOBN_trk_getSwitchLabelItem1([Boolean MileageIncreasesTowardsLeft])</Constructor>
+		<Signature>String NOBN_trk_getSwitchLabelItem1([Boolean MileageIncreasesTowardsLeft])</Signature>
 		<Formula>
 			function NOBN_trk_getSwitchLabelItem1(MileageIncreasesTowardsLeft)
 				if MileageIncreasesTowardsLeft == nil then 
 					MileageIncreasesTowardsLeft = false
 				end
-				local s,r,n,v,fp,srj --fp=fouling point, srj=stock rail joint
-				s = rel_Label_AppliesTo_Anything
-				r,n = getRelatedObjects(s)
+				local s = rel_Label_AppliesTo_Anything
+				local r,n = getRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."'.",_unfinished
 				else
-					v = r[0]
+					local v = r[0]
 					if v.RcType ~= rctype_Switch then
 						return "Bad related object type ["..v.RcType.."], "..rctype_Switch.." was expected",_warning
 					end
 					local srjrm = v.ReferenceMileage --Stock rail joint reference mileage
-					fp = getFoulingPoints(v)
+					local fp = getFoulingPoints(v)
 					if getCollectionLength(fp) == 0 then	
-						return "Km. "..NOBN_trk_toKm(srj).." (fant ikke Mid)",_warning
+						return "Km. "..NOBN_trk_toKm(srjrm).." (fant ikke Mid)",_warning
 					else 
-						fprm = fp[0].Branch1.ReferenceMileage  --Fouling point reference mileage
+						local fprm = fp[0].Branch1.ReferenceMileage  --Fouling point reference mileage
 						if srjrm &lt; fprm then 
 							if MileageIncreasesTowardsLeft then
 								return "Km."..NOBN_trk_toKm(fprm).."/"..NOBN_trk_toKm(srjrm)
@@ -61,24 +60,23 @@
 	
 	<LuaFunction Name="NOBN_trk_getSwitchLabelItem2()" ReturnType="String"
 		Description="Returns the related switch's name.">
-		<Constructor>String NOBN_trk_getSwitchLabelItem2([Boolean MileageIncreasesTowardsLeft])</Constructor>
+		<Signature>String NOBN_trk_getSwitchLabelItem2([Boolean MileageIncreasesTowardsLeft])</Signature>
 		<Formula>
 			function NOBN_trk_getSwitchLabelItem2(MileageIncreasesTowardsLeft)
 				if MileageIncreasesTowardsLeft == nil then 
 					MileageIncreasesTowardsLeft = false
 				end
-				local s,r,n,v,fp,srj --fp=fouling point, srj=stock rail joint
-				s = rel_Label_AppliesTo_Anything
-				r,n = getRelatedObjects(s)
+				local s = rel_Label_AppliesTo_Anything
+				local r,n = getRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."'.",_unfinished
 				else
-					v = r[0]
+					local v = r[0]
 					if v.RcType ~= rctype_Switch then
 						return "Bad related object type ["..v.RcType.."], "..rctype_Switch.." was expected",_warning
 					end
 					local srjrm = v.ReferenceMileage --Stock rail joint reference mileage
-					fp = getFoulingPoints(v)
+					local fp = getFoulingPoints(v)
 					if getCollectionLength(fp) == 0 then	
 						return "SS"..v.code.." (fant ikke Mid)",_warning
 					else
@@ -106,16 +104,15 @@
 
 	<LuaFunction Name="NOBN_trk_getSwitchLabelItem3()" ReturnType="String"
 		Description="Returns the switch's reference alignment code.">
-		<Constructor>String NOBN_trk_getSwitchLabelItem3()</Constructor>
+		<Signature>String NOBN_trk_getSwitchLabelItem3()</Signature>
 		<Formula>
 			function NOBN_trk_getSwitchLabelItem3()
-				local s,r,n,v,fp,srj --fp=fouling point, srj=stock rail joint
-				s = rel_Label_AppliesTo_Anything
-				r,n = getRelatedObjects(s)
+				local s = rel_Label_AppliesTo_Anything
+				local r,n = getRelatedObjects(s)
 				if n == 0 then
 					return "UNFINISHED - Relate with '"..s.."'.",_unfinished
 				else
-					v = r[0]
+					local v = r[0]
 					if v.RcType ~= rctype_Switch then
 						return "Bad related object type ["..v.RcType.."], "..rctype_Switch.." was expected",_warning
 					end
@@ -189,16 +186,13 @@
 		<LuaExpression Name="LateralOffset"><Formula>RC__getNearestSnapDistance(getPropertyValue("LateralOffset"),5)</Formula></LuaExpression>
 		<LuaExpression Name="ReferenceMileage">
 			<Formula>
-				s = rel_Label_AppliesTo_Anything
-				r,n = getRelatedObjects(s)
+				local s = rel_Label_AppliesTo_Anything
+				local r,n = getRelatedObjects(s)
 				if n == 0 then 
 					return getPropertyValue("ReferenceMileage"), _info("UNFINISHED - Relate with '"..s.."'.")
 				else
 					return r[0].ReferenceMileage
 				end
-
-				r,n = getRelatedObjects(rel_Label_AppliesTo_Anything)
-				return (n &gt; 0) and r[0].ReferenceMileage or getPropertyValue("ReferenceMileage")
 			</Formula>
 		</LuaExpression>
 		<LuaExpression Name="LabelItem1"><Formula>NOBN_com_getLabelItem1()</Formula></LuaExpression>

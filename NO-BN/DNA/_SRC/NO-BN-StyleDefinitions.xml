@@ -4,7 +4,7 @@
 	
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
-	(c) Railcomplete AS, Norway, 2015-2023. All rights reserved.
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 
 =========================================================================================================-->
 <xpp:bloc>
@@ -1095,15 +1095,13 @@ Note on 'Transient graphics layers':
 			<PositionInAlignmentAnnotations Color="ByBlock" PermanentAnnotationLayer="JBTFE#ANNOTATIONS_ALIGNMENT_POS_3D"/>
 			<!-- NB: When UseTransientColorWhenMakingPermanent is "false"m the annotative entities will be inserted with color "ByBlock" into one block. The block will have color "ByLayer". -->
 			<EarthingAlignmentAnnotations Color="3" PermanentAnnotationLayer="JBTFE#ANNOTATIONS_EARTHING" UseTransientColorWhenMakingPermanent="false"/>
-			<!-- TODO: Rename element 'TvdSectionAnnotations' into 'SectionAnnotations' : -->
-			<TvdSectionAnnotations Color="2" PermanentAnnotationLayer="JBTFE#ANNOTATIONS_SECTIONS" UseTransientColorWhenMakingPermanent="true"/>
+			<SectionAnnotations Color="2" PermanentAnnotationLayer="JBTFE#ANNOTATIONS_SECTIONS" UseTransientColorWhenMakingPermanent="true"/>
 			<Transient3DPreviewAnnotations UseTransientColorWhenMakingPermanent="true"/>
 		</Annotations>
 		
 		<!-- Ordered list of preferred colors for annotation of sections (paths delimited by section delimiter objects). -->
-		<!-- TODO Rename element 'TvdSectionColors' into 'TransientSectionColoringPalette' : -->
 		<!-- TODO Rename subelement 'string' into 'Color' : -->
-		<TvdSectionColors>
+		<SectionColors>
 			<!-- 'RYGCBM' : 1=Red 2=Yellow 3=Green 4=Cyan 5=Blue 6=Magenta 7=White 9=Grey -->
 			<string>5</string>
 			<string>9</string>
@@ -1111,7 +1109,7 @@ Note on 'Transient graphics layers':
 			<string>4</string>
 			<string>2</string>
 			<string>7</string>
-		</TvdSectionColors>	
+		</SectionColors>	
 		
 		<!--	
 			The Property Manager offers an interface to the SymbolFrame property for point objects. To set a symbol frame, enter the frame's name.
@@ -1177,14 +1175,17 @@ Note on 'Transient graphics layers':
 
 	<LuaFunction Name="NOBN_ClothoidRadiusFormatting()" ReturnType="String" HideFromUser="true"
 			Description="Returns the annotation for clothoid type.">
-		<Constructor>String NOBN_ClothoidRadiusFormatting(string segment1, double radius1, string segment2, string radius2, int decimals)</Constructor>
+		<Signature>String NOBN_ClothoidRadiusFormatting(string segment1, double radius1, string segment2, string radius2, int decimals)</Signature>
 		<Formula>
 			function NOBN_ClothoidRadiusFormatting(s1, r1, s2, r2, d)
+				local prevSegmentText, nextSegmentText
 				if s1 == "Line" then
 					prevSegmentText = "RL"
 				elseif s1 == "Arc" then
 					prevSegmentText = string.format("R%.0"..d.."f", r1)
-				elseif s1 == "Clothoid" then
+				elseif s1 == "Spiral" then
+					prevSegmentText = "FOB"
+				elseif s1 == "Clothoid" then -- DEPRECATED
 					prevSegmentText = "FOB"
 				else
 					return
@@ -1194,7 +1195,9 @@ Note on 'Transient graphics layers':
 					nextSegmentText = "RL"
 				elseif s2 == "Arc" then
 					nextSegmentText = string.format("R%.0"..d.."f", r2)
-				elseif s2 == "Clothoid" then
+				elseif s2 == "Spiral" then
+					nextSegmentText = "FOB"
+				elseif s2 == "Clothoid" then -- DEPRECATED
 					nextSegmentText = "FOB"
 				else
 					return
@@ -1209,7 +1212,7 @@ Note on 'Transient graphics layers':
 	
 	<LuaFunction Name="NOBN_VerticalProfileElevationFormatting()" ReturnType="String" HideFromUser="true"
 			Description="Returns elevation annotation.">
-		<Constructor>String NOBN_VerticalProfileElevationFormatting(double elevation, int decimals)</Constructor>
+		<Signature>String NOBN_VerticalProfileElevationFormatting(double elevation, int decimals)</Signature>
 		<Formula>
 			function NOBN_VerticalProfileElevationFormatting(x, d)
 				return string.format("H=%.0"..d.."f".." moh.", x)
@@ -1221,7 +1224,7 @@ Note on 'Transient graphics layers':
 		
 	<LuaFunction Name="NOBN_VerticalProfileMileageFormatting()" ReturnType="String" HideFromUser="true"
 			Description="Returns vertical profile mileage annotation.">
-		<Constructor>String NOBN_VerticalProfileMileageFormatting(double mileage, int decimals)</Constructor>
+		<Signature>String NOBN_VerticalProfileMileageFormatting(double mileage, int decimals)</Signature>
 		<Formula>
 			function NOBN_VerticalProfileMileageFormatting(x, d)
 				return string.format("PEL.%.0"..d.."f", x)
@@ -1233,9 +1236,9 @@ Note on 'Transient graphics layers':
 			
 	<LuaFunction Name="NOBN_MileageAnnotationsMileageFormatting()" ReturnType="String" HideFromUser="true"
 			Description="Returns mileage annotation.">
-		<Constructor>String NOBN_MileageAnnotationsMileageFormatting(double mileage, int decimals)</Constructor>
+		<Signature>String NOBN_MileageAnnotationsMileageFormatting(double mileage, int decimals)</Signature>
 		<Formula>
-			function NOBN_MileageAnnotationsMileageFormatting(a, x, d)
+			function NOBN_MileageAnnotationsMileageFormatting(x, d)
 				return string.format("Km.%.0"..d.."f", x)
 			end
 		</Formula>
@@ -1245,7 +1248,7 @@ Note on 'Transient graphics layers':
 	
 	<!-- <LuaFunction Name="NOBN_MileageAnnotationsMilepostFormatting()" ReturnType="String" HideFromUser="true" -->
 			<!-- Description="Returns annotation of mileposts (small jumps at integer kilometers or miles etc.)."> -->
-		<!-- <Constructor>String NOBN_MileageAnnotationsMilepostFormatting(ObjRef PreviousReferenceMarker, double mileage, int decimals)</Constructor> -->
+		<!-- <Signature>String NOBN_MileageAnnotationsMilepostFormatting(ObjRef PreviousReferenceMarker, double mileage, int decimals)</Signature> -->
 		<!-- <Formula> -->
 			<!-- function NOBN_MileageAnnotationsMilepostFormatting(a, x, d) -->
 				<!-- return string.format("Km.%.0"..d.."f", x) -->
