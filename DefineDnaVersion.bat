@@ -12,7 +12,7 @@ set   RELEASE=2024.a
 set       LOG=no
 set    COPY3D=yes
 set TUTORIALS=yes
-set     CLEAN=yes
+set     CLEAN=no
 
 echo %ADM%>__adm.txt
 echo %RELEASE%>__release.txt
