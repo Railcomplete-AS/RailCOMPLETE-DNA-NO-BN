@@ -195,15 +195,15 @@
 	ERTMS SIGNALLING BOARDS (not signals)
 =========================================================================================================-->
 	<!-- ERTMS boards with pole. (signals should feature the "mast foot"). -->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignEtcsSignal" Name="JBTSA_MSS ERTMS Other board"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsMiscBoard" Name="JBTSA_MSS ERTMS Misc board"
 				Layer="JBTSA_MSS" Color="ByLayer"
 				Group="Skilt/Kjørende personell/ERTMS Signalskilt"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-		<RelationSpace>ertms_skilt</RelationSpace>
-		<AttachmentCategory Name="ertms_skilt"/>
-		<AttachTo Category="ertms_skilt"/>
-		<AttachTo Category="markerboard"/>
+		<RelationSpace>ertms_board</RelationSpace>
+		<AttachmentCategory Name="ertms_board"/>
+		<AttachTo Category="ertms_board"/>
+		<AttachTo Category="ertms_marker_board"/>
 		<AttachTo Category="skiltfeste"/>
 		
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -344,7 +344,7 @@
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_ertms_signalBoard_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_ertms_signalBoard_Geometry3DName()" ReturnType="String"
 				HideFromUser="false"
-				Description="Returns the 3D model name [String] for the ERTMS board. Covers various ERTMS board types, except stop/location markerboards.">
+				Description="Returns the 3D model name [String] for the ERTMS board. Covers various ERTMS board types, except stop/location marker boards.">
 			<Signature>String _JBTSA_MSS_ertms_signalBoard_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_MSS_ertms_signalBoard_Geometry3DName()
@@ -471,17 +471,18 @@
 	TRAIN DRIVERS
 	ID BOARDS
 =========================================================================================================-->
-	<ObjectType DataType="tSign" Class="RailwayPlacedObject" LuaName="rctype_SignEtcsId" Name="JBTSA_MSS ERTMS ID board"
+	<ObjectType DataType="tSign" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsIdBoard" Name="JBTSA_MSS ERTMS ID board"
 				DrawTail="true"
 				Layer="JBTSA_MSS" Color="ByLayer"
 				Group="Skilt/Kjørende personell/ERTMS ID-skilt"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>ertms_skilt</RelationSpace>
-		<AttachmentCategory Name="ertms_skilt" PassAttachmentToTarget="true"/>
-		<AttachTo Category="ertms_skilt"/>
-		<AttachTo Category="markerboard" DrawTail="true"/>
+		<RelationSpace>ertms_board</RelationSpace>
+		<AttachmentCategory Name="ertms_board" PassAttachmentToTarget="true"/>
+		<AttachTo Category="ertms_board" DrawTail="true"/>
+		<AttachTo Category="ertms_marker_board" DrawTail="true"/>
+		<AttachTo Category="ertms_shunting_signal" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -546,7 +547,7 @@
 						   
 		<LuaExpression Name="code"><Formula>_JBTSA_MSS_E101_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_code()" ReturnType="String"
-			Description="Returns the associated ERTMS markerboard, shunting signal or auxiliary board's code.">
+			Description="Returns the associated ERTMS marker board, shunting signal or auxiliary board's code.">
 		<Signature>String _JBTSA_MSS_E101_code()</Signature>
 			<Formula>
 				function _JBTSA_MSS_E101_code()
@@ -557,7 +558,7 @@
 
 		<LuaExpression Name="name"><Formula>_JBTSA_MSS_E101_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_name()" ReturnType="String"
-			Description="Returns the associated ERTMS markerboard, shunting signal or auxiliary board's code.">
+			Description="Returns the associated ERTMS marker board, shunting signal or auxiliary board's code.">
 		<Signature>String _JBTSA_MSS_E101_name()</Signature>
 			<Formula>
 				function _JBTSA_MSS_E101_name()
@@ -2948,7 +2949,6 @@ end
 		<AttachmentCategory Name="skilt" PassAttachmentToTarget="true"/>
 		<AttachTo Category="skilt"/>
 		<AttachTo Category="signal" DrawTail="true"/>
-		<AttachTo Category="markerboard" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -4216,7 +4216,8 @@ end
 		<AttachTo Category="signal" DrawTail="true"/>
 		<AttachTo Category="skilt" DrawTail="true"/>
 		<AttachTo Category="apparatskap" DrawTail="true"/>
-		<AttachTo Category="markerboard" DrawTail="true"/>
+		<AttachTo Category="ertms_marker_board" DrawTail="true"/>
+		<AttachTo Category="ertms_shunting_signal" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -4731,8 +4732,8 @@ end
 		<Signature>Double NOBN_bnp_getBoardOffset3DZ()</Signature>
 		<Formula>
 -- This formula does not catch all board configurations. If you have a complicated board configuration it's likely that you will have to delete it and configure the Z offset manually to get the right behaviour for your 3D model.
--- The formula is intended to handle the following cases: i) rctype_SignEtcsSignal alone, ii) rctype_SignEtcsSignal with attached rctype_SignEtcsId, iii) rctype_SignEtcsSignal attached to rctype_EtcsEoA, iv) rctype_SignEtcsSignal attached to rctype_EtcsEoA, with attached rctype_SignEtcsId.
--- Note in particular that the formula does not handle the case where two rctype_SignEtcsSignal are attached to a single stop sign (rctype_EtcsEoA).
+-- The formula is intended to handle the following cases: i) rctype_SignErtmsMiscBoard alone, ii) rctype_SignErtmsMiscBoard with attached rctype_SignErtmsIdBoard, iii) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, iv) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, with attached rctype_SignErtmsIdBoard.
+-- Note in particular that the formula does not handle the case where two rctype_SignErtmsMiscBoard are attached to a single stop sign (rctype_SignErtmsMarkerBoard).
 --
 -- Returns the height of the Attachment board, if any.
 function getAttachmentBoardHeight()
@@ -4751,7 +4752,7 @@ function getIntermediateBoard()
 	if Attachment == nil or Attachment.AttachedElements == nil or Attachment.AttachedElements.Count == 0 then return nil end
 	
 	for i = 0, Attachment.AttachedElements.Count - 1 do
-		if Attachment.AttachedElements[i].RcType == rctype_SignEtcsId then
+		if Attachment.AttachedElements[i].RcType == rctype_SignErtmsIdBoard then
 			local kake = Attachment.AttachedElements[i]
 			if (Attachment.AttachedElements[i].Variant == "E101-A ID board, intermediate stop sign, 400x325, white" 
 			or Attachment.AttachedElements[i].Variant == "E101-B ID board, entry stop sign, 400x325, yellow" 
@@ -4783,7 +4784,7 @@ function getFirstAttachedIdSign()
 	if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
 	
 	for i = 0, AttachedElements.Count - 1 do
-		if AttachedElements[i].RcType == rctype_SignEtcsId then	return AttachedElements[i] end
+		if AttachedElements[i].RcType == rctype_SignErtmsIdBoard then	return AttachedElements[i] end
 	end
 end
 --
@@ -4917,7 +4918,10 @@ end
 		<Signature>Enumeration {'None','Vertical','Horizontal'} NOBN_bnp_getPoleRoutingDefaultValue()</Signature>
 		<Formula>
 			function NOBN_bnp_getPoleRoutingDefaultValue()
-				if RcType == rctype_EtcsEoA then
+				if RcType == rctype_SignErtmsMarkerBoard then
+					return "Vertical"
+					
+				elseif RcType == rctype_SignErtmsShuntingSignal then
 					return "Vertical"
 				
 				elseif RcType:match("JBTSA_MSS") or RcType:match("JBTKO_SKT") or RcType:match("JBTEH_BKT") then

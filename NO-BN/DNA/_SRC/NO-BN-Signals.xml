@@ -73,13 +73,13 @@
 		Description="Returns the formated short name extracted from a main/distant signal's Code, e.g. '4313UL' or 'UL4313' => '4313(UL)'.">
         <Signature>NOBN_sig_getSignalShortName()</Signature>
         <Formula>
-function NOBN_sig_getSignalShortName()
-	if NOBN_sig_getSignalLitra() == "" then 
-		return NOBN_sig_getSignalNumber()
-	else
-		return NOBN_sig_getSignalLitra().."("..NOBN_sig_getSignalNumber()..")"
-	end
-end
+			function NOBN_sig_getSignalShortName()
+				if NOBN_sig_getSignalLitra() == "" then 
+					return NOBN_sig_getSignalNumber()
+				else
+					return NOBN_sig_getSignalLitra().."("..NOBN_sig_getSignalNumber()..")"
+				end
+			end
 		</Formula>
     </LuaFunction>
 
@@ -91,14 +91,11 @@ end
         <Formula>
 			function NOBN_sig_getSignalFullName()
 				local t
-				if RcType == rctype_EtcsEoA then
-					if Variant == "ERTMS dverg" then 
-						return "EDs.R"..NOBN_sig_getSignalNumber() 
-					elseif Variant:match("E35") then
-						t = "Mb."
-					end
+				if RcType == rctype_SignErtmsMarkerBoard then t = "Mb."
+					
+				elseif RcType == rctype_SignErtmsShuntingSignal then return "EDs.R"..NOBN_sig_getSignalNumber()
 				
-				elseif RcType == rctype_SignEtcsSignal then
+				elseif RcType == rctype_SignErtmsMiscBoard then
 					if Variant == "E106 Stop for shunting" then t = "E106"
 					elseif Variant == "E107 Unsecured area with handoperated points" then t = "E107"
 					elseif Variant == "E36 Level crossing, location" then t = "E36"
@@ -172,9 +169,25 @@ end
 function NOBN_sig_getSignalPartNames()
 	local s = ""
 	local errMsg = "*** Unrecognized signal configuration ***"
-	if RcType == rctype_EtcsEoA then
-		if Variant:match("E35") then s = "E35" end
-		if Variant:lower():match("dverg") then s = s.."-EDS" end
+	if RcType == rctype_SignErtmsMarkerBoard then 
+		s = "E35"
+	elseif RcType == rctype_SignErtmsShuntingSignal then 
+		s = "EDS"
+	elseif RcType == rctype_SignErtmsMiscBoard then
+		if (Variant == "E106 Stop for shunting") then s = "E106"
+		elseif (Variant == "E107 Unsecured area with handoperated points") then s = "E107"
+		elseif (Variant == "E36 Level crossing, location") then s = "E36"
+		elseif (Variant == "E36 Level crossing, announcement") then s = "E36"
+		elseif (Variant == "E38 Avalanche area") then s = "E38"
+		elseif (Variant == "E39 Frost gate") then s = "E39"
+		elseif (Variant == "E200 Level zero") then s = "E200"
+		elseif (Variant == "E201 Level transition ETCS") then s = "E201"
+		elseif (Variant == "E202 Speed restriction 10") then s = "E202"
+		elseif (Variant == "E202 Speed restriction 20") then s = "E202"
+		elseif (Variant == "E202 Speed restriction 30") then s = "E202"
+		elseif (Variant == "E202 Speed restriction lifted") then s = "E202"
+		elseif (Variant == "E206 GSM-R network Norway") then s = "E206"
+		end
 	elseif RcType == rctype_Signal then
 		if (MainSignal ~= "-") then s = s..MainSignal:upper() end
 		if (DistantSignal ~= "-") then s = s.."-FS" end
@@ -206,6 +219,8 @@ function NOBN_sig_getSignalPartNames()
 	if s:match("^-.+") then s = s:sub(2) end --Strip off leading dash character '-', if any
 	return s
 end	 
+
+return NOBN_sig_getSignalPartNames()
 		</Formula>
      </LuaFunction>
 
@@ -292,18 +307,18 @@ end
 
 <!--========================================================================================================
 	SIGNALLING
-	CLASS A SIGNALS (ERTMS)
+	ERTMS MARKER BOARD
 =========================================================================================================-->
-	<!-- ERTMS markerboards boards with pole. 2D symbols feature the "pole foot". -->
+	<!-- ERTMS marker boards boards with pole. 2D symbols feature the "pole foot". -->
 	<!-- Note: The other ERTMS boards have been classified as 'JBTSA_MSS ERTMS skilt' boards. -->
 	<!-- 2021-01-11 CLFEY TODO Check if Bane NOR decides to use E34 "Location signal" (stedssignal, black arrow on white): -->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_EtcsEoA" Name="JBTSA_ERT ERTMS Marker board"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsMarkerBoard" Name="JBTSA_ERT ERTMS Marker board"
 				Layer="JBTSA_ERT" Color="ByLayer"
 				Group="Signal/Klasse-A signaler (ERTMS)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-		<AttachmentCategory Name="markerboard" PassAttachmentToTarget="true"/>				
-		<RelationSpace>markerboard</RelationSpace>
+		<AttachmentCategory Name="ertms_marker_board" PassAttachmentToTarget="true"/>				
+		<RelationSpace>ertms_marker_board</RelationSpace>
 		<!-- Attach to 'signalfundament' for Ø76 shunting signal or to 'skiltfeste' for Ø60 poles. -->
 		<AttachTo Category="signalfundament"/> 
 		<AttachTo Category="skiltfeste"/>
@@ -358,50 +373,50 @@ end
 				Description="Returns the height of the stop sign, placing it right under the corresponding ID sign (if it exists).">
 			<Signature>Double _JBTSA_ERT_Offset3DZ()</Signature>
 			<Formula>
-				function _JBTSA_ERT_Offset3DZ()
-					function getAttachedIdSign()
-						if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
-					
-						for i = 0, AttachedElements.Count - 1 do
-							if AttachedElements[i].RcType == rctype_SignEtcsId then
-								if (AttachedElements[i].Variant == "E101-A ID board, intermediate stop sign, 400x325, white" 
-								or AttachedElements[i].Variant == "E101-B ID board, entry stop sign, 400x325, yellow" 
-								or AttachedElements[i].Variant == "E101-C ID board, exit stop sign, Ø400, yellow" 
-								or AttachedElements[i].Variant == "E101-D ID board, blocking stop sign, Ø400, white") then
-									return AttachedElements[i]
-								end
-							end
-						end
-						
-						return nil
-					end
-
-					local idSign = getAttachedIdSign()
-					if idSign == nil then return 2.88 end -- Corresponds to idSignZOffset = 2.5 and idSignHeight = 0.325.
-
-					local idSignZOffset = idSign.Geometry3D_0.Offset.Z
-
-					local idSignHeight = 0.325 -- Default height
-					if idSign.Variant == "E101-A ID board, intermediate stop sign, 400x325, white" then idSignHeight = 0.325
-					elseif idSign.Variant == "E101-B ID board, entry stop sign, 400x325, yellow" then idSignHeight = 0.325
-					elseif idSign.Variant == "E101-C ID board, exit stop sign, Ø400, yellow" then idSignHeight = 0.400
-					elseif idSign.Variant == "E101-D ID board, blocking stop sign, Ø400, white" then idSignHeight = 0.400 end
-
-					local stopSignHeight = 0.400
-					local minimumGap = 0.010
-
-					local nominalZOffset = idSignZOffset + idSignHeight / 2+ stopSignHeight / 2 + minimumGap 
-					local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset + 0.005)) -- Round up to nearest cm.
-
-					return roundedZOffset
+function _JBTSA_ERT_Offset3DZ()
+	function getAttachedIdSign()
+		if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
+	
+		for i = 0, AttachedElements.Count - 1 do
+			if AttachedElements[i].RcType == rctype_SignErtmsIdBoard then
+				if (AttachedElements[i].Variant == "E101-A ID board, intermediate stop sign, 400x325, white" 
+				or AttachedElements[i].Variant == "E101-B ID board, entry stop sign, 400x325, yellow" 
+				or AttachedElements[i].Variant == "E101-C ID board, exit stop sign, Ø400, yellow" 
+				or AttachedElements[i].Variant == "E101-D ID board, blocking stop sign, Ø400, white") then
+					return AttachedElements[i]
 				end
+			end
+		end
+		
+		return nil
+	end
+
+	local idSign = getAttachedIdSign()
+	if idSign == nil then return 2.88 end -- Corresponds to idSignZOffset = 2.5 and idSignHeight = 0.325.
+
+	local idSignZOffset = idSign.Geometry3D_0.Offset.Z
+
+	local idSignHeight = 0.325 -- Default height
+	if idSign.Variant == "E101-A ID board, intermediate stop sign, 400x325, white" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-B ID board, entry stop sign, 400x325, yellow" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-C ID board, exit stop sign, Ø400, yellow" then idSignHeight = 0.400
+	elseif idSign.Variant == "E101-D ID board, blocking stop sign, Ø400, white" then idSignHeight = 0.400 end
+
+	local stopSignHeight = 0.400
+	local minimumGap = 0.010
+
+	local nominalZOffset = idSignZOffset + idSignHeight / 2+ stopSignHeight / 2 + minimumGap 
+	local roundedZOffset = tonumber(string.format("%.2f", nominalZOffset + 0.005)) -- Round up to nearest cm.
+
+	return roundedZOffset
+end
 			</Formula>
 		</LuaFunction>
 
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_ERT_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_ERT_Geometry3DName()" ReturnType="String"
 				HideFromUser="false"
-				Description="Returns the 3D model name [String] for the current ERTMS board. Covers position/stop markerboards. See also JBTSA_ERP ERTMS boards.">
+				Description="Returns the 3D model name [String] for the current ERTMS board. Covers position/stop marker boards. See also JBTSA_ERP ERTMS boards.">
 			<Signature>String _JBTSA_ERT_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_ERT_Geometry3DName()
@@ -467,13 +482,18 @@ end
 	</ObjectType>
 
 
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_ErtmsShuntingSignal" Name="JBTSA_SIG ERTMS Shunting signal"
+
+<!--========================================================================================================
+	SIGNALLING
+	ERTMS SHUNTING SIGNAL
+=========================================================================================================-->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsShuntingSignal" Name="JBTSA_SIG ERTMS Shunting signal"
 				Layer="JBTSA_SIG" Color="ByLayer"
 				Group="Signal/Klasse-A signaler (ERTMS)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-		<AttachmentCategory Name="markerboard" PassAttachmentToTarget="true"/>				
-		<RelationSpace>markerboard</RelationSpace>
+		<AttachmentCategory Name="ertms_shunting_signal" PassAttachmentToTarget="true"/>				
+		<RelationSpace>ertms_shunting_signal</RelationSpace>
 		<!-- Attach to 'signalfundament' for Ø76 shunting signal or to 'skiltfeste' for Ø60 poles. -->
 		<AttachTo Category="signalfundament"/> 
 		<AttachTo Category="skiltfeste"/>
@@ -523,13 +543,22 @@ end
 		<LuaFunction Name="_JBTSA_SIG_ShuntingOffset3DZ()" 
 				ReturnType="Double"
 				HideFromUser="false"
-				Description="Returns the height of the shunting signal.">
+				Description="Returns the height of the current shunting signal.">
 			<Signature>Double _JBTSA_SIG_ShuntingOffset3DZ()</Signature>
 			<Formula>
-				-- Standard height is 1500mm to the middle of the first light source. See 1000001649 - Design requirements - Signs and boards, 10 SIGNAL POST ARRANGEMENT.
-				function _JBTSA_SIG_ShuntingOffset3DZ()
-					return 1500 + 0 -- TODO: Account for height difference between middle of first light source and RC insertion point.
-				end
+function _JBTSA_SIG_ShuntingOffset3DZ()
+	local standardHeight = 1.500 -- Standard height is 1500mm to the middle of the first light source. See 1000001649 - Design requirements - Signs and boards, 10 SIGNAL POST ARRANGEMENT.
+	local internalOffsetZ = 0.247 -- The distance between the insertion point and the middle of the first light source.
+	local totalHeight = standardHeight + internalOffsetZ
+	
+	if Variant == "Side of track" 
+		then return totalHeight
+	elseif Variant == "Above track" 
+		then return -totalHeight
+	else 
+		return 0.0 
+	end
+end
 			</Formula>
 		</LuaFunction>
 
@@ -539,22 +568,9 @@ end
 				Description="Returns the 3D model name [String] for the current shunting signal.">
 			<Signature>String _JBTSA_SIG_ShuntingGeometry3DName()</Signature>
 			<Formula>
-				function _JBTSA_SIG_ShuntingGeometry3DName()
-					local t = "NO-BN-3D-SA-SIG-ERTMS"
-					if Variant:match("E35 Stoppskilt")then
-						t = t.."-E35"
-					end
-					if Variant:match("sidestilt") then
-						t = t..(((RightSided and dir == "up") or (LeftSided and dir == "down")) and "-HSIDE" or "-VSIDE")
-					end
-					if Variant:match("over sporet") then
-						t = t.."-OVER"
-					elseif Variant:match("dverg") then 
-						t = t.."-DS" 
-					end
-					if Variant:match("lav") then t = t.."-LAV" end
-					return t
-				end
+function _JBTSA_SIG_ShuntingGeometry3DName()
+	return "NO-BN-3D-SA-SIG-ERTMS-DS"
+end
 			</Formula>
 		</LuaFunction>
 		
@@ -563,8 +579,8 @@ end
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true" MirrorAboutJigXAxisIfLeftSideOfAlignment="true"/>
 		</InsertPointObject>
-
-		<InsertPointObject Name="Above track" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-DS-{{SymbolMode}}"
+		
+		<InsertPointObject Name="Above track" DisplayBlockName="NO-BN-2D-JBTSA_SIG-SIGNAL-DS-AAK-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.01">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
@@ -581,7 +597,7 @@ end
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_SIG-SIGNAL-DS
-				{% if PortalMounted %}-AAK{% endif %}
+				{% if PortalMounted %}AAK{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
 		</SymbolDefinition>
@@ -623,7 +639,8 @@ end
 				local tolerance = 6 --Tolerance in meters
 			
 				--Preamble - called from a relevant object type?
-				if      RcType ~= rctype_EtcsEoA
+				if      RcType ~= rctype_SignErtmsMarkerBoard
+					and RcType ~= rctype_SignErtmsShuntingSignal
 					and RcType ~= rctype_Signal
 					and RcType ~= rctype_TrackSignal
 					and RcType ~= rctype_BridgeAndFrostDoorSignal
@@ -635,8 +652,11 @@ end
 				elseif PortalMounted then
 					return "WARNING - Check manually that no high voltage installation is within safety distance from object in portal.",_warning
 
-				elseif RcType == rctype_EtcsEoA then
+				elseif RcType == rctype_SignErtmsMarkerBoard then
 					return "OK - Markerboard on the ground - Safety distance to OCS pole is not relevant.",_ok
+					
+				elseif RcType == rctype_SignErtmsShuntingSignal then
+					return "OK - Shunting signal on the ground - Safety distance to OCS pole is not relevant.",_ok
 			
 				elseif RcType == rctype_TrackSignal then
 					return "OK - Track signal (togsporsignal) - Safety distance to OCS pole is not relevant.",_ok 
