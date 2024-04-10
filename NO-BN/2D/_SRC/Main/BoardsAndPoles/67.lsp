@@ -7,6 +7,7 @@
 ;
 ; Change log:
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
+; 2023-04-10 CLFEY Specify start point (origin) for hatch where needed.
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet
@@ -68,7 +69,7 @@
 	(DrawLosange)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
-	(DrawHatch _solidHatch_)
+	(DrawHatchAtPoint _solidHatch_ _origin_ _angleZero_ _offsetZero_)
 	(MoveUp (* (DDcos _angle45_) side))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -103,7 +104,7 @@
 	(DrawLosange)
 	(command _POLYLINE_ p1 p2 p3 _closedPolyline_)
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
-	(DrawHatch _solidHatch_)
+	(DrawHatchAtPoint _solidHatch_ _origin_ _angleZero_ _offsetZero_)
 	(MoveUp (* (DDcos _angle45_) side))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -151,7 +152,7 @@
 	(command _POLYLINE_ p4 p5 p6 _closedPolyline_)
 	(command _POLYLINE_ p7 p8 p9 _closedPolyline_)
 	(command _POLYLINE_ p10 p11 p12 _closedPolyline_)
-	(DrawHatch _solidHatch_)
+	(DrawHatchAtPoint _solidHatch_ _origin_ _angleZero_ _offsetZero_)
 	(MoveUp (* (DDcos _angle45_) side))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
