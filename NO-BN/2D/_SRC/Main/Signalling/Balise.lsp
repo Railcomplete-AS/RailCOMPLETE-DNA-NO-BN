@@ -253,8 +253,8 @@
 	(setq
 		x	2.0
 		y	3.0
-		a1	(list 0  2.500)
-		a2	(list 0 -2.500)
+		a1	(list 0  3.000)
+		a2	(list 0 -3.000)
 		attAbove '("TEKSTOVER" "Tekst over" _emptyString_)
 		attBelow '("TEKSTUNDER" "Tekst under" _emptyString_)
 	)
@@ -266,8 +266,8 @@
 			(DrawHatch _solidHatch_)
 		)
 	)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ a1 attAbove)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ a2 attBelow)
+	(AddTextAttributeAtPoint layDef_Zero _th125_ a1 attAbove)
+	(AddTextAttributeAtPoint layDef_Zero _th125_ a2 attBelow)
 	(AddDescriptionBelowOrigin thisDescription (* 0.75 y))
 )
 
