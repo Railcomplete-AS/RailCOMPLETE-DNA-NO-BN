@@ -186,14 +186,14 @@
 ;================== NOBN functions ==================================================================
 
 (defun NOBN_DrawEtcsBaliseGroup ( variation thisDescription / x x2 y baliseDist a1 a2 attAbove attBelow )
-	; Bane NOR symbols for the ETCS ATP system. Balise groups with Bane NOR may have one or two balises, never more.
-	; Note: The schematic symbol's insertion point is the tip of the rightmost arrow.
+	; Bane NOR symbols for the ETCS ATP system. Balise groups with Bane NOR may have one, two or more balises.
+	; See ..\OneDrive - Railcomplete AS\D\Ref.doc. Bane NOR\ERTMS - dok\Fra Siemens\1000001380_007_003 Engineering Rules ETCS Trackside Norway
 	;
 	;    a1                a1
 	; +-----+        +-----------+
 	; | \   |        | \     \   |
 	; |   \ |        |   \     \ |
-	; |  . >|        | .  >     >|		
+	; |  . >|        |  . >     >|		
 	; |   / |        |   /     / |
 	; | /   |        | /     /   |
 	; +-----+        +-----------+
