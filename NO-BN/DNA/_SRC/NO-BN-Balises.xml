@@ -194,38 +194,54 @@
 <!--========================================================================================================
 	Signalling - ATP (automatic train protection) - ETCS
 =========================================================================================================-->
-	<LuaFunction Name="_JBTSA_ETC_code()" ReturnType="String" 
-		Description="Returns the ETCS balise group's code property.">
-		<Signature>String _JBTSA_ETC_code()</Signature>
-		<Formula>
-			function _JBTSA_ETC_code()
-				return "TODO: _JBTSA_ETC_code()"
-			end
-		</Formula>
-	</LuaFunction> 
-
-
-
-	<LuaFunction Name="_JBTSA_ETB_code()" ReturnType="String" 
-		Description="Returns the number 0..N-1 of the ETCS balise within its ETCS balise group.">
-		<Signature>String _JBTSA_ETB_code()</Signature>
-		<Formula>
-			function _JBTSA_ETB_code()
-				--TODO
-				return "TODO: _JBTSA_ETB_code()"
+    <LuaFunction Name="_JBTSA_ETB_positionInGroup()" ReturnType="String" 
+		Description="Returns the number #0..#7 of the ETCS balise in its ETCS balise group.">
+        <Signature>String _JBTSA_ETB_positionInGroup(objRef balise = this)</Signature>
+        <Formula>
+			function _JBTSA_ETB_positionInGroup(balise)
+				balise = balise or this
+				local baliseGroups,nBaliseGroups = balise:getRelatedObjects(rel_EtcsBalise_BelongsTo_EtcsBaliseGroup)
+				if nBaliseGroups == 0 then
+					return "?",_info("Connect the ETCS balise to its ETCS balise group with '"..rel_EtcsBalise_BelongsTo_EtcsBaliseGroup.."' to get the number of the balise within the balise group.")
+				else
+					local bg = baliseGroups[0]
+					local balises,nBalises = bg:getRelatedObjects(rel_EtcsBaliseGroup_Contains_EtcsBalise)
+			
+					if nBalises == 0 then
+						--Should never happen!
+						return "?",_info("Connect this balise group with '"..rel_EtcsBaliseGroup_Contains_EtcsBalise.."' to its ETCS balises so that the balises are numbered #0,#1.. and the balise group is positioned on balise #0.")
+			
+					elseif nBalises == 1 then
+						return 0
+			
+					else --nBalises >= 2:
+						if bg.dir ~= 'up' and bg.dir ~= 'down' then
+							return "?",_info("The balise group connected to this balise does not have the direction 'up' or 'down' - correct the  direction of the balise group so that the number of this balise in the balise group can be determined.")
+						end
+						local t = {}
+						for i = 0,nBalises-1 do table.insert(t,{id = balises[i].id, pos = balises[i]:getAlignmentInfo().RelativePosition}) end --Assume they are in same RSM track edge
+						table.sort(t, function (a,b) local sgn = (bg.dir == 'up' and 1 or -1) return sgn*a.pos &lt; sgn*b.pos end)
+						t = getCollectionFromTable(t) --Collections are indexed from 0 to #-1
+						for i = 0,nBalises-1 do
+							if balise.id == t[i].id then
+								return i,_info("Position #"..i.." in direction '"..bg.dir.."' within the balise group '"..RC__identify(bg).."'.")
+							end
+						end
+					end
+				end
 			end 
 		</Formula>
-	</LuaFunction>
+     </LuaFunction>
 
-
-	
+	 
+	 
 	<LuaFunction Name="_JBTSA_ETB_TextAbove()" ReturnType="String"
 		Description="Returns text above the ETCS balise 2D symbol.">
 		<!-- Description="Returns text over the ETCS balise 2D symbol."> -->
 		<Signature>String _JBTSA_ETB_TextAbove()</Signature>
 		<Formula>
 			function _JBTSA_ETB_TextAbove()
-				return "TODO: _JBTSA_ETB_TextAbove()"
+				return "#".._JBTSA_ETB_positionInGroup()
 			end
 		</Formula>
 	</LuaFunction>
@@ -237,7 +253,263 @@
 		<Signature>String _JBTSA_ETB_TextBelow()</Signature>
 		<Formula>
 			function _JBTSA_ETB_TextBelow()
-				return "TODO: _JBTSA_ETB_TextBelow()"
+				return "" --TODO: define _JBTSA_ETB_TextBelow()
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="_JBTSA_ETB_code()" ReturnType="String" 
+		Description="Returns the 'Code' property of the ETCS balise, extracted from its balise group and its position #0..#7 within the group.">
+		<Signature>String _JBTSA_ETB_code()</Signature>
+		<Formula>
+			function _JBTSA_ETB_code()
+				local baliseGroups,nBaliseGroups = this:getRelatedObjects(rel_EtcsBalise_BelongsTo_EtcsBaliseGroup)
+				if nBaliseGroups == 0 then
+					return _warning,"WARNING - No related balise group"
+				elseif nBaliseGroups &gt; 1 then
+					return _error,"ERROR - Balise can only belong to one balise group"
+				else 
+					local bg = baliseGroups[0]
+					return string.format(bg.code).."-".._JBTSA_ETB_TextAbove()
+				end
+			end 
+		</Formula>
+	</LuaFunction>
+
+
+	
+    <LuaFunction Name="_JBTSA_ETC_dir()" ReturnType="String"
+		Description="Checks the direction of the ETCS balise group, returns the already defined  direction [ up | down | none ].">
+        <Signature>String _JBTSA_ETC_dir(objRef bg = this)</Signature>
+        <Formula>
+			function _JBTSA_ETC_dir(bg)
+				bg = bg or this
+				local infoMsg,symbol
+				if bg.dir ~= 'up' and bg.dir ~= 'down' and bg.dir ~= 'none' then
+					infoMsg = "ERROR - The  direction of a balise group must be either 'up', 'down' or 'none'."
+					symbol = _error
+				else
+					infoMsg = "The user is expected to set the direction of the balise group."
+					symbol = _ok
+				end
+				return getPropertyValue("dir"),_info(infoMsg),symbol
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+	
+	<LuaFunction Name="_JBTSA_ETC_Mileage()" ReturnType="String"
+		Description="Places the ETCS balise group at its balise #0:
+			\n
+			\n1) The user inserts the balise group and specifies the direction of the balise group. The variant will be set automatically based on the balises related to (contained in) the balise group.
+			\n2) The user inserts balises and relates them to the balise group. The number of balises defines the variant of the balise group.
+			\n3) RC displays the 2D symbol that corresponds to the variant and the balise group direction.
+			\n4) The balise group is in the same position as its balise #0, which becomes the first balise in the direction of the balise group.">
+		<Signature>String _JBTSA_ETC_Mileage(ObjRef bg = this)</Signature>
+		<Formula>
+			function _JBTSA_ETC_Mileage(bg)
+				bg = bg or this
+				local s = rel_EtcsBaliseGroup_Contains_EtcsBalise
+				local balises,nBalises = bg:getRelatedObjects(s)
+				if nBalises == 0 then
+					return bg:getPropertyValue("mileage"),_info("Relate the balise group with '"..s.."' to its ETCS balises so that the balises are numbered #0,#1.. and the balise group is positioned on balise #0.")
+				elseif nBalises == 0 then
+					return balises[0].mileage
+				else
+					local t = {}
+					for i = 0,nBalises-1 do table.insert(t,{id = balises[i].id, pos = balises[i].pos, mileage = balises[i].mileage }) end --Assume they are in same RSM track edge
+					table.sort(t, function (a,b) local sgn = (dir == 'up' and 1 or -1) return sgn*a.pos &lt; sgn*b.pos end)
+					return t[1].mileage,_info("Position erhalten von ETCS-Balise "..RC__identify(getObjectFromId(t[1].id)))
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="_JBTSA_ETC_chk_BaliseGroupTypes()" ReturnType="String"
+		Description="Checks that the 'Packages' property is syntactically correct.
+				\nSee DBAG Ril.819.1344A01 p.60.
+				\nExamples: '21&lt;', '&gt;21', '21&lt;&gt;26', '24,28&lt;37&gt;21'.
+				\n
+				\nTODO: Adapt this code to Bane NOR regulations.">
+		<Signature>String _JBTSA_ETC_chk_BaliseGroupTypes(objRef baliseGroup = this)</Signature>
+		<Formula>
+			function _JBTSA_ETC_chk_BaliseGroupTypes(bg)
+				bg = bg or this
+
+				--Find target distance if defined (shortest of all available target distances)
+				local r,n = bg:getRelatedObjects(rel_EtcsBaliseGroup_AppliesTo_Object)
+				local shortest = math.huge
+				local shortestIndex = nil
+				for i=0,n-1 do
+					local d = getDistance(bg,r[i])
+					if d &lt; shortest then 
+						shortest = d
+						shortestIndex = i
+					end
+				end
+
+				local t = (shortest == math.huge) 
+					and " @ (INCOMPLETE - no target distance/target object)" 
+					or string.format("@%.0f:%s %s", shortest, r[shortestIndex].RcType:sub(6,8), RC__identify(r[shortestIndex])) .. (n &gt; 1 and "..("..n..")" or "")
+
+				local function pretty()
+					--DP Type with separators:
+					local sepLeft = (left or middle) and "&lt;" or ""
+					local sepRight = (middle or right) and "&gt;" or ""
+					return (left or "")..sepLeft..(middle or "")..sepRight..(right or "")..t
+				end
+
+				local bgTypes = tostring(bg.BaliseGroupTypes):gsub("[\t ]","")
+				if bgTypes == nil or bgTypes == "" then 
+					return _unfinished,"Balise group type?"
+				else
+					local src = tostring(bgTypes):gsub("%s","") --Remove whitespace
+					src = tostring(src):gsub("/",",") --Slash is synonymous to comma
+					local check = tostring(src):gsub("[%&lt;%&gt;,0-9 ]","")
+					if check ~= "" then
+						return _warning,"WARNING - Invalid characters found in the source string ["..check.."]."
+					end
+					--TODO: Adapt DB rules to Bane NOR rules, write this check properly:
+					--Analyze according to Ril.819.1344A01 page 60-75 Table 9:
+					--Note: "Left"/"Right" require that the bg's own alignment has mileage increasing towards the right as seen on-screen.
+					--Parse all combinations:
+					local left = nil
+					local middle = nil
+					local right = nil
+					if src:match("^&lt;([0-9,]+)$") 
+						or src:match("^([0-9,]+)&lt;([0-9,]+)$")
+						or src:match("^([0-9,]+)&gt;$")
+						or src:match("^([0-9,]+)&gt;([0-9,]+)$")
+					then
+						return _warning,"WARNING - Invalid direction specified in the source string ["..src.."]."
+					end
+					left,middle,right = src:match("^([0-9,]+)&lt;([0-9,]+)&gt;([0-9,]+)$")
+					if left and middle and right then return pretty() end
+					left,middle = src:match("^([0-9,]+)&lt;([0-9,])&gt;$")
+					if left and middle then return pretty() end
+					left,right = src:match("^([0-9,]+)&lt;&gt;([0-9,]+)$")
+					if left and right then return pretty() end
+					middle,right = src:match("^&lt;([0-9,]+)&gt;([0-9,]+)$")
+					if middle and right then return pretty() end
+					left = src:match("^([0-9,]+)&lt;$")
+					if left then return pretty() end
+					middle = src:match("^&lt;([0-9,]+)&gt;$")
+					if middle then return pretty() end
+					right = src:match("^&gt;([0-9,]+)$")
+					if right then return pretty() end
+					local implicitDirection = src:match("^[0-9,]+$")
+					if implicitDirection then
+						if dir == 'up' then 
+							right = implicitDirection
+						else
+							left = implicitDirection
+						end
+						return pretty()
+					end
+					return pretty("Incorrect balise group type syntax:"..tostring(bgTypes)) 
+				end
+			end
+		</Formula>
+	</LuaFunction> 
+			
+
+
+	<LuaFunction Name="_JBTSA_ETC_code()" ReturnType="String" 
+		Description="The ETCS balise group's code property shall be defined by the user.">
+		<Signature>String _JBTSA_ETC_code()</Signature>
+		<Formula>
+			function _JBTSA_ETC_code()
+				return "Delete this text/formula, enter a valid balise group id number."
+			end
+		</Formula>
+	</LuaFunction> 
+
+
+
+	<LuaFunction Name="_JBTSA_ETC_name()" ReturnType="String" 
+		Description="Returns the name property of the ETCS balise group, which results from its ETCS area number, its balise group number and balise group packets.
+				\nThe ETCS area number is taken from an RC area of the type 'ETCS area (NID_C)', which encloses the ETCS objects.
+				\nThe balise group number is taken from the 'Code' property (NID_BG).
+				\nThe data point packets are taken from the 'Data point packets' string.">
+		<Signature>String _JBTSA_ETC_name(objRef baliseGroup = this)</Signature>
+		<Formula>
+			function _JBTSA_ETC_name(bg)
+				bg = bg or this
+				local etcsAreas = bg.RcArea:filter(function (x) return x.Variant == "ETCS-Bereich (NID_C)" and x:isVisible() end)
+				local nEtcsAreas = getCollectionLength(etcsAreas)
+				local infoMsg,NID_C
+				if nEtcsAreas == 0 then
+					NID_C = "ETCS-Area (NID_C)?"
+					infoMsg = "The balise group is not located in an ETCS area."
+				elseif nEtcsAreas > 1 then
+					NID_C = string.format("%03d",etcsAreas[0].code)
+					infoMsg = "The balise group is located in several ETCS areas."
+				else
+					NID_C = string.format("%03d",etcsAreas[0].code)
+					infoMsg = nil
+				end
+
+				NID_BG = type(bg.code) == "number" and string.format("%05d",bg.code) or "Code (NID_BG)?"
+				
+				return string.format("%s %s %s", NID_C,NID_BG,tostring(bg.BaliseGroupTypes)),infoMsg and _info(infoMsg)
+			end
+		</Formula>
+	</LuaFunction> 
+
+
+
+	<LuaFunction Name="_JBTSA_ETC_eng_balise_bgTypes2packets()" ReturnType="String" 
+		Description="Returns a collection of ETCS packets as a function of DB Netz Balise Group Type(s).
+			\nRef: Grundsätze zur Erstellung der Ausführungsplanung PT1 für ETCS Level 2 – Streckenausrüstung nach LH BTSF3 V2.2 819.1344A01, Kap. 5.1 Datenpunkttypen.">
+		<Signature>String _JBTSA_ETC_eng_balise_bgTypes2packets(collectionOfBaliseGroupTypes bgTypes)</Signature>
+		<Formula>
+			function _JBTSA_ETC_eng_balise_bgTypes2packets(bgTypes)
+				--TODO: Adapt the balise group type table to Bane NOR regulations:
+				local etcsBalisePacketTable = {
+					--DP-Typ","Beschreibung","Balisenanzahl","Enthaltene Pakete","Wirkrichtung Pakete","Wirkrichtung DP"
+					{1,"Netzeinwahl-Datenpunkt","2","45","→","Ri L2"},
+					{2,"Funkaufbau-Datenpunkt","2","42","→","Ri L2"},
+					{3,"Ortungs-Datenpunkt vor Einstieg","2","-","-","Ri L2"},
+					{4,"Einstiegs-Grenzdatenpunkt","2","3","46","↔","→","Ri Einstieg"},
+					{5,"Abbruch-Datenpunkt vor Einstiegs-Grenzdatenpunkt","2","32, 42","→","Ri LNTC"},
+					{6,"Erster Abbruch-DP für Rückrichtung an Einstiegs-Grenz-DP","2","32, 41, 42","→","Ri LNTC"},
+					{8,"Datenpunkt für nationale Werte an Ländergrenze","2","3, 41","→","Ri D"},
+					{9,"Datenpunkt zur Unterdrückung einer Zwangsbremsung bei startenden Zügen","2","145","→","Ri DP"},
+					{20,"Datenpunkt an Signalen","2","137","→","Ri Signal"},
+					{21,"Datenpunkt an Ausfahrsignalen","2","423, 45","46, 137","↔","→","Ri Signal"},
+					{22,"Datenpunkt an Blockkennzeichen","1","-","-","Ri Signal"},
+					{23,"Erster Ortungs-Datenpunkt vor Signalen","1","-","-","Ri Signal"},
+					{24,"Zweiter Ortungs-Datenpunkt vor Signalen","1","-","-","Ri Signal"},
+					{25,"Allgemeiner Ortungs-Datenpunkt","1","-","-","beide Ri"},
+					{26,"TSR-Datenpunkt","2","654, 1414","→","Ri Signal"},
+					{27,"Datenpunkt für Trusted Areas","2","-","-","beide Ri"},
+					{28,"Datenpunkt für Start of Mission (SoM)","1 / 2","-","-","Ri Signal"},
+					{29,"Metallwarnungs-Da-tenpunkt","2","67","→","Ri BMM"},
+					{30,"Halt-Datenpunkt 1","1","12, 21, 27, 41, 254","→","Ri Signal"},
+					{31,"Halt-Datenpunkt 2","1","41","↔","Ri Signal"},
+					{32,"Datenpunkt zur Erhöhung der SR-Geschwindigkeit","2","3, 655, 141","→","RFR"},
+					{33,"Datenpunkt zur Herabsetzung der SR-Geschwindigkeit","2","3, 66","→","RFR"},
+					{34,"Datenpunkt zur TSR-Wiederholung","2","65, 141","→","RFR"},
+					{35,"Zufahrtsicherungsdatenpunkt","2","41","→","Ri L2oS"},
+					{36,"TSR-Datenpunkt 2","2","65, 141","→","Ri TSR"},
+					{37,"Datenpunkt für Rücknahme TSR","1 / 2","66","→","RN TSR"},
+					{38,"Datenpunkt für nationale Werte","2","3","↔","Ri L2 / Ri Bf"},
+					{43,"Datenpunkt für Bahnübergänge mit Überwachungssignalen","2","656, 886, 141","254","→","↔","Ri ÜS"},
+					{44,"Ortungsdatenpunkt für Bahnübergänge mit Überwachungssignalen","2","65","254","→","↔","Ri BÜ"},
+					{45,"Datenpunkt für Einschaltstrecke von Bahnübergängen mit Überwachungssignalen oder fernüberwacht","2","72","→","Ri BÜ"},
+					{50,"Grenz-Datenpunkt RBC-Wechsel","2","3, 45, 131","→","Ri Signal"},
+					{60,"Grenz-Datenpunkt für reguläre Ausstiege","2","37, 41, 42, 658, 729, 1418","→","Ri LNTC"},
+					{61,"Grenz-Datenpunkt für harte Ausstiege","2","36, 41, 42","→","Ri LNTC"},
+					{62,"Hilfs-Grenzdatenpunkt 1","2","41","→","Ri LNTC","63","Hilfs-Grenzdatenpunkt 2","2","46","4110","→","←","Ri LNTC / Ri L2mS"}
+				}
+				--local tmp = tostring(bgTypes):gsub(","," "):gsub("/"," ")
+				--iterator = for i,t in pairs(tmp) do return v end
+				return etcsBalisePacketTable[1]
 			end
 		</Formula>
 	</LuaFunction>
@@ -569,14 +841,10 @@
 	SIGNALLING
 	BALISE GROUP - ETCS
 =========================================================================================================-->
-	<!-- Balisegruppen kan kobles til signal(er), sporveksel(ler), radioområder, RBC-områder, sikringsanleggområder,  -->
-	<!-- stasjonsområder osv o.a.  -->
-	<!-- Noen tilkobinger arver posisjon fra sin forelder (signal), andre ikke (sporveksel, annen balisegruppe). -->
-	<!-- Lenkingsgrupper: Kobles til annen balisegruppe. -->
-	<!-- Signaler og forsignaler, evt dvergsignaler, fiktive osv: Balisegruppen kobles til signalet. -->
 	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" LuaName="rctype_EtcsBaliseGroup" Name="JBTSA_ETC ETCS balisegruppe" 
 				Layer="JBTSA_ETC" Color="ByLayer"
 				Group="Signal/Hastighetskontroll/ETCS"
+				AttMirrorX="{% if dir == 'down' %}true{% else %}false{% endif %}"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -595,7 +863,6 @@
 		<xpp:expand select="NOBN_com_DISCIPLINE___SIG"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
-
 		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
 		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
 		<xpp:expand select="NOBN_com_PSET_TITTELFELT"/>
@@ -608,11 +875,51 @@
 			<Variant Name="ETCS L2 balisegruppe, enkel"/>
 			<Variant Name="ETCS L2 balisegruppe, dobbel"/>
 		</Variants>
-
 		
-		<LuaExpression Name="code"><Formula>_JBTSA_ETC_code()</Formula></LuaExpression>
-		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
+		<CustomProperty DataType="String" Name="BaliseGroupTypes" DisplayName="Balise group types" DefaultValue="BG type?"
+			Description="ETCS balise group packet content.
+				\nSee DB Netz Ri 819.1344A01, 'Grundsätze zur Erstellung der Ausführungsplanung PT1 für ETCS Level 2 – Streckenausrüstung nach LH BTSF3 V2.2, Tabelle 9.'
+				\n
+				\nTODO: Adapt code to a similar document for Bane NOR."/>
+
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check"
+			Name="mc_BaliseGroupTypes" DisplayName="Validation of the balise group type coding"
+			Description="Validation of the balise group type coding, according to DBAG Ri 819.1344A01 p. 60.
+				\nExamples: '21&lt;', '&gt;21', '21&lt;&gt;26', '24,28&lt;37&gt;21'.
+				\n
+				\nTODO: Adapt to the corresponding Bane NOR regulations."/>
+		<LuaExpression Name="mc_BaliseGroupTypes" IsModelCheck ="true"><Formula>_JBTSA_ETC_chk_BaliseGroupTypes()</Formula></LuaExpression>
+
+		<SetValue Key="code" Value="NID_BG?"/>
+		<LuaExpression Name="name"><Formula>_JBTSA_ETC_name()</Formula> </LuaExpression>
+		<!-- <LuaExpression Name="ObjectInfo"><Formula>Variant</Formula></LuaExpression> -->
+		<LuaExpression Name="Mileage"><Formula>_JBTSA_ETC_Mileage()</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>(RightSided and 1 or -1) * 1e-3</Formula></LuaExpression>
+
+		<!-- Note: 'dir' shall be set by the user, but Variant is deduced by the balise group itself, from its balises. -->
+
+		<LuaExpression Name="Variant"><Formula>_JBTSA_ETC_Variant()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_ETC_Variant()" ReturnType="String" 
+			Description="Specifies the variant, depending on the number of balises in the group and the group's direction property ('up'/'down').">
+			<Signature>String _JBTSA_ETC_Variant()</Signature>
+			<Formula>
+				function _JBTSA_ETC_Variant()
+					local balises,nBalises = getRelatedObjects(rel_EtcsBaliseGroup_Contains_EtcsBalise)
+					if nBalises == 0 then
+						return getPropertyValue("Variant"),_info("UNFINISHED - Balise group has no balises")
+					elseif nBalises == 1 then
+						return "ETCS L2 balisegruppe, enkel"
+					elseif nBalises &gt;= 2 then
+						return "ETCS L2 balisegruppe, dobbel"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="BaneNORBeskrivelse"><Formula>Variant</Formula></LuaExpression>
+
+		<TextPositionLuaExpression Name="NAME"><Formula>RC__TextAttributePosition((RightSided and 1 or -1)*5.25, 0)</Formula></TextPositionLuaExpression>
+		<TextRotationLuaExpression Name="NAME"><Formula>RC__TextAttributeRotation(0)</Formula></TextRotationLuaExpression>
 
 		<InsertPointObject Name="ETCS L2 balisegruppe, enkel" DisplayBlockName="NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE-ENKEL-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
@@ -627,7 +934,7 @@
 		</InsertPointObject>
 
 		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="true">
-			<Rotation AddAngle="{% if dir == 'up' or dir == 'down' or dir == 'none' %}0{% else %}45{% endif %}"/>
+			<Rotation AddAngle="{% if dir == 'up' %}0{% elsif dir == 'down' %}180{% else %}45{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE
 				{% if Variant contains "enkel" %}ENKEL
@@ -636,6 +943,12 @@
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
+			<SymbolAttribute Tag="TEKSTOVER">
+				<Value>"TODO: tekst over"</Value>
+			</SymbolAttribute>
+			<SymbolAttribute Tag="TEKSTUNDER">
+				<Value>"TODO: tekst under"</Value>
+			</SymbolAttribute>
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
