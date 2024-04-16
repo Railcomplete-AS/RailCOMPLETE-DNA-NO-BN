@@ -8,6 +8,7 @@
 ; Change log:
 ; 2020-09-02 CLFEY Removed E34 and E35 markerboards. Added E35 to the .LSP file for Combined Signals.
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
+; 2024-04-16 SVNOE Added E37B.
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY Clarify which ERTMS 2D-symbols should be present - and create those.
@@ -47,9 +48,13 @@
 	(NOBN-ERTMS-SUPERVISED-AREA "END" nil)
 	(NOBN-ERTMS-SUPERVISED-AREA "END" "YOKE")
 
-	; E37 Systemovergang
+	; E37A Systemovergang
 	(TraceLevel2 "ERTMS-LEVEL-TRANSITION")
 	(NOBN-ERTMS-LEVEL-TRANSITION)
+	
+	; E37B Systemovergang
+	(TraceLevel2 "ERTMS-LEVEL-ZERO")
+	(NOBN-ERTMS-LEVEL-ZERO)
 )
 
 

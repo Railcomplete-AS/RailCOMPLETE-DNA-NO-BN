@@ -7,13 +7,14 @@
 ;
 ; Change log:
 ; 2022-06-02 KNHEL new sign
+; 2024-06-16 SVNOE renamed
 ;
 ;=========================================================================================================================
 
 ; Level zero
 
 
-(defun E200 ( /	blockName description x y )
+(defun E37B ( /	blockName description x y )
 	;
 	; TL-------TR
 	; |         |
@@ -22,8 +23,8 @@
 	; BL---.---BR 
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E200-LEVEL-ZERO"
-		description "SKILT SIGNAL E200 LEVEL ZERO"
+		blockName "NO-BN-2D-JBTSA_MSS-ERTMS-LEVEL-ZERO"
+		description "SKILT ERTMS LEVEL ZERO"
 		x 4.0
 		y 4.0
 	)
