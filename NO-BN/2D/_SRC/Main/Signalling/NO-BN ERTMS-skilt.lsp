@@ -8,7 +8,7 @@
 ; Change log:
 ; 2020-09-02 CLFEY Removed E34 and E35 markerboards. Added E35 to the .LSP file for Combined Signals.
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
-; 2024-04-16 SVNOE Added E37B.
+; 2024-04-16 SVNOE Added E37B. Clarified E106 vs E107 and E108, todo: update symbol graphics accordingly.
 ;
 ; TODO list:
 ; 2020-09-13 CLFEY Clarify which ERTMS 2D-symbols should be present - and create those.
@@ -35,18 +35,21 @@
 	(NOBN-ERTMS-LEVEL-CROSSING nil "YOKE")
 
 	; ERTMS boards
-	; E??
-	(TraceLevel2 "ERTMS-SHUNTING-AREA")
-	(NOBN-ERTMS-SHUNTING-AREA "BEGIN" nil)
-	(NOBN-ERTMS-SHUNTING-AREA "BEGIN" "YOKE")
+	; E106
+	; ( there is no "BEGIN" here)
+	(TraceLevel2 "ERTMS-SHUNTING-AREA"))
 	(NOBN-ERTMS-SHUNTING-AREA "END" nil)
 	(NOBN-ERTMS-SHUNTING-AREA "END" "YOKE")
 
+	; E107
+	(TraceLevel2 "ERTMS-INTERLOCKED-AREA")
+	(NOBN-ERTMS-INTERLOCKED-AREA "END" nil)
+	(NOBN-ERTMS-INTERLOCKED-AREA "END" "YOKE")
+
 	; E108
-	; ( there is no "BEGIN" here)
-	(TraceLevel2 "ERTMS-SUPERVISED-AREA")
-	(NOBN-ERTMS-SUPERVISED-AREA "END" nil)
-	(NOBN-ERTMS-SUPERVISED-AREA "END" "YOKE")
+	(TraceLevel2 "ERTMS-INTERLOCKED-AREA")
+	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" nil)
+	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" "YOKE")
 
 	; E37A Systemovergang
 	(TraceLevel2 "ERTMS-LEVEL-TRANSITION")
@@ -178,9 +181,9 @@
 
 
 
-(defun NOBN-ERTMS-SUPERVISED-AREA ( beginOrEnd mounting / blockName pole yokePole x y yoffs ptul ptll ptlr ptlm ptbm )
+(defun NOBN-ERTMS-INTERLOCKED-AREA ( beginOrEnd mounting / blockName pole yokePole x y yoffs ptul ptll ptlr ptlm ptbm )
 	(setq
-		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "SUPERVISED-AREA-" beginOrEnd)
+		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "INTERLOCKED-AREA-" beginOrEnd)
 		pole 6.0
 		yokePole 2.0
 		x 6.0 ; surrounding box
