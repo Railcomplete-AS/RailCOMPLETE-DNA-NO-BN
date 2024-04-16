@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; 206.lsp
+; E204.lsp
 ;
 ; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -13,7 +13,7 @@
 ; Select GSM-R network Norway
 
 
-(defun E206 ( /	blockName description x y m p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 
+(defun E204 ( /	blockName description x y m p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 
 			p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26
 			p27 p28 p29 p30 p31 p32 p33 p34 p35 p36 p37 p38 p39 p40 p41 p42 p43
 			p44 p45)
@@ -28,8 +28,8 @@
 	; BL---.---BR 
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E206-SELECT-GSM-R-NETWORK-NORWAY"
-		description "SKILT SIGNAL E206 SELECT GSM-R NETWORK NORWAY"
+		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SELECT-GSM-R-NETWORK-NORWAY"
+		description "SKILT ERTMS SELECT GSM-R NETWORK NORWAY"
 		x 4.0
 		y 5.72
 		m 0.36

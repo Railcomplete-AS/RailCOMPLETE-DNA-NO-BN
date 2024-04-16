@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; 203.lsp
+; E201.lsp
 ;
 ; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -14,24 +14,24 @@
 ; Speed restriction
 
 
-(defun E203 ( /	blockName description r )
+(defun E201 ( /	blockName description r )
 ; Repeater balise group with explicit mentioning of release speed 40 km/h
 	;
 	;        
 	;      ___ 
 	;     /   \    
-	;    ( 20  )    Circle with '20'
+	;    ( 10  )    Circle with '10'
 	;     \___/  
 	;     
 	;       
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SPEED-RESTRICTION-20"
-		description "SKILT ERTMS SPEED RESTRICTION 20"
+		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SPEED-RESTRICTION-10"
+		description "SKILT ERTMS SPEED RESTRICTION 10"
 		r 2.0
 	)
 	(DrawCircle layDef_Zero r _noWipeout_)
-	(AddTextAtPoint layDef_Zero _th200_	 _origin_ "20") 
+	(AddTextAtPoint layDef_Zero _th200_	 _origin_ "10") 
 	(MoveUp r)
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
