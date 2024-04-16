@@ -82,7 +82,7 @@
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
-	(CreateAnnotativeBlockFromCurrentGraphics blockName)
+	(DrawSingleWallmountedTrackSignal side)
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 )
 
