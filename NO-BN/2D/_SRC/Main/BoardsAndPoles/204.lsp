@@ -7,6 +7,7 @@
 ;
 ; Change log:
 ; 2022-06-02 KNHEL new sign
+; 2024-06-16 SVNOE renamed
 ;
 ;=========================================================================================================================
 
@@ -25,8 +26,8 @@
 	;       
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E204-SPEED-RESTRICTION-30"
-		description "SKILT SIGNAL E204 SPEED RESTRICTION 30"
+		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SPEED-RESTRICTION-30"
+		description "SKILT ERTMS SPEED RESTRICTION 30"
 		r 2.0
 	)
 	(DrawCircle layDef_Zero r _noWipeout_)
