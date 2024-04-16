@@ -35,7 +35,7 @@
 	(NOBN-ERTMS-LEVEL-CROSSING nil "YOKE")
 
 	; ERTMS boards
-	; E106
+	; E106A
 	; ( there is no "BEGIN" here)
 	(TraceLevel2 "ERTMS-SHUNTING-AREA"))
 	(NOBN-ERTMS-SHUNTING-AREA "END" nil)
