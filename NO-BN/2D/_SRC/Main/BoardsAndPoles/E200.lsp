@@ -15,13 +15,13 @@
 
 
 (defun E200 ( /	blockName description r d rVar)
-; Repeater balise group with explicit mentioning of release speed 40 km/h
+; ERTMS board - End of temporary speed restriction
 	;
 	;        
-	;      ___ 
-	;     / ///\    
-	;    ( ///  )    Circle with 3 slashes
-	;     \___/  
+	;      _____
+	;     /  ///\    
+	;    (  /./  )    Circle with 3 slashes
+	;     \///__/  
 	;     
 	;       
 	;
