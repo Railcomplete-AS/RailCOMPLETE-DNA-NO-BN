@@ -13,7 +13,7 @@
 ; Level transition
 
 
-(defun E201 ( /	blockName description x y )
+(defun E37A ( /	blockName description x y )
 	;
 	; +---------+
 	; |         |
@@ -23,8 +23,8 @@
 	; +----.----+ 
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E201-LEVEL-TRANSITION-ETCS"
-		description "SKILT SIGNAL E201 LEVEL TRANSITION ETCS"
+		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-TRANSITION"
+		description "SKILT ERTMS LEVEL TRANSITION"
 		x 4.0
 		y 4.0
 	)

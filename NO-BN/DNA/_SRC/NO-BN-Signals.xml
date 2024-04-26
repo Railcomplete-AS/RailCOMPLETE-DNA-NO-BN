@@ -89,74 +89,89 @@
 		Description="Returns the elaborate name of the signal, formated according to Bane NOR standard practice.">
         <Signature>String NOBN_sig_getSignalFullName()</Signature>
         <Formula>
-			function NOBN_sig_getSignalFullName()
-				local t
-				if RcType == rctype_SignErtmsMarkerBoard then t = "Mb."
-					
-				elseif RcType == rctype_SignErtmsShuntingSignal then return "EDs.R"..NOBN_sig_getSignalNumber()
-				
-				elseif RcType == rctype_SignErtmsMiscBoard then
-					if Variant == "E106 Stop for shunting" then t = "E106"
-					elseif Variant == "E107 Unsecured area with handoperated points" then t = "E107"
-					elseif Variant == "E36 Level crossing, location" then t = "E36"
-					elseif Variant == "E36 Level crossing, announcement" then t = "E36"
-					elseif Variant == "E38 Avalanche area" then t = "E38"
-					elseif Variant == "E39 Frost gate" then t = "E39"
-					elseif Variant == "E202 Speed restriction 10" then t = "E202"
-					elseif Variant == "E202 Speed restriction 20" then t = "E202"
-					elseif Variant == "E202 Speed restriction 30" then t = "E202"
-					elseif Variant == "E202 Speed restriction lifted" then t = "E202"
-					end
-				
-				elseif RcType == rctype_Signal then
-					if (MainSignal == "Hs1") then
-						t = "Stopplykt"
-					elseif (MainSignal == "RepHs1" or MainSignal == "RepHs2") then 
-						t = "Rep.Hs."
-					elseif (MainSignal ~= "-") then 
-						t = "Hs."
-					elseif (DistantSignal ~= "-") then
-						t = "Fs."
-					elseif (EndOfTrainRouteSignal ~= "-") then
-						t = "S66."
-					elseif (DwarfSignal ~= "-") then
-						return "Ds.R"..NOBN_sig_getSignalNumber()
-					elseif (HighShuntingSignal ~= "-") then
-						return "Z."..code
-					else
-						t = "Sig." --Covers all the remaining - MKs, FKs, Ls, LHs, AVs, BPs
-					end
-				
-				elseif RcType == rctype_FictitiousSignal then
-					t = "Fik."
-					if Variant == "Viapunkt for betjeningsanlegg" then return t..code
-					elseif Variant == "Fiktivt sluttpunkt for togvei" then return t..NOBN_sig_getSignalShortName().." (HTv)"
-					elseif Variant == "Fiktivt sluttpunkt for skiftevei" then return t..NOBN_sig_getSignalShortName().." (DTv)"
-					elseif Variant == "Fiktivt sluttpunkt for togvei og skiftevei" then return t..NOBN_sig_getSignalShortName().." (HTv/DTv)"
-					else 
-						return t..NOBN_sig_getSignalShortName().." (Unrecognized variant ["..Variant.."])",_warning  
-					end
-			
-				elseif RcType == rctype_TrackSignal then
-					t = "Tsp."..code
-					
-				elseif RcType == rctype_BridgeAndFrostDoorSignal then
-					t = "Brusignal/Frostportsignal"..code
-					
-				elseif RcType == rctype_AvalancheSignal then
-					t = "Rasvarslingssignal "..code
-					
-				elseif RcType == rctype_LevelCrossingSignalTowardsRoad then
-					t = "Veisignal "..code
-					
-				elseif RcType == rctype_LevelCrossingSignalTowardsRail then
-					t = (Variant:match("forsignal") and "PLO-Fs." or "PLO.")..code
-			
-				else
-					t = "Bad signal type ["..RcType.."] (code='"..code.."').",_warning
-				end
-				return t..NOBN_sig_getSignalShortName()
-			end
+function NOBN_sig_getSignalFullName()
+	local t
+	if RcType == rctype_SignErtmsMarkerBoard then t = "Mb."
+		
+	elseif RcType == rctype_SignErtmsShuntingSignal then return "EDs.R"..NOBN_sig_getSignalNumber()
+	
+	elseif RcType == rctype_SignErtmsElectrificationBoard then
+		if Variant == "E65H Lowering of pantograph, announcement" then t = "E65H"
+		elseif Variant == "E65J Lowering of pantograph, location" then t = "E65J"
+		elseif Variant == "E65K Raising of pantograph, location" then t = "E65K"
+		elseif Variant == "E65L Dead section, announcement" then t = "E65L"
+		elseif Variant == "E65M Disconnection in dead section" then t = "E65M"
+		elseif Variant == "E65N Connection after dead section" then t = "E65N"
+		end
+		
+	elseif RcType == rctype_SignErtmsTemporarySpeedRestrictionBoard then
+		if Variant == "E200 Speed restriction lifted" then t = "E200"
+		elseif Variant == "E201 Speed restriction 10" then t = "E201"
+		elseif Variant == "E202 Speed restriction 20" then t = "E202"
+		elseif Variant == "E203 Speed restriction 30" then t = "E203"
+		end
+	
+	elseif RcType == rctype_SignErtmsMiscBoard then
+		if Variant == "E36A Level crossing, location" then t = "E36"
+		elseif Variant == "E36B Level crossing, announcement" then t = "E36"
+		elseif Variant == "E37A Level transition" then t = "E37A"
+		elseif Variant == "E37B Level zero" then t = "E37B"
+		elseif Variant == "E38 Avalanche area" then t = "E38"
+		elseif Variant == "E39 Frost gate" then t = "E39"
+		elseif Variant == "E106 Stop for shunting" then t = "E106"
+		elseif Variant == "E107 Unsecured area with handoperated points" then t = "E107"
+		elseif Variant == "E204 GSM-R network Norway" then t = "E204"
+		end
+	
+	elseif RcType == rctype_Signal then
+		if (MainSignal == "Hs1") then
+			t = "Stopplykt"
+		elseif (MainSignal == "RepHs1" or MainSignal == "RepHs2") then 
+			t = "Rep.Hs."
+		elseif (MainSignal ~= "-") then 
+			t = "Hs."
+		elseif (DistantSignal ~= "-") then
+			t = "Fs."
+		elseif (EndOfTrainRouteSignal ~= "-") then
+			t = "S66."
+		elseif (DwarfSignal ~= "-") then
+			return "Ds.R"..NOBN_sig_getSignalNumber()
+		elseif (HighShuntingSignal ~= "-") then
+			return "Z."..code
+		else
+			t = "Sig." --Covers all the remaining - MKs, FKs, Ls, LHs, AVs, BPs
+		end
+	
+	elseif RcType == rctype_FictitiousSignal then
+		t = "Fik."
+		if Variant == "Viapunkt for betjeningsanlegg" then return t..code
+		elseif Variant == "Fiktivt sluttpunkt for togvei" then return t..NOBN_sig_getSignalShortName().." (HTv)"
+		elseif Variant == "Fiktivt sluttpunkt for skiftevei" then return t..NOBN_sig_getSignalShortName().." (DTv)"
+		elseif Variant == "Fiktivt sluttpunkt for togvei og skiftevei" then return t..NOBN_sig_getSignalShortName().." (HTv/DTv)"
+		else 
+			return t..NOBN_sig_getSignalShortName().." (Unrecognized variant ["..Variant.."])",_warning  
+		end
+
+	elseif RcType == rctype_TrackSignal then
+		t = "Tsp."..code
+		
+	elseif RcType == rctype_BridgeAndFrostDoorSignal then
+		t = "Brusignal/Frostportsignal"..code
+		
+	elseif RcType == rctype_AvalancheSignal then
+		t = "Rasvarslingssignal "..code
+		
+	elseif RcType == rctype_LevelCrossingSignalTowardsRoad then
+		t = "Veisignal "..code
+		
+	elseif RcType == rctype_LevelCrossingSignalTowardsRail then
+		t = (Variant:match("forsignal") and "PLO-Fs." or "PLO.")..code
+
+	else
+		t = "Bad signal type ["..RcType.."] (code='"..code.."').",_warning
+	end
+	return t..NOBN_sig_getSignalShortName()
+end
 		</Formula>
      </LuaFunction>
 
@@ -171,23 +186,38 @@ function NOBN_sig_getSignalPartNames()
 	local errMsg = "*** Unrecognized signal configuration ***"
 	if RcType == rctype_SignErtmsMarkerBoard then 
 		s = "E35"
+		
 	elseif RcType == rctype_SignErtmsShuntingSignal then 
 		s = "EDS"
-	elseif RcType == rctype_SignErtmsMiscBoard then
-		if (Variant == "E106 Stop for shunting") then s = "E106"
-		elseif (Variant == "E107 Unsecured area with handoperated points") then s = "E107"
-		elseif (Variant == "E36 Level crossing, location") then s = "E36"
-		elseif (Variant == "E36 Level crossing, announcement") then s = "E36"
-		elseif (Variant == "E38 Avalanche area") then s = "E38"
-		elseif (Variant == "E39 Frost gate") then s = "E39"
-		elseif (Variant == "E200 Level zero") then s = "E200"
-		elseif (Variant == "E201 Level transition ETCS") then s = "E201"
-		elseif (Variant == "E202 Speed restriction 10") then s = "E202"
-		elseif (Variant == "E202 Speed restriction 20") then s = "E202"
-		elseif (Variant == "E202 Speed restriction 30") then s = "E202"
-		elseif (Variant == "E202 Speed restriction lifted") then s = "E202"
-		elseif (Variant == "E206 GSM-R network Norway") then s = "E206"
+		
+	elseif RcType == rctype_SignErtmsElectrificationBoard then
+		if Variant == "E65H Lowering of pantograph, announcement" then t = "E65H"
+		elseif Variant == "E65J Lowering of pantograph, location" then t = "E65J"
+		elseif Variant == "E65K Raising of pantograph, location" then t = "E65K"
+		elseif Variant == "E65L Dead section, announcement" then t = "E65L"
+		elseif Variant == "E65M Disconnection in dead section" then t = "E65M"
+		elseif Variant == "E65N Connection after dead section" then t = "E65N"
 		end
+		
+	elseif RcType == rctype_SignErtmsTemporarySpeedRestrictionBoard then
+		if Variant == "E200 Speed restriction lifted" then t = "E200"
+		elseif Variant == "E201 Speed restriction 10" then t = "E201"
+		elseif Variant == "E202 Speed restriction 20" then t = "E202"
+		elseif Variant == "E203 Speed restriction 30" then t = "E203"
+		end
+		
+	elseif RcType == rctype_SignErtmsMiscBoard then
+		if Variant == "E36A Level crossing, location" then t = "E36"
+		elseif Variant == "E36B Level crossing, announcement" then t = "E36"
+		elseif Variant == "E37A Level transition" then t = "E37A"
+		elseif Variant == "E37B Level zero" then t = "E37B"
+		elseif Variant == "E38 Avalanche area" then t = "E38"
+		elseif Variant == "E39 Frost gate" then t = "E39"
+		elseif Variant == "E106 Stop for shunting" then t = "E106"
+		elseif Variant == "E107 Unsecured area with handoperated points" then t = "E107"
+		elseif Variant == "E204 GSM-R network Norway" then t = "E204"
+		end
+		
 	elseif RcType == rctype_Signal then
 		if (MainSignal ~= "-") then s = s..MainSignal:upper() end
 		if (DistantSignal ~= "-") then s = s.."-FS" end

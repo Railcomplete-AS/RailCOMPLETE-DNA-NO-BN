@@ -1,19 +1,20 @@
 ;=========================================================================================================================
 ;
-; 205.lsp
+; E200.lsp
 ;
 ; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
 ; 2022-06-02 KNHEL new sign
+; 2024-06-16 SVNOE renamed
 ;
 ;=========================================================================================================================
 
 ; Speed restriction
 
 
-(defun E205 ( /	blockName description r d rVar)
+(defun E200 ( /	blockName description r d rVar)
 ; Repeater balise group with explicit mentioning of release speed 40 km/h
 	;
 	;        
@@ -25,8 +26,8 @@
 	;       
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E205-SPEED-RESTRICTION-LIFTED"
-		description "SKILT SIGNAL E203 SPEED RESTRICTION LIFTED"
+		blockName "NO-BN-2D-JBTKO-SKT-SKILT-ERTMS-SPEED-RESTRICTION-LIFTED"
+		description "SKILT ERTMS SPEED RESTRICTION LIFTED"
 		r 2.0
 		d 0.4
 	)
