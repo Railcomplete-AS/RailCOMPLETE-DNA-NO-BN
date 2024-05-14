@@ -38,13 +38,13 @@
 			"72A" "72B" "73A"
 			"74-1" "74-2"
 			"75A-1" "75A-2" "75A-3" "75B" "75C-1" "75C-2" "75D-1" "75D-2" "75E"
+			"E37B"
+			"E37A"
 			"E200"
 			"E201"
 			"E202"
 			"E203"
 			"E204"
-			"E205"
-			"E206"
 			; "-ANNOTATION-CHAINBREAK" 2020-07-26 CLFEY: Moved to "Annotation Chainbreak.lsp" since annotations shall scale with CAD zoom level, not with drawing size.
 	
 			; Skilt uten signalnummer:

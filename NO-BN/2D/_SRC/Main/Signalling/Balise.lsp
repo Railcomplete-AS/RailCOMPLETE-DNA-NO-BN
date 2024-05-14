@@ -186,14 +186,14 @@
 ;================== NOBN functions ==================================================================
 
 (defun NOBN_DrawEtcsBaliseGroup ( variation thisDescription / x x2 y baliseDist a1 a2 attAbove attBelow )
-	; Bane NOR symbols for the ETCS ATP system. Balise groups with Bane NOR may have one or two balises, never more.
-	; Note: The schematic symbol's insertion point is the tip of the rightmost arrow.
+	; Bane NOR symbols for the ETCS ATP system. Balise groups with Bane NOR may have one, two or more balises.
+	; See ..\OneDrive - Railcomplete AS\D\Ref.doc. Bane NOR\ERTMS - dok\Fra Siemens\1000001380_007_003 Engineering Rules ETCS Trackside Norway
 	;
 	;    a1                a1
 	; +-----+        +-----------+
 	; | \   |        | \     \   |
 	; |   \ |        |   \     \ |
-	; |  . >|        | .  >     >|		
+	; |  . >|        |  . >     >|		
 	; |   / |        |   /     / |
 	; | /   |        | /     /   |
 	; +-----+        +-----------+
@@ -253,8 +253,8 @@
 	(setq
 		x	2.0
 		y	3.0
-		a1	(list 0  2.500)
-		a2	(list 0 -2.500)
+		a1	(list 0  3.000)
+		a2	(list 0 -3.000)
 		attAbove '("TEKSTOVER" "Tekst over" _emptyString_)
 		attBelow '("TEKSTUNDER" "Tekst under" _emptyString_)
 	)
@@ -266,8 +266,8 @@
 			(DrawHatch _solidHatch_)
 		)
 	)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ a1 attAbove)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ a2 attBelow)
+	(AddTextAttributeAtPoint layDef_Zero _th125_ a1 attAbove)
+	(AddTextAttributeAtPoint layDef_Zero _th125_ a2 attBelow)
 	(AddDescriptionBelowOrigin thisDescription (* 0.75 y))
 )
 

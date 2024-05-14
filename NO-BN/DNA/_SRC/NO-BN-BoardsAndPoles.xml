@@ -17,24 +17,35 @@
 =========================================================================================================-->
     <LuaFunction Name="NOBN_bnp_getBoardOrPoleName()" ReturnType="String"
 		Description="Returns a short type name for signs (boards and poles), according to the object's variant.">
-        <Constructor>String NOBN_bnp_getBoardOrPoleName()</Constructor>
+        <Signature>String NOBN_bnp_getBoardOrPoleName()</Signature>
         <Formula>
 			function NOBN_bnp_getBoardOrPoleName()
-				local s
-				if Variant:find("ERTMS Level crossing, announcement") then 
-					return "Fs-PLO"
-				elseif Variant:find("E36 Level crossing, location") then 
+				if Variant == "E36A Level crossing, location" then 
 					return "PLO"
-				elseif Variant:find("E36 Level crossing, location") then
-					s = s.."PLO"
-				elseif Variant:find("ERTMS Level crossing, announcement") then
-					s = s.."PLO-Fs"
-				elseif Variant:find("E108 Interlocked area") then
-					s = s.."Sh.start"
-				elseif Variant:find("E106 Stop for shunting") then
-					s = s.."Sh.slutt"
-				elseif Variant:find("E107 Unsecured area with handoperated points")
-					then s = s.."Sup.slutt"
+				elseif Variant == "E36B Level crossing, announcement" then 
+					return "Fs-PLO"
+				elseif Variant == "E37A Level transition" then
+					return "L.trans"
+				elseif Variant == "E37B Level zero" then
+					return "L.0"
+				elseif Variant == "E106A Stop for shunting, location" then
+					return "Sh.slutt"
+				elseif Variant == "E106A Stop for shunting, announcement" then
+					return "Fs-Sh.slutt"
+				elseif Variant == "E107 Interlocked area end" then
+					return "Sup.slutt"
+				elseif Variant == "E108 Interlocked area begin" then
+					return "Sup.start"
+				elseif Variant == "E200 Speed restriction lifted" then
+					return "S.lifted"
+				elseif Variant == "E201 Speed restriction 10" then
+					return "S.10"
+				elseif Variant == "E202 Speed restriction 20" then
+					return "S.20"
+				elseif Variant == "E203 Speed restriction 30" then
+					return "S.30"
+				elseif Variant == "E204 GSM-R network Norway" then
+					return "GSM-R"
 				elseif Variant:find("Bevegelig kryss") then
 					return "Bev.X"
 				elseif Variant:find("refleks") then
@@ -99,7 +110,7 @@
 	<!-- TODO 2022-04-21 CLFEY The function 'RC__SortedNumberCollection(t)' should be replaced by the standard Lua table.sort() function. -->
 	<LuaFunction Name="NOBN_bnp_getEscapeDistanceBoardTexts()" ReturnType="String"
 		Description="Returns a table {'Left'=Lval,'Right'=Rval} with distance to nearest related marker. Default step 10, default offset 0. '?':missing marker, '+':multiple markers found.">
-		<Constructor>String NOBN_bnp_getEscapeDistanceBoardTexts([Int step[, Int offset]])</Constructor>
+		<Signature>String NOBN_bnp_getEscapeDistanceBoardTexts([Int step[, Int offset]])</Signature>
 		<Formula>
 			function NOBN_bnp_getEscapeDistanceBoardTexts(step,offset)
 				if step == nil then 
@@ -159,7 +170,7 @@
 	
 	<LuaFunction Name="NOBN_bnp_getEscapeDistanceBoardTextLeft()" ReturnType="String"
 			Description="Returns distance from escape route board to a left-sided related marker. '?':No marker found in arrow direction. '+':Multiple markers found in arrow direction. denoting the emergency exit (with optional step and offset). Default step size is 10. Default offset is 0.">
-		<Constructor>String NOBN_bnp_getEscapeDistanceBoardTextLeft([[Int step[, Int offset]])</Constructor>
+		<Signature>String NOBN_bnp_getEscapeDistanceBoardTextLeft([[Int step[, Int offset]])</Signature>
 		<Formula>
 			function NOBN_bnp_getEscapeDistanceBoardTextLeft(step,offset)
 				if Variant:lower():match("venstre") or Variant:lower():match("begge") then
@@ -175,7 +186,7 @@
 	
 	<LuaFunction Name="NOBN_bnp_getEscapeDistanceBoardTextRight()" ReturnType="String"
 			Description="Returns distance from escape route board to a right-sided related marker. '?':No marker found in arrow direction. '+':Multiple markers found in arrow direction. denoting the emergency exit (with optional step and offset). Default step size is 10. Default offset is 0.">
-		<Constructor>String NOBN_bnp_getEscapeDistanceBoardTextRight([[Int step[, Int offset]])</Constructor>
+		<Signature>String NOBN_bnp_getEscapeDistanceBoardTextRight([[Int step[, Int offset]])</Signature>
 		<Formula>
 			function NOBN_bnp_getEscapeDistanceBoardTextRight(step,offset)
 				if Variant:lower():match("høyre") or Variant:lower():match("begge") then
@@ -195,15 +206,15 @@
 	ERTMS SIGNALLING BOARDS (not signals)
 =========================================================================================================-->
 	<!-- ERTMS boards with pole. (signals should feature the "mast foot"). -->
-	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignEtcsSignal" Name="JBTSA_MSS ERTMS Signalskilt"
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsMiscBoard" Name="JBTSA_MSS ERTMS Misc board"
 				Layer="JBTSA_MSS" Color="ByLayer"
 				Group="Skilt/Kjørende personell/ERTMS Signalskilt"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-		<RelationSpace>ertms_skilt</RelationSpace>
-		<AttachmentCategory Name="ertms_skilt"/>
-		<AttachTo Category="ertms_skilt"/>
-		<AttachTo Category="markerboard"/>
+		<RelationSpace>ertms_board</RelationSpace>
+		<AttachmentCategory Name="ertms_board"/>
+		<AttachTo Category="ertms_board"/>
+		<AttachTo Category="ertms_marker_board"/>
 		<AttachTo Category="skiltfeste"/>
 		
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -224,33 +235,26 @@
 		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_bnp_getBoardOrPoleName().." - "..code</Formula></LuaExpression> 
 
 		<Variants>
-			<Variant Name="E106 Stop for shunting">
-				<SetValue Key="type" Value="other:ertmsStopForShunting"/>
-				<SetValue Key="switchable" Value="false"/>
-				<SetValue Key="virtual" Value="true"/>
-				<SetValue Key="ruleCode" Value=""/>
-			</Variant>
-			<Variant Name="E107 Unsecured area with handoperated points">
-				<SetValue Key="type" Value="other:ertmsUnsecuredAreaWithHandoperatedPoints"/>
-				<SetValue Key="switchable" Value="false"/>
-				<SetValue Key="virtual" Value="true"/>
-				<SetValue Key="ruleCode" Value=""/>
-			</Variant>
-			<!-- Removed from Bane NOR TRV? -->
-			<!-- <Variant Name="E108 Interlocked area"> -->
-				<!-- <SetValue Key="type" Value="other:ertmsInterlockedArea"/> -->
-				<!-- <SetValue Key="switchable" Value="false"/> -->
-				<!-- <SetValue Key="virtual" Value="true"/> -->
-				<!-- <SetValue Key="ruleCode" Value=""/> -->
-			<!-- </Variant> -->
-			<Variant Name="E36 Level crossing, location">
+			<Variant Name="E36A Level crossing, location">
 				<SetValue Key="type" Value="other:ertmsLevelCrossingLocation"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
 			</Variant>
-			<Variant Name="E36 Level crossing, announcement">
+			<Variant Name="E36B Level crossing, announcement">
 				<SetValue Key="type" Value="other:ertmsLevelCrossingAnnouncement"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E37A Level transition">
+				<SetValue Key="type" Value="other:ertmsLevelTransitionEtcs"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E37B Level zero">
+				<SetValue Key="type" Value="other:ertmsLevelZero"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
@@ -267,43 +271,31 @@
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
 			</Variant>
-			<Variant Name="E200 Level zero">
-				<SetValue Key="type" Value="other:ertmsLevelZero"/>
+			<Variant Name="E106A Stop for shunting, location">
+				<SetValue Key="type" Value="other:ertmsStopForShuntingLocation"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
 			</Variant>
-			<Variant Name="E201 Level transition ETCS">
-				<SetValue Key="type" Value="other:ertmsLevelTransitionEtcs"/>
+			<Variant Name="E106B Stop for shunting, announcement">
+				<SetValue Key="type" Value="other:ertmsStopForShuntingAnnouncement"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
 			</Variant>
-			<Variant Name="E202 Speed restriction 10">
-				<SetValue Key="type" Value="other:ertmsSpeedRestriction10"/>
+			<Variant Name="E107 Interlocked area end">
+				<SetValue Key="type" Value="other:ertmsUnsecuredAreaWithHandoperatedPoints"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
 			</Variant>
-			<Variant Name="E202 Speed restriction 20">
-				<SetValue Key="type" Value="other:ertmsSpeedRestriction20"/>
+			<Variant Name="E108 Interlocked area begin">
+				<SetValue Key="type" Value="other:ertmsInterlockedArea"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
 				<SetValue Key="ruleCode" Value=""/>
 			</Variant>
-			<Variant Name="E202 Speed restriction 30">
-				<SetValue Key="type" Value="other:ertmsSpeedRestriction30"/>
-				<SetValue Key="switchable" Value="false"/>
-				<SetValue Key="virtual" Value="true"/>
-				<SetValue Key="ruleCode" Value=""/>
-			</Variant>
-			<Variant Name="E202 Speed restriction lifted">
-				<SetValue Key="type" Value="other:ertmsSpeedRestrictionLifted"/>
-				<SetValue Key="switchable" Value="false"/>
-				<SetValue Key="virtual" Value="true"/>
-				<SetValue Key="ruleCode" Value=""/>
-			</Variant>
-			<Variant Name="E206 GSM-R network Norway">
+			<Variant Name="E204 GSM-R network Norway">
 				<SetValue Key="type" Value="other:ertmsGsmNetworkNorway"/>
 				<SetValue Key="switchable" Value="false"/>
 				<SetValue Key="virtual" Value="true"/>
@@ -312,67 +304,55 @@
 		</Variants>
 
 <!-- @KNHEL: Fullfør objekter / varianter / InsertPointObject, 2D-symboler og 3D modeName formel for alle disse: -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E37A-LEVEL-TRANSITION -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E37B-LEVEL-0 -->
-
-<!-- @KNHEL: Fullfør objekter / varianter / InsertPointObject, 2D-symboler og 3D modeName formel for alle disse: -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E200-LEVEL-ZERO -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E201-LEVEL-TRANSITION-ETCS -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E202-SPEED-RESTRICTION-10 -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E203-SPEED-RESTRICTION-20 -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E204-SPEED-RESTRICTION-30 -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E205-SPEED-RESTRICTION-LIFTED -->
-<!-- NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E206-SELECT-GSM-R-NETWORK-NORWAY -->
-
-<!-- @KNHEL: Fullfør objekter / varianter / InsertPointObject, 2D-symboler og 3D modeName formel for alle disse: -->
-<!--TODO - RcType "JBTEH_BKT ERTMS Strømavtagerskilt", 2D-symboler: -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E65H-WARNING-LOWERING-OF-PANTOGRAPH -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E65H-WARNING-LOWERING-OF-PANTOGRAPH -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E65K-RAISING-OF-PANTOGRAPH -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E65L-WARNING-OF-DEAD-SECTION -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E65M-DISCONNECTION-IN-DEAD-SECTION -->
-<!-- NO-BN-2D-JBTEH_BKT-SKILT-KJOERENDE-SIGNAL-E65N-CONNECTION-AFTER-DEAD-SECTION -->
-
-<!-- @KNHEL: Fullfør objekter / varianter / InsertPointObject, 2D-symboler og 3D modeName formel for alle disse: -->
 <!--TODO - RcType "JBTKO_SKT-SKILT-KJOERENDE-SIGNAL-E61-DISTANCE", 2D-symboler: -->
 
 		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
 		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>NOBN_bnp_getBoardOffset3DZ()</Formula></LuaExpression>
 
-		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_ertms_signalBoard_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTSA_MSS_ertms_signalBoard_Geometry3DName()" ReturnType="String"
+		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_ertms_miscBoard_Geometry3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTSA_MSS_ertms_miscBoard_Geometry3DName()" ReturnType="String"
 				HideFromUser="false"
-				Description="Returns the 3D model name [String] for the ERTMS board. Covers various ERTMS board types, except stop/location markerboards.">
-			<Constructor>String _JBTSA_MSS_ertms_signalBoard_Geometry3DName()</Constructor>
+				Description="Returns the 3D model name [String] for the ERTMS board. Covers various ERTMS board types.">
+			<Signature>String _JBTSA_MSS_ertms_miscBoard_Geometry3DName()</Signature>
 			<Formula>
-				function _JBTSA_MSS_ertms_signalBoard_Geometry3DName()
+				function _JBTSA_MSS_ertms_miscBoard_Geometry3DName()
 					--Board type:
 					local t = "NO-BN-3D-SA-MSS"
 					
-					if Variant == "E106 Stop for shunting" then 
-						return t.."-E106-STOP-FOR-SHUNTING"
-					
-					elseif Variant == "E107 Unsecured area with handoperated points" then
-						return t.."-E107-UNSECURED-AREA"
-					
-					--Removed from Bane NOR TRV?
-					--elseif Variant == "E108 Interlocked area" then 
-						--return t.."-E108-INTERLOCKED-AREA"
-					
-					elseif Variant == "E36 Level crossing, location" then 
+					if Variant == "E36A Level crossing, location" then 
 						return t.."-E36-LEVEL-CROSSING"
-					
-					elseif Variant == "ERTMS Level crossing, announcement" then 
+						
+					elseif Variant == "E36B Level crossing, announcement" then 
 						--Same 3D as the LX signal:
 						return t.."-E36-LEVEL-CROSSING"
-					
+						
+					elseif Variant == "E37A Level transition" then 
+						return t.."-E37A-LEVEL-TRANSITION"
+						
+					elseif Variant == "E37B Level zero" then 
+						return t.."-E37B-LEVEL-ZERO"
+									
 					elseif Variant == "E38 Avalanche area" then 
 						return t.."-E38-AVALANCHE-AREA"
 					
 					elseif Variant == "E39 Frost gate" then 
 						return t.."-E39-FROST-GATE"
+						
+					elseif Variant == "E106A Stop for shunting, location" then 
+						return t.."-E106A-STOP-FOR-SHUNTING"
+						
+					elseif Variant == "E106B Stop for shunting, announcement" then 
+						return t.."-E106A-STOP-FOR-SHUNTING"
+					
+					elseif Variant == "E107 Interlocked area end" then
+						return t.."-E107-UNSECURED-AREA"
+						
+					elseif Variant == "E108 Interlocked area begin" then 
+						return t.."-E108-INTERLOCKED-AREA"
+						
+					elseif Variant == "E204 GSM-R network Norway" then 
+						return t.."-E204-SELECT-GSM-R-NETWORK-NORWAY"
 					
 					else
 						return "ERROR - Unrecognized variant ["..Variant.."], cannot determine 3D Model Name.",_error
@@ -381,32 +361,25 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject Name="E106 Stop for shunting" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SHUNTING-AREA-END-{{SymbolMode}}"
+		<InsertPointObject Name="E36A Level crossing, location" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-CROSSING-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="E107 Unsecured area with handoperated points" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SUPERVISED-AREA-END-{{SymbolMode}}"
+		<InsertPointObject Name="E36B Level crossing, announcement" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-CROSSING-ANNOUNCE-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 
-		<!-- Removed from Bane NOR TRV? -->
-		<!-- <InsertPointObject Name="E108 Interlocked area" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SHUNTING-AREA-BEGIN-{{SymbolMode}}" -->
-				<!-- DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0"> -->
-			<!-- <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace> -->
-			<!-- <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/> -->
-		<!-- </InsertPointObject> -->
-
-		<InsertPointObject Name="E36 Level crossing, location" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-CROSSING-{{SymbolMode}}" 
+		<InsertPointObject Name="E37A Level transition" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-TRANSITION{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		
-		<InsertPointObject Name="ERTMS Level crossing, announcement" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-CROSSING-ANNOUNCE-{{SymbolMode}}" 
+
+		<InsertPointObject Name="E37B Level zero" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-LEVEL-ZERO-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
@@ -419,6 +392,36 @@
 		</InsertPointObject>
 
 		<InsertPointObject Name="E39 Frost gate" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-FROST-GATE-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+		
+		<InsertPointObject Name="E106A Stop for shunting, location" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SHUNTING-AREA-END-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+		
+		<InsertPointObject Name="E106B Stop for shunting, announcement" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SHUNTING-AREA-END-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E107 Interlocked area end" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SUPERVISED-AREA-END-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E108 Interlocked area begin" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SHUNTING-AREA-BEGIN-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E204 GSM-R network Norway" DisplayBlockName="NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SELECT-GSM-R-NETWORK-NORWAY-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
@@ -436,19 +439,24 @@
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_MSS
 				SKILT-ERTMS
-				{%    if Variant == 'E106 Stop for shunting' %}SHUNTING-AREA-END
-				{% elsif Variant == 'E107 Unsecured area with handoperated points' %}SUPERVISED-AREA-END
-				{% elsif Variant == 'E36 Level crossing, location' %}LEVEL-CROSSING
-				{% elsif Variant == 'ERTMS Level crossing, announcement' %}LEVEL-CROSSING-ANNOUNCE
+				{%    if Variant == 'E36A Level crossing, location' %}LEVEL-CROSSING
+				{% elsif Variant == 'E36B Level crossing, announcement' %}LEVEL-CROSSING-ANNOUNCE
+				{% elsif Variant == 'E37A Level transition' %}LEVEL-TRANSITION
+				{% elsif Variant == 'E37B Level zero' %}LEVEL-ZERO
 				{% elsif Variant == 'E38 Avalanche area' %}AVALANCHE-AREA
 				{% elsif Variant == 'E39 Frost gate' %}FROST-GATE
+				{% elsif Variant == 'E106A Stop for shunting, location' %}SHUNTING-AREA-END
+				{% elsif Variant == 'E106B Stop for shunting, announcement' %}SHUNTING-AREA-END
+				{% elsif Variant == 'E107 Interlocked area end' %}SUPERVISED-AREA-END
+				{% elsif Variant == 'E108 Interlocked area begin' %}SHUNTING-AREA-BEGIN
+				{% elsif Variant == 'E204 GSM-R network Norway' %}SELECT-GSM-R-NETWORK-NORWAY
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{% if PortalMounted %}PORTAL{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
 				<!-- Removed from Bane NOR TRV? -->
-				<!-- {% elsif Variant == 'E108 Interlocked area' %}SHUNTING-AREA-BEGIN -->
+				<!-- {% elsif Variant == 'E108 Interlocked area begin' %}SHUNTING-AREA-BEGIN -->
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
@@ -464,24 +472,23 @@
 
 	</ObjectType>
 
-
-
 <!--========================================================================================================
 	BOARDS
 	TRAIN DRIVERS
 	ID BOARDS
 =========================================================================================================-->
-	<ObjectType DataType="tSign" Class="RailwayPlacedObject" LuaName="rctype_SignEtcsId" Name="JBTSA_MSS Signal E101 ERTMS Identifikasjonsskilt"
+	<ObjectType DataType="tSign" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsIdBoard" Name="JBTSA_MSS ERTMS ID board"
 				DrawTail="true"
 				Layer="JBTSA_MSS" Color="ByLayer"
 				Group="Skilt/Kjørende personell/ERTMS ID-skilt"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
-		<RelationSpace>ertms_skilt</RelationSpace>
-		<AttachmentCategory Name="ertms_skilt" PassAttachmentToTarget="true"/>
-		<AttachTo Category="ertms_skilt"/>
-		<AttachTo Category="markerboard" DrawTail="true"/>
+		<RelationSpace>ertms_board</RelationSpace>
+		<AttachmentCategory Name="ertms_board" PassAttachmentToTarget="true"/>
+		<AttachTo Category="ertms_board" DrawTail="true"/>
+		<AttachTo Category="ertms_marker_board" DrawTail="true"/>
+		<AttachTo Category="ertms_shunting_signal" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -501,37 +508,37 @@
 		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA_SA_MSS"/>
 
 		<Variants>
-			<Variant Name="Signal E101-A ID-skilt, Indre, 400x325, hvit">
+			<Variant Name="E101-A ID board, intermediate stop sign, 400x325, white">
 				<SetValue Key="name" Value="ID ERTMS (Indre)"/>
 			</Variant>
-			<Variant Name="Signal E101-B ID-skilt, Innkjør, 400x325, gul">
+			<Variant Name="E101-B ID board, entry stop sign, 400x325, yellow">
 				<SetValue Key="name" Value="ID ERTMS (Innkjør)"/>
 			</Variant>
-			<Variant Name="Signal E101-C ID-skilt, Utkjør, Ø400, gul">
+			<Variant Name="E101-C ID board, exit stop sign, Ø400, yellow">
 				<SetValue Key="name" Value="ID ERTMS (Utkjør)"/>
 			</Variant>
-			<Variant Name="Signal E101-D ID-skilt, Blokk, Ø400, hvit">
+			<Variant Name="E101-D ID board, blocking stop sign, Ø400, white">
 				<SetValue Key="name" Value="ID ERTMS (Blokk)"/>
 			</Variant>
-			<Variant Name="Signal E101-E ID-skilt, Dverg, 160x150">
+			<Variant Name="E101-E ID board, shunting, 160x150">
 				<SetValue Key="name" Value="ID ERTMS (Dverg)"/>
 			</Variant>
-			<Variant Name="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150">
+			<Variant Name="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150"> <!-- TODO: To be removed -->
 				<SetValue Key="name" Value="ID ERTMS (Dverg i åk)"/>
 			</Variant>
-			<Variant Name="Signal E101-G ID-skilt, Stopp for skift, 400x325">
+			<Variant Name="E101-G ID board, stop for shunting, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Stopp for skift)"/>
 			</Variant>
-			<Variant Name="Signal E101-H ID-skilt, Forriglet område, 400x325">
+			<Variant Name="E101-H ID board, interlocked area, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Forriglet område)"/>
 			</Variant>
-			<Variant Name="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325">
+			<Variant Name="E101-J ID board, level crossing, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Veisikringsanlegg)"/>
 			</Variant>
-			<Variant Name="Signal E101-K ID-skilt, Snøskredområde, 400x325">
+			<Variant Name="E101-K ID board, avalanche area, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Snøskredområde)"/>
 			</Variant>
-			<Variant Name="Signal E101-L ID-skilt, Frostport, 400x325">
+			<Variant Name="E101-L ID board, frost gate, 400x325">
 				<SetValue Key="name" Value="ID ERTMS (Frostport)"/>
 			</Variant>
 		</Variants>
@@ -544,8 +551,8 @@
 						   
 		<LuaExpression Name="code"><Formula>_JBTSA_MSS_E101_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_code()" ReturnType="String"
-			Description="Returns the associated ERTMS markerboard, shunting signal or auxiliary board's code.">
-		<Constructor>String _JBTSA_MSS_E101_code()</Constructor>
+			Description="Returns the associated ERTMS marker board, shunting signal or auxiliary board's code.">
+		<Signature>String _JBTSA_MSS_E101_code()</Signature>
 			<Formula>
 				function _JBTSA_MSS_E101_code()
 					return Attachment and Attachment.code or "UNFINISHED - Attach ID board to its associated ERTMS object (or if ID for low shunting signal associated with an MB in a portal above, then enter MB's ID number as ID board's 4-digit code)."
@@ -555,11 +562,11 @@
 
 		<LuaExpression Name="name"><Formula>_JBTSA_MSS_E101_name()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_name()" ReturnType="String"
-			Description="Returns the associated ERTMS markerboard, shunting signal or auxiliary board's code.">
-		<Constructor>String _JBTSA_MSS_E101_name()</Constructor>
+			Description="Returns the associated ERTMS marker board, shunting signal or auxiliary board's code.">
+		<Signature>String _JBTSA_MSS_E101_name()</Signature>
 			<Formula>
 				function _JBTSA_MSS_E101_name()
-					return Attachment and "" or code
+					return Attachment and Attachment.code or ""
 				end
 			</Formula>
 		</LuaFunction>
@@ -570,7 +577,7 @@
 		<LuaExpression Name="ID_STED"><Formula>_JBTSA_MSS_E101_ID_STED()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_ID_STED()" ReturnType="String"
 			Description="Returns the associated ERTMS object's site code (2- or 3-letter abbreviation).">
-		<Constructor>String _JBTSA_MSS_E101_ID_STED()</Constructor>
+		<Signature>String _JBTSA_MSS_E101_ID_STED()</Signature>
 			<Formula>
 				function _JBTSA_MSS_E101_ID_STED()
 					return Attachment and Attachment.NOBN_com_getOcpCode() or "OCP?"
@@ -581,30 +588,30 @@
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_E101_3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_3DName()" ReturnType="String" 
 			Description="Returns the ERTMS ID board's 3D model name.">
-		<Constructor>String _JBTSA_MSS_E101_3DName()</Constructor>
+		<Signature>String _JBTSA_MSS_E101_3DName()</Signature>
 			<Formula>
 				function _JBTSA_MSS_E101_3DName()
-					if Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then 
+					if Variant =="E101-A ID board, intermediate stop sign, 400x325, white" then 
 						return "NO-BN-3D-SA-MSS-E101A-400x325-ERTMS-ID-INNER-MARKER-BOARD-90-90"
-					elseif Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then 
+					elseif Variant =="E101-B ID board, entry stop sign, 400x325, yellow" then 
 						return "NO-BN-3D-SA-MSS-E101B-400x325-ERTMS-ID-ENTRANCE-MARKER-BOARD-90-90-90"
-					elseif Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then 
+					elseif Variant =="E101-C ID board, exit stop sign, Ø400, yellow" then 
 						return "NO-BN-3D-SA-MSS-E101C-Ø400-ERTMS-ID-EXIT-MARKER-BOARD-90-90-90"
-					elseif Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then 
+					elseif Variant =="E101-D ID board, blocking stop sign, Ø400, white" then 
 						return "NO-BN-3D-SA-MSS-E101D-Ø400-ERTMS-ID-BLOCK-MARKER-BOARD-90-90-90"
-					elseif Variant == "Signal E101-E ID-skilt, Dverg, 160x150" then 
+					elseif Variant =="E101-E ID board, shunting, 160x150" then 
 						return "NO-BN-3D-SA-MSS-E101E-160x150-ERTMS-ID-FREE-STANDING-SHUNTING-SIGNAL-60"
 					elseif Variant == "Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then 
 						return "NO-BN-3D-SA-MSS-E101F-160x150-ERTMS-ID-SHUNTING-SIGNAL-BELOW-MB-IN-PORTAL-45"
-					elseif Variant == "Signal E101-G ID-skilt, Stopp for skift, 400x325" then 
+					elseif Variant =="E101-G ID board, stop for shunting, 400x325" then 
 						return "NO-BN-3D-SA-MSS-E101G-400x325-ERTMS-ID-STOP-FOR-SHUNTING-90-90-90"
-					elseif Variant == "Signal E101-H ID-skilt, Forriglet område, 400x325" then 
+					elseif Variant =="E101-H ID board, interlocked area, 400x325" then 
 						return "NO-BN-3D-SA-MSS-E101H-400x325-ERTMS-ID-INTERLOCKED-AREA-90-90"
-					elseif Variant == "Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then 
+					elseif Variant =="E101-J ID board, level crossing, 400x325" then 
 						return "NO-BN-3D-SA-MSS-E101J-400x325-ERTMS-ID-LEVEL-CROSSING-90-60-90"
-					elseif Variant == "Signal E101-K ID-skilt, Snøskredområde, 400x325" then 
+					elseif Variant =="E101-K ID board, avalanche area, 400x325" then 
 						return "NO-BN-3D-SA-MSS-E101K-400x325-ERTMS-ID-AVALANCHE-AREA-60-90"
-					elseif Variant == "Signal E101-L ID-skilt, Frostport, 400x325" then 
+					elseif Variant =="E101-L ID board, frost gate, 400x325" then 
 						return "NO-BN-3D-SA-MSS-E101L-400x325-ERTMS-ID-FROST-GATE-60-90"
 					else
 						return "Could not find 3D model name for variant"
@@ -616,37 +623,37 @@
 		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>_JBTSA_MSS_E101_Offset3DZ()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_E101_Offset3DZ()" ReturnType="String" 
 			Description="Returns the ERTMS ID board's placement above its insertion point.">
-		<Constructor>String _JBTSA_MSS_E101_Offset3DZ()</Constructor>
+		<Signature>String _JBTSA_MSS_E101_Offset3DZ()</Signature>
 			<Formula>
 function _JBTSA_MSS_E101_Offset3DZ()
 	local pm = Attachment and Attachment.PortalMounted or PortalMounted
 
 	-- ID sign governs Z offset for Attachment.
-	if Variant =="Signal E101-A ID-skilt, Indre, 400x325, hvit" then
+	if Variant =="E101-A ID board, intermediate stop sign, 400x325, white" then
 		return pm and -2.5 or 2.5
-	elseif Variant =="Signal E101-B ID-skilt, Innkjør, 400x325, gul" then
+	elseif Variant =="E101-B ID board, entry stop sign, 400x325, yellow" then
 		return pm and -2.5 or 2.5
-	elseif Variant =="Signal E101-C ID-skilt, Utkjør, Ø400, gul" then
+	elseif Variant =="E101-C ID board, exit stop sign, Ø400, yellow" then
 		return pm and -2.5 or 2.5
-	elseif Variant =="Signal E101-D ID-skilt, Blokk, Ø400, hvit" then
+	elseif Variant =="E101-D ID board, blocking stop sign, Ø400, white" then
 		return pm and -2.5 or 2.5
 	end
 	
 	-- Missing Attachment
 	if Attachment == nil then
-		if Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then
+		if Variant =="E101-E ID board, shunting, 160x150" then
 			return pm and -1.2 or 1.2
 		elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then
 			return pm and -1.2 or 1.2
-		elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 400x325" then
+		elseif Variant =="E101-G ID board, stop for shunting, 400x325" then
 			return pm and -2.5 or 2.5
-		elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 400x325" then
+		elseif Variant =="E101-H ID board, interlocked area, 400x325" then
 			return pm and -2.5 or 2.5
-		elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then
+		elseif Variant =="E101-J ID board, level crossing, 400x325" then
 			return pm and -2.5 or 2.5
-		elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 400x325" then
+		elseif Variant =="E101-K ID board, avalanche area, 400x325" then
 			return pm and -2.5 or 2.5
-		elseif Variant =="Signal E101-L ID-skilt, Frostport, 400x325" then
+		elseif Variant =="E101-L ID board, frost gate, 400x325" then
 			return pm and -2.5 or 2.5
 		else
 			return pm and -2.5 or 2.5
@@ -657,26 +664,38 @@ function _JBTSA_MSS_E101_Offset3DZ()
 	local attachmentZOffset = Attachment.Geometry3D_0.Offset.Z
 
 	local attachmentHeight = nil	
-	if Attachment.Variant == "E106 Stop for shunting" then attachmentHeight = 0.400
-	elseif Attachment.Variant == "E107 Unsecured area with handoperated points" then attachmentHeight = 0.400
-	elseif Attachment.Variant == "E36 Level crossing, location" then attachmentHeight = 0.400
-	elseif Attachment.Variant == "E36 Level crossing, announcement" then attachmentHeight = 0.400
+
+	if Attachment.Variant == "E36A Level crossing, location" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E36B Level crossing, announcement" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E37A Level transition" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E37B Level zero" then attachmentHeight = 0.400
 	elseif Attachment.Variant == "E38 Avalanche area" then attachmentHeight = 0.400
 	elseif Attachment.Variant == "E39 Frost gate" then attachmentHeight = 0.400
-	elseif Attachment.Variant == "E202 Speed restriction 10" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E65H Lowering of pantograph, announcement" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E65J Lowering of pantograph, location" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E65K Raising of pantograph, location" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E65L Dead section, announcement" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E65M Disconnection in dead section" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E65N Connection after dead section" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E106A Stop for shunting, location" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E106B Stop for shunting, announcement" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E107 Interlocked area end" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E108 Interlocked area begin" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E200 Speed restriction lifted" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E201 Speed restriction 10" then attachmentHeight = 0.400
 	elseif Attachment.Variant == "E202 Speed restriction 20" then attachmentHeight = 0.400
-	elseif Attachment.Variant == "E202 Speed restriction 30" then attachmentHeight = 0.400
-	elseif Attachment.Variant == "E202 Speed restriction lifted" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E203 Speed restriction 30" then attachmentHeight = 0.400
+	elseif Attachment.Variant == "E204 GSM-R network Norway" then attachmentHeight = 0.400
 	end
 
 	local thisBoardHeight = nil
-	if Variant =="Signal E101-E ID-skilt, Dverg, 160x150" then thisBoardHeight = 0.150
+	if Variant =="E101-E ID board, shunting, 160x150" then thisBoardHeight = 0.150
 	elseif Variant =="Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then thisBoardHeight = 0.150
-	elseif Variant =="Signal E101-G ID-skilt, Stopp for skift, 400x325" then thisBoardHeight = 0.325
-	elseif Variant =="Signal E101-H ID-skilt, Forriglet område, 400x325" then thisBoardHeight = 0.325
-	elseif Variant =="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then thisBoardHeight = 0.325
-	elseif Variant =="Signal E101-K ID-skilt, Snøskredområde, 400x325" then thisBoardHeight = 0.325
-	elseif Variant =="Signal E101-L ID-skilt, Frostport, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="E101-G ID board, stop for shunting, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="E101-H ID board, interlocked area, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="E101-J ID board, level crossing, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="E101-K ID board, avalanche area, 400x325" then thisBoardHeight = 0.325
+	elseif Variant =="E101-L ID board, frost gate, 400x325" then thisBoardHeight = 0.325
 	end
 	
 	if attachmentZOffset ~= nil and attachmentHeight ~= nil and thisBoardHeight ~= nil then
@@ -694,27 +713,27 @@ end
 
 		<LuaExpression Name="ID_KM"><Formula>NOBN_trk_toKm(ReferenceMileage)</Formula></LuaExpression>
 
-		<InsertPointObject Name="Signal E101-A ID-skilt, Indre, 400x325, hvit" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-A ID board, intermediate stop sign, 400x325, white" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-B ID-skilt, Innkjør, 400x325, gul" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-1-ID-3-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-B ID board, entry stop sign, 400x325, yellow" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-1-ID-3-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-C ID-skilt, Utkjør, Ø400, gul" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-3-ID-RUNDT-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-C ID board, exit stop sign, Ø400, yellow" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-3-ID-RUNDT-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-D ID-skilt, Blokk, Ø400, hvit" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-3-ID-RUNDT-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-D ID board, blocking stop sign, Ø400, white" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-3-ID-RUNDT-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-E ID-skilt, Dverg, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-6-ID-MINDRE-SIGNAL-300x100-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-E ID board, shunting, 160x150" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-6-ID-MINDRE-SIGNAL-300x100-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
@@ -724,27 +743,27 @@ end
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-G ID-skilt, Stopp for skift, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-G ID board, stop for shunting, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-H ID-skilt, Forriglet område, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-H ID board, interlocked area, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-J ID board, level crossing, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-K ID-skilt, Snøskredområde, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-K ID board, avalanche area, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Signal E101-L ID-skilt, Frostport, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
+		<InsertPointObject Name="E101-L ID board, frost gate, 400x325" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-101-2-ID-2-LINJER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
@@ -762,17 +781,17 @@ end
 
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL
-				{% if Variant == 'Signal E101-A ID-skilt, Indre, 400x325, hvit' %}101-2-ID-2-LINJER
+				{% if Variant == 'E101-A ID board, intermediate stop sign, 400x325, white' %}101-2-ID-2-LINJER
 				{% elsif Variant == 'Signal E101-B ID-skilt for ERTMS, 3 linjer, 400x325' %}101-1-ID-3-LINJER
-				{% elsif Variant == 'Signal E101-C ID-skilt, Utkjør, Ø400, gul' %}101-3-ID-RUNDT
-				{% elsif Variant == 'Signal E101-D ID-skilt, Blokk, Ø400, hvit' %}101-3-ID-RUNDT
-				{% elsif Variant == 'Signal E101-E ID-skilt, Dverg, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
+				{% elsif Variant == 'E101-C ID board, exit stop sign, Ø400, yellow' %}101-3-ID-RUNDT
+				{% elsif Variant == 'E101-D ID board, blocking stop sign, Ø400, white' %}101-3-ID-RUNDT
+				{% elsif Variant == 'E101-E ID board, shunting, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
 				{% elsif Variant == 'Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150' %}101-6-ID-MINDRE-SIGNAL-300x100
-				{% elsif Variant == 'Signal E101-G ID-skilt, Stopp for skift, 400x325' %}101-2-ID-2-LINJER
-				{% elsif Variant == 'Signal E101-H ID-skilt, Forriglet område, 400x325' %}101-1-ID-3-LINJER
-				{% elsif Variant == 'Signal E101-J ID-skilt, Veisikringsanlegg, 400x325' %}101-2-ID-2-LINJER
-				{% elsif Variant == 'Signal E101-K ID-skilt, Snøskredområde, 400x325' %}101-2-ID-2-LINJER
-				{% elsif Variant == 'Signal E101-L ID-skilt, Frostport, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'E101-G ID board, stop for shunting, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'E101-H ID board, interlocked area, 400x325' %}101-1-ID-3-LINJER
+				{% elsif Variant == 'E101-J ID board, level crossing, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'E101-K ID board, avalanche area, 400x325' %}101-2-ID-2-LINJER
+				{% elsif Variant == 'E101-L ID board, frost gate, 400x325' %}101-2-ID-2-LINJER
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -863,6 +882,350 @@ end
 
 
 <!--========================================================================================================
+	BOARDS
+	TRAIN DRIVERS
+	ERTMS ELECTRIFICATION BOARDS
+=========================================================================================================-->
+	<!-- ERTMS boards with pole. (signals should feature the "mast foot"). -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsElectrificationBoard" Name="JBTEH_BKT ERTMS Electrification board"
+				Layer="JBTEH_BKT" Color="ByLayer"
+				Group="Skilt/Kjørende personell/ERTMS Electrification board"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+		<RelationSpace>ertms_board</RelationSpace>
+		<AttachmentCategory Name="ertms_board"/>
+		<AttachTo Category="ertms_board"/>
+		<AttachTo Category="ertms_marker_board"/>
+		<AttachTo Category="skiltfeste"/>
+		
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___PORTALMOUNTED"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SIG"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG"/> <!-- TODO: Is this right? -->
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
+		
+		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT"/>
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_bnp_getBoardOrPoleName().." - "..code</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="E65H Lowering of pantograph, announcement">
+				<SetValue Key="type" Value="other:ertmsLoweringOfPantographAnnouncement"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E65J Lowering of pantograph, location">
+				<SetValue Key="type" Value="other:ertmsLoweringOfPantographLocation"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E65K Raising of pantograph, location">
+				<SetValue Key="type" Value="other:ertmsRaisingOfPantographLocation"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E65L Dead section, announcement">
+				<SetValue Key="type" Value="other:ertmsDeadSectionAnnouncement"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E65M Disconnection in dead section">
+				<SetValue Key="type" Value="other:ertmsDisconnectionInDeadSection"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E65N Connection after dead section">
+				<SetValue Key="type" Value="other:ertmsConnection after dead section"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+		</Variants>
+
+		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
+		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>NOBN_bnp_getBoardOffset3DZ()</Formula></LuaExpression>
+
+		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_BKT_ertms_electrificationBoard_Geometry3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_BKT_ertms_electrificationBoard_Geometry3DName()" ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the 3D model name [String] for the ERTMS board. Covers ERTMS electrification boards.">
+			<Signature>String _JBTEH_BKT_ertms_electrificationBoard_Geometry3DName()</Signature>
+			<Formula>
+				function _JBTEH_BKT_ertms_electrificationBoard_Geometry3DName()
+					--Board type:
+					local t = "NO-BN-3D-EH-BKT-SKILT"
+					
+					if Variant == "E65H Lowering of pantograph, announcement" then 
+						return t.."-E65H-LOWERING-OF-PANTOGRAPH-ANNOUNCEMENT"
+						
+					elseif Variant == "E65J Lowering of pantograph, location" then 
+						return t.."-E65J-LOWERING-OF-PANTOGRAPH-LOCATION"
+						
+					elseif Variant == "E65K Raising of pantograph, location" then 
+						return t.."-E65K-RAISING-OF-PANTOGRAPH-LOCATION"
+						
+					elseif Variant == "E65L Dead section, announcement" then 
+						return t.."-E65L-DEAD-SECTION-ANNOUNCEMENT"
+						
+					elseif Variant == "E65M Disconnection in dead section" then 
+						return t.."-E65M-DISCONNECTION-IN-DEAD-SECTION."
+						
+					elseif Variant == "E65N Connection after dead section" then 
+						return t.."-E65N-CONNECTION-AFTER-DEAD-SECTION"
+					
+					else
+						return "ERROR - Unrecognized variant ["..Variant.."], cannot determine 3D Model Name.",_error
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject Name="E65H Lowering of pantograph, announcement" DisplayBlockName="NO-BN-2D-JBTEH_BKT-SKILT-ERTMS-LOWERING-OF-PANTOGRAPH-ANNOUNCEMENT-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E65J Lowering of pantograph, location" DisplayBlockName="NO-BN-2D-JBTEH_BKT-SKILT-ERTMS-LOWERING-OF-PANTOGRAPH-LOCATION-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E65K Raising of pantograph, location" DisplayBlockName="NO-BN-2D-JBTEH_BKT-SKILT-ERTMS-RAISING-OF-PANTOGRAPH-LOCATION-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E65L Dead section, announcement" DisplayBlockName="NO-BN-2D-JBTEH_BKT-SKILT-ERTMS-DEAD-SECTION-ANNOUNCEMENT-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E65M Disconnection in dead section" DisplayBlockName="NO-BN-2D-JBTEH_BKT-SKILT-ERTMS-DISCONNECTION-IN-DEAD-SECTION-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E65N Connection after dead section" DisplayBlockName="NO-BN-2D-JBTEH_BKT-SKILT-ERTMS-CONNECTION-AFTER-DEAD-SECTION-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="">
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}"/>	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTEH_BKT
+				SKILT-ERTMS
+				{%    if Variant == 'E65H Lowering of pantograph, announcement' %}LOWERING-OF-PANTOGRAPH-ANNOUNCEMENT
+				{% elsif Variant == 'E65J Lowering of pantograph, location' %}LOWERING-OF-PANTOGRAPH-LOCATION
+				{% elsif Variant == 'E65K Raising of pantograph, location' %}RAISING-OF-PANTOGRAPH-LOCATION
+				{% elsif Variant == 'E65L Dead section, announcement' %}DEAD-SECTION-ANNOUNCEMENT
+				{% elsif Variant == 'E65M Disconnection in dead section' %}DISCONNECTION-IN-DEAD-SECTION
+				{% elsif Variant == 'E65N Connection after dead section' %}CONNECTION-AFTER-DEAD-SECTION
+				{% else %}BAD_Variant_{{Variant}}
+				{% endif %}
+				{% if PortalMounted %}PORTAL{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
+		
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt"/>
+				<SnapPoint X="0" Y="0" TargetSpace="skiltfeste"/>
+			</SnapPoints>
+		</DockPointDefinitions>
+
+		<!-- Ingen displaypoints - 2D-symbolet settes der InsertionPoint er -->
+	</ObjectType>
+
+
+
+<!--========================================================================================================
+	BOARDS
+	TRAIN DRIVERS
+	ERTMS TEMPORARY SPEED RESTRICTION BOARDS
+=========================================================================================================-->
+	<!-- ERTMS boards with pole. (signals should feature the "mast foot"). -->
+	<ObjectType DataType="tSignal" Class="RailwayPlacedObject" LuaName="rctype_SignErtmsTemporarySpeedRestrictionBoard" Name="JBTKO_SKT ERTMS Temporary speed restriction board"
+				Layer="JBTKO_SKT" Color="ByLayer"
+				Group="Skilt/Kjørende personell/ERTMS Temporary speed restriction board"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+		<RelationSpace>ertms_board</RelationSpace>
+		<AttachmentCategory Name="ertms_board"/>
+		<AttachTo Category="ertms_board"/>
+		<AttachTo Category="ertms_marker_board"/>
+		<AttachTo Category="skiltfeste"/>
+		
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___PORTALMOUNTED"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___SIG"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE___SIG"/>
+		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
+		
+		<xpp:expand select="NOBN_com_PSET_ISY_STK"/>
+		<xpp:expand select="NOBN_com_PSET_BANE_NOR"/>
+		<xpp:expand select="NOBN_com_PSET_TITTELFELT"/>
+		<xpp:expand select="NOBN_com_PSET_FDV_BANEDATA"/>
+		<LuaExpression Name="IsyPostnotat"><Formula>NOBN_bnp_getBoardOrPoleName().." - "..code</Formula></LuaExpression> 
+
+		<Variants>
+			<Variant Name="E200 Speed restriction lifted">
+				<SetValue Key="type" Value="other:ertmsSpeedRestrictionLifted"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E201 Speed restriction 10">
+				<SetValue Key="type" Value="other:ertmsSpeedRestriction10"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E202 Speed restriction 20">
+				<SetValue Key="type" Value="other:ertmsSpeedRestriction20"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+			<Variant Name="E203 Speed restriction 30">
+				<SetValue Key="type" Value="other:ertmsSpeedRestriction30"/>
+				<SetValue Key="switchable" Value="false"/>
+				<SetValue Key="virtual" Value="true"/>
+				<SetValue Key="ruleCode" Value=""/>
+			</Variant>
+		</Variants>
+
+		<!-- Add Lua expressions from 'bnp' since these signals are physically just boards: -->
+		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>NOBN_bnp_getPoleRoutingDefaultValue()</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>NOBN_bnp_getBoardOffset3DZ()</Formula></LuaExpression>
+
+		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTKO_SKT_ertms_speedBoard_Geometry3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTKO_SKT_ertms_speedBoard_Geometry3DName()" ReturnType="String"
+				HideFromUser="false"
+				Description="Returns the 3D model name [String] for the ERTMS board. Covers ERTMS temporary speed restriction boards.">
+			<Signature>String _JBTKO_SKT_ertms_speedBoard_Geometry3DName()</Signature>
+			<Formula>
+				function _JBTKO_SKT_ertms_speedBoard_Geometry3DName()
+					--Board type:
+					local t = "NO-BN-3D-KO-SKT"
+					
+					if Variant == "E200 Speed restriction lifted" then 
+						return t.."-E200-SPEED-RESTRICTION-LIFTED"
+						
+					elseif Variant == "E201 Speed restriction 10" then 
+						return t.."-E201-SPEED-RESTRICTION-10"
+						
+					elseif Variant == "E202 Speed restriction 20" then 
+						return t.."-E202-SPEED-RESTRICTION-20"
+						
+					elseif Variant == "E203 Speed restriction 30" then 
+						return t.."-E203-SPEED-RESTRICTION-30"
+					
+					else
+						return "ERROR - Unrecognized variant ["..Variant.."], cannot determine 3D Model Name.",_error
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject Name="E200 Speed restriction lifted" DisplayBlockName="NO-BN-2D-JBTKO-SKT-SKILT-ERTMS-SPEED-RESTRICTION-LIFTED-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E201 Speed restriction 10" DisplayBlockName="NO-BN-2D-JBTKO-SKT-SKILT-ERTMS-SPEED-RESTRICTION-10-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E202 Speed restriction 20" DisplayBlockName="NO-BN-2D-JBTKO-SKT-SKILT-ERTMS-SPEED-RESTRICTION-20-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<InsertPointObject Name="E203 Speed restriction 30" DisplayBlockName="NO-BN-2D-JBTKO-SKT-SKILT-ERTMS-SPEED-RESTRICTION-30-{{SymbolMode}}"
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="">
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+														{% else %}45.0
+														{% endif %}"/>	
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTKO-SKT
+				SKILT-ERTMS
+				{%    if Variant == 'E200 Speed restriction lifted' %}SPEED-RESTRICTION-LIFTED
+				{% elsif Variant == 'E201 Speed restriction 10' %}SPEED-RESTRICTION-10
+				{% elsif Variant == 'E202 Speed restriction 20' %}SPEED-RESTRICTION-20
+				{% elsif Variant == 'E203 Speed restriction 30' %}SPEED-RESTRICTION-30
+				{% else %}BAD_Variant_{{Variant}}
+				{% endif %}
+				{% if PortalMounted %}PORTAL{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+				<!-- Removed from Bane NOR TRV? -->
+				<!-- {% elsif Variant == 'E108 Interlocked area begin' %}SHUNTING-AREA-BEGIN -->
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
+		
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0" Y="0" TargetSpace="skilt"/>
+				<SnapPoint X="0" Y="0" TargetSpace="skiltfeste"/>
+			</SnapPoints>
+		</DockPointDefinitions>
+
+		<!-- Ingen displaypoints - 2D-symbolet settes der InsertionPoint er -->
+
+	</ObjectType>
+
+
+
+<!--========================================================================================================
 	SKILT
 	KJØRENDE PERSONELL/REFLEKSER
 	On main signals and distant signals
@@ -913,7 +1276,7 @@ end
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the object's default 3D object model name.">
-			<Constructor>String _JBTSA_MSS_Refleks_paa_lyssignal_Geometry3DName()</Constructor>
+			<Signature>String _JBTSA_MSS_Refleks_paa_lyssignal_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_MSS_Refleks_paa_lyssignal_Geometry3DName()
 					local t = "NO-BN-3D-SA-MSS-REFLEKS-"
@@ -1473,7 +1836,7 @@ end
 		<LuaExpression Name="mc_SpeedTargetBoardVariant" IsModelCheck="true"><Formula>_JBTKO_SKT_chkSpeedTargetBoardVariant()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SKT_chkSpeedTargetBoardVariant()" ReturnType="String"
 			Description = "Model check assessing that the 68D subtype 1/2/3 speed target board matches the presence or absence of a nearby counter-directed 68B 'Increased speed' or 69B 'End of Temporary Speed Restriction">
-			<Constructor>String _JBTKO_SKT_chkSpeedTargetBoardVariant()</Constructor>
+			<Signature>String _JBTKO_SKT_chkSpeedTargetBoardVariant()</Signature>
 			<Formula>
 				function _JBTKO_SKT_chkSpeedTargetBoardVariant()
 					if Variant:match("68D") then 
@@ -1518,7 +1881,7 @@ end
 		<LuaExpression Name="mc_NearbySpeedBoardsToBeModelchecked" IsModelCheck="true"><Formula>_JBTKO_SKT_chkTriggerNearbySpeedBoards()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SKT_chkTriggerNearbySpeedBoards()" ReturnType="String"
 			Description="Triggers modelchecking in nearby speed boards.">
-			<Constructor>_JBTKO_SKT_chkTriggerNearbySpeedBoards()</Constructor>
+			<Signature>_JBTKO_SKT_chkTriggerNearbySpeedBoards()</Signature>
 			<Formula>
 				function _JBTKO_SKT_chkTriggerNearbySpeedBoards()
 					local tol = 1.0 --[m]
@@ -1534,7 +1897,7 @@ end
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the 68/69 board's default 3D object model name.">
-			<Constructor>String _JBTKO_SKT_68_69_Geometry3DName()</Constructor>
+			<Signature>String _JBTKO_SKT_68_69_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTKO_SKT_68_69_Geometry3DName()
 					local t = "NO-BN-3D-KO-SKT-SKILT-"
@@ -2821,7 +3184,7 @@ end
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the object's default 3D object model name.">
-			<Constructor>String _JBTKO_SKT_74_Geometry3DName()</Constructor>
+			<Signature>String _JBTKO_SKT_74_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTKO_SKT_74_Geometry3DName()
 					local t = "NO-BN-3D-KO-SKT-SKILT-74-"
@@ -3037,7 +3400,6 @@ end
 		<AttachmentCategory Name="skilt" PassAttachmentToTarget="true"/>
 		<AttachTo Category="skilt"/>
 		<AttachTo Category="signal" DrawTail="true"/>
-		<AttachTo Category="markerboard" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -3974,16 +4336,16 @@ end
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTKO_SKT_75CD_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SKT_75CD_Geometry3DName()" ReturnType="String"
 				Description="Obtains the board's 3D model name.">
-			<Constructor>String _JBTKO_SKT_75CD_Geometry3DName()</Constructor>
+			<Signature>String _JBTKO_SKT_75CD_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTKO_SKT_75CD_Geometry3DName()
 					local side, number
 					if RightSided then 
-						side = (dir == 'up' and "VSIDE" or "VSIDE")
 						number = (dir == 'up' and 1 or 2)
+						side = (dir == 'up' and "HSIDE" or "VSIDE")
 					else 
-						side = (dir == 'up' and "VSIDE" or "VSIDE")
 						number = (dir == 'up' and 2 or 1)
+						side = (dir == 'up' and "VSIDE" or "HSIDE")
 					end
 					if Variant:match("75C") then
 						return "NO-BN-3D-KO-SKT-SKILT-75C-"..number.."-HEV-SPORRENSER-"..side
@@ -4001,21 +4363,21 @@ end
 			<Variant Name="Signal 75D Senk sporrenser"/>
 		</Variants>
 
-		<InsertPointObject Name="Signal 75C Hev sporrenser" DisplayBlockName=
-"NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75C-{% if dir == 'up' %}{% if RightSided %}1{% else %}2{% endif %}{% else %}{% if RightSided %}2{% else %}1{% endif %}{% endif %}-HEV-{% if dir == 'up' %}{% if RightSided %}VSIDE{% else %}VSIDE{% endif %}{% else %}{% if RightSided %}VSIDE{% else %}VSIDE{% endif %}{% endif %}-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance RotateIfLeftSideOfAlignment="false" AddAngle="-90" EnableDirectionSetting="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="Signal 75D Senk sporrenser" DisplayBlockName=
-"NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75D-{% if dir == 'up' %}{% if RightSided %}1{% else %}2{% endif %}{% else %}{% if RightSided %}2{% else %}1{% endif %}{% endif %}-SENK-{% if dir == 'up' %}{% if RightSided %}VSIDE{% else %}VSIDE{% endif %}{% else %}{% if RightSided %}VSIDE{% else %}VSIDE{% endif %}{% endif %}-{{SymbolMode}}" 
+		<InsertPointObject Name="Signal 75C Hev sporrenser"
+				DisplayBlockName="NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75C-{% if dir == 'up' %}{% if RightSided %}1{% else %}2{% endif %}{% else %}{% if RightSided %}2{% else %}1{% endif %}{% endif %}-HEV-{% if dir == 'up' -%}{%- if RightSided %}HSIDE{% else %}VSIDE{% endif %}{% else %}{% if RightSided %}VSIDE{% else %}HSIDE{% endif %}{% endif %}-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfLeftSideOfAlignment="false" AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 
-		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-SIGNAL-75C-1-HEV-VSIDE-{{SymbolMode}}">
+		<InsertPointObject Name="Signal 75D Senk sporrenser"
+				DisplayBlockName="NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75D-{% if dir == 'up' %}{% if RightSided %}1{% else %}2{% endif %}{% else %}{% if RightSided %}2{% else %}1{% endif %}{% endif %}-SENK-{% if dir == 'up' %}{% if RightSided %}HSIDE{% else %}VSIDE{% endif %}{% else %}{% if RightSided %}VSIDE{% else %}HSIDE{% endif %}{% endif %}-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance RotateIfLeftSideOfAlignment="false" AddAngle="-90" EnableDirectionSetting="true"/>
+		</InsertPointObject>
+
+		<SymbolDefinition AllowSymbolMove="true">
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270|plus:0}}
 														{% elsif dir == 'down' %}{{90|plus:0}}
 														{% elsif dir == 'both' and RightSided %}{{180|plus:0}}
@@ -4100,7 +4462,7 @@ end
 				ReturnType="String"
 				HideFromUser="false"
 				Description="Returns the object's default 3D object model name.">
-			<Constructor>String _JBTKO_SKT_75E_Geometry3DName()</Constructor>
+			<Signature>String _JBTKO_SKT_75E_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTKO_SKT_75E_Geometry3DName()
 					local t = "NO-BN-3D-KO-SKT-SKILT-75E-"
@@ -4240,8 +4602,8 @@ end
 		</SymbolDefinition>
 
 		<Annotation3DTagDefinition>
-			<Attribute Tag="T02">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}</Value>
+			<Attribute Tag="T01">
+				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}"</Value>
 			</Attribute>
 			<Attribute Tag="T02">
 				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}</Value>
@@ -4305,7 +4667,8 @@ end
 		<AttachTo Category="signal" DrawTail="true"/>
 		<AttachTo Category="skilt" DrawTail="true"/>
 		<AttachTo Category="apparatskap" DrawTail="true"/>
-		<AttachTo Category="markerboard" DrawTail="true"/>
+		<AttachTo Category="ertms_marker_board" DrawTail="true"/>
+		<AttachTo Category="ertms_shunting_signal" DrawTail="true"/>
 		<AttachTo Category="skiltfeste" DrawTail="true"/>
 
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -4817,20 +5180,20 @@ end
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_bnp_getBoardOffset3DZ()" ReturnType="String"
 		Description="Returns the default pole 3D offset Z, i.e. the height of the pole.">
-		<Constructor>Double NOBN_bnp_getBoardOffset3DZ()</Constructor>
+		<Signature>Double NOBN_bnp_getBoardOffset3DZ()</Signature>
 		<Formula>
 -- This formula does not catch all board configurations. If you have a complicated board configuration it's likely that you will have to delete it and configure the Z offset manually to get the right behaviour for your 3D model.
--- The formula is intended to handle the following cases: i) rctype_SignEtcsSignal alone, ii) rctype_SignEtcsSignal with attached rctype_SignEtcsId, iii) rctype_SignEtcsSignal attached to rctype_EtcsEoA, iv) rctype_SignEtcsSignal attached to rctype_EtcsEoA, with attached rctype_SignEtcsId.
--- Note in particular that the formula does not handle the case where two rctype_SignEtcsSignal are attached to a single stop sign (rctype_EtcsEoA).
+-- The formula is intended to handle the following cases: i) rctype_SignErtmsMiscBoard alone, ii) rctype_SignErtmsMiscBoard with attached rctype_SignErtmsIdBoard, iii) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, iv) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, with attached rctype_SignErtmsIdBoard.
+-- Note in particular that the formula does not handle the case where two rctype_SignErtmsMiscBoard are attached to a single stop sign (rctype_SignErtmsMarkerBoard).
 --
 -- Returns the height of the Attachment board, if any.
 function getAttachmentBoardHeight()
 	if Attachment == nil then return nil
-	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt" then return 0.400
-	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt med dverg" then return 0.400
-	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, sidestilt med lav dverg" then return 0.400
-	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, over sporet" then return 0.400
-	elseif Attachment.Variant == "ERTMS E35 Stoppskilt, over sporet med dverg" then return 0.400
+	elseif Attachment.Variant == "E35 Stop sign, side of track" then return 0.400
+	elseif Attachment.Variant == "E35 Stop sign, side of track med dverg" then return 0.400
+	elseif Attachment.Variant == "E35 Stop sign, side of track med lav dverg" then return 0.400
+	elseif Attachment.Variant == "E35 Stop sign, above track" then return 0.400
+	elseif Attachment.Variant == "E35 Stop sign, above track med dverg" then return 0.400
 	else return nil
 	end
 end
@@ -4840,12 +5203,12 @@ function getIntermediateBoard()
 	if Attachment == nil or Attachment.AttachedElements == nil or Attachment.AttachedElements.Count == 0 then return nil end
 	
 	for i = 0, Attachment.AttachedElements.Count - 1 do
-		if Attachment.AttachedElements[i].RcType == rctype_SignEtcsId then
+		if Attachment.AttachedElements[i].RcType == rctype_SignErtmsIdBoard then
 			local kake = Attachment.AttachedElements[i]
-			if (Attachment.AttachedElements[i].Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" 
-			or Attachment.AttachedElements[i].Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" 
-			or Attachment.AttachedElements[i].Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" 
-			or Attachment.AttachedElements[i].Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit") then
+			if (Attachment.AttachedElements[i].Variant == "E101-A ID board, intermediate stop sign, 400x325, white" 
+			or Attachment.AttachedElements[i].Variant == "E101-B ID board, entry stop sign, 400x325, yellow" 
+			or Attachment.AttachedElements[i].Variant == "E101-C ID board, exit stop sign, Ø400, yellow" 
+			or Attachment.AttachedElements[i].Variant == "E101-D ID board, blocking stop sign, Ø400, white") then
 				return Attachment.AttachedElements[i]
 			end
 		end
@@ -4854,16 +5217,27 @@ end
 --
 -- Returns the height of this board.
 function getThisBoardHeight()
-	if Variant == "E106 Stop for shunting" then return 0.400
-	elseif Variant == "E107 Unsecured area with handoperated points" then return 0.400
-	elseif Variant == "E36 Level crossing, location" then return 0.400
-	elseif Variant == "E36 Level crossing, announcement" then return 0.400
+	if Variant == "E36A Level crossing, location" then return 0.400
+	elseif Variant == "E36B Level crossing, announcement" then return 0.400
+	elseif Variant == "E37A Level transition" then return 0.400
+	elseif Variant == "E37B Level zero" then return 0.400
 	elseif Variant == "E38 Avalanche area" then return 0.400
 	elseif Variant == "E39 Frost gate" then return 0.400
-	elseif Variant == "E202 Speed restriction 10" then return 0.400
+	elseif Variant == "E65H Lowering of pantograph, announcement" then return 0.400
+	elseif Variant == "E65J Lowering of pantograph, location" then return 0.400
+	elseif Variant == "E65K Raising of pantograph, location" then return 0.400
+	elseif Variant == "E65L Dead section, announcement" then return 0.400
+	elseif Variant == "E65M Disconnection in dead section" then return 0.400
+	elseif Variant == "E65N Connection after dead section" then return 0.400
+	elseif Variant == "E106A Stop for shunting, location" then return 0.400
+	elseif Variant == "E106B Stop for shunting, announcement" then return 0.400
+	elseif Variant == "E107 Interlocked area end" then return 0.400
+	elseif Variant == "E108 Interlocked area begin" then return 0.400
+	elseif Variant == "E200 Speed restriction lifted" then return 0.400
+	elseif Variant == "E201 Speed restriction 10" then return 0.400
 	elseif Variant == "E202 Speed restriction 20" then return 0.400
-	elseif Variant == "E202 Speed restriction 30" then return 0.400
-	elseif Variant == "E202 Speed restriction lifted" then return 0.400
+	elseif Variant == "E203 Speed restriction 30" then return 0.400
+	elseif Variant == "E204 GSM-R network Norway" then return 0.400
 	end
 end
 --
@@ -4872,7 +5246,7 @@ function getFirstAttachedIdSign()
 	if AttachedElements == nil or AttachedElements.Count == 0 then return nil end
 	
 	for i = 0, AttachedElements.Count - 1 do
-		if AttachedElements[i].RcType == rctype_SignEtcsId then	return AttachedElements[i] end
+		if AttachedElements[i].RcType == rctype_SignErtmsIdBoard then	return AttachedElements[i] end
 	end
 end
 --
@@ -4884,17 +5258,17 @@ function getZOffsetFromIdSign(thisBoardHeight)
 	local idSignZOffset = idSign.Geometry3D_0.Offset.Z
 	
 	local idSignHeight = nil
-	if idSign.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then idSignHeight = 0.325
-	elseif idSign.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then idSignHeight = 0.325
-	elseif idSign.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then idSignHeight = 0.400
-	elseif idSign.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then idSignHeight = 0.400
-	elseif idSign.Variant == "Signal E101-E ID-skilt, Dverg, 160x150" then idSignHeight = 0.150
+	if idSign.Variant == "E101-A ID board, intermediate stop sign, 400x325, white" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-B ID board, entry stop sign, 400x325, yellow" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-C ID board, exit stop sign, Ø400, yellow" then idSignHeight = 0.400
+	elseif idSign.Variant == "E101-D ID board, blocking stop sign, Ø400, white" then idSignHeight = 0.400
+	elseif idSign.Variant == "E101-E ID board, shunting, 160x150" then idSignHeight = 0.150
 	elseif idSign.Variant == "Signal E101-F ID-skilt, Dverg på bakken under MB i åk, 160x150" then idSignHeight = 0.150
-	elseif idSign.Variant == "Signal E101-G ID-skilt, Stopp for skift, 400x325" then idSignHeight = 0.325
-	elseif idSign.Variant == "Signal E101-H ID-skilt, Forriglet område, 400x325" then idSignHeight = 0.325
-	elseif idSign.Variant == "Signal E101-J ID-skilt, Veisikringsanlegg, 400x325" then idSignHeight = 0.325
-	elseif idSign.Variant == "Signal E101-K ID-skilt, Snøskredområde, 400x325" then idSignHeight = 0.325
-	elseif idSign.Variant == "Signal E101-L ID-skilt, Frostport, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-G ID board, stop for shunting, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-H ID board, interlocked area, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-J ID board, level crossing, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-K ID board, avalanche area, 400x325" then idSignHeight = 0.325
+	elseif idSign.Variant == "E101-L ID board, frost gate, 400x325" then idSignHeight = 0.325
 	end
 
 	local minimumGap = 0.010
@@ -4921,10 +5295,10 @@ function getErtmsBoardZOffset()
 		if intermediateBoard ~= nil then
 			intermediateBoardZOffset = intermediateBoard.Geometry3D_0.Offset.Z
 			
-			if intermediateBoard.Variant == "Signal E101-A ID-skilt, Indre, 400x325, hvit" then intermediateBoardHeight = 0.325
-			elseif intermediateBoard.Variant == "Signal E101-B ID-skilt, Innkjør, 400x325, gul" then intermediateBoardHeight = 0.325
-			elseif intermediateBoard.Variant == "Signal E101-C ID-skilt, Utkjør, Ø400, gul" then intermediateBoardHeight = 0.400
-			elseif intermediateBoard.Variant == "Signal E101-D ID-skilt, Blokk, Ø400, hvit" then intermediateBoardHeight = 0.400 
+			if intermediateBoard.Variant == "E101-A ID board, intermediate stop sign, 400x325, white" then intermediateBoardHeight = 0.325
+			elseif intermediateBoard.Variant == "E101-B ID board, entry stop sign, 400x325, yellow" then intermediateBoardHeight = 0.325
+			elseif intermediateBoard.Variant == "E101-C ID board, exit stop sign, Ø400, yellow" then intermediateBoardHeight = 0.400
+			elseif intermediateBoard.Variant == "E101-D ID board, blocking stop sign, Ø400, white" then intermediateBoardHeight = 0.400 
 			end
 
 			if intermediateBoardZOffset ~= nil and thisBoardHeight ~= nil then
@@ -5003,10 +5377,13 @@ end
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_bnp_getPoleRoutingDefaultValue()" ReturnType="String"
 		Description="Returns the default pole setting for the board in question, from {'none','vertical','horizontal'}.">
-		<Constructor>Enumeration {'None','Vertical','Horizontal'} NOBN_bnp_getPoleRoutingDefaultValue()</Constructor>
+		<Signature>Enumeration {'None','Vertical','Horizontal'} NOBN_bnp_getPoleRoutingDefaultValue()</Signature>
 		<Formula>
 			function NOBN_bnp_getPoleRoutingDefaultValue()
-				if RcType == rctype_EtcsEoA then
+				if RcType == rctype_SignErtmsMarkerBoard then
+					return "Vertical"
+					
+				elseif RcType == rctype_SignErtmsShuntingSignal then
 					return "Vertical"
 				
 				elseif RcType:match("JBTSA_MSS") or RcType:match("JBTKO_SKT") or RcType:match("JBTEH_BKT") then
@@ -5049,7 +5426,7 @@ end
 =========================================================================================================-->
 	<LuaFunction Name="NOBN_bnp_getBoardSightingRequirement()" ReturnType="String"
 		Description="Returns the sighting requirement according to TRV regulations for vegetation clearance towards boards. Speed is extracted from the object's own alignment using getAlignmentInfo().Speed.">
-		<Constructor>Double NOBN_bnp_getBoardSightingRequirement()</Constructor>
+		<Signature>Double NOBN_bnp_getBoardSightingRequirement()</Signature>
 		<Formula>
 			function NOBN_bnp_getBoardSightingRequirement()
 				local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available

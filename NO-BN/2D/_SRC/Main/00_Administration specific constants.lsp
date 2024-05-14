@@ -5,41 +5,38 @@
 ; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
-; Change log:
-; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
-;
 ;=========================================================================================================================
 ;
 (defun DefineAdministrationSpecificConstants ( / )
 
 	; The various railway disciplines
 	;----------------------------------------------------------
-	; These are: (void) / com / sub / trk / cur / ocs / sig / pow / tel / bnp / otr
+	; These are: (void) / com / sub / trk / ocs / sig / tel / pow / bnp / cur / oth
 	; 
 	; com		Common - general and railway-specific issues
-	; bnp		Boards and ('n) poles
 	; sub		Substructure (foundations, cable ducts, platforms, civil engineering: buildings, bridges, tunnels, roads)
 	; trk		Track and embankment - ballast, sleepers, rails, switches, crossings, buffer stops and other track related objects
-	; cur		Traction current system, transformers above catenary voltage levels, power distribution system other than OCS
 	; ocs		Overhead catenary system
 	; sig		Signalling
-	; pow		Power supply, except traction current system (low voltage, up to ca 1000V to users, from 22kV public supplies or 15-25 kV railway HV)
 	; tel		Telecommunications
-	; otr		Other systems
+	; pow		Power supply, except traction current system (low voltage, up to ca 1000V to users, from 22kV public supplies or 15-25 kV railway HV)
+	; bnp		Boards and ('n) poles
+	; cur		Traction current system, transformers above catenary voltage levels, power distribution system other than OCS
+	; oth		Other systems
 	(setq
 		; Se trv.banenor.no/wiki/Forside
-		;
 		; Norge - Bane NOR - 2D symboler - Jernbaneteknikk (JBT)
 		_PREFIX_	"Jernbaneteknikk"
 		_RC_		"NO-BN-2D-JBTRC_"	_RC_NAME_	"RailCOMPLETE"			; RailCOMPLETE internt
-		_COM_		"NO-BN-2D-JBTFE_"	_COM_NAME_	"Felles"				; Felles
-		_SUB_		"NO-BN-2D-JBTKU_"	_SUB_NAME_	"Underbygning"			; Konstruksjon underbygning
-		_TRK_		"NO-BN-2D-JBTKO_"	_TRK_NAME_	"Overbygning"			; Konstruksjon overbygning
-		_OCS_		"NO-BN-2D-JBTEH_"	_OCS_NAME_	"Kontaktledning"		; Elektro høyspent
+		_COM_		"NO-BN-2D-JBTFE_"	_COM_NAME_	"Felles"				; Elementer som er felles for flere fagdisipliner
+		_SUB_		"NO-BN-2D-JBTKU_"	_SUB_NAME_	"Underbygning"			; Konstruksjon underbygning - Føringsveier, veier, bygninger, større fundamenter
+		_TRK_		"NO-BN-2D-JBTKO_"	_TRK_NAME_	"Overbygning"			; Konstruksjon overbygning - Spor, sporveksler, sporstoppere, ballast, plattformkanter, togprofiler
+		_OCS_		"NO-BN-2D-JBTEH_"	_OCS_NAME_	"Kontaktledning"		; Elektro høyspent - Kontaktledning, matekabler, høyspentkabler, jording
 		_SIG_		"NO-BN-2D-JBTSA_"	_SIG_NAME_	"Signalanlegg"			; Signalanlegg
 		_TEL_		"NO-BN-2D-JBTTE_"	_TEL_NAME_	"Telekommunikasjon"		; Telekommunikasjon
-		_POW_		"NO-BN-2D-JBTEL_"	_POW_NAME_	"Hjelpekraft"			; Elektro lavspent
-		_BNP_		"NO-BN-2D-JBTSK_"	_BNP_NAME_	"Skilt"					; Skilt og stolper (bare om det ikke er inkludert i en annen disiplin)
+		_POW_		"NO-BN-2D-JBTEL_"	_POW_NAME_	"Hjelpekraft"			; Elektro lavspent - Belysning, varme, lavspent kabler, fordelinger
+		_BNP_		"NO-BN-2D-JBTSK_"	_BNP_NAME_	"Skilt"					; Skilt og stolper (bare om de ikke er inkludert i en annen fagdisiplin)
+		_CUR_		"NO-BN-2D-JBT??_"	_CUR_NAME_	"Traction current"		; Not yet modeled - Traction current system, concerning high power supply and distribution)
 		_OTH_		"NO-BN-2D-JBT?9_"	_OTH_NAME_	"Annet"					; Andre systemer
 	)
 	

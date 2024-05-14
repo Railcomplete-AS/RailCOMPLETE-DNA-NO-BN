@@ -190,7 +190,7 @@
 	; 1-------.
 	;
 	(setq 
-		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75C-1-HEV-HSIDE"
+		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75C-HEV-HSIDE"
 		description (strcat "SKILT 75C-1 HEV SPORRENSER, H" _uOSLASH_ "YREMONTERT")
 		p1 (list -8.0 0.0)
 		p2 (list -8.0 2.0)
@@ -221,7 +221,7 @@
 	; .-------1
 	;
 	(setq 
-		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75C-2-HEV-VSIDE"
+		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75C-HEV-VSIDE"
 		description "SKILT 75C-2 HEV SPORRENSER, VENSTREMONTERT"
 		p1 (list  8.0 0.0)
 		p2 (list  8.0 2.0)
@@ -252,7 +252,7 @@
 	;   4
 	;
 	(setq
-		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75D-1-SENK-HSIDE"
+		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75D-SENK-HSIDE"
 		description (strcat "SKILT 75D-1 SENK SPORRENSER, H" _uOSLASH_ "YREMONTERT")
 		p1 (list  0.0  2.0)
 		p2 (list -8.0  2.0)
@@ -275,7 +275,7 @@
 
 (defun 75D-2 ( / blockName description p1 p2 p3 p4 p5 p6 )
 	(setq
-		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75D-2-SENK-VSIDE"
+		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75D-SENK-VSIDE"
 		description "SKILT 75D-2 SENK SPORRENSER, VENSTREMONTERT"
 	)
 	; Lower track cleaning equipment, left side of track

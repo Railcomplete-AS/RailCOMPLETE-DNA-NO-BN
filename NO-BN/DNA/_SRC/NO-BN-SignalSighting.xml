@@ -13,17 +13,16 @@
 
 	<LuaFunction Name="NOBN_sig_getSignalSightingRequirement()" ReturnType="String"
 		Description="Returns the sighting requirement according to TRV regulations for signals. Speed is extracted from the object's own alignment using 'getAlignmentInfo().Speed'. If no design speed is found in the object's own alignment, then 130 km/h will be assumed.">
-		<Constructor>Double NOBN_sig_getSignalSightingRequirement()</Constructor>
+		<Signature>Double NOBN_sig_getSignalSightingRequirement()</Signature>
 		<Formula>
 			function NOBN_sig_getSignalSightingRequirement()
 				local DesignSpeed = getAlignmentInfo().Speed or 130 --130 km/h assumed if alignment has no design speed available
 			
-				if RcType == rctype_EtcsEoA then
-					if DwarfSignal == "Ja" then
-						return 50, _info("50 m fixed sighting requirement during ERTMS shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
-					else
-						return 150, _info(DesignSpeed.." km/h: 150 m fixed sighting requirement for ERTMS boards.")
-					end
+				if RcType == rctype_SignErtmsMarkerBoard then
+					return 150, _info(DesignSpeed.." km/h: 150 m fixed sighting requirement for ERTMS boards.")
+					
+				elseif RcType == rctype_SignErtmsShuntingSignal then
+					return 50, _info("50 m fixed sighting requirement during ERTMS shunting movements (NB! There are rules for sight/stopping distance towards Ss43 as well).")
 				
 				elseif RcType == rctype_Signal then
 					if not (MainSignal:match("^Hs") or  DistantSignal:match("Ja")) and (DwarfSignal == "Ja" or HighShuntingSignal == "Ja") then

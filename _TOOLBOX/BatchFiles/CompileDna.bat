@@ -49,8 +49,8 @@ if "%ADM%" equ "" (
 	REM *** Check that relaseName found in Windows environment variable matches IRI info in DNA RootFile.xml:
 
 	REM Use bangs (!) instead of percent (%) around variables to delay their assignment.
-	REM Read about "Delayed Expansion" -  this is curcial to how this batch file works.
-	REM In order to delay variable expansion inside for loops, we must enable delayed expansion.
+	REM Read about "Delayed Expansion" -  this is crucial to how this batch file works.
+	REM In order to delay variable expansion inside 'for' loops, we must enable delayed expansion.
 	SETLOCAL ENABLEDELAYEDEXPANSION
 
 	REM The FIND batch command is a basic MS-DOS command, so the PATH environment var must contain "C:\Windows\System32;".
