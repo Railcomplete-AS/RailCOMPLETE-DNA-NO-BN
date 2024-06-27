@@ -108,15 +108,11 @@
 	    <CustomProperty Category="Pset Bane NOR" DataType="String" DisplayName="Pset Bane NOR MMI" Name="BaneNORMMI" DefaultValue="" 
 				ExtendedDataPropertySet="Bane NOR" ExtendedDataPropertyDefinition="MMI"/>
 
-		<!-- Add formula for Stage intrinsic RailCOMPLETE property: -->
-		<!-- 2021-11-18 CLFEY change: Let Stage be the source property, and let [CAD].[layer] (layer) take on [RcType's default layer]_XXxx-YYyy, with syntax check. -->
-		<LuaExpression Name="Layer">				<Formula>NOBN_com_Layer()</Formula></LuaExpression>						
-
 		<!-- Pset automation formulas-->
 		<!-- BaneNORModelltype -->
 		<LuaExpression Name="BaneNORBaneDataID">	<Formula>NOBN_com_Pset_BaneNORBaneDataID()</Formula></LuaExpression>						
-		<LuaExpression Name="BaneNORRives">		<Formula>NOBN_com_Pset_BaneNORRives()</Formula></LuaExpression>						
-		<LuaExpression Name="BaneNORRivesFase">	<Formula>NOBN_com_Pset_BaneNORRivesFase()</Formula></LuaExpression>						
+		<LuaExpression Name="BaneNORRives">			<Formula>NOBN_com_Pset_BaneNORRives()</Formula></LuaExpression>						
+		<LuaExpression Name="BaneNORRivesFase">		<Formula>NOBN_com_Pset_BaneNORRivesFase()</Formula></LuaExpression>						
 		<LuaExpression Name="BaneNORByggesFase">	<Formula>NOBN_com_Pset_BaneNORByggesFase()</Formula></LuaExpression>						
 		<!-- BaneNORBeskrivelse -->
 		<!-- BaneNORRivesAv -->
@@ -128,50 +124,6 @@
 		
 	</xpp:bloc>
 </xpp:define>
-
-
-	<!-- Intrinsic Stage property shall hold the object's stage in/out information, dediced from the object's CAD layer name: -->
-    <!-- <LuaFunction Name="NOBN_com_Stage()" ReturnType="String" -->
-		<!-- Description="Returnerer en fasekode på formen 'XXxx-YYyy' (inn-i-fase XX.xx, ut-i-fase YY.yy) dersom denne er tilstede som en sub-streng i objektets lagnavn (CAD-system layer name). XXxx og YYyy er to firesifrede heltall, der XXxx skal være lavere enn YYyy. Fase '0000' er eksisterende anlegg ved prosjektstart. Fase '9999' er 'evigheten'. Dersom lagnavnet ikke inneholder et gyldig fasemønster så returneres 'Ukjent'. 'Stage' benyttes videre i [Pset Bane NOR]."> -->
-        <!-- <Signature>String NOBN_com_Stage()</Signature> -->
-        <!-- <Formula> -->
-    <LuaFunction Name="NOBN_com_Layer()" ReturnType="String"
-		Description="Returnerer et lagnavn (Layer) på formen JBTFF_TTT_BBB_XXxx-YYyy' der FF_TTT er objektets type i Banedata (og JBTFF_TTT er objekt-typens standard lagnavn i RailCOMPLETE), mens XXxx betyr 'inn-i-fase XX.xx' og YYyy betyr 'ut-i-fase YY.yy). XXxx og YYyy er to firesifrede heltall, der XXxx må være strengt lavere enn YYyy. Fase '0000' er eksisterende anlegg ved prosjektstart. Fase '9999' er 'evigheten', dvs endelig konfigurasjon. Tekst-strengen 'XXxx-YYyy' hentes fra property [Generelt].[Fasekode] (Stage). Dersom 'Stage' ikke inneholder et gyldig fasemønster så returneres endres ikke lagnavnet, men en advarsel vises sammen med lagnavnet. 'Stage' benyttes også i [Pset Bane NOR].">
-        <Signature>String NOBN_com_Layer()</Signature>
-        <Formula>
-			function NOBN_com_Layer()
-				--Look for typical typos, 5 digits or more in either of XXxx, YYyy:
-				local lay = getPropertyValue("Layer")
-				local s = tostring(Stage)
-				local XXxx1,YYyy1 = s:match("^.*(%d%d%d%d%d)%-(%d%d%d%d).*$")
-				local XXxx2,YYyy2 = s:match("^.*(%d%d%d%d)%-(%d%d%d%d%d).*$")
-				local XXxx3,YYyy3 = s:match("^.*(%d%d%d%d%d)%-(%d%d%d%d%d).*$")
-				if (XXxx1 and YYyy1) or (XXxx2 and YYyy2) or (XXxx3 and YYyy3) then
-					return _error, lay, 
-						_info("ERROR - Ingen gyldig fasekode funnet på format 'XXxx-YYyy' (fire og fire sifre med bindestrek mellom) i objektets Fasekode (Stage) '"..Stage.."'.")
-				end
-			
-				local XXxx,YYyy = s:match("^.*(%d%d%d%d)%-(%d%d%d%d).*$")
-				if XXxx and YYyy then
-					if XXxx &lt;= YYyy then
-						return _ok, string.format("%s_%04d-%04d",RcType:sub(1,9),XXxx,YYyy),
-							_info("OK - Objektets lagnavn er utledet fra objektets RcType '"..RcType.."' og Fasekode (Stage) '"..Stage.."'.")
-					else
-						return _error, lay, 
-							_info(string.format("ERROR - Inn-i-fase XXxx=%04d må være ekte større enn Ut-mot-fase YYyy=%04d, hentet fra objektets Fasekode (Stage) '%s'.", XXxx,YYyy,Stage))
-					end
-				else
-					if s:match("%w*") or s == "" then
-						return _noSymbol, lay,
-							_info("INFO - Angi [Generelt].[Fasekode XXxx-YYyy] (Stage) for å opprette lagnavn basert på RcType og Stage (Fasekode).")
-					else
-						return _warning, lay,
-							_info("WARNING - Fasekode (Stage) '"..Stage.."' har ikke gyldig format 'XXxx-YYyy' - ingen fasekode ble tilføyd i objektets lagnavn.")
-					end
-				end
-			end
-        </Formula>
-    </LuaFunction> 
 
 
 
