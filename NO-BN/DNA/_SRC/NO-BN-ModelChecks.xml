@@ -571,38 +571,38 @@
 				then
 					--find gradient in o/oo from the tangent vector at the alignment's ends, where there ends are closest
 					if ExtendingFromEnd then 
-						local t = Alignment.RcAlignment.EndTangent
+						t = Alignment.RcAlignment.EndTangent
 						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t1 = Alignment.RcAlignment.HorizontalGeometry.EndDir
+						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.EndDir)
 					else
-						local t = Alignment.RcAlignment.StartTangent
+						t = Alignment.RcAlignment.StartTangent
 						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t1 = Alignment.RcAlignment.HorizontalGeometry.Segments[0].StartDir
+						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir)
 					end 
 					if ContinuingWithBegin then
-						local t = TargetAlignment.RcAlignment.StartTangent
+						t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t2 = TargetAlignment.RcAlignment.HorizontalGeometry.Segments[0].StartDir
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir)
 					else 
-						local t = TargetAlignment.RcAlignment.EndTangent
+						t = TargetAlignment.RcAlignment.EndTangent
 						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t2 = TargetAlignment.RcAlignment.HorizontalGeometry.EndDir
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.EndDir)
 					end
 			
 				elseif RcType == rctype_Switch then
 					if not getAlignmentInfo().NormalProjectionExists then
-						return Alignment.code..": WARNING - Connection object has no projection onto its own alignment (cannot compute mileage).",_warning
+						return Alignment.code.." : AVERTISSEMENT - L'objet de connexion n'a pas de projection orthogonale sur son axe propre. Impossible de calculer le PK voie.",_warning
 					end
 			
 					--Own alignment's gradient and direction at stock rail joint:
-					local t = getAlignmentInfo().Tangent
+					t = getAlignmentInfo().Tangent
 					g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 					t1 = math.deg(math.atan(t.Y,t.X))
 			
 					--Target alignment's gradient and direction where branch track takes off from own alignment:
-					local p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
-					local d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-					local d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
+					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
 					if d1 &lt; d2 then
 						t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
@@ -614,16 +614,15 @@
 					end
 			
 				else 
-					return RcType..": ERROR - Bad connection object type",_error
+					return RcType.." : ERREUR - Type d'objet de connexion incorrect",_error
 				end
 			
 				-- Return o/oo difference in gradients at connection:
-				if math.cos(t2-t1) &gt; 0 then
-					-- Same mileage directions
-					delta = g2 - g1
-				else 
-					-- Opposite mileage directions
-					delta = g2 - (-g1)
+				if math.cos(math.rad(t2-t1)) &lt; 0 then
+					-- Opposite mileage directions, let alignment 1 (the own alignment for the switch) be the leading direction:
+					g2 = (-g2)
+				end
+				delta = g2 - g1
 				end
 				if (math.abs(delta) &lt; tol / 2) then
 					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": OK - Gradients match within 50% of tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_ok
