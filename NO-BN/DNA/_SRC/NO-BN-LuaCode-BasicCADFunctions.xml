@@ -1,0 +1,352 @@
+<!--========================================================================================================
+
+    NO-BN-LuaCode-CAD.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
+	
+=========================================================================================================-->
+
+<!--========================================================================================================
+
+	RC__CAD
+	---------
+	This is a gateway to a table of drawing functions. The underlying API functions in RailCOMPLETE are
+	calling the corresponding function in the underlying CAD system, inserting graphics in modelspace,
+	converting. 
+	
+	Create a block in the CAD system's BlockTable using code such as:
+	
+			cadInterface.createBlock("balloon_"..#tostring(text), entities, true)
+			
+	'cadInterface' has been included in the Lua editor's autofill.
+	
+	See the description for the RC__CAD() function, naming the CAD functions it can return.
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+	<LuaFunction Name="RC__CAD()" ReturnType="String"
+			Description="Executes a CAD function whose name has been given as argument.
+				\n(#TODO# Show complete list of CAD functions)
+				\n
+				\nExamples:
+				\nRC__CAD('getPoint3D')(x,y,z)
+				\nRC__CAD('createArc')(startPoint, throughPoint, endPoint)
+				\nRC__CAD('createArcAboutPoint')(center, radius, StartAngle, EndAngle)
+				\netc. 
+			">
+		<Signature>function RC__CAD(String functionName)</Signature>
+		<Formula>
+			function function RC__CAD(functionName)
+
+				local cadFunctionTable = {}
+				
+				local _hatchPatternSlantedLines_ = "ANSI31"
+				local _hatchPatternLosanges_ = "ANSI37"
+				local _solidHatch_	= 0.03
+				local _denseHatch_	= 1
+				local _mediumHatch_	= 0.12
+				local _lightHatch_	= 0.18
+				local _sparseHatch_	= 0.36
+				
+
+				-- Converts any point to Point3D
+				local function convertToPoint3D(point)
+					return getPoint3D(point.X, point.Y, point.Z or 0)
+				end
+				cadFunctionTable["convertToPoint3D"] = convertToPoint3D
+				
+				
+				
+				-- Mirrors point3D about the origin
+				local function reversePoint3D(point)
+					return getPoint3D(-point.X, -point.Y, -point.Z)
+				end
+				cadFunctionTable["reversePoint3D"] = reversePoint3D
+				
+				
+				
+				-- Creates a Polyline given a table of points
+				local function createPolyline(points)
+					local polyline = cadInterface.createCadEntity("DatabaseServices.Polyline", {})
+					local index = 0
+					for k, v in pairs(points) do
+						polyline:AddVertexAt(index, cadInterface.createCadEntity("Geometry.Point2d", {v.X, v.Y}), 0, 0, 0)
+						index = index + 1
+					end
+					polyline.Layer = "0"
+					return polyline
+				end
+				cadFunctionTable["createPolyline"] = createPolyline
+				
+				
+				
+				-- Creates a circle given center and radius
+				function createCircle(center, radius)
+					return cadInterface.createCadEntity("DatabaseServices.Circle", {cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0}), cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1}), radius})
+				end
+				cadFunctionTable["createCircle"] = createCircle
+				
+				
+				
+				-- Creates a line given start and end points
+				function createLine(startPoint, endPoint)
+					return cadInterface.createCadEntity("DatabaseServices.Line", {cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, endPoint.Z}), cadInterface.createCadEntity("Geometry.Point3d", {endPoint.X, endPoint.Y, endPoint.Z})})
+				end
+				cadFunctionTable["createLine"] = createLine
+				
+				
+				
+				-- Creates an arc using three points. Arcs must be drawn clockwise.
+				function createArc(startPoint, throughPoint, endPoint)
+					local carc = nil
+					local startPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, 0})
+					local throughPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {throughPoint.X, throughPoint.Y, 0})
+					local endPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {endPoint.X, endPoint.Y, 0})
+					
+					local someValue = startPoint3d:GetVectorTo(throughPoint3d):CrossProduct(throughPoint3d:GetVectorTo(endPoint3d)).Z
+					
+					--write("someValue: "..someValue.."\n")
+					
+					if startPoint3d:GetVectorTo(throughPoint3d):CrossProduct(throughPoint3d:GetVectorTo(endPoint3d)).Z > 0.0 then
+						carc = cadInterface.createCadEntity("Geometry.CircularArc3d", {endPoint3d, throughPoint3d, startPoint3d})
+						--write("Bolle\n")
+					else
+						carc = cadInterface.createCadEntity("Geometry.CircularArc3d", {startPoint3d, throughPoint3d, endPoint3d})
+						--write("Brus\n")
+					end
+					
+					local angle = carc.ReferenceVector:AngleOnPlane(cadInterface.createCadEntity("Geometry.Plane", {carc.Center, carc.Normal}))
+					
+					local arc = cadInterface.createCadEntity("DatabaseServices.Arc", {carc.Center, carc.Normal ,carc.Radius, carc.StartAngle + angle, carc.EndAngle + angle})
+					
+					return arc
+				end
+				cadFunctionTable["createArc"] = createArc
+				
+				
+				
+				-- Creates an arc in the plane 
+				function createArcAboutPoint(center, radius, StartAngle, EndAngle)
+					local centerPoint = cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0})
+					return cadInterface.createCadEntity("DatabaseServices.Arc", {centerPoint, radius, StartAngle, EndAngle})
+				end
+				cadFunctionTable["createArcAboutPoint"] = createArcAboutPoint
+				
+				
+				
+				-- Creates a hatch using the given entities as outermost loop and adds it to the block with the given name
+				function createHatch(blockName, entities)
+					local hatch =  cadInterface.createCadEntity("DatabaseServices.Hatch", {})
+					
+					--hatch.Origin = createCadEntity("Geometry.Point3d", {origin.X, origin.Y, origin.Z})
+					cadInterface.addEntitiesToBlock(blockName, {hatch})
+					cadInterface.setEntityPropertiesWithTransaction(hatch, {["Associative"] = true})
+					local ids = table.select(entities, function (x) return x.Id end)
+					
+					local objectIdCollection =  cadInterface.createCadEntity("DatabaseServices.ObjectIdCollection", {ids})
+					
+					cadInterface.runEntityMethodsWithTransaction(hatch, {["SetHatchPattern"] = {cadInterface.createCadEntity("DatabaseServices.HatchPatternType", {"PreDefined"}), _hatchPatternSlantedLines_}, ["AppendLoop"] = {cadInterface.createCadEntity("DatabaseServices.HatchLoopTypes", {"Outermost"}), objectIdCollection}})
+					
+					cadInterface.setEntityPropertiesWithTransaction(hatch, {["PatternSpace"] = _denseHatch_})
+					
+					local explodedEntities = cadInterface.explodeEntity(hatch)
+				
+					cadInterface.runEntityMethodsWithTransaction(hatch, {["Erase"] = {}})
+					
+					cadInterface.addEntitiesToBlock(blockName, explodedEntities)
+				end
+				cadFunctionTable["createHatch"] = createHatch
+				
+				
+				
+				-- Returns the intersection points between two entities
+				function getIntersectionPoints(entity1, entity2)
+					local point3dCollection =  cadInterface.createCadEntity("Geometry.Point3dCollection", {})
+					if type(entity2) ~= "table" then
+					
+						entity1:IntersectWith(entity2, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
+						
+					else
+						for k, entity in pairs(entity2) do
+							entity1:IntersectWith(entity, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
+						end
+					end
+					
+					local pointList = table.select(cadInterface.getObjectsFromCadCollection(point3dCollection), function (x) return getPoint3D(x.X, x.Y, x.Z) end)
+					
+					return pointList
+				end
+				cadFunctionTable["getIntersectionPoints"] = getIntersectionPoints
+				
+				
+				
+				-- Transform entities by a matrix
+				function transformEntities(entities, transformationMatrix)
+					for k, entity in pairs(entities) do 
+						entity:TransformBy(transformationMatrix)
+					end
+				end
+				cadFunctionTable["transformEntities"] = transformEntities
+				
+				
+				
+				-- Get the bounds from a table of entities. Returned as table with keys "MinPoint" and "MaxPoint".
+				function getBoundsFromEntities(entities)
+					local minY = math.huge
+					local maxY = -math.huge
+					local minX = math.huge
+					local maxX = -math.huge
+				
+					for k, entity in pairs(entities) do
+						local bounds = entity.Bounds
+						minX = math.min(bounds.MinPoint.X, minX)
+						minY = math.min(bounds.MinPoint.Y, minY)
+						maxX = math.max(bounds.MaxPoint.X, maxX)
+						maxY = math.max(bounds.MaxPoint.Y, maxY)
+					end
+				
+					return {["MinPoint"] = getPoint3D(minX, minY), ["MaxPoint"] = getPoint3D(maxX, maxY)}
+				end
+				cadFunctionTable["getBoundsFromEntities"] = getBoundsFromEntities
+				
+				
+				
+				-- Get the distance between two points
+				function getDistanceBetweenPoints(point1, point2)
+					return math.sqrt(((point2.X - point1.X)^2) + ((point2.Y - point1.Y)^2) + ((point2.Z - point1.Z)^2))
+				end
+				cadFunctionTable["getDistanceBetweenPoints"] = getDistanceBetweenPoints
+				
+				
+				
+				-- Sorts points acending by distance to a point
+				function sortPointsAcendingByDistanceToPoint(point, points)
+					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
+					table.sort(pointTable, function (x, y) return x.distance &lt; y.distance end)
+					return pointTable:select(function (x) return x.point end)
+				end
+				cadFunctionTable["sortPointsAcendingByDistanceToPoint"] = sortPointsAcendingByDistanceToPoint
+				
+				
+				
+				-- Sorts points decending by distance to a point
+				function sortPointsDecendingByDistanceToPoint(point, points)
+					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
+					table.sort(pointTable, function (x, y) return x.distance > y.distance end)
+					return pointTable:select(function (x) return x.point end)
+				end
+				cadFunctionTable["sortPointsDecendingByDistanceToPoint"] = sortPointsDecendingByDistanceToPoint
+				
+				
+				
+				-- Rotates an entity with an angle gicen in degrees and a rotation center
+				function rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
+					-- convert to Radians
+					local angle = math.rad(angleDegrees)
+					
+					local rotationMatrix = runStaticMethodUsingReflection("Autodesk.AutoCAD.Geometry.Matrix3d", "Rotation", {angle, cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1}), cadInterface.createCadEntity("Geometry.Point3d", {rotationCenter.X, rotationCenter.Y, rotationCenter.Z})})
+				
+					entity:TransformBy(rotationMatrix:getTableValue())
+				end
+				cadFunctionTable["rotateEntityAboutZ"] = rotateEntityAboutZ
+				
+				
+				
+				-- Get point at a distance along a 2D vector
+				function getPointAtDistanceAlongVector2D(startPoint, vector, distance)
+					local unitVector = getPoint3D(vector.X/math.sqrt(vector.X^2 + vector.Y^2), vector.Y/math.sqrt(vector.X^2 + vector.Y^2))  
+					return getPoint3D(startPoint.X + (unitVector.X * distance), startPoint.Y + (unitVector.Y * distance))
+				end
+				cadFunctionTable["getPointAtDistanceAlongVector2D"] = getPointAtDistanceAlongVector2D
+				
+				
+				
+				-- Creates an attributeDefinition
+				function createAttributeDefinition(tag, position, justify)
+					local attributeDefinition = cadInterface.createCadEntity("DatabaseServices.AttributeDefinition", {})
+					local attributePosition = cadInterface.createCadEntity("Geometry.Point3d", {position.X, position.Y, position.Z})
+					
+					attributeDefinition.Height = 2.5
+					attributeDefinition.Tag = tag
+					attributeDefinition.TextString = tag
+					attributeDefinition.Justify = cadInterface.createCadEntity("DatabaseServices.AttachmentPoint", {justify or "MiddleCenter"})
+				--	attributeDefinition.IsMTextAttributeDefinition = true
+				--	attributeDefinition.LockPositionInBlock = false
+					attributeDefinition.Position = attributePosition
+					attributeDefinition.AlignmentPoint = attributePosition
+					
+					return attributeDefinition
+				end
+				cadFunctionTable["createAttributeDefinition"] = createAttributeDefinition
+				
+				
+				
+				function createMText(text, position, direction, textHeight, textStyleName, justify)
+					textHeight = textHeight or 1
+					justify = justify or "MiddleLeft"
+					textStyleName = textStyleName or "RC-STANDARD"
+						
+					local mText = cadInterface.createCadEntity("DatabaseServices.MText", {})
+					mText.Contents = text
+					mText.Location = cadInterface.createCadEntity("Geometry.Point3d", {position.X, position.Y, position.Z})
+					mText.TextHeight = textHeight
+					mText.Attachment = cadInterface.createCadEntity("DatabaseServices.AttachmentPoint", {justify})
+					mText.TextStyleId = cadInterface.getTextStyleId(textStyleName)
+					mText.Direction =  cadInterface.createCadEntity("Geometry.Vector3d", {direction.X, direction.Y, 0})
+					return mText
+				end
+				cadFunctionTable["createMText"] = createMText
+				
+				
+				
+				-- Converts transparency
+				function convertTransparency(transparencyValue)
+					return 255 * (100 - transparencyValue) / 100
+				end
+				cadFunctionTable["convertTransparency"] = convertTransparency
+				
+				
+				
+				-- Creates and adds a layer to the drawing
+				function createAndAddLayer(name, color, transparency, description)
+					
+					local layer =  cadInterface.createCadEntity("DatabaseServices.LayerTableRecord", {})
+					layer.Name = name or getGUID()
+					cadInterface.addLayers({layer})
+					cadInterface.setEntityPropertiesWithTransaction(layer, {["Transparency"] = cadInterface.createCadEntity("Colors.Transparency", {convertTransparency(transparency or 0)}), ["Description"] = description or "", ["Color"] = cadInterface.getCadColor(color or "0")})
+					
+					return layer
+				end
+				cadFunctionTable["createAndAddLayer"] = createAndAddLayer
+				
+				
+				
+				-- Creates two lines in V Shape meeting at arrowPoint pointing away from anchorPoint
+				function createVLines(arrowPoint, anchorPoint, angle, length)
+				
+					local anchorVec = getPoint3D(anchorPoint.X - arrowPoint.X, anchorPoint.Y - arrowPoint.Y)
+					local lineEndPoint = getPointAtDistanceAlongVector2D(arrowPoint, anchorVec, length)
+				
+					local line1 = createLine(arrowPoint, lineEndPoint)
+					local line2 = createLine(arrowPoint, lineEndPoint)	
+				
+					rotateEntityAboutZ(line1, angle, arrowPoint)
+					rotateEntityAboutZ(line2, -angle, arrowPoint)
+					
+					return line1, line2
+				end
+				cadFunctionTable["createVLines"] = createVLines
+				
+				return cadFunctionTable
+			end
+		</Formula>
+	</LuaFunction>
+
+	
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>

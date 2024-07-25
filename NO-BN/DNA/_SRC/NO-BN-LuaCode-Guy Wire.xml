@@ -1,0 +1,268 @@
+-- Import basic CAD functions
+local basicCADFunctions = include(".\\Lua\\LuaCode\\BasicCADFunctions.lua")
+
+-- function to get the circle entity in the pole object
+function getPoleCircle(guywire)
+	local relatedAnchors, n = guywire:getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAnchoredBy_AnchoringToOcsPole)
+
+	if n == 0 then return nil end
+
+	local anchor = relatedAnchors[0]
+
+	local relatedPoles, n =  anchor:getRelatedObjects(rel_AnchoringToOcsPole_IsInstalledOn_OcsPole)
+
+	if n == 0 then return nil end
+	
+	local pole = relatedPoles[0]
+	
+	local poleBlockName = pole:getBlockNames()[0]
+	
+	local poleBlockReference = cadInterface.getBlockReference(pole)
+	
+	local innerBlockReference = cadInterface.getInnerBlockReference(pole, poleBlockName)
+	local transform = innerBlockReference.BlockTransform
+	
+	local entities = table.select(cadInterface.getClonesOfNonTextEntitiesInBlock(poleBlockName), function (x) return x end)
+	
+	basicCADFunctions.transformEntities(entities, transform)
+	basicCADFunctions.transformEntities(entities, poleBlockReference.BlockTransform)
+	local circle = nil
+	for k, v in pairs(entities) do
+		if v:GetType().Name == "Circle" then
+			circle = v
+		end
+	end
+	
+	return circle
+end
+
+
+
+function placeMText(endpoint, circleCenter, materialText, longitudinalOffset, lateralOffset, textHeight, textStyleName)
+	local directionVector = getVectorDifference(endpoint, circleCenter)
+	local angle = math.atan(directionVector.Y, directionVector.X)
+	-- Flip text if angle between guywire tangent and UCS is greater than 90 degrees.
+	local flipText = math.abs(angle - getUcsAngle()) > math.pi/2  
+	
+	local temp = basicCADFunctions.getPointAtDistanceAlongVector2D(endpoint, directionVector, longitudinalOffset)
+	local position = basicCADFunctions.getPointAtDistanceAlongVector2D(temp, getPoint3D(-directionVector.Y, directionVector.X), flipText and -lateralOffset or lateralOffset)
+	local materialMText = basicCADFunctions.createMText(materialText, position, directionVector, textHeight, textStyleName, flipText and "MiddleRight" or "MiddleLeft")
+
+	if flipText then
+		basicCADFunctions.rotateEntityAboutZ(materialMText, 180, position)
+	end
+	return materialMText
+end
+
+
+
+-- function that creates Guy Wire (V-Type)
+function createGuywire_VType(guywire, arrowAngle, arrowLength, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName)
+	
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	arrowAngle = arrowAngle or 60
+	arrowLength = (arrowLength or 2.5)/scale
+	materialTextLongitudinalOffset = (materialTextLongitudinalOffset or -5)/scale
+	materialTextLateralOffset = (materialTextLateralOffset or 3)/scale
+	foundationTextLongitudinalOffset = (foundationTextLongitudinalOffset or 3)/scale
+	foundationTextLateralOffset = (foundationTextLateralOffset or 0)/scale
+	textHeight = (textHeight or 1)/scale
+
+	
+	local circle = getPoleCircle(guywire)
+	if not circle then return nil end
+	
+	local circleCenter = getPoint3D(circle.Center.X, circle.Center.Y)
+	
+	if basicCADFunctions.getDistanceBetweenPoints(circleCenter, guywire.RcAlignment.StartPoint) > circle.Radius then return nil end
+	
+	local lineFromCircleLength = basicCADFunctions.getDistanceBetweenPoints(guywire.RcAlignment.EndPoint, circleCenter)
+	
+	local lineLength = math.sqrt(lineFromCircleLength^2 - circle.Radius^2)
+
+	local vAngle = math.deg(math.acos(lineLength / lineFromCircleLength))
+	
+	local vLine1, vLine2 = basicCADFunctions.createVLines(guywire.RcAlignment.EndPoint, circleCenter, vAngle, lineLength)
+	
+	local arrowLine1, arrowLine2 = basicCADFunctions.createVLines(guywire.RcAlignment.EndPoint, circleCenter, arrowAngle/2, arrowLength)
+	
+	local blockElements = {vLine1, vLine2, arrowLine1, arrowLine2}
+	
+	if materialText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, textHeight, textStyleName))
+	end
+	
+	if foundationText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName))
+	end
+
+	local block = cadInterface.createBlock(guywire.id, blockElements)
+	return guywire.id
+end
+
+-- function that creates Guy Wire (Double V-Type)                                                                                                                               
+function createGuywire_DoubleVType(guywire, arrowAngle, arrowLength, arrowDistance, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName)
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	arrowAngle = arrowAngle or 60
+	arrowLength = (arrowLength or 2.5)/scale
+	arrowDistance = (arrowDistance or 0.5)/scale
+	materialTextLongitudinalOffset = (materialTextLongitudinalOffset or -5)/scale
+	materialTextLateralOffset = (materialTextLateralOffset or 3)/scale
+	foundationTextLongitudinalOffset = (foundationTextLongitudinalOffset or 3)/scale
+	foundationTextLateralOffset = (foundationTextLateralOffset or 0)/scale
+	textHeight = (textHeight or 1)/scale
+
+	
+	local circle = getPoleCircle(guywire)
+	if not circle then return nil end
+	
+	local circleCenter = getPoint3D(circle.Center.X, circle.Center.Y)
+	if basicCADFunctions.getDistanceBetweenPoints(circleCenter, guywire.RcAlignment.StartPoint) > circle.Radius then return nil end
+	
+	local tangent = getPoint3D(guywire.RcAlignment.EndPoint.X - circle.Center.X, guywire.RcAlignment.EndPoint.Y - circle.Center.Y)
+	
+	local lineFromCircleLength = basicCADFunctions.getDistanceBetweenPoints(guywire.RcAlignment.EndPoint, circleCenter)
+	local lineLength = math.sqrt(lineFromCircleLength^2 - circle.Radius^2)
+	local vAngle = math.deg(math.acos(lineLength / lineFromCircleLength))
+
+	local vLine1, vLine2 = basicCADFunctions.createVLines(guywire.RcAlignment.EndPoint, circleCenter, vAngle, lineLength)
+	
+	local arrowLine1, arrowLine2 = basicCADFunctions.createVLines(guywire.RcAlignment.EndPoint, circleCenter, arrowAngle/2, arrowLength)
+	
+	local linearArrowDistance = arrowDistance/math.sin(math.rad(arrowAngle/2))
+	local doubleVPoint = basicCADFunctions.getPointAtDistanceAlongVector2D(guywire.RcAlignment.EndPoint, tangent, linearArrowDistance)
+
+	local arrowLine3, arrowLine4 = basicCADFunctions.createVLines(doubleVPoint, circleCenter, arrowAngle/2, arrowLength)
+	
+	local line7 = basicCADFunctions.createLine(guywire.RcAlignment.EndPoint, doubleVPoint)
+	
+	local blockElements = {vLine1, vLine2, arrowLine1, arrowLine2, arrowLine3, arrowLine4, line7}
+	
+	if materialText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, textHeight, textStyleName))
+	end
+	
+	if foundationText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName))
+	end
+	
+	local block = cadInterface.createBlock(guywire.id, blockElements)
+	return guywire.id
+end
+
+-- function that creates Guy Wire (Single)  
+function createGuywire_Single(guywire, arrowAngle, arrowLength, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName)
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	arrowAngle = arrowAngle or 60
+	arrowLength = (arrowLength or 2.5)/scale
+	materialTextLongitudinalOffset = (materialTextLongitudinalOffset or -5)/scale
+	materialTextLateralOffset = (materialTextLateralOffset or 3)/scale
+	foundationTextLongitudinalOffset = (foundationTextLongitudinalOffset or 3)/scale
+	foundationTextLateralOffset = (foundationTextLateralOffset or 0)/scale
+	textHeight = (textHeight or 1)/scale
+	
+	local circle = getPoleCircle(guywire)
+	if not circle then return nil end
+	
+	local guyWireEndPoint = guywire.RcAlignment.EndPoint
+	
+	local circleCenter = getPoint3D(circle.Center.X, circle.Center.Y)
+	if basicCADFunctions.getDistanceBetweenPoints(circleCenter, guywire.RcAlignment.StartPoint) > circle.Radius then return nil end
+	
+	local circleCenterToEndPointVector = getPoint3D(guyWireEndPoint.X - circleCenter.X, guyWireEndPoint.Y - circleCenter.Y)
+	
+	local line1 = basicCADFunctions.createLine(basicCADFunctions.getPointAtDistanceAlongVector2D(circleCenter,circleCenterToEndPointVector, circle.Radius), guyWireEndPoint)
+	
+	local arrowLine1, arrowLine2 = basicCADFunctions.createVLines(guywire.RcAlignment.EndPoint, circleCenter, arrowAngle/2, arrowLength)
+	
+	local blockElements = {line1, arrowLine1, arrowLine2}
+	
+	
+	if materialText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, textHeight, textStyleName))
+	end
+	
+	if foundationText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName))
+	end
+		
+	local block = cadInterface.createBlock(guywire.id, blockElements)
+	return guywire.id
+end
+
+
+-- function that creates Guy Anchor (for Tunnel)  
+function createGuywire_Anchor(guywire, arrowAngle, arrowLength, anchorWidth, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName)
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	arrowAngle = arrowAngle or 60
+	arrowLength = (arrowLength or 2.5)/scale
+	anchorWidth = (anchorWidth or 2.3)/scale
+	materialTextLongitudinalOffset = (materialTextLongitudinalOffset or -5)/scale
+	materialTextLateralOffset = (materialTextLateralOffset or 3)/scale
+	foundationTextLongitudinalOffset = (foundationTextLongitudinalOffset or 3)/scale
+	foundationTextLateralOffset = (foundationTextLateralOffset or 0)/scale
+	textHeight = (textHeight or 1)/scale
+
+
+	local circle = getPoleCircle(guywire)
+	if not circle then return nil end
+	
+	local guyWireEndPoint = guywire.RcAlignment.EndPoint
+	
+	local circleCenter = getPoint3D(circle.Center.X, circle.Center.Y)
+	if basicCADFunctions.getDistanceBetweenPoints(circleCenter, guywire.RcAlignment.StartPoint) > circle.Radius then return nil end
+	
+	
+	local circleCenterToEndPointVector = getPoint3D(guyWireEndPoint.X - circleCenter.X, guyWireEndPoint.Y - circleCenter.Y)
+	
+	local circlePoint = basicCADFunctions.getPointAtDistanceAlongVector2D(circleCenter, circleCenterToEndPointVector, 1)
+	local circleVec =  getPoint3D(
+		circlePoint.X - circleCenter.X,
+		circlePoint.Y - circleCenter.Y
+	)
+
+	
+	local scalarNormalToWire = anchorWidth/2	
+	local scalarAlongWireCircle = math.sqrt(circle.Radius*circle.Radius - (anchorWidth*anchorWidth/4))
+	
+	local anchorLine1Point1 = getPoint3D(
+		circleCenter.X + scalarAlongWireCircle*circleVec.X - scalarNormalToWire*circleVec.Y,
+		circleCenter.Y + scalarAlongWireCircle*circleVec.Y + scalarNormalToWire*circleVec.x
+	)
+	local anchorLine2Point1 = getPoint3D(
+		circleCenter.X + scalarAlongWireCircle*circleVec.X + scalarNormalToWire*circleVec.Y,
+		circleCenter.Y + scalarAlongWireCircle*circleVec.Y - scalarNormalToWire*circleVec.x
+	)
+
+	local scalarAlongWireArrow = anchorWidth/(2* math.tan(math.rad(arrowAngle/2)))
+
+	local anchorLine1Point2 = getPoint3D(
+		guyWireEndPoint.X - scalarAlongWireArrow*circleVec.X - scalarNormalToWire*circleVec.Y,
+		guyWireEndPoint.Y - scalarAlongWireArrow*circleVec.Y + scalarNormalToWire*circleVec.x
+	)
+	local anchorLine2Point2 = getPoint3D(
+		guyWireEndPoint.X - scalarAlongWireArrow*circleVec.X + scalarNormalToWire*circleVec.Y,
+		guyWireEndPoint.Y - scalarAlongWireArrow*circleVec.Y - scalarNormalToWire*circleVec.x
+	)
+
+	local arrowLine1, arrowLine2 = basicCADFunctions.createVLines(guyWireEndPoint, circleCenter, arrowAngle/2, arrowLength)
+	
+	local line1 = basicCADFunctions.createLine(anchorLine1Point1, anchorLine1Point2)	
+	local line2 = basicCADFunctions.createLine(anchorLine2Point1, anchorLine2Point2)
+	
+	local blockElements = {line1, line2, arrowLine1, arrowLine2}
+	
+	if materialText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, materialText, materialTextLongitudinalOffset, materialTextLateralOffset, textHeight, textStyleName))
+	end
+	
+	if foundationText then
+		table.insert(blockElements, placeMText(guywire.RcAlignment.EndPoint, circleCenter, foundationText, foundationTextLongitudinalOffset, foundationTextLateralOffset, textHeight, textStyleName))
+	end
+
+	local block = cadInterface.createBlock(guywire.id, blockElements)
+	return guywire.id
+end

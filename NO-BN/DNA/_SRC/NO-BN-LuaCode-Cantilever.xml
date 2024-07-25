@@ -1,0 +1,86 @@
+-- Import basic CAD functions
+local basicCADFunctions = include(".\\Lua\\LuaCode\\BasicCADFunctions.lua")
+
+local function getRoundedNumberAndText(number)
+	local text = string.format("%.3f", number) 
+	return tonumber(text), text
+end
+-- function that creates Cantilever (O-Type)  
+function createCantilever_OType(cantileverLength, arrowAngle, arrowLength)
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	local cantileverLength, cantileverLenghtText = getRoundedNumberAndText(cantileverLength or 4.0)
+	local arrowAngle, arrowAngleText = getRoundedNumberAndText(arrowAngle or 60)
+	local arrowLength, arrowLengthText = getRoundedNumberAndText(arrowLength or 2.5)
+	arrowLength = arrowLength/scale
+
+	local blockName = "Cantilever_OType_Length_"..cantileverLenghtText.."_ArrowAngle_"..arrowAngleText.."_ArrowLength_"..arrowLengthText.."_Scale"..(scale % 1 == 0 and math.floor(scale) or scale)
+	
+	if cadInterface.blockExist(blockName) then
+		return blockName	
+	end
+
+	local cantileverStartPoint = getPoint3D(0, 0)
+	local cantileverEndPoint = getPoint3D(0, -cantileverLength)
+
+	local cantileverLine = basicCADFunctions.createLine(cantileverStartPoint, cantileverEndPoint)
+
+	local arrowLine1, arrowLine2 = basicCADFunctions.createVLines(cantileverEndPoint, cantileverStartPoint, arrowAngle/2, arrowLength)
+
+	local block = cadInterface.createBlock(blockName, {cantileverLine, arrowLine1, arrowLine2})
+	return blockName
+
+end
+
+-- function that creates Cantilever (I-Type)  
+function createCantilever_IType(cantileverLength, arrowAngle, arrowLength)
+		
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	local cantileverLength, cantileverLenghtText = getRoundedNumberAndText(cantileverLength or 4.0)
+	local arrowAngle, arrowAngleText = getRoundedNumberAndText(arrowAngle or 60)
+	local arrowLength, arrowLengthText = getRoundedNumberAndText(arrowLength or 2.5)
+	arrowLength = arrowLength/scale
+	
+	local blockName = "Cantilever_IType_Length_"..cantileverLenghtText.."_ArrowAngle_"..arrowAngleText.."_ArrowLength_"..arrowLengthText.."_Scale"..(scale % 1 == 0 and math.floor(scale) or scale)
+
+	if cadInterface.blockExist(blockName) then
+		return blockName	
+	end
+
+	local cantileverStartPoint = getPoint3D(0, 0)
+	local cantileverEndPoint = getPoint3D(0, -cantileverLength)
+
+	local cantileverLine = basicCADFunctions.createLine(cantileverStartPoint, cantileverEndPoint)
+
+	local arrowOffset =  math.cos(math.rad(arrowAngle/2))*arrowLength
+	
+	local arrowRotationPoint =  basicCADFunctions.getPointAtDistanceAlongVector2D(cantileverEndPoint, getPoint3D(0, 1, 0), arrowOffset)
+	
+	local arrowLine1, arrowLine2 = basicCADFunctions.createVLines(arrowRotationPoint, cantileverEndPoint, arrowAngle/2, arrowLength)
+	
+	local block = cadInterface.createBlock(blockName, {cantileverLine, arrowLine1, arrowLine2})
+	return blockName
+end	
+
+-- function that creates Cantilever (P-Type)
+function createCantilever_PType(cantileverLength)
+		
+	local cantileverLength, cantileverLenghtText = getRoundedNumberAndText(cantileverLength or 4.0)
+	
+	local blockName = "Cantilever_PType_Length_"..cantileverLenghtText
+	
+	if cadInterface.blockExist(blockName) then
+		return blockName	
+	end
+
+	local cantileverStartPoint = getPoint3D(0, 0)
+	local cantileverEndPoint = getPoint3D(0, -cantileverLength)
+
+	local cantileverLine = basicCADFunctions.createLine(cantileverStartPoint, cantileverEndPoint)
+
+	local block = cadInterface.createBlock(blockName, {cantileverLine})
+	return blockName
+
+end
+
+

@@ -1,0 +1,102 @@
+<!--========================================================================================================
+
+    NO-BN-LuaCode-Balloon.xml
+	
+	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
+
+	Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
+	
+=========================================================================================================-->
+<xpp:bloc>
+
+	<LuaFunction Name="RC_createBlockBalloon()" ReturnType="String"
+			Description="Creates a balloon (a.k.a. 'goose beak') 2D symbol and returns its block name. If the block already exists, nothing is added and the block name is returned.
+				\n
+				\nThe caller must provide the content of the balloon, a string that will be shown inside the ballon.
+				\nTo define the symbol's appearance during the object insertion phase: after insertion, call with argument 'nil'.
+				\nTo define the symbol's appearance after insertion, call with argument 'railwayObject'.
+			">
+		<Signature>function RC_createBlockBalloon(ballonObject)</Signature>
+		<Formula>
+			function RC_createBlockBalloon(balloonObject)
+
+local function getTextFrame(textHeight, textWidth)
+	local ratio = textHeight/textWidth
+
+	local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
+	-- if ratio is greater than 0.5 create a circle
+	if ratio > 0.5 then
+		local circle = basicCadFunctions.createCircle(getPoint3D(0,0,0), circleRadius)  
+		return { circle }
+	end 
+	
+	-- if not create two arcs with lines between them
+	local minY = -circleRadius
+	local maxY =  circleRadius
+	local leftArcStartX = -(textWidth/2) + circleRadius/1.5
+	local leftArc = basicCadFunctions.createArc(getPoint3D(leftArcStartX, minY), getPoint3D(leftArcStartX - circleRadius, minY + circleRadius), getPoint3D(leftArcStartX, maxY))
+	local rightArcStartX = (textWidth/2) - circleRadius/1.5
+	local rightArc = basicCadFunctions.createArc(getPoint3D(rightArcStartX, minY), getPoint3D(rightArcStartX + circleRadius, minY + circleRadius), getPoint3D(rightArcStartX, maxY))
+	local topLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, maxY), getPoint3D(rightArcStartX, maxY))
+	local bottomLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, minY), getPoint3D(rightArcStartX, minY))
+	return {leftArc, topLine, rightArc, bottomLine}
+end
+
+local function createTextWithFrame(text)
+	local textHeight = 5
+	-- The width of "0123456789" / 10 is 3.84 so avarage width of a number char is 0.96 when text height is 3.84.
+	local width = utf8.len(tostring(text)) * 3.84
+	local attDef = basicCadFunctions.createAttributeDefinition("W", getPoint3D(0,0), "MiddleCenter")
+	attDef.Height = textHeight
+	attDef.TextString = "1"
+	attDef.Color = "ByBlock"
+	attDef.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
+	local entities = getTextFrame(textHeight, width)
+	for k, entity in pairs(entities) do
+		entity.Color = "ByBlock"
+		entity.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
+	end
+	table.insert(entities, attDef)
+	local block = cadInterface.createBlock("balloon_"..#tostring(text), entities, true)
+end
+
+-- This function should be read only for use in all Lua contexts
+local function getWidthOfBalloon(text, textHeight)
+	-- The width of "0123456789" / 10 is 3.84 so average width of a number char is 0.96 when text height is 5.
+	local width = utf8.len(tostring(text)) * 3.84
+	
+	local ratio = textHeight/width
+
+	local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
+	-- if ratio is greater than 0.5 create a circle
+	if ratio > 0.5 then
+		return circleRadius * 2
+	end 
+	
+	local leftArcStartX = -(width/2) + circleRadius/1.5
+	local rightArcStartX = (width/2) - circleRadius/1.5
+	
+	local leftX = leftArcStartX - circleRadius
+	local rightX = rightArcStartX + circleRadius
+	
+	return (rightX - leftX)
+	
+end
+
+
+				local blockName = "balloon_"..(balloonObject and #tostring(balloonObject.Content) or 1)
+				if cadInterface.blockExist(blockName) then
+					return blockName
+				end
+				createTextWithFrame((balloonObject and balloonObject.Content or "X"))
+				return blockName
+			end
+		</Formula>
+	</LuaFunction>
+
+
+	
+<!--========================================================================================================
+    End of file 
+=========================================================================================================-->
+</xpp:bloc>

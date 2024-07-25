@@ -2260,6 +2260,406 @@
  <PropertyCategory Name="Pset FDV BaneData" Collapsed="true"/>
  <PropertyCategory Name="Pset ISY Beskrivelse" Collapsed="true"/>
  <PropertyCategory Name="Pset Tittelfelt" Collapsed="true"/>
+ <LuaFunction Name="RC__CAD()" ReturnType="String" Description="Executes a CAD function whose name has been given as argument.
+				\n(#TODO# Show complete list of CAD functions)
+				\n
+				\nExamples:
+				\nRC__CAD('getPoint3D')(x,y,z)
+				\nRC__CAD('createArc')(startPoint, throughPoint, endPoint)
+				\nRC__CAD('createArcAboutPoint')(center, radius, StartAngle, EndAngle)
+				\netc. 
+			">
+  <Signature>function RC__CAD(String functionName)</Signature>
+  <Formula>
+			function function RC__CAD(functionName)
+
+				local cadFunctionTable = {}
+				
+				local _hatchPatternSlantedLines_ = "ANSI31"
+				local _hatchPatternLosanges_ = "ANSI37"
+				local _solidHatch_	= 0.03
+				local _denseHatch_	= 1
+				local _mediumHatch_	= 0.12
+				local _lightHatch_	= 0.18
+				local _sparseHatch_	= 0.36
+				
+				
+				
+				-- Converts any point to Point3D
+				local function convertToPoint3D(point)
+					return getPoint3D(point.X, point.Y, point.Z or 0)
+				end
+				cadFunctionTable["convertToPoint3D"] = convertToPoint3D
+				
+				
+				
+				-- Mirrors point3D about the origin
+				local function reversePoint3D(point)
+					return getPoint3D(-point.X, -point.Y, -point.Z)
+				end
+				cadFunctionTable["reversePoint3D"] = reversePoint3D
+				
+				
+				
+				-- Creates a Polyline given a table of points
+				local function createPolyline(points)
+					local polyline = cadInterface.createCadEntity("DatabaseServices.Polyline", {})
+					local index = 0
+					for k, v in pairs(points) do
+						polyline:AddVertexAt(index, cadInterface.createCadEntity("Geometry.Point2d", {v.X, v.Y}), 0, 0, 0)
+						index = index + 1
+					end
+					polyline.Layer = "0"
+					return polyline
+				end
+				cadFunctionTable["createPolyline"] = createPolyline
+				
+				
+				
+				-- Creates a circle given center and radius
+				function createCircle(center, radius)
+					return cadInterface.createCadEntity("DatabaseServices.Circle", {cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0}), cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1}), radius})
+				end
+				cadFunctionTable["createCircle"] = createCircle
+				
+				
+				
+				-- Creates a line given start and end points
+				function createLine(startPoint, endPoint)
+					return cadInterface.createCadEntity("DatabaseServices.Line", {cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, endPoint.Z}), cadInterface.createCadEntity("Geometry.Point3d", {endPoint.X, endPoint.Y, endPoint.Z})})
+				end
+				cadFunctionTable["createLine"] = createLine
+				
+				
+				
+				-- Creates an arc using three points. Arcs must be drawn clockwise.
+				function createArc(startPoint, throughPoint, endPoint)
+					local carc = nil
+					local startPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, 0})
+					local throughPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {throughPoint.X, throughPoint.Y, 0})
+					local endPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {endPoint.X, endPoint.Y, 0})
+					
+					local someValue = startPoint3d:GetVectorTo(throughPoint3d):CrossProduct(throughPoint3d:GetVectorTo(endPoint3d)).Z
+					
+					--write("someValue: "..someValue.."\n")
+					
+					if startPoint3d:GetVectorTo(throughPoint3d):CrossProduct(throughPoint3d:GetVectorTo(endPoint3d)).Z > 0.0 then
+						carc = cadInterface.createCadEntity("Geometry.CircularArc3d", {endPoint3d, throughPoint3d, startPoint3d})
+						--write("Bolle\n")
+					else
+						carc = cadInterface.createCadEntity("Geometry.CircularArc3d", {startPoint3d, throughPoint3d, endPoint3d})
+						--write("Brus\n")
+					end
+					
+					local angle = carc.ReferenceVector:AngleOnPlane(cadInterface.createCadEntity("Geometry.Plane", {carc.Center, carc.Normal}))
+					
+					local arc = cadInterface.createCadEntity("DatabaseServices.Arc", {carc.Center, carc.Normal ,carc.Radius, carc.StartAngle + angle, carc.EndAngle + angle})
+					
+					return arc
+				end
+				cadFunctionTable["createArc"] = createArc
+				
+				
+				
+				-- Creates an arc in the plane 
+				function createArcAboutPoint(center, radius, StartAngle, EndAngle)
+					local centerPoint = cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0})
+					return cadInterface.createCadEntity("DatabaseServices.Arc", {centerPoint, radius, StartAngle, EndAngle})
+				end
+				cadFunctionTable["createArcAboutPoint"] = createArcAboutPoint
+				
+				
+				
+				-- Creates a hatch using the given entities as outermost loop and adds it to the block with the given name
+				function createHatch(blockName, entities)
+					local hatch =  cadInterface.createCadEntity("DatabaseServices.Hatch", {})
+					
+					--hatch.Origin = createCadEntity("Geometry.Point3d", {origin.X, origin.Y, origin.Z})
+					cadInterface.addEntitiesToBlock(blockName, {hatch})
+					cadInterface.setEntityPropertiesWithTransaction(hatch, {["Associative"] = true})
+					local ids = table.select(entities, function (x) return x.Id end)
+					
+					local objectIdCollection =  cadInterface.createCadEntity("DatabaseServices.ObjectIdCollection", {ids})
+					
+					cadInterface.runEntityMethodsWithTransaction(hatch, {["SetHatchPattern"] = {cadInterface.createCadEntity("DatabaseServices.HatchPatternType", {"PreDefined"}), _hatchPatternSlantedLines_}, ["AppendLoop"] = {cadInterface.createCadEntity("DatabaseServices.HatchLoopTypes", {"Outermost"}), objectIdCollection}})
+					
+					cadInterface.setEntityPropertiesWithTransaction(hatch, {["PatternSpace"] = _denseHatch_})
+					
+					local explodedEntities = cadInterface.explodeEntity(hatch)
+				
+					cadInterface.runEntityMethodsWithTransaction(hatch, {["Erase"] = {}})
+					
+					cadInterface.addEntitiesToBlock(blockName, explodedEntities)
+				end
+				cadFunctionTable["createHatch"] = createHatch
+				
+				
+				
+				-- Returns the intersection points between two entities
+				function getIntersectionPoints(entity1, entity2)
+					local point3dCollection =  cadInterface.createCadEntity("Geometry.Point3dCollection", {})
+					if type(entity2) ~= "table" then
+					
+						entity1:IntersectWith(entity2, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
+						
+					else
+						for k, entity in pairs(entity2) do
+							entity1:IntersectWith(entity, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
+						end
+					end
+					
+					local pointList = table.select(cadInterface.getObjectsFromCadCollection(point3dCollection), function (x) return getPoint3D(x.X, x.Y, x.Z) end)
+					
+					return pointList
+				end
+				cadFunctionTable["getIntersectionPoints"] = getIntersectionPoints
+				
+				
+				
+				-- Transform entities by a matrix
+				function transformEntities(entities, transformationMatrix)
+					for k, entity in pairs(entities) do 
+						entity:TransformBy(transformationMatrix)
+					end
+				end
+				cadFunctionTable["transformEntities"] = transformEntities
+				
+				
+				
+				-- Get the bounds from a table of entities. Returned as table with keys "MinPoint" and "MaxPoint".
+				function getBoundsFromEntities(entities)
+					local minY = math.huge
+					local maxY = -math.huge
+					local minX = math.huge
+					local maxX = -math.huge
+				
+					for k, entity in pairs(entities) do
+						local bounds = entity.Bounds
+						minX = math.min(bounds.MinPoint.X, minX)
+						minY = math.min(bounds.MinPoint.Y, minY)
+						maxX = math.max(bounds.MaxPoint.X, maxX)
+						maxY = math.max(bounds.MaxPoint.Y, maxY)
+					end
+				
+					return {["MinPoint"] = getPoint3D(minX, minY), ["MaxPoint"] = getPoint3D(maxX, maxY)}
+				end
+				cadFunctionTable["getBoundsFromEntities"] = getBoundsFromEntities
+				
+				
+				
+				-- Get the distance between two points
+				function getDistanceBetweenPoints(point1, point2)
+					return math.sqrt(((point2.X - point1.X)^2) + ((point2.Y - point1.Y)^2) + ((point2.Z - point1.Z)^2))
+				end
+				cadFunctionTable["getDistanceBetweenPoints"] = getDistanceBetweenPoints
+				
+				
+				
+				-- Sorts points acending by distance to a point
+				function sortPointsAcendingByDistanceToPoint(point, points)
+					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
+					table.sort(pointTable, function (x, y) return x.distance &lt; y.distance end)
+					return pointTable:select(function (x) return x.point end)
+				end
+				cadFunctionTable["sortPointsAcendingByDistanceToPoint"] = sortPointsAcendingByDistanceToPoint
+				
+				
+				
+				-- Sorts points decending by distance to a point
+				function sortPointsDecendingByDistanceToPoint(point, points)
+					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
+					table.sort(pointTable, function (x, y) return x.distance > y.distance end)
+					return pointTable:select(function (x) return x.point end)
+				end
+				cadFunctionTable["sortPointsDecendingByDistanceToPoint"] = sortPointsDecendingByDistanceToPoint
+				
+				
+				
+				-- Rotates an entity with an angle gicen in degrees and a rotation center
+				function rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
+					-- convert to Radians
+					local angle = math.rad(angleDegrees)
+					
+					local rotationMatrix = runStaticMethodUsingReflection("Autodesk.AutoCAD.Geometry.Matrix3d", "Rotation", {angle, cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1}), cadInterface.createCadEntity("Geometry.Point3d", {rotationCenter.X, rotationCenter.Y, rotationCenter.Z})})
+				
+					entity:TransformBy(rotationMatrix:getTableValue())
+				end
+				cadFunctionTable["rotateEntityAboutZ"] = rotateEntityAboutZ
+				
+				
+				
+				-- Get point at a distance along a 2D vector
+				function getPointAtDistanceAlongVector2D(startPoint, vector, distance)
+					local unitVector = getPoint3D(vector.X/math.sqrt(vector.X^2 + vector.Y^2), vector.Y/math.sqrt(vector.X^2 + vector.Y^2))  
+					return getPoint3D(startPoint.X + (unitVector.X * distance), startPoint.Y + (unitVector.Y * distance))
+				end
+				cadFunctionTable["getPointAtDistanceAlongVector2D"] = getPointAtDistanceAlongVector2D
+				
+				
+				
+				-- Creates an attributeDefinition
+				function createAttributeDefinition(tag, position, justify)
+					local attributeDefinition = cadInterface.createCadEntity("DatabaseServices.AttributeDefinition", {})
+					local attributePosition = cadInterface.createCadEntity("Geometry.Point3d", {position.X, position.Y, position.Z})
+					
+					attributeDefinition.Height = 2.5
+					attributeDefinition.Tag = tag
+					attributeDefinition.TextString = tag
+					attributeDefinition.Justify = cadInterface.createCadEntity("DatabaseServices.AttachmentPoint", {justify or "MiddleCenter"})
+				--	attributeDefinition.IsMTextAttributeDefinition = true
+				--	attributeDefinition.LockPositionInBlock = false
+					attributeDefinition.Position = attributePosition
+					attributeDefinition.AlignmentPoint = attributePosition
+					
+					return attributeDefinition
+				end
+				cadFunctionTable["createAttributeDefinition"] = createAttributeDefinition
+				
+				
+				
+				function createMText(text, position, direction, textHeight, textStyleName, justify)
+					textHeight = textHeight or 1
+					justify = justify or "MiddleLeft"
+					textStyleName = textStyleName or "RC-STANDARD"
+						
+					local mText = cadInterface.createCadEntity("DatabaseServices.MText", {})
+					mText.Contents = text
+					mText.Location = cadInterface.createCadEntity("Geometry.Point3d", {position.X, position.Y, position.Z})
+					mText.TextHeight = textHeight
+					mText.Attachment = cadInterface.createCadEntity("DatabaseServices.AttachmentPoint", {justify})
+					mText.TextStyleId = cadInterface.getTextStyleId(textStyleName)
+					mText.Direction =  cadInterface.createCadEntity("Geometry.Vector3d", {direction.X, direction.Y, 0})
+					return mText
+				end
+				cadFunctionTable["createMText"] = createMText
+				
+				
+				
+				-- Converts transparency
+				function convertTransparency(transparencyValue)
+					return 255 * (100 - transparencyValue) / 100
+				end
+				cadFunctionTable["convertTransparency"] = convertTransparency
+				
+				
+				
+				-- Creates and adds a layer to the drawing
+				function createAndAddLayer(name, color, transparency, description)
+					
+					local layer =  cadInterface.createCadEntity("DatabaseServices.LayerTableRecord", {})
+					layer.Name = name or getGUID()
+					cadInterface.addLayers({layer})
+					cadInterface.setEntityPropertiesWithTransaction(layer, {["Transparency"] = cadInterface.createCadEntity("Colors.Transparency", {convertTransparency(transparency or 0)}), ["Description"] = description or "", ["Color"] = cadInterface.getCadColor(color or "0")})
+					
+					return layer
+				end
+				cadFunctionTable["createAndAddLayer"] = createAndAddLayer
+				
+				
+				
+				-- Creates two lines in V Shape meeting at arrowPoint pointing away from anchorPoint
+				function createVLines(arrowPoint, anchorPoint, angle, length)
+				
+					local anchorVec = getPoint3D(anchorPoint.X - arrowPoint.X, anchorPoint.Y - arrowPoint.Y)
+					local lineEndPoint = getPointAtDistanceAlongVector2D(arrowPoint, anchorVec, length)
+				
+					local line1 = createLine(arrowPoint, lineEndPoint)
+					local line2 = createLine(arrowPoint, lineEndPoint)	
+				
+					rotateEntityAboutZ(line1, angle, arrowPoint)
+					rotateEntityAboutZ(line2, -angle, arrowPoint)
+					
+					return line1, line2
+				end
+				cadFunctionTable["createVLines"] = createVLines
+				
+				return cadFunctionTable
+			end
+		</Formula>
+ </LuaFunction>
+ <LuaFunction Name="RC_createBlockBalloon()" ReturnType="String" Description="Creates a balloon (a.k.a. 'goose beak') 2D symbol and returns its block name. If the block already exists, nothing is added and the block name is returned.
+				\n
+				\nThe caller must provide the content of the balloon, a string that will be shown inside the ballon.
+				\nTo define the symbol's appearance during the object insertion phase: after insertion, call with argument 'nil'.
+				\nTo define the symbol's appearance after insertion, call with argument 'railwayObject'.
+			">
+  <Signature>function RC_createBlockBalloon(ballonObject)</Signature>
+  <Formula>
+			function RC_createBlockBalloon(balloonObject)
+
+local function getTextFrame(textHeight, textWidth)
+	local ratio = textHeight/textWidth
+
+	local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
+	-- if ratio is greater than 0.5 create a circle
+	if ratio > 0.5 then
+		local circle = basicCadFunctions.createCircle(getPoint3D(0,0,0), circleRadius)  
+		return { circle }
+	end 
+	
+	-- if not create two arcs with lines between them
+	local minY = -circleRadius
+	local maxY =  circleRadius
+	local leftArcStartX = -(textWidth/2) + circleRadius/1.5
+	local leftArc = basicCadFunctions.createArc(getPoint3D(leftArcStartX, minY), getPoint3D(leftArcStartX - circleRadius, minY + circleRadius), getPoint3D(leftArcStartX, maxY))
+	local rightArcStartX = (textWidth/2) - circleRadius/1.5
+	local rightArc = basicCadFunctions.createArc(getPoint3D(rightArcStartX, minY), getPoint3D(rightArcStartX + circleRadius, minY + circleRadius), getPoint3D(rightArcStartX, maxY))
+	local topLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, maxY), getPoint3D(rightArcStartX, maxY))
+	local bottomLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, minY), getPoint3D(rightArcStartX, minY))
+	return {leftArc, topLine, rightArc, bottomLine}
+end
+
+local function createTextWithFrame(text)
+	local textHeight = 5
+	-- The width of "0123456789" / 10 is 3.84 so avarage width of a number char is 0.96 when text height is 3.84.
+	local width = utf8.len(tostring(text)) * 3.84
+	local attDef = basicCadFunctions.createAttributeDefinition("W", getPoint3D(0,0), "MiddleCenter")
+	attDef.Height = textHeight
+	attDef.TextString = "1"
+	attDef.Color = "ByBlock"
+	attDef.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
+	local entities = getTextFrame(textHeight, width)
+	for k, entity in pairs(entities) do
+		entity.Color = "ByBlock"
+		entity.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
+	end
+	table.insert(entities, attDef)
+	local block = cadInterface.createBlock("balloon_"..#tostring(text), entities, true)
+end
+
+-- This function should be read only for use in all Lua contexts
+local function getWidthOfBalloon(text, textHeight)
+	-- The width of "0123456789" / 10 is 3.84 so average width of a number char is 0.96 when text height is 5.
+	local width = utf8.len(tostring(text)) * 3.84
+	
+	local ratio = textHeight/width
+
+	local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
+	-- if ratio is greater than 0.5 create a circle
+	if ratio > 0.5 then
+		return circleRadius * 2
+	end 
+	
+	local leftArcStartX = -(width/2) + circleRadius/1.5
+	local rightArcStartX = (width/2) - circleRadius/1.5
+	
+	local leftX = leftArcStartX - circleRadius
+	local rightX = rightArcStartX + circleRadius
+	
+	return (rightX - leftX)
+	
+end
+
+
+				local blockName = "balloon_"..(balloonObject and #tostring(balloonObject.Content) or 1)
+				if cadInterface.blockExist(blockName) then
+					return blockName
+				end
+				createTextWithFrame((balloonObject and balloonObject.Content or "X"))
+				return blockName
+			end
+		</Formula>
+ </LuaFunction>
  <LuaFunction Name="RC__COPYRIGHT_STATEMENT()" ReturnType="String" Description="Returns a copyright statement concerning the current document's DNA.">
   <Signature>string RC__COPYRIGHT_STATEMENT()</Signature>
   <Formula>
@@ -4094,7 +4494,7 @@
 					return "UNFINISHED - Missing target alignment."
 				end
 
-				local delta, t1, t2, g1, g2
+				local t, t1, t2, g1, g2, p1, delta
 
 				if RcType == rctype_OcsIsolator and TargetAlignment == nil then
 						return "-: OK – Object does not act as a connection (being too far from any potential target alignment).",_ok
@@ -4106,22 +4506,22 @@
 				then
 					--find gradient in o/oo from the tangent vector at the alignment's ends, where there ends are closest
 					if ExtendingFromEnd then 
-						local t = Alignment.RcAlignment.EndTangent
+						t = Alignment.RcAlignment.EndTangent
 						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t1 = Alignment.RcAlignment.HorizontalGeometry.EndDir
+						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.EndDir)
 					else
-						local t = Alignment.RcAlignment.StartTangent
+						t = Alignment.RcAlignment.StartTangent
 						g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t1 = Alignment.RcAlignment.HorizontalGeometry.Segments[0].StartDir
+						t1 = math.deg(Alignment.RcAlignment.HorizontalProfile.Segments[0].StartDir)
 					end 
 					if ContinuingWithBegin then
-						local t = TargetAlignment.RcAlignment.StartTangent
+						t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t2 = TargetAlignment.RcAlignment.HorizontalGeometry.Segments[0].StartDir
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.Segments[0].StartDir)
 					else 
-						local t = TargetAlignment.RcAlignment.EndTangent
+						t = TargetAlignment.RcAlignment.EndTangent
 						g2 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
-						t2 = TargetAlignment.RcAlignment.HorizontalGeometry.EndDir
+						t2 = math.deg(TargetAlignment.RcAlignment.HorizontalProfile.EndDir)
 					end
 			
 				elseif RcType == rctype_Switch then
@@ -4130,14 +4530,14 @@
 					end
 			
 					--Own alignment's gradient and direction at stock rail joint:
-					local t = getAlignmentInfo().Tangent
+					t = getAlignmentInfo().Tangent
 					g1 = 1000*math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
 					t1 = math.deg(math.atan(t.Y,t.X))
 			
 					--Target alignment's gradient and direction where branch track takes off from own alignment:
-					local p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
-					local d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
-					local d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
+					p1 = getAlignmentInfo().Point --The projection of the StockRailJoint onto its own alignment
+					d1 = RC__getDistance2D(TargetAlignment.RcAlignment.StartPoint,p1)
+					d2 = RC__getDistance2D(TargetAlignment.RcAlignment.EndPoint,p1)
 					if d1 &lt; d2 then
 						t = TargetAlignment.RcAlignment.StartTangent
 						g2 = 1000 * math.atan(t.Z, math.sqrt(t.X^2 + t.Y^2))
@@ -4149,17 +4549,15 @@
 					end
 			
 				else 
-					return RcType..": ERROR - Bad connection object type",_error
+					return RcType.." : ERROR - Incorrect connection object type.",_error
 				end
 			
 				-- Return o/oo difference in gradients at connection:
-				if math.cos(t2-t1) &gt; 0 then
-					-- Same mileage directions
-					delta = g2 - g1
-				else 
-					-- Opposite mileage directions
-					delta = g2 - (-g1)
+				if math.cos(math.rad(t2-t1)) &lt; 0 then
+					-- Opposite mileage directions, let alignment 1 (the own alignment for the switch) be the leading direction:
+					g2 = (-g2)
 				end
+				delta = g2 - g1
 				if (math.abs(delta) &lt; tol / 2) then
 					return string.format("%.03f (%.03f / %.03f)",delta,g1,g2) .. ": OK - Gradients match within 50% of tolerance +/- " .. string.format("%.03f", tol).." o/oo.",_ok
 				elseif (math.abs(delta) &lt; tol) then
@@ -10958,6 +11356,165 @@ return s</Data>
   <InsertArea Name="JordingsMaskenett" Group="Jording" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-OMRAADE-Schematic" DefaultToTangentContinuity="false">
    <IncludeSegmentType>Tangent</IncludeSegmentType>
   </InsertArea>
+ </ObjectType>
+ <ObjectType DataType="RailCOMPLETEBalloon" Class="RailwayPlacedObject" LuaName="rctype_Balloon" Name="RWCO_BLN Balloon" Layer="RWCO_BLN" Color="ByLayer" Group="Common/Balloon" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+  <RelationSpace>balloon</RelationSpace>
+  <AttachmentCategory Name="balloon"/>
+  <AttachTo Category="balloon"/>
+  <CustomProperty DataType="Boolean" Name="MileageIncreasesTowardsLeft" DisplayName="Km stiger mot venstre" DefaultValue="false" Category="Presentation" Description="The 'MileageIncreasesTowardsLeft' property [boolean] shows whether the object's own alignment has mileage which increases towards the left in the drawing, with the UCS Y-axis pointing upwards. Usage: Used in DNA for orienting 2D symbols correctly of for adjusting left/right parts of texts etc."/>
+  <LuaExpression Name="MileageIncreasesTowardsLeft">
+   <Formula>NOBN_com_mileageIncreasesTowardsLeft()</Formula>
+  </LuaExpression>
+  <CustomProperty DataType="Enumeration" Name="Discipline" DisplayName="Discipline" DefaultValue="" Category="General" Description="The custom 'Discipline' attribute [Felles | Skilt | Overbygning | Underbygning | Kontaktledning | Signal | Tele | Lavspent] identifies the discpline owning the object.">
+   <Values>
+    <Value>Felles</Value>
+    <Value>Underbygning</Value>
+    <Value>Overbygning</Value>
+    <Value>Kontaktledning</Value>
+    <Value>Signal</Value>
+    <Value>Tele</Value>
+    <Value>Lavspent</Value>
+    <Value>Skilt</Value>
+   </Values>
+  </CustomProperty>
+  <SetValue Key="Discipline" Value="Felles"/>
+  <LuaExpression Name="Stage">
+   <Formula>NOBN_com_setStage()</Formula>
+  </LuaExpression>
+  <LuaExpression Name="Layer">
+   <Formula>NOBN_com_setLayer()</Formula>
+  </LuaExpression>
+  <LuaExpression Name="Layer3D">
+   <Formula>"3D_"..Discipline</Formula>
+  </LuaExpression>
+  <DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+   <SetValue Key="Parent" Value="ACS"/>
+  </DynamicProperty>
+  <LuaExpression Name="Geometry3D_0.Rotation.Z">
+   <Formula>NOBN_trk_getYawFromDir()</Formula>
+  </LuaExpression>
+  <SetValue Key="EarthingMethod" Value="None"/>
+  <LuaExpression Name="EarthingLabelColor">
+   <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
+  </LuaExpression>
+  <Variants DefaultValue="Balloon">
+   <Variant Name="Balloon"></Variant>
+  </Variants>
+  <SetValue Key="code" Value="Balloon"/>
+  <SetValue Key="Content" Value="1"/>
+  <LuaExpression Name="name">
+   <Formula>code.." "..Content</Formula>
+  </LuaExpression>
+  <InsertPointObject Name="Balloon" GenerateDisplayBlockWithScript="true" DisplayBlockName="balloon_1" DefaultSnapMode="Point" SetDisplayOffsetDuringInsert="true" DrawArrowToDisplayOffset="true">
+   <DisplayBlockGenerationScript>RC__createBlockBalloon(nil)</DisplayBlockGenerationScript>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
+  </InsertPointObject>
+  <SymbolDefinition RotationCenter="OwnPosition" GenerateBlockWithScript="true" ForceRedrawOfRuntimeBlocksOnScaleChange="true" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
+   <Rotation AddAngle="{{AngularOffset}}"/>
+   <SymbolBlockGenerationScript>RC__createBlockBalloon(railwayObject)</SymbolBlockGenerationScript>
+   <SymbolAttribute Tag="W">
+    <Value>{{Content}}</Value>
+   </SymbolAttribute>
+  </SymbolDefinition>
+ </ObjectType>
+ <ObjectType DataType="RailCOMPLETEBalloon" Class="RailwayPlacedObject" LuaName="rctype_OcsPartBalloon" Name="RWHV_BLN OCS Part Balloon" Layer="RWCO_BLN" Color="ByLayer" Group="Common/Balloon" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+  <RelationSpace>balloon</RelationSpace>
+  <AttachmentCategory Name="balloon"/>
+  <AttachTo Category="balloon"/>
+  <CustomProperty DataType="Boolean" Name="MileageIncreasesTowardsLeft" DisplayName="Km stiger mot venstre" DefaultValue="false" Category="Presentation" Description="The 'MileageIncreasesTowardsLeft' property [boolean] shows whether the object's own alignment has mileage which increases towards the left in the drawing, with the UCS Y-axis pointing upwards. Usage: Used in DNA for orienting 2D symbols correctly of for adjusting left/right parts of texts etc."/>
+  <LuaExpression Name="MileageIncreasesTowardsLeft">
+   <Formula>NOBN_com_mileageIncreasesTowardsLeft()</Formula>
+  </LuaExpression>
+  <CustomProperty DataType="Enumeration" Name="Discipline" DisplayName="Discipline" DefaultValue="" Category="General" Description="The custom 'Discipline' attribute [Felles | Skilt | Overbygning | Underbygning | Kontaktledning | Signal | Tele | Lavspent] identifies the discpline owning the object.">
+   <Values>
+    <Value>Felles</Value>
+    <Value>Underbygning</Value>
+    <Value>Overbygning</Value>
+    <Value>Kontaktledning</Value>
+    <Value>Signal</Value>
+    <Value>Tele</Value>
+    <Value>Lavspent</Value>
+    <Value>Skilt</Value>
+   </Values>
+  </CustomProperty>
+  <SetValue Key="Discipline" Value="Felles"/>
+  <LuaExpression Name="Stage">
+   <Formula>NOBN_com_setStage()</Formula>
+  </LuaExpression>
+  <LuaExpression Name="Layer">
+   <Formula>NOBN_com_setLayer()</Formula>
+  </LuaExpression>
+  <LuaExpression Name="Layer3D">
+   <Formula>"3D_"..Discipline</Formula>
+  </LuaExpression>
+  <DynamicProperty Type="Representation3D" Subtype="Geometry3D">
+   <SetValue Key="Parent" Value="ACS"/>
+  </DynamicProperty>
+  <LuaExpression Name="Geometry3D_0.Rotation.Z">
+   <Formula>NOBN_trk_getYawFromDir()</Formula>
+  </LuaExpression>
+  <SetValue Key="EarthingMethod" Value="None"/>
+  <LuaExpression Name="EarthingLabelColor">
+   <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
+  </LuaExpression>
+  <Variants DefaultValue="OCS Part Balloon">
+   <Variant Name="OCS Part Balloon"></Variant>
+  </Variants>
+  <SetValue Key="code" Value="Balloon"/>
+  <SetValue Key="Content" Value="1"/>
+  <LuaExpression Name="name">
+   <Formula>code.." "..Content</Formula>
+  </LuaExpression>
+  <CustomProperty Category="forBOM" DataType="String" Name="PartsName" DisplayName="PARTS NAME" DefaultValue="" Description="Name of the part." StandardValuesExclusive="false" StandardValuesFromLuaFormula="true">
+   <StandardValuesLuaFormula>
+				{"CONTACT WIRE", "MESSENGER WIRE", "AUX. MESSENGER WIRE", "TAIL WIRE", "FEEDING WIRE","PROTECTIVE WIRE", "GROUNDING WIRE", "NEUTRAL WIRE", "HANGER", "DROPPER", "CONNECTOR", "CROSS CONTACT BRIDGE"}
+			</StandardValuesLuaFormula>
+  </CustomProperty>
+  <CustomProperty Category="forBOM" DataType="String" DisplayName="SPECIFICATION" Name="Specification" DefaultValue="" Description="" StandardValuesFromLuaFormula="true" StandardValuesExclusive="false">
+   <StandardValuesLuaFormula>
+				local relatedObject = table.firstOrNil(getRelatedObjects(rel_Balloon_AppliesTo_Anything, true))
+				if not relatedObject then
+					return {}
+				end
+				local rcTypeName = relatedObject.RcType
+				local typeDefinition = getRailwayObjectType(rcTypeName)
+				return table.where(typeDefinition.CustomProperties, function (x) return x.Category == "forBOM" end):select(function (x) return x.DisplayName end)
+			</StandardValuesLuaFormula>
+  </CustomProperty>
+  <CustomProperty Category="forBOM" DataType="Int32" Name="Qty" DisplayName="Qty." DefaultValue="1" Description="The quantity."/>
+  <CustomProperty Category="forBOM" DataType="String" DisplayName="REF. DWG. NO." Name="RefDwgNo" DefaultValue="" Description="" StandardValuesFromLuaFormula="true" StandardValuesExclusive="false">
+   <StandardValuesLuaFormula>
+				local relatedObject = table.firstOrNil(getRelatedObjects(rel_Balloon_AppliesTo_Anything, true))
+				if not relatedObject then
+					return {}
+				end
+				local rcTypeName = relatedObject.RcType
+				local typeDefinition = getRailwayObjectType(rcTypeName)
+				return table.where(typeDefinition.CustomProperties, function (x) return x.Category == "forBOM" end):select(function (x) return x.DisplayName end)
+			</StandardValuesLuaFormula>
+  </CustomProperty>
+  <CustomProperty Category="forBOM" DataType="String" DisplayName="REMARKS" Name="Remarks" DefaultValue="" Description="" StandardValuesFromLuaFormula="true" StandardValuesExclusive="false">
+   <StandardValuesLuaFormula>
+				local relatedObject = table.firstOrNil(getRelatedObjects(rel_Balloon_AppliesTo_Anything, true))
+				if not relatedObject then
+					return {}
+				end
+				local rcTypeName = relatedObject.RcType
+				local typeDefinition = getRailwayObjectType(rcTypeName)
+				return table.where(typeDefinition.CustomProperties, function (x) return x.Category == "forBOM" end):select(function (x) return x.DisplayName end)
+			</StandardValuesLuaFormula>
+  </CustomProperty>
+  <InsertPointObject Name="OCS Part Balloon" GenerateDisplayBlockWithScript="true" DisplayBlockName="balloon_1" DefaultSnapMode="Point" SetDisplayOffsetDuringInsert="true" DrawArrowToDisplayOffset="true">
+   <DisplayBlockGenerationScript>RC__createBlockBalloon(nil)</DisplayBlockGenerationScript>
+   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
+  </InsertPointObject>
+  <SymbolDefinition RotationCenter="OwnPosition" GenerateBlockWithScript="true" ForceRedrawOfRuntimeBlocksOnScaleChange="true" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
+   <Rotation AddAngle="{{AngularOffset}}"/>
+   <SymbolBlockGenerationScript>RC__createBlockBalloon(railwayObject)</SymbolBlockGenerationScript>
+   <SymbolAttribute Tag="W">
+    <Value>{{Content}}</Value>
+   </SymbolAttribute>
+  </SymbolDefinition>
  </ObjectType>
  <ObjectType DataType="RailCOMPLETEWatch" Class="RailwayPlacedObject" LuaName="rctype_Watch" Name="JBTFE_WCH Watch" Layer="JBTFE_WATCH" Color="ByLayer" Group="Felles/Watch" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>watch</RelationSpace>

@@ -1,0 +1,373 @@
+-- Import basic CAD functions
+local basicCadFunctions = include(".\\Lua\\LuaCode\\BasicCADFunctions.lua")
+
+function getEnergizedBeamLines(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle, offsetDistance, scale)
+	local bottomLineFirstPoint = getPoint3D(offsetCurve2IntersectionPointMainCircle.X - offsetDistance, offsetCurve2IntersectionPointMainCircle.Y - offsetDistance)
+	local bottomLineSecondPoint = getPoint3D(offsetCurve2IntersectionPointOtherCircle.X - offsetDistance, offsetCurve2IntersectionPointOtherCircle.Y + offsetDistance)
+			
+	local line4 = basicCadFunctions.createLine(offsetCurve2IntersectionPointMainCircle, bottomLineFirstPoint)
+	local line5 = basicCadFunctions.createLine(offsetCurve2IntersectionPointOtherCircle, bottomLineSecondPoint)
+	local bottomLine = basicCadFunctions.createLine(bottomLineFirstPoint, bottomLineSecondPoint)
+	line4.Color = cadInterface.getCadColor("ByBlock")
+	line5.Color = cadInterface.getCadColor("ByBlock")
+	bottomLine.Color = cadInterface.getCadColor("ByBlock")
+
+	return line4, line5, bottomLine
+end
+
+-- function that creates Portal Beam (Cage)
+function portalBeam_Cage(obj, default)
+	local function createSymbol(mainCircle, otherCircle, distance, scale, symbolWidth, hasEnergizedBeam, defaultBlockName)
+		local line = basicCadFunctions.createLine(getPoint3D(0, 0, 0), getPoint3D(0, -distance, 0))
+	
+		local blockName = defaultBlockName or "portalBeam_Cage_Length"..distance.."_Scale"..scale.."_SymbolWidth"..symbolWidth.."_HasEnergizedBeam"..tostring(hasEnergizedBeam)
+		
+		if cadInterface.blockExist(blockName) then
+			return blockName	
+		end
+		
+		local offsetDistance = math.max(math.min(symbolWidth / 2, mainCircle.Radius), 0)
+		local offsetCurve1 = cadInterface.getObjectsFromCadCollection(line:GetOffsetCurves(offsetDistance))[0]
+		local offsetCurve2 = cadInterface.getObjectsFromCadCollection(line:GetOffsetCurves(-offsetDistance))[0]
+		
+		local line2 = basicCadFunctions.createLine(basicCadFunctions.getIntersectionPoints(offsetCurve1, mainCircle)[1], basicCadFunctions.getIntersectionPoints(offsetCurve1, otherCircle)[1])
+		
+		local offsetCurve2IntersectionPointMainCircle = basicCadFunctions.getIntersectionPoints(offsetCurve2, mainCircle)[1]
+		local offsetCurve2IntersectionPointOtherCircle = basicCadFunctions.getIntersectionPoints(offsetCurve2, otherCircle)[1]
+
+		local line3 = basicCadFunctions.createLine(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle)
+		
+		line2.Color = cadInterface.getCadColor("ByBlock")
+		line3.Color = cadInterface.getCadColor("ByBlock")
+		line2.Linetype = "ByBlock"
+		line3.Linetype = "ByBlock"
+		
+		-- Create zigzag line
+		local left = true
+		
+		local zigzagIncrement = (offsetDistance * 2 / math.sqrt(3)) / 2
+		local point = getPoint3D(0, -mainCircle.Radius, 0)
+		local currentY = point.Y - zigzagIncrement
+		local nextPoint = getPoint3D(-offsetDistance, currentY, 0)
+		
+		local done = currentY <= otherCircle.Center.Y + otherCircle.Radius 
+		local entities = {line2, line3}
+		
+		while not done do
+			local zigzagLine = basicCadFunctions.createLine(point, nextPoint)
+			zigzagLine.Color = cadInterface.getCadColor("ByBlock")
+			table.insert(entities, zigzagLine)
+			left = not left
+			zigzagIncrement = (offsetDistance * 2 / math.sqrt(3))
+			point = nextPoint
+			currentY = point.Y - zigzagIncrement
+			nextPoint = getPoint3D(left and -offsetDistance or offsetDistance, currentY, 0)
+			
+			done = currentY <= otherCircle.Center.Y + otherCircle.Radius 
+			
+			-- Check if last line intersects the circle, if not, take another loop.
+			if done then
+				zigzagLine = basicCadFunctions.createLine(point, nextPoint)
+				local number = #basicCadFunctions.getIntersectionPoints(zigzagLine, otherCircle)
+				if #basicCadFunctions.getIntersectionPoints(zigzagLine, otherCircle) == 0 then
+					done = not done
+				end
+			end
+		end
+		
+		-- Add the last line to the ZigZag pattern, this line should intersect the bottom circle.
+		local lastZigzagLine = basicCadFunctions.createLine(point, nextPoint)
+
+		local intersectionPoints = basicCadFunctions.getIntersectionPoints(lastZigzagLine, otherCircle)
+		local intersectionPoint = intersectionPoints[1]
+		
+		-- Check if there is a closer intersection point
+		local closestDistance = math.huge
+		for k, v in pairs(intersectionPoints) do
+			local distanceToIntersectionPoint = basicCadFunctions.getDistanceBetweenPoints(point, v)
+			if distanceToIntersectionPoint < closestDistance then
+				intersectionPoint = v
+				closestDistance = distanceToIntersectionPoint
+			end
+		end
+		
+		
+		if intersectionPoint then
+			lastZigzagLine = basicCadFunctions.createLine(point, intersectionPoint)
+		end
+		lastZigzagLine.Color = cadInterface.getCadColor("ByBlock")
+		table.insert(entities, lastZigzagLine)
+		
+		if hasEnergizedBeam then
+			local energizedBeamLeg1, energizedBeamLeg2, energizedBeamMainLine = getEnergizedBeamLines(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle, offsetDistance, scale)
+
+ 			table.insert(entities, energizedBeamLeg1)
+ 			table.insert(entities, energizedBeamLeg2)
+ 			table.insert(entities, energizedBeamMainLine)
+		end
+
+		local block = cadInterface.createBlock(blockName, entities)
+		
+		return blockName 
+	end
+	
+	local function createDefaultSymbol(scale)
+		local defaultSymbolName = "PortalBeam_Cage_DefaultSymbol_Scale"..(scale % 1 == 0 and math.floor(scale) or scale)
+		if cadInterface.blockExist(defaultSymbolName) then
+			return defaultSymbolName
+		end
+		
+		local defaultDistance = 10 / scale
+		local defaultRadius = 1.5 / scale
+		local defaultCircle1 = basicCadFunctions.createCircle(getPoint3D(0, 0, 0), defaultRadius)
+		local defaultCircle2 = basicCadFunctions.createCircle(getPoint3D(0, -defaultDistance, 0), defaultRadius)
+		return createSymbol(defaultCircle1, defaultCircle2, defaultDistance, scale, 2, false, defaultSymbolName)
+	end
+	
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	
+	if default then 
+		return createDefaultSymbol(scale) 
+	end
+	
+	--Check relation to get poles supporting the beam.
+	local r, n = obj:getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+	
+	if n < 2 then
+		-- if the number of relations is not 2, draw default symbol.
+		return createDefaultSymbol(scale)
+	end
+	
+	local mainPole = r[0]
+	
+	local mainPoleBlockName = mainPole:getBlockNames()[0]
+	local otherPole = r[1]
+	
+	
+	local mainPoleEntities = table.select(cadInterface.getClonesOfNonTextEntitiesInBlock(mainPoleBlockName), function (x) return x end)
+	
+	-- Locate the circle entity in entities of the main pole block
+	local circle = nil
+	for k, v in pairs(mainPoleEntities) do
+		if v:GetType().Name == "Circle" then
+			circle = v
+		end
+	end
+	if not circle then return createDefaultSymbol(scale) end -- return default block
+	
+
+	-- assume both poles have the same circle entity
+	
+	local distance = basicCadFunctions.getDistanceBetweenPoints(mainPole.geoCoord, otherPole.geoCoord)
+	
+	local mainPoleCircle = basicCadFunctions.createCircle(circle.Center, circle.Radius / scale)
+	local otherPoleCircle = basicCadFunctions.createCircle(getPoint3D(0, -distance, 0), circle.Radius / scale)
+	
+	return createSymbol(mainPoleCircle, otherPoleCircle, distance, scale, obj.SymbolWidth, obj.HasEnergizedBeam)
+end
+
+-- function that creates Portal Beam (V-Type)
+function portalBeam_VType(obj, default)
+	local function createSymbol(mainCircle, otherCircle, distance, scale, symbolWidth, hasEnergizedBeam, defaultBlockName)
+		local line = basicCadFunctions.createLine(getPoint3D(0, 0, 0), getPoint3D(0, -distance, 0))
+	
+		local blockName = defaultBlockName or "portalBeam_VType_Length"..distance.."_Scale"..scale.."_SymbolWidth"..symbolWidth.."_HasEnergizedBeam"..tostring(hasEnergizedBeam)
+		
+		if cadInterface.blockExist(blockName) then
+			return blockName	
+		end
+		
+		local offsetDistance = math.max(math.min(symbolWidth / 2, mainCircle.Radius), 0)
+		local offsetCurve1 = cadInterface.getObjectsFromCadCollection(line:GetOffsetCurves(offsetDistance))[0]
+		local offsetCurve2 = cadInterface.getObjectsFromCadCollection(line:GetOffsetCurves(-offsetDistance))[0]
+		
+		local line2 = basicCadFunctions.createLine(basicCadFunctions.getIntersectionPoints(offsetCurve1, mainCircle)[1], basicCadFunctions.getIntersectionPoints(offsetCurve1, otherCircle)[1])
+		
+		local offsetCurve2IntersectionPointMainCircle = basicCadFunctions.getIntersectionPoints(offsetCurve2, mainCircle)[1]
+		local offsetCurve2IntersectionPointOtherCircle = basicCadFunctions.getIntersectionPoints(offsetCurve2, otherCircle)[1]
+
+		local line3 = basicCadFunctions.createLine(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle)
+		
+		line2.Color = cadInterface.getCadColor("ByBlock")
+		line3.Color = cadInterface.getCadColor("ByBlock")
+		
+		local middleLine = basicCadFunctions.createLine(basicCadFunctions.getIntersectionPoints(line, mainCircle)[1], basicCadFunctions.getIntersectionPoints(line, otherCircle)[1])
+		
+		middleLine.Color = cadInterface.getCadColor("ByBlock")
+		
+		line2.Linetype = "ByBlock"
+		line3.Linetype = "ByBlock"
+		middleLine.Linetype = "ByBlock"
+		
+		local entities = {line2, line3, middleLine}
+
+		if hasEnergizedBeam then
+			local energizedBeamLeg1, energizedBeamLeg2, energizedBeamMainLine = getEnergizedBeamLines(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle, offsetDistance, scale)
+
+ 			table.insert(entities, energizedBeamLeg1)
+ 			table.insert(entities, energizedBeamLeg2)
+ 			table.insert(entities, energizedBeamMainLine)
+		end
+
+		local block = cadInterface.createBlock(blockName, entities)
+		
+		return blockName 
+	end
+	
+	local function createDefaultSymbol(scale)
+		local defaultSymbolName = "PortalBeam_VType_DefaultSymbol_Scale"..(scale % 1 == 0 and math.floor(scale) or scale)
+		if cadInterface.blockExist(defaultSymbolName) then
+			return defaultSymbolName
+		end
+		
+		local defaultDistance = 10 / scale
+		local defaultRadius = 1.5 / scale
+		local defaultCircle1 = basicCadFunctions.createCircle(getPoint3D(0, 0, 0), defaultRadius)
+		local defaultCircle2 = basicCadFunctions.createCircle(getPoint3D(0, -defaultDistance, 0), defaultRadius)
+		return createSymbol(defaultCircle1, defaultCircle2, defaultDistance, scale, 2, false, defaultSymbolName)
+	end
+	
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	
+	if default then 
+		return createDefaultSymbol(scale) 
+	end
+	
+	--Check relation to get poles supporting the beam.
+	local r, n = obj:getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+	
+	if n < 2 then
+		-- if the number of relations is not 2, draw default symbol.
+		return createDefaultSymbol(scale)
+	end
+	
+	local mainPole = r[0]
+	
+	local mainPoleBlockName = mainPole:getBlockNames()[0]
+	local otherPole = r[1]
+	
+	
+	local mainPoleEntities = table.select(cadInterface.getClonesOfNonTextEntitiesInBlock(mainPoleBlockName), function (x) return x end)
+	
+	
+	-- Locate the circle entity in entities of the main pole block
+	local circle = nil
+	for k, v in pairs(mainPoleEntities) do
+		if v:GetType().Name == "Circle" then
+			circle = v
+		end
+	end
+	if not circle then return createDefaultSymbol(scale) end -- return default block
+	
+
+	-- assume both poles have the same circle entity
+	
+	local distance = basicCadFunctions.getDistanceBetweenPoints(mainPole.geoCoord, otherPole.geoCoord)
+	
+	local mainPoleCircle = basicCadFunctions.createCircle(circle.Center, circle.Radius / scale)
+	local otherPoleCircle = basicCadFunctions.createCircle(getPoint3D(0, -distance, 0), circle.Radius / scale)
+	
+	return createSymbol(mainPoleCircle, otherPoleCircle, distance, scale, obj.SymbolWidth, obj.HasEnergizedBeam)
+end
+
+
+-- function that creates Portal Beam (Channel Cross)
+function portalBeam_ChannelCross(obj, default)
+	local function createSymbol(mainCircle, otherCircle, distance, scale, symbolWidth, hasEnergizedBeam, defaultBlockName)
+		local line = basicCadFunctions.createLine(getPoint3D(0, 0, 0), getPoint3D(0, -distance, 0))
+	
+		local blockName = defaultBlockName or "portalBeam_ChannelCross_Length"..distance.."_Scale"..scale.."_SymbolWidth"..symbolWidth.."_HasEnergizedBeam"..tostring(hasEnergizedBeam)
+		
+		if cadInterface.blockExist(blockName) then
+			return blockName	
+		end
+		
+		local offsetDistance = math.max(math.min(symbolWidth / 2, mainCircle.Radius), 0)
+		local offsetCurve1 = cadInterface.getObjectsFromCadCollection(line:GetOffsetCurves(offsetDistance))[0]
+		local offsetCurve2 = cadInterface.getObjectsFromCadCollection(line:GetOffsetCurves(-offsetDistance))[0]
+		
+		local line2 = basicCadFunctions.createLine(basicCadFunctions.getIntersectionPoints(offsetCurve1, mainCircle)[1], basicCadFunctions.getIntersectionPoints(offsetCurve1, otherCircle)[1])
+		
+		local offsetCurve2IntersectionPointMainCircle = basicCadFunctions.getIntersectionPoints(offsetCurve2, mainCircle)[1]
+		local offsetCurve2IntersectionPointOtherCircle = basicCadFunctions.getIntersectionPoints(offsetCurve2, otherCircle)[1]
+
+		local line3 = basicCadFunctions.createLine(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle)
+		
+		line2.Color = cadInterface.getCadColor("ByBlock")
+		line3.Color = cadInterface.getCadColor("ByBlock")
+		line2.Linetype = "ByBlock"
+		line3.Linetype = "ByBlock"
+		
+		local entities = {line2, line3}
+
+		if hasEnergizedBeam then
+			local energizedBeamLeg1, energizedBeamLeg2, energizedBeamMainLine = getEnergizedBeamLines(offsetCurve2IntersectionPointMainCircle, offsetCurve2IntersectionPointOtherCircle, offsetDistance, scale)
+
+ 			table.insert(entities, energizedBeamLeg1)
+ 			table.insert(entities, energizedBeamLeg2)
+ 			table.insert(entities, energizedBeamMainLine)
+		end
+		
+		local block = cadInterface.createBlock(blockName, entities)
+		
+		return blockName 
+	end
+	
+	local function createDefaultSymbol(scale)
+		local defaultSymbolName = "PortalBeam_ChannelCross_DefaultSymbol_Scale"..(scale % 1 == 0 and math.floor(scale) or scale)
+		if cadInterface.blockExist(defaultSymbolName) then
+			return defaultSymbolName
+		end
+		
+		local defaultDistance = 10 / scale
+		local defaultRadius = 1.5 / scale
+		local defaultCircle1 = basicCadFunctions.createCircle(getPoint3D(0, 0, 0), defaultRadius)
+		local defaultCircle2 = basicCadFunctions.createCircle(getPoint3D(0, -defaultDistance, 0), defaultRadius)
+		return createSymbol(defaultCircle1, defaultCircle2, defaultDistance, scale, 2, false, defaultSymbolName)
+	end
+	
+
+	local scale = DocumentData.Document.Database.Cannoscale.scale
+	
+	if default then 
+		return createDefaultSymbol(scale) 
+	end
+	
+	--Check relation to get poles supporting the beam.
+	local r, n = obj:getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+	
+	if n < 2 then
+		-- if the number of relations is not 2, draw default symbol.
+		return createDefaultSymbol(scale)
+	end
+	
+	local mainPole = r[0]
+	
+	local mainPoleBlockName = mainPole:getBlockNames()[0]
+	local otherPole = r[1]
+	
+	
+	local mainPoleEntities = table.select(cadInterface.getClonesOfNonTextEntitiesInBlock(mainPoleBlockName), function (x) return x end)
+	
+	
+	-- Locate the circle entity in entities of the main pole block
+	local circle = nil
+	for k, v in pairs(mainPoleEntities) do
+		if v:GetType().Name == "Circle" then
+			circle = v
+		end
+	end
+	if not circle then return createDefaultSymbol(scale) end -- return default block
+	
+
+	-- assume both poles have the same circle entity
+	
+	local distance = basicCadFunctions.getDistanceBetweenPoints(mainPole.geoCoord, otherPole.geoCoord)
+	
+	local mainPoleCircle = basicCadFunctions.createCircle(circle.Center, circle.Radius / scale)
+	local otherPoleCircle = basicCadFunctions.createCircle(getPoint3D(0, -distance, 0), circle.Radius / scale)
+	
+	return createSymbol(mainPoleCircle, otherPoleCircle, distance, scale, obj.SymbolWidth, obj.HasEnergizedBeam)
+end
