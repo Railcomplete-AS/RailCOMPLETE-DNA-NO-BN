@@ -13,16 +13,17 @@
 	RC__CAD
 	---------
 	This is a gateway to a table of drawing functions. The underlying API functions in RailCOMPLETE are
-	calling the corresponding function in the underlying CAD system, inserting graphics in modelspace,
-	converting. 
+	calling the corresponding function in the underlying CAD system, inserting graphics in modelspace. 
 	
-	Create a block in the CAD system's BlockTable using code such as:
+	To create a block in the CAD system's BlockTable, use the RC provided Lua class 'cadInterface':
 	
-			cadInterface.createBlock("balloon_"..#tostring(text), entities, true)
+		cadInterface.createBlock("balloon_"..#tostring(text), entities, true)
 			
-	'cadInterface' has been included in the Lua editor's autofill.
+	The first argument to the cadInterface.createBlock call is the block's name.
+	The second argument to the cadInterface.createBlock call is a data structure providing a list of
+	CAD system graphics entities, including attribute definitions.
 	
-	See the description for the RC__CAD() function, naming the CAD functions it can return.
+	See also the Description for the RC__CAD() function, naming the CAD functions it can return.
 	
 =========================================================================================================-->
 <xpp:bloc>
@@ -32,14 +33,33 @@
 				\n(#TODO# Show complete list of CAD functions)
 				\n
 				\nExamples:
-				\nRC__CAD('getPoint3D')(x,y,z)
+				\nRC__CAD('convertToPoint3D')(x,y,z)
+				\nRC__CAD('reversePoint3D')(point)
+				\nRC__CAD('nction createPolyline')(pointTable)
+				\nRC__CAD('createCircle')(center, radius)
+				\nRC__CAD('createLine')(startPoint, endPoint)
 				\nRC__CAD('createArc')(startPoint, throughPoint, endPoint)
 				\nRC__CAD('createArcAboutPoint')(center, radius, StartAngle, EndAngle)
-				\netc. 
+				\nRC__CAD('createHatch')(blockName, entities)
+				\nRC__CAD('getIntersectionPoints')(entity1, entity2)
+				\nRC__CAD('transformEntities')(entities, transformationMatrix)
+				\nRC__CAD('getBoundsFromEntities')(entities)
+				\nRC__CAD('getBoundsFromEntities')(entities)
+				\nRC__CAD('sortPointsAcendingByDistanceToPoint')(point, pointTable)
+				\nRC__CAD('function sortPointsDecendingByDistanceToPoint')(point, pointTable)
+				\nRC__CAD('function rotateEntityAboutZ')(entity, angleDegrees, rotationCenter)
+				\nRC__CAD('getPointAtDistanceAlongVector2D')(startPoint, vector, distance)
+				\nRC__CAD('function createAttributeDefinition')(tag, position, justify)
+				\nRC__CAD('createMText')(text, position, direction, textHeight, textStyleName, justify)
+				\nRC__CAD('function convertTransparency')(transparencyValue)
+				\nRC__CAD('createAndAddLayer')(name, color, transparency, description)
+				\nRC__CAD('function createVLines')(arrowPoint, anchorPoint, angle, length)
+				
+				\nRefer to the Lua source code in the DNA source folder on GitHub to know more about the above functions.
 			">
 		<Signature>function RC__CAD(String functionName)</Signature>
 		<Formula>
-			function function RC__CAD(functionName)
+			function RC__CAD(functionName)
 
 				local cadFunctionTable = {}
 				
@@ -69,7 +89,7 @@
 				
 				
 				-- Creates a Polyline given a table of points
-				local function createPolyline(points)
+				local function createPolyline(pointTable)
 					local polyline = cadInterface.createCadEntity("DatabaseServices.Polyline", {})
 					local index = 0
 					for k, v in pairs(points) do
@@ -84,7 +104,7 @@
 				
 				
 				-- Creates a circle given center and radius
-				function createCircle(center, radius)
+				local function createCircle(center, radius)
 					return cadInterface.createCadEntity("DatabaseServices.Circle", {cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0}), cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1}), radius})
 				end
 				cadFunctionTable["createCircle"] = createCircle
@@ -92,7 +112,7 @@
 				
 				
 				-- Creates a line given start and end points
-				function createLine(startPoint, endPoint)
+				local function createLine(startPoint, endPoint)
 					return cadInterface.createCadEntity("DatabaseServices.Line", {cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, endPoint.Z}), cadInterface.createCadEntity("Geometry.Point3d", {endPoint.X, endPoint.Y, endPoint.Z})})
 				end
 				cadFunctionTable["createLine"] = createLine
@@ -100,7 +120,7 @@
 				
 				
 				-- Creates an arc using three points. Arcs must be drawn clockwise.
-				function createArc(startPoint, throughPoint, endPoint)
+				local function createArc(startPoint, throughPoint, endPoint)
 					local carc = nil
 					local startPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, 0})
 					local throughPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {throughPoint.X, throughPoint.Y, 0})
@@ -129,7 +149,7 @@
 				
 				
 				-- Creates an arc in the plane 
-				function createArcAboutPoint(center, radius, StartAngle, EndAngle)
+				local function createArcAboutPoint(center, radius, StartAngle, EndAngle)
 					local centerPoint = cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0})
 					return cadInterface.createCadEntity("DatabaseServices.Arc", {centerPoint, radius, StartAngle, EndAngle})
 				end
@@ -138,7 +158,7 @@
 				
 				
 				-- Creates a hatch using the given entities as outermost loop and adds it to the block with the given name
-				function createHatch(blockName, entities)
+				local function createHatch(blockName, entities)
 					local hatch =  cadInterface.createCadEntity("DatabaseServices.Hatch", {})
 					
 					--hatch.Origin = createCadEntity("Geometry.Point3d", {origin.X, origin.Y, origin.Z})
@@ -163,20 +183,16 @@
 				
 				
 				-- Returns the intersection points between two entities
-				function getIntersectionPoints(entity1, entity2)
+				local function getIntersectionPoints(entity1, entity2)
 					local point3dCollection =  cadInterface.createCadEntity("Geometry.Point3dCollection", {})
 					if type(entity2) ~= "table" then
-					
 						entity1:IntersectWith(entity2, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
-						
 					else
 						for k, entity in pairs(entity2) do
 							entity1:IntersectWith(entity, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
 						end
 					end
-					
 					local pointList = table.select(cadInterface.getObjectsFromCadCollection(point3dCollection), function (x) return getPoint3D(x.X, x.Y, x.Z) end)
-					
 					return pointList
 				end
 				cadFunctionTable["getIntersectionPoints"] = getIntersectionPoints
@@ -184,7 +200,7 @@
 				
 				
 				-- Transform entities by a matrix
-				function transformEntities(entities, transformationMatrix)
+				local function transformEntities(entities, transformationMatrix)
 					for k, entity in pairs(entities) do 
 						entity:TransformBy(transformationMatrix)
 					end
@@ -194,7 +210,7 @@
 				
 				
 				-- Get the bounds from a table of entities. Returned as table with keys "MinPoint" and "MaxPoint".
-				function getBoundsFromEntities(entities)
+				local function getBoundsFromEntities(entities)
 					local minY = math.huge
 					local maxY = -math.huge
 					local minX = math.huge
@@ -215,15 +231,13 @@
 				
 				
 				-- Get the distance between two points
-				function getDistanceBetweenPoints(point1, point2)
+				local function getDistanceBetweenPoints(point1, point2)
 					return math.sqrt(((point2.X - point1.X)^2) + ((point2.Y - point1.Y)^2) + ((point2.Z - point1.Z)^2))
 				end
 				cadFunctionTable["getDistanceBetweenPoints"] = getDistanceBetweenPoints
 				
-				
-				
 				-- Sorts points acending by distance to a point
-				function sortPointsAcendingByDistanceToPoint(point, points)
+				local function sortPointsAcendingByDistanceToPoint(point, points)
 					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
 					table.sort(pointTable, function (x, y) return x.distance &lt; y.distance end)
 					return pointTable:select(function (x) return x.point end)
@@ -233,7 +247,7 @@
 				
 				
 				-- Sorts points decending by distance to a point
-				function sortPointsDecendingByDistanceToPoint(point, points)
+				local function sortPointsDecendingByDistanceToPoint(point, points)
 					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
 					table.sort(pointTable, function (x, y) return x.distance > y.distance end)
 					return pointTable:select(function (x) return x.point end)
@@ -243,7 +257,7 @@
 				
 				
 				-- Rotates an entity with an angle gicen in degrees and a rotation center
-				function rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
+				local function rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
 					-- convert to Radians
 					local angle = math.rad(angleDegrees)
 					
@@ -256,7 +270,7 @@
 				
 				
 				-- Get point at a distance along a 2D vector
-				function getPointAtDistanceAlongVector2D(startPoint, vector, distance)
+				local function getPointAtDistanceAlongVector2D(startPoint, vector, distance)
 					local unitVector = getPoint3D(vector.X/math.sqrt(vector.X^2 + vector.Y^2), vector.Y/math.sqrt(vector.X^2 + vector.Y^2))  
 					return getPoint3D(startPoint.X + (unitVector.X * distance), startPoint.Y + (unitVector.Y * distance))
 				end
@@ -265,7 +279,7 @@
 				
 				
 				-- Creates an attributeDefinition
-				function createAttributeDefinition(tag, position, justify)
+				local function createAttributeDefinition(tag, position, justify)
 					local attributeDefinition = cadInterface.createCadEntity("DatabaseServices.AttributeDefinition", {})
 					local attributePosition = cadInterface.createCadEntity("Geometry.Point3d", {position.X, position.Y, position.Z})
 					
@@ -284,7 +298,7 @@
 				
 				
 				
-				function createMText(text, position, direction, textHeight, textStyleName, justify)
+				local function createMText(text, position, direction, textHeight, textStyleName, justify)
 					textHeight = textHeight or 1
 					justify = justify or "MiddleLeft"
 					textStyleName = textStyleName or "RC-STANDARD"
@@ -303,7 +317,7 @@
 				
 				
 				-- Converts transparency
-				function convertTransparency(transparencyValue)
+				local function convertTransparency(transparencyValue)
 					return 255 * (100 - transparencyValue) / 100
 				end
 				cadFunctionTable["convertTransparency"] = convertTransparency
@@ -311,7 +325,7 @@
 				
 				
 				-- Creates and adds a layer to the drawing
-				function createAndAddLayer(name, color, transparency, description)
+				local function createAndAddLayer(name, color, transparency, description)
 					
 					local layer =  cadInterface.createCadEntity("DatabaseServices.LayerTableRecord", {})
 					layer.Name = name or getGUID()
@@ -325,7 +339,7 @@
 				
 				
 				-- Creates two lines in V Shape meeting at arrowPoint pointing away from anchorPoint
-				function createVLines(arrowPoint, anchorPoint, angle, length)
+				local function createVLines(arrowPoint, anchorPoint, angle, length)
 				
 					local anchorVec = getPoint3D(anchorPoint.X - arrowPoint.X, anchorPoint.Y - arrowPoint.Y)
 					local lineEndPoint = getPointAtDistanceAlongVector2D(arrowPoint, anchorVec, length)
