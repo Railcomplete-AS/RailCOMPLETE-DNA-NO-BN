@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RailwayObjectTypeDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
- <DnaIdentification Name="NO-BN 2024.a (develop 2024-07-11 compliant to RC 2024.2.0.x)">
+ <DnaIdentification Name="NO-BN 2024.a (develop 2024-07-26 compliant to RC 2024.2.0.x)">
   <DnaIri>
    <AdministrationCountry>NO</AdministrationCountry>
    <AdministrationDelimiter>-</AdministrationDelimiter>
@@ -8,7 +8,7 @@
    <AgentCountry>NO</AgentCountry>
    <AgentDelimiter>.</AgentDelimiter>
    <AgentCode>0001</AgentCode>
-   <DateTime>2024-07-11T00:00:00+01:00</DateTime>
+   <DateTime>2024-07-26T00:00:00+01:00</DateTime>
    <VersionNumber>2024.a</VersionNumber>
   </DnaIri>
   <Description>RailCOMPLETE(r) Definisjon av nettverkselementer for Bane NOR</Description>
@@ -417,8 +417,11 @@
   <Layer Name="JBTFE#ANNOTATIONS_SIGHT_REGION" Color="2" Linetype="RC-DASHED" Description="Transientgrafikk for 2D siktområder" Transparency="0"/>
   <Layer Name="JBTFE#ANNOTATIONS_SIGHT_BEAM" Color="2" Description="Transientgrafikk for 2D siktbjelker" Transparency="70"/>
   <Layer Name="JBTFE#ANNOTATIONS_SIGHT_VOLUME" Color="2" Description="Transientgrafikk for 2D siktvolumer" Transparency="70"/>
-  <Layer Name="JBTFE_DIVERSE" Color="4" Description="Diverse tverrfaglige objekter (FE)"/>
-  <Layer Name="JBTFE_OMRÅDER" Color="1" Description="Områder (FE)"/>
+  <Layer Name="JBTFE_DIV" Color="4" Description="Diverse tverrfaglige objekter (FE)"/>
+  <Layer Name="JBTFE_RCS" Color="4" Description="railML Cross-Section object (CO)"/>
+  <Layer Name="JBTFE_BALLONGER" Color="4" Description="Ballonger (gåsenebb) (FE)"/>
+  <Layer Name="JBTFE_OCP_OMRÅDER" Color="1" Description="OCP-områder (railML: Operation Control Point) (FE)"/>
+  <Layer Name="JBTFE_OMRÅDER" Color="1" Description="Områder, unntatt OCP områder (FE)"/>
   <Layer Name="JBTFE_ETIKETTER" Color="4" Description="Etiketter (FE)"/>
   <Layer Name="JBTFE_MARKØRER" Color="4" Description="Markører (FE)"/>
   <Layer Name="JBTFE_WATCH" Color="4" Description="Watch-objekter (FE)"/>
@@ -2173,6 +2176,14 @@
    <ReverseRelatesTo Prompt="Har" Min="0" Max="inf"/>
   </Relation>
  </Relations>
+ <Relations>
+  <SourceSpace>ballong</SourceSpace>
+  <Relation Name="Ballong" AskForRelation="false" Color="70" Description="Relation for associating a balloon object with any type of object, from which it needs information." ForwardLuaName="rel_Balloon_RelatesTo_Anything" ReverseLuaName="rel_Anything_IsRelatedTo_Balloon">
+   <TargetSpace>anything</TargetSpace>
+   <RelatesTo Prompt="Er ballong med relasjon til" Min="0" Max="inf"/>
+   <ReverseRelatesTo Prompt="Har relasjon til" Min="0" Max="inf"/>
+  </Relation>
+ </Relations>
  <PropertyCategory Name="Document" DisplayName="Dokument" Collapsed="false"/>
  <PropertyCategory Name="File" DisplayName="Fil" Collapsed="false"/>
  <PropertyCategory Name="External Data Files" DisplayName="Eksterne datafiler" Collapsed="false"/>
@@ -2264,14 +2275,33 @@
 				\n(#TODO# Show complete list of CAD functions)
 				\n
 				\nExamples:
-				\nRC__CAD('getPoint3D')(x,y,z)
-				\nRC__CAD('createArc')(startPoint, throughPoint, endPoint)
-				\nRC__CAD('createArcAboutPoint')(center, radius, StartAngle, EndAngle)
-				\netc. 
+				\nRC__CAD().convertToPoint3D(x,y,z)
+				\nRC__CAD().reversePoint3D(point)
+				\nRC__CAD().createPolyline(pointTable)
+				\nRC__CAD().createCircle(center, radius)
+				\nRC__CAD().createLine(startPoint, endPoint)
+				\nRC__CAD().createArc(startPoint, throughPoint, endPoint)
+				\nRC__CAD().createArcAboutPoint(center, radius, StartAngle, EndAngle)
+				\nRC__CAD().createHatch(blockName, entities)
+				\nRC__CAD().getIntersectionPoints(entity1, entity2)
+				\nRC__CAD().transformEntities(entities, transformationMatrix)
+				\nRC__CAD().getBoundsFromEntities(entities)
+				\nRC__CAD().getBoundsFromEntities(entities)
+				\nRC__CAD().sortPointsAcendingByDistanceToPoint(point, pointTable)
+				\nRC__CAD().sortPointsDecendingByDistanceToPoint(point, pointTable)
+				\nRC__CAD().rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
+				\nRC__CAD().getPointAtDistanceAlongVector2D(startPoint, vector, distance)
+				\nRC__CAD().createAttributeDefinition(tag, position, justify)
+				\nRC__CAD().createMText(text, position, direction, textHeight, textStyleName, justify)
+				\nRC__CAD().convertTransparency(transparencyValue)
+				\nRC__CAD().createAndAddLayer(name, color, transparency, description)
+				\nRC__CAD().createVLines(arrowPoint, anchorPoint, angle, length)
+				
+				\nRefer to the Lua source code in the DNA source folder on GitHub to know more about the above functions.
 			">
   <Signature>function RC__CAD(String functionName)</Signature>
   <Formula>
-			function function RC__CAD(functionName)
+			function RC__CAD(functionName)
 
 				local cadFunctionTable = {}
 				
@@ -2283,8 +2313,7 @@
 				local _lightHatch_	= 0.18
 				local _sparseHatch_	= 0.36
 				
-				
-				
+
 				-- Converts any point to Point3D
 				local function convertToPoint3D(point)
 					return getPoint3D(point.X, point.Y, point.Z or 0)
@@ -2302,7 +2331,7 @@
 				
 				
 				-- Creates a Polyline given a table of points
-				local function createPolyline(points)
+				local function createPolyline(pointTable)
 					local polyline = cadInterface.createCadEntity("DatabaseServices.Polyline", {})
 					local index = 0
 					for k, v in pairs(points) do
@@ -2317,7 +2346,7 @@
 				
 				
 				-- Creates a circle given center and radius
-				function createCircle(center, radius)
+				local function createCircle(center, radius)
 					return cadInterface.createCadEntity("DatabaseServices.Circle", {cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0}), cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1}), radius})
 				end
 				cadFunctionTable["createCircle"] = createCircle
@@ -2325,7 +2354,7 @@
 				
 				
 				-- Creates a line given start and end points
-				function createLine(startPoint, endPoint)
+				local function createLine(startPoint, endPoint)
 					return cadInterface.createCadEntity("DatabaseServices.Line", {cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, endPoint.Z}), cadInterface.createCadEntity("Geometry.Point3d", {endPoint.X, endPoint.Y, endPoint.Z})})
 				end
 				cadFunctionTable["createLine"] = createLine
@@ -2333,7 +2362,7 @@
 				
 				
 				-- Creates an arc using three points. Arcs must be drawn clockwise.
-				function createArc(startPoint, throughPoint, endPoint)
+				local function createArc(startPoint, throughPoint, endPoint)
 					local carc = nil
 					local startPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {startPoint.X, startPoint.Y, 0})
 					local throughPoint3d = cadInterface.createCadEntity("Geometry.Point3d", {throughPoint.X, throughPoint.Y, 0})
@@ -2362,7 +2391,7 @@
 				
 				
 				-- Creates an arc in the plane 
-				function createArcAboutPoint(center, radius, StartAngle, EndAngle)
+				local function createArcAboutPoint(center, radius, StartAngle, EndAngle)
 					local centerPoint = cadInterface.createCadEntity("Geometry.Point3d", {center.X, center.Y, 0})
 					return cadInterface.createCadEntity("DatabaseServices.Arc", {centerPoint, radius, StartAngle, EndAngle})
 				end
@@ -2371,7 +2400,7 @@
 				
 				
 				-- Creates a hatch using the given entities as outermost loop and adds it to the block with the given name
-				function createHatch(blockName, entities)
+				local function createHatch(blockName, entities)
 					local hatch =  cadInterface.createCadEntity("DatabaseServices.Hatch", {})
 					
 					--hatch.Origin = createCadEntity("Geometry.Point3d", {origin.X, origin.Y, origin.Z})
@@ -2396,20 +2425,16 @@
 				
 				
 				-- Returns the intersection points between two entities
-				function getIntersectionPoints(entity1, entity2)
+				local function getIntersectionPoints(entity1, entity2)
 					local point3dCollection =  cadInterface.createCadEntity("Geometry.Point3dCollection", {})
 					if type(entity2) ~= "table" then
-					
 						entity1:IntersectWith(entity2, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
-						
 					else
 						for k, entity in pairs(entity2) do
 							entity1:IntersectWith(entity, cadInterface.createCadEntity("DatabaseServices.Intersect", {"OnBothOperands"}), point3dCollection, createObjectUsingReflection("System.IntPtr", {}):getTableValue(), createObjectUsingReflection("System.IntPtr", {}):getTableValue())
 						end
 					end
-					
 					local pointList = table.select(cadInterface.getObjectsFromCadCollection(point3dCollection), function (x) return getPoint3D(x.X, x.Y, x.Z) end)
-					
 					return pointList
 				end
 				cadFunctionTable["getIntersectionPoints"] = getIntersectionPoints
@@ -2417,7 +2442,7 @@
 				
 				
 				-- Transform entities by a matrix
-				function transformEntities(entities, transformationMatrix)
+				local function transformEntities(entities, transformationMatrix)
 					for k, entity in pairs(entities) do 
 						entity:TransformBy(transformationMatrix)
 					end
@@ -2427,7 +2452,7 @@
 				
 				
 				-- Get the bounds from a table of entities. Returned as table with keys "MinPoint" and "MaxPoint".
-				function getBoundsFromEntities(entities)
+				local function getBoundsFromEntities(entities)
 					local minY = math.huge
 					local maxY = -math.huge
 					local minX = math.huge
@@ -2448,15 +2473,13 @@
 				
 				
 				-- Get the distance between two points
-				function getDistanceBetweenPoints(point1, point2)
+				local function getDistanceBetweenPoints(point1, point2)
 					return math.sqrt(((point2.X - point1.X)^2) + ((point2.Y - point1.Y)^2) + ((point2.Z - point1.Z)^2))
 				end
 				cadFunctionTable["getDistanceBetweenPoints"] = getDistanceBetweenPoints
 				
-				
-				
 				-- Sorts points acending by distance to a point
-				function sortPointsAcendingByDistanceToPoint(point, points)
+				local function sortPointsAcendingByDistanceToPoint(point, points)
 					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
 					table.sort(pointTable, function (x, y) return x.distance &lt; y.distance end)
 					return pointTable:select(function (x) return x.point end)
@@ -2466,7 +2489,7 @@
 				
 				
 				-- Sorts points decending by distance to a point
-				function sortPointsDecendingByDistanceToPoint(point, points)
+				local function sortPointsDecendingByDistanceToPoint(point, points)
 					local pointTable = table.select(points, function (x) return {["distance"] = getDistanceBetweenPoints(x, point), ["point"] = x } end)
 					table.sort(pointTable, function (x, y) return x.distance > y.distance end)
 					return pointTable:select(function (x) return x.point end)
@@ -2476,7 +2499,7 @@
 				
 				
 				-- Rotates an entity with an angle gicen in degrees and a rotation center
-				function rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
+				local function rotateEntityAboutZ(entity, angleDegrees, rotationCenter)
 					-- convert to Radians
 					local angle = math.rad(angleDegrees)
 					
@@ -2489,7 +2512,7 @@
 				
 				
 				-- Get point at a distance along a 2D vector
-				function getPointAtDistanceAlongVector2D(startPoint, vector, distance)
+				local function getPointAtDistanceAlongVector2D(startPoint, vector, distance)
 					local unitVector = getPoint3D(vector.X/math.sqrt(vector.X^2 + vector.Y^2), vector.Y/math.sqrt(vector.X^2 + vector.Y^2))  
 					return getPoint3D(startPoint.X + (unitVector.X * distance), startPoint.Y + (unitVector.Y * distance))
 				end
@@ -2498,7 +2521,7 @@
 				
 				
 				-- Creates an attributeDefinition
-				function createAttributeDefinition(tag, position, justify)
+				local function createAttributeDefinition(tag, position, justify)
 					local attributeDefinition = cadInterface.createCadEntity("DatabaseServices.AttributeDefinition", {})
 					local attributePosition = cadInterface.createCadEntity("Geometry.Point3d", {position.X, position.Y, position.Z})
 					
@@ -2517,7 +2540,7 @@
 				
 				
 				
-				function createMText(text, position, direction, textHeight, textStyleName, justify)
+				local function createMText(text, position, direction, textHeight, textStyleName, justify)
 					textHeight = textHeight or 1
 					justify = justify or "MiddleLeft"
 					textStyleName = textStyleName or "RC-STANDARD"
@@ -2536,7 +2559,7 @@
 				
 				
 				-- Converts transparency
-				function convertTransparency(transparencyValue)
+				local function convertTransparency(transparencyValue)
 					return 255 * (100 - transparencyValue) / 100
 				end
 				cadFunctionTable["convertTransparency"] = convertTransparency
@@ -2544,7 +2567,7 @@
 				
 				
 				-- Creates and adds a layer to the drawing
-				function createAndAddLayer(name, color, transparency, description)
+				local function createAndAddLayer(name, color, transparency, description)
 					
 					local layer =  cadInterface.createCadEntity("DatabaseServices.LayerTableRecord", {})
 					layer.Name = name or getGUID()
@@ -2558,7 +2581,7 @@
 				
 				
 				-- Creates two lines in V Shape meeting at arrowPoint pointing away from anchorPoint
-				function createVLines(arrowPoint, anchorPoint, angle, length)
+				local function createVLines(arrowPoint, anchorPoint, angle, length)
 				
 					local anchorVec = getPoint3D(anchorPoint.X - arrowPoint.X, anchorPoint.Y - arrowPoint.Y)
 					local lineEndPoint = getPointAtDistanceAlongVector2D(arrowPoint, anchorVec, length)
@@ -2577,81 +2600,82 @@
 			end
 		</Formula>
  </LuaFunction>
- <LuaFunction Name="RC_createBlockBalloon()" ReturnType="String" Description="Creates a balloon (a.k.a. 'goose beak') 2D symbol and returns its block name. If the block already exists, nothing is added and the block name is returned.
+ <LuaFunction Name="RC__createBlockBalloon()" ReturnType="String" Description="Creates a balloon (a.k.a. 'goose beak') 2D symbol and returns its block name. If the block already exists, nothing is added and the block name is returned.
 				\n
 				\nThe caller must provide the content of the balloon, a string that will be shown inside the ballon.
 				\nTo define the symbol's appearance during the object insertion phase: after insertion, call with argument 'nil'.
 				\nTo define the symbol's appearance after insertion, call with argument 'railwayObject'.
 			">
-  <Signature>function RC_createBlockBalloon(ballonObject)</Signature>
+  <Signature>function RC__createBlockBalloon(ballonObject)</Signature>
   <Formula>
-			function RC_createBlockBalloon(balloonObject)
+			function RC__createBlockBalloon(balloonObject)
+				
+				basicCadFunctions = RC__CAD()
+				
+				local function getTextFrame(textHeight, textWidth)
+					local ratio = textHeight/textWidth
+				
+					local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
+					-- if ratio is greater than 0.5 create a circle
+					if ratio > 0.5 then
+						local circle = basicCadFunctions.createCircle(getPoint3D(0,0,0), circleRadius)  
+						return { circle }
+					end 
+					
+					-- if not create two arcs with lines between them
+					local minY = -circleRadius
+					local maxY =  circleRadius
+					local leftArcStartX = -(textWidth/2) + circleRadius/1.5
+					local leftArc = basicCadFunctions.createArc(getPoint3D(leftArcStartX, minY), getPoint3D(leftArcStartX - circleRadius, minY + circleRadius), getPoint3D(leftArcStartX, maxY))
+					local rightArcStartX = (textWidth/2) - circleRadius/1.5
+					local rightArc = basicCadFunctions.createArc(getPoint3D(rightArcStartX, minY), getPoint3D(rightArcStartX + circleRadius, minY + circleRadius), getPoint3D(rightArcStartX, maxY))
+					local topLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, maxY), getPoint3D(rightArcStartX, maxY))
+					local bottomLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, minY), getPoint3D(rightArcStartX, minY))
+					return {leftArc, topLine, rightArc, bottomLine}
+				end
+				
+				local function createTextWithFrame(text)
+					local textHeight = 5
+					-- The width of "0123456789" / 10 is 3.84 so avarage width of a number char is 0.96 when text height is 3.84.
+					local width = utf8.len(tostring(text)) * 3.84
+					local attDef = basicCadFunctions.createAttributeDefinition("BalloonContent", getPoint3D(0,0), "MiddleCenter")
+					attDef.Height = textHeight
+					attDef.TextString = "1"
+					attDef.Color = "ByBlock"
+					attDef.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
+					local entities = getTextFrame(textHeight, width)
+					for k, entity in pairs(entities) do
+						entity.Color = "ByBlock"
+						entity.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
+					end
+					table.insert(entities, attDef)
+					local block = cadInterface.createBlock("NO-BN-RT-JBTFE_BLN-BALLONG-"..#tostring(text), entities, true)
+				end
+				
+				-- This function should be readonly for use in all Lua contexts.
+				local function getWidthOfBalloon(text, textHeight)
+					-- The width of "0123456789" / 10 is 3.84 so average width of a number char is 0.96 when text height is 5.
+					local width = utf8.len(tostring(text)) * 3.84
+					
+					local ratio = textHeight/width
+				
+					local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
+					-- if ratio is greater than 0.5 create a circle
+					if ratio > 0.5 then
+						return circleRadius * 2
+					end 
+					
+					local leftArcStartX = -(width/2) + circleRadius/1.5
+					local rightArcStartX = (width/2) - circleRadius/1.5
+					
+					local leftX = leftArcStartX - circleRadius
+					local rightX = rightArcStartX + circleRadius
+					
+					return (rightX - leftX)
+				end
 
-local function getTextFrame(textHeight, textWidth)
-	local ratio = textHeight/textWidth
 
-	local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
-	-- if ratio is greater than 0.5 create a circle
-	if ratio > 0.5 then
-		local circle = basicCadFunctions.createCircle(getPoint3D(0,0,0), circleRadius)  
-		return { circle }
-	end 
-	
-	-- if not create two arcs with lines between them
-	local minY = -circleRadius
-	local maxY =  circleRadius
-	local leftArcStartX = -(textWidth/2) + circleRadius/1.5
-	local leftArc = basicCadFunctions.createArc(getPoint3D(leftArcStartX, minY), getPoint3D(leftArcStartX - circleRadius, minY + circleRadius), getPoint3D(leftArcStartX, maxY))
-	local rightArcStartX = (textWidth/2) - circleRadius/1.5
-	local rightArc = basicCadFunctions.createArc(getPoint3D(rightArcStartX, minY), getPoint3D(rightArcStartX + circleRadius, minY + circleRadius), getPoint3D(rightArcStartX, maxY))
-	local topLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, maxY), getPoint3D(rightArcStartX, maxY))
-	local bottomLine = basicCadFunctions.createLine(getPoint3D(leftArcStartX, minY), getPoint3D(rightArcStartX, minY))
-	return {leftArc, topLine, rightArc, bottomLine}
-end
-
-local function createTextWithFrame(text)
-	local textHeight = 5
-	-- The width of "0123456789" / 10 is 3.84 so avarage width of a number char is 0.96 when text height is 3.84.
-	local width = utf8.len(tostring(text)) * 3.84
-	local attDef = basicCadFunctions.createAttributeDefinition("W", getPoint3D(0,0), "MiddleCenter")
-	attDef.Height = textHeight
-	attDef.TextString = "1"
-	attDef.Color = "ByBlock"
-	attDef.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
-	local entities = getTextFrame(textHeight, width)
-	for k, entity in pairs(entities) do
-		entity.Color = "ByBlock"
-		entity.Transparency = cadInterface.createCadEntity("Colors.Transparency", {cadInterface.createCadEntity("Colors.TransparencyMethod", {"ByBlock"})})
-	end
-	table.insert(entities, attDef)
-	local block = cadInterface.createBlock("balloon_"..#tostring(text), entities, true)
-end
-
--- This function should be read only for use in all Lua contexts
-local function getWidthOfBalloon(text, textHeight)
-	-- The width of "0123456789" / 10 is 3.84 so average width of a number char is 0.96 when text height is 5.
-	local width = utf8.len(tostring(text)) * 3.84
-	
-	local ratio = textHeight/width
-
-	local circleRadius = textHeight*1.164 -- Original circle has radius 1.455 and text height is 1.25 1.455/1.25 = 1.164
-	-- if ratio is greater than 0.5 create a circle
-	if ratio > 0.5 then
-		return circleRadius * 2
-	end 
-	
-	local leftArcStartX = -(width/2) + circleRadius/1.5
-	local rightArcStartX = (width/2) - circleRadius/1.5
-	
-	local leftX = leftArcStartX - circleRadius
-	local rightX = rightArcStartX + circleRadius
-	
-	return (rightX - leftX)
-	
-end
-
-
-				local blockName = "balloon_"..(balloonObject and #tostring(balloonObject.Content) or 1)
+				local blockName = "NO-BN-RT-JBTFE_BLN-BALLONG-"..(balloonObject and #tostring(balloonObject.Content) or 1)
 				if cadInterface.blockExist(blockName) then
 					return blockName
 				end
@@ -10177,7 +10201,7 @@ end</Data>
    </TableSpecification>
   </InsertTable>
  </ObjectType>
- <ObjectType DataType="RailCOMPLETETable" Class="RCTable" LuaName="rctype_TableFoundations" Name="JBTFE_DIV Fundamenttabell" Layer="JBTFE__TABELLER" Group="Underbygning/Fundamenttabeller">
+ <ObjectType DataType="RailCOMPLETETable" Class="RCTable" LuaName="rctype_TableFoundations" Name="JBTFE_DIV Fundamenttabell" Layer="JBTFE_TABELLER" Group="Underbygning/Fundamenttabeller">
   <RelationSpace>tabell</RelationSpace>
   <LuaExpression Name="Stage">
    <Formula>NOBN_com_setStage()</Formula>
@@ -11233,7 +11257,7 @@ return s</Data>
    <IncludeSegmentType>Curve</IncludeSegmentType>
   </InsertAlignment>
  </ObjectType>
- <ObjectType DataType="eOcp" Class="RailwayArea" LuaName="rctype_OcpArea" Name="JBTFE_DIV OCP område" Layer="JBTFE_OMRÅDER" Color="ByLayer" Group="Områder" Linetype="RC-OCP">
+ <ObjectType DataType="eOcp" Class="RailwayArea" LuaName="rctype_OcpArea" Name="JBTFE_DIV OCP område" Layer="JBTFE_OCP_OMRÅDER" Color="ByLayer" Group="Områder" Linetype="RC-OCP">
   <RelationSpace>område</RelationSpace>
   <CustomProperty DataType="String" Name="Var0" DisplayName="Var0" DefaultValue="" Category="Local variables" Description="The 'Var0' custom property [String] is a local variable for free use."/>
   <CustomProperty DataType="String" Name="Var1" DisplayName="Var1" DefaultValue="" Category="Local variables" Description="The 'Var1' custom property [String] is a local variable for free use."/>
@@ -11357,10 +11381,9 @@ return s</Data>
    <IncludeSegmentType>Tangent</IncludeSegmentType>
   </InsertArea>
  </ObjectType>
- <ObjectType DataType="RailCOMPLETEBalloon" Class="RailwayPlacedObject" LuaName="rctype_Balloon" Name="RWCO_BLN Balloon" Layer="RWCO_BLN" Color="ByLayer" Group="Common/Balloon" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
-  <RelationSpace>balloon</RelationSpace>
-  <AttachmentCategory Name="balloon"/>
-  <AttachTo Category="balloon"/>
+ <ObjectType DataType="RailCOMPLETEBalloon" Class="RailwayPlacedObject" LuaName="rctype_Balloon" Name="JBTFE_BLN Ballong" Layer="JBTFE_BALLONGER" Color="ByLayer" Group="Felles/Ballong" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+  <RelationSpace>ballong</RelationSpace>
+  <AttachTo Category="anything"/>
   <CustomProperty DataType="Boolean" Name="MileageIncreasesTowardsLeft" DisplayName="Km stiger mot venstre" DefaultValue="false" Category="Presentation" Description="The 'MileageIncreasesTowardsLeft' property [boolean] shows whether the object's own alignment has mileage which increases towards the left in the drawing, with the UCS Y-axis pointing upwards. Usage: Used in DNA for orienting 2D symbols correctly of for adjusting left/right parts of texts etc."/>
   <LuaExpression Name="MileageIncreasesTowardsLeft">
    <Formula>NOBN_com_mileageIncreasesTowardsLeft()</Formula>
@@ -11397,121 +11420,25 @@ return s</Data>
   <LuaExpression Name="EarthingLabelColor">
    <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
   </LuaExpression>
-  <Variants DefaultValue="Balloon">
-   <Variant Name="Balloon"></Variant>
+  <Variants DefaultValue="Ballong">
+   <Variant Name="Ballong"></Variant>
   </Variants>
-  <SetValue Key="code" Value="Balloon"/>
-  <SetValue Key="Content" Value="1"/>
+  <SetValue Key="code" Value="Ballong"/>
+  <PropertyPrompt Key="Content" DefaultValue="Content?" AcceptEmptyValue="false"/>
   <LuaExpression Name="name">
    <Formula>code.." "..Content</Formula>
   </LuaExpression>
-  <InsertPointObject Name="Balloon" GenerateDisplayBlockWithScript="true" DisplayBlockName="balloon_1" DefaultSnapMode="Point" SetDisplayOffsetDuringInsert="true" DrawArrowToDisplayOffset="true">
+  <LuaExpression Name="dir">
+   <Formula>Attachment and Attachment.dir</Formula>
+  </LuaExpression>
+  <InsertPointObject Name="Ballong" GenerateDisplayBlockWithScript="true" DisplayBlockName="NO-BN-RT-JBTFE_BLN-BALLONG-1" DefaultSnapMode="Point" SetDisplayOffsetDuringInsert="true" DrawArrowToDisplayOffset="true" AskForAttachment="true">
    <DisplayBlockGenerationScript>RC__createBlockBalloon(nil)</DisplayBlockGenerationScript>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
   </InsertPointObject>
   <SymbolDefinition RotationCenter="OwnPosition" GenerateBlockWithScript="true" ForceRedrawOfRuntimeBlocksOnScaleChange="true" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
    <Rotation AddAngle="{{AngularOffset}}"/>
    <SymbolBlockGenerationScript>RC__createBlockBalloon(railwayObject)</SymbolBlockGenerationScript>
-   <SymbolAttribute Tag="W">
-    <Value>{{Content}}</Value>
-   </SymbolAttribute>
-  </SymbolDefinition>
- </ObjectType>
- <ObjectType DataType="RailCOMPLETEBalloon" Class="RailwayPlacedObject" LuaName="rctype_OcsPartBalloon" Name="RWHV_BLN OCS Part Balloon" Layer="RWCO_BLN" Color="ByLayer" Group="Common/Balloon" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
-  <RelationSpace>balloon</RelationSpace>
-  <AttachmentCategory Name="balloon"/>
-  <AttachTo Category="balloon"/>
-  <CustomProperty DataType="Boolean" Name="MileageIncreasesTowardsLeft" DisplayName="Km stiger mot venstre" DefaultValue="false" Category="Presentation" Description="The 'MileageIncreasesTowardsLeft' property [boolean] shows whether the object's own alignment has mileage which increases towards the left in the drawing, with the UCS Y-axis pointing upwards. Usage: Used in DNA for orienting 2D symbols correctly of for adjusting left/right parts of texts etc."/>
-  <LuaExpression Name="MileageIncreasesTowardsLeft">
-   <Formula>NOBN_com_mileageIncreasesTowardsLeft()</Formula>
-  </LuaExpression>
-  <CustomProperty DataType="Enumeration" Name="Discipline" DisplayName="Discipline" DefaultValue="" Category="General" Description="The custom 'Discipline' attribute [Felles | Skilt | Overbygning | Underbygning | Kontaktledning | Signal | Tele | Lavspent] identifies the discpline owning the object.">
-   <Values>
-    <Value>Felles</Value>
-    <Value>Underbygning</Value>
-    <Value>Overbygning</Value>
-    <Value>Kontaktledning</Value>
-    <Value>Signal</Value>
-    <Value>Tele</Value>
-    <Value>Lavspent</Value>
-    <Value>Skilt</Value>
-   </Values>
-  </CustomProperty>
-  <SetValue Key="Discipline" Value="Felles"/>
-  <LuaExpression Name="Stage">
-   <Formula>NOBN_com_setStage()</Formula>
-  </LuaExpression>
-  <LuaExpression Name="Layer">
-   <Formula>NOBN_com_setLayer()</Formula>
-  </LuaExpression>
-  <LuaExpression Name="Layer3D">
-   <Formula>"3D_"..Discipline</Formula>
-  </LuaExpression>
-  <DynamicProperty Type="Representation3D" Subtype="Geometry3D">
-   <SetValue Key="Parent" Value="ACS"/>
-  </DynamicProperty>
-  <LuaExpression Name="Geometry3D_0.Rotation.Z">
-   <Formula>NOBN_trk_getYawFromDir()</Formula>
-  </LuaExpression>
-  <SetValue Key="EarthingMethod" Value="None"/>
-  <LuaExpression Name="EarthingLabelColor">
-   <Formula>NOBN_com_assignEarthingLabelColor()</Formula>
-  </LuaExpression>
-  <Variants DefaultValue="OCS Part Balloon">
-   <Variant Name="OCS Part Balloon"></Variant>
-  </Variants>
-  <SetValue Key="code" Value="Balloon"/>
-  <SetValue Key="Content" Value="1"/>
-  <LuaExpression Name="name">
-   <Formula>code.." "..Content</Formula>
-  </LuaExpression>
-  <CustomProperty Category="forBOM" DataType="String" Name="PartsName" DisplayName="PARTS NAME" DefaultValue="" Description="Name of the part." StandardValuesExclusive="false" StandardValuesFromLuaFormula="true">
-   <StandardValuesLuaFormula>
-				{"CONTACT WIRE", "MESSENGER WIRE", "AUX. MESSENGER WIRE", "TAIL WIRE", "FEEDING WIRE","PROTECTIVE WIRE", "GROUNDING WIRE", "NEUTRAL WIRE", "HANGER", "DROPPER", "CONNECTOR", "CROSS CONTACT BRIDGE"}
-			</StandardValuesLuaFormula>
-  </CustomProperty>
-  <CustomProperty Category="forBOM" DataType="String" DisplayName="SPECIFICATION" Name="Specification" DefaultValue="" Description="" StandardValuesFromLuaFormula="true" StandardValuesExclusive="false">
-   <StandardValuesLuaFormula>
-				local relatedObject = table.firstOrNil(getRelatedObjects(rel_Balloon_AppliesTo_Anything, true))
-				if not relatedObject then
-					return {}
-				end
-				local rcTypeName = relatedObject.RcType
-				local typeDefinition = getRailwayObjectType(rcTypeName)
-				return table.where(typeDefinition.CustomProperties, function (x) return x.Category == "forBOM" end):select(function (x) return x.DisplayName end)
-			</StandardValuesLuaFormula>
-  </CustomProperty>
-  <CustomProperty Category="forBOM" DataType="Int32" Name="Qty" DisplayName="Qty." DefaultValue="1" Description="The quantity."/>
-  <CustomProperty Category="forBOM" DataType="String" DisplayName="REF. DWG. NO." Name="RefDwgNo" DefaultValue="" Description="" StandardValuesFromLuaFormula="true" StandardValuesExclusive="false">
-   <StandardValuesLuaFormula>
-				local relatedObject = table.firstOrNil(getRelatedObjects(rel_Balloon_AppliesTo_Anything, true))
-				if not relatedObject then
-					return {}
-				end
-				local rcTypeName = relatedObject.RcType
-				local typeDefinition = getRailwayObjectType(rcTypeName)
-				return table.where(typeDefinition.CustomProperties, function (x) return x.Category == "forBOM" end):select(function (x) return x.DisplayName end)
-			</StandardValuesLuaFormula>
-  </CustomProperty>
-  <CustomProperty Category="forBOM" DataType="String" DisplayName="REMARKS" Name="Remarks" DefaultValue="" Description="" StandardValuesFromLuaFormula="true" StandardValuesExclusive="false">
-   <StandardValuesLuaFormula>
-				local relatedObject = table.firstOrNil(getRelatedObjects(rel_Balloon_AppliesTo_Anything, true))
-				if not relatedObject then
-					return {}
-				end
-				local rcTypeName = relatedObject.RcType
-				local typeDefinition = getRailwayObjectType(rcTypeName)
-				return table.where(typeDefinition.CustomProperties, function (x) return x.Category == "forBOM" end):select(function (x) return x.DisplayName end)
-			</StandardValuesLuaFormula>
-  </CustomProperty>
-  <InsertPointObject Name="OCS Part Balloon" GenerateDisplayBlockWithScript="true" DisplayBlockName="balloon_1" DefaultSnapMode="Point" SetDisplayOffsetDuringInsert="true" DrawArrowToDisplayOffset="true">
-   <DisplayBlockGenerationScript>RC__createBlockBalloon(nil)</DisplayBlockGenerationScript>
-   <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
-  </InsertPointObject>
-  <SymbolDefinition RotationCenter="OwnPosition" GenerateBlockWithScript="true" ForceRedrawOfRuntimeBlocksOnScaleChange="true" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
-   <Rotation AddAngle="{{AngularOffset}}"/>
-   <SymbolBlockGenerationScript>RC__createBlockBalloon(railwayObject)</SymbolBlockGenerationScript>
-   <SymbolAttribute Tag="W">
+   <SymbolAttribute Tag="BalloonContent">
     <Value>{{Content}}</Value>
    </SymbolAttribute>
   </SymbolDefinition>
@@ -11612,71 +11539,70 @@ return s</Data>
  <LuaFunction Name="NOBN_com_getKof05Records()" ReturnType="String" HideFromUser="false" Description="Returns text in KOF file 05 format (Northing, Easting, Elevation). ThemeCode is an optional Norwegian SOSI code. SearchArea is the name of an optional RcArea.">
   <Signature>String NOBN_com_getKof05Records([int ThemeCode[,string SearchArea]])</Signature>
   <Formula>
-function NOBN_com_getKof05Records(ThemeCode, SearchArea)
-	local d, df, n, r, t, s, areas 
-	if ThemeCode == nil then -- No arguments given, return instructions for use:
-		return "Returns text in the Norwegian KOF file 05 format (Northing, Easting, Elevation), for objects with RcType given by\n"
-		    .."the first object that this KOF watch is related to, using the '"..rel_Watch_AppliesTo_Anything.."' watch relation. Specify the\n"
-			.."desired theme code as the first argument to this function. The theme code denotes the 4-digit SOSI survey object\n"
-			.."type, to be printed along with the KOF records. If an optional search area name has been given, then the object\n"
-			.."search will be restricted to that area. Note: Only visible objects are considered.",_warning
-	end
-	if SearchArea == nil then 
-		SearchArea = "" -- Don't care
-	end
-	if SearchArea == "" then 
-		d = DocumentData.ObjectCollection
-	else
-		areas = DocumentData.ObjectCollection:filter(function (x) return x.RcType:lower():match("område") and x:isVisible() end)
-		areas = areas:filter(function (x) return x.code == SearchArea end)
-		if getCollectionLength(areas) == 0 then 
-			return "No search area was found with code '"..SearchArea.."'.",_warning
-		else
-			d = DocumentData.ObjectCollection:filter(function (x) return x.RcArea.code == areas[0].code end)
-		end
-	end
-	local rel = rel_Watch_AppliesTo_Anything
-	r, n = getRelatedObjects(rel)
-	if n == 0 then
-		return "Please relate KOF watch object to any object of the desired RcType, using the '"..rel.."' relation.",_warning
-	end
-	t = r[0].RcType
-	df = d:filter(function (x) return (x.RcType == t) end)
-	n = getCollectionLength(df)
-	if n == 0 then 
-		if SearchArea ~= "" then
-			return "No objects found in area '"..SearchArea.."' of type '"..t.."'.",_warning
-		else
-			return "No objects found of type '"..t.."'.",_warning
-		end
-	else
-		--Make formatted string in KOF (Norway) format: "05 = KOORDINATBLOKK"
-		--
-		--Type            Point name     Pos    Beskrivelse
-		-- -------------- -------------- ------ -----------
-		--Linjestatus     ” ” eller ”-”  1      Angir om dataene i linja skal leses (” ”) eller ignoreres (”-”).
-		--Datablokk type  05             2..3   Datablokk type, der 05 = koordinatblokk. Må ikke endres
-		--Punktnavn       PPPPPPPPPP     5..14  Navn på målepunkt. Punktnavnet kan bestå av både tall og
-	    --                                      bokstaver og påvirker ikke sorteringsrekkefølgen i netLIN 3.
-		--Temakode        KKKKKKKK       16..23 Temakode/SOSI-kode. Kan endres, se tabeller nedenfor.
-		--                                      Viktig: For horisontale retningsendringer langs traseen
-		--                                      (horisontalvinkler) i må ”HV” legges inn som temakode.
-		--X-koordinat     XXXXXXXX.XXX   25..36 North-koordinat.
-		--Y-koordinat     YYYYYYY.YYY    38..48 East-koordinat.
-		--Høyde           ZZZZ.ZZZ       50..57 Ortometrisk høyde.
-		--Beregningskode  Bk             59     Brukes ikke av RailCOMPLETE
-		--Kommentar                      61..79 Brukes ikke av RailCOMPLETE
-		-- Alfanumeriske felt VENSTRE-justeres, numeriske felt HØYREjusteres. Rader har maks 80 tegn.
-		--
-		s = "-KOF file for "..n.." objects found with RcType matching '"..t.."'\n"
-		s = s.."-Type Obj.name Theme NNNNNNNN.NNN EEEEEEE.EEE HHHH.HHH (Northing, Easting, Elevation)\n"
-		for i = 1, n do 
-			local c = df[i-1].geoCoord
-			s = s..string.format(" 05 %10d %8d %12.3f %11.3f %8.3f\n",i,ThemeCode,c.Y,c.X,c.Z)
-		end
-		return s
-	end
-end
+			function NOBN_com_getKof05Records(ThemeCode, SearchArea)
+				local d, df, n, r, t, s, areas 
+				if ThemeCode == nil then -- No arguments given, return instructions for use:
+					return "Returns text in the Norwegian KOF file 05 format (Northing, Easting, Elevation), for objects with RcType given by\n"
+						.."the first object that this KOF watch is related to, using the '"..rel_Watch_AppliesTo_Anything.."' watch relation. Specify the\n"
+						.."desired theme code as the first argument to this function. The theme code denotes the 4-digit SOSI survey object\n"
+						.."type, to be printed along with the KOF records. If an optional search area name has been given, then the object\n"
+						.."search will be restricted to that area. Note: Only visible objects are considered.",_warning
+				end
+				if SearchArea == nil then 
+					SearchArea = "" -- Don't care
+				end
+				if SearchArea == "" then 
+					d = DocumentData.ObjectCollection
+				else
+					areas = DocumentData.ObjectCollection:filter(function (x) return x.RcType:lower():match("område") and x:isVisible() end)
+					areas = areas:filter(function (x) return x.code == SearchArea end)
+					if getCollectionLength(areas) == 0 then 
+						return "No search area was found with code '"..SearchArea.."'.",_warning
+					else
+						d = DocumentData.ObjectCollection:filter(function (x) return x.RcArea.code == areas[0].code end)
+					end
+				end
+				r, n = getRelatedObjects(rel_Watch_AppliesTo_Anything)
+				if n == 0 then
+					return "Please relate KOF watch object to any object of the desired RcType, using the '"..rel_Watch_AppliesTo_Anything.."' relation.",_warning
+				end
+				t = r[0].RcType
+				df = d:filter(function (x) return (x.RcType == t) end)
+				n = getCollectionLength(df)
+				if n == 0 then 
+					if SearchArea ~= "" then
+						return "No objects found in area '"..SearchArea.."' of type '"..t.."'.",_warning
+					else
+						return "No objects found of type '"..t.."'.",_warning
+					end
+				else
+					--Make formatted string in KOF (Norway) format: "05 = KOORDINATBLOKK"
+					--
+					--Type            Point name     Pos    Beskrivelse
+					-- -------------- -------------- ------ -----------
+					--Linjestatus     ” ” eller ”-”  1      Angir om dataene i linja skal leses (” ”) eller ignoreres (”-”).
+					--Datablokk type  05             2..3   Datablokk type, der 05 = koordinatblokk. Må ikke endres
+					--Punktnavn       PPPPPPPPPP     5..14  Navn på målepunkt. Punktnavnet kan bestå av både tall og
+					--                                      bokstaver og påvirker ikke sorteringsrekkefølgen i netLIN 3.
+					--Temakode        KKKKKKKK       16..23 Temakode/SOSI-kode. Kan endres, se tabeller nedenfor.
+					--                                      Viktig: For horisontale retningsendringer langs traseen
+					--                                      (horisontalvinkler) i må ”HV” legges inn som temakode.
+					--X-koordinat     XXXXXXXX.XXX   25..36 North-koordinat.
+					--Y-koordinat     YYYYYYY.YYY    38..48 East-koordinat.
+					--Høyde           ZZZZ.ZZZ       50..57 Ortometrisk høyde.
+					--Beregningskode  Bk             59     Brukes ikke av RailCOMPLETE
+					--Kommentar                      61..79 Brukes ikke av RailCOMPLETE
+					-- Alfanumeriske felt VENSTRE-justeres, numeriske felt HØYREjusteres. Rader har maks 80 tegn.
+					--
+					s = "-KOF file for "..n.." objects found with RcType matching '"..t.."'\n"
+					s = s.."-Type Obj.name Theme NNNNNNNN.NNN EEEEEEE.EEE HHHH.HHH (Northing, Easting, Elevation)\n"
+					for i = 1, n do 
+						local c = df[i-1].geoCoord
+						s = s..string.format(" 05 %10d %8d %12.3f %11.3f %8.3f\n",i,ThemeCode,c.Y,c.X,c.Z)
+					end
+					return s
+				end
+			end
        </Formula>
  </LuaFunction>
  <ObjectType DataType="RailCOMPLETEWatch" Class="RailwayPlacedObject" LuaName="rctype_CoordinateList" Name="JBTFE_DIV KOF-format koordinatliste" Layer="JBTFE_WATCH" Color="ByLayer" Group="Felles/Watch" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
@@ -11964,7 +11890,7 @@ end
   </SymbolDefinition>
   <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
  </ObjectType>
- <ObjectType DataType="tCrossSection" Class="RailwayPlacedObject" LuaName="rctype_RailmlCrossSection" Name="JBTFE_DIV Cross section" Layer="JBTFE_DIVERSE" Color="ByLayer" Group="Felles/railML Cross Section" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
+ <ObjectType DataType="tCrossSection" Class="RailwayPlacedObject" LuaName="rctype_RailmlCrossSection" Name="JBTFE_RCS Cross section" Layer="JBTFE_RCS" Color="ByLayer" Group="Felles/railML Cross Section" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
   <RelationSpace>cross_section</RelationSpace>
   <CustomProperty DataType="String" Name="Var0" DisplayName="Var0" DefaultValue="" Category="Local variables" Description="The 'Var0' custom property [String] is a local variable for free use."/>
   <CustomProperty DataType="String" Name="Var1" DisplayName="Var1" DefaultValue="" Category="Local variables" Description="The 'Var1' custom property [String] is a local variable for free use."/>
@@ -12674,7 +12600,7 @@ end
    <Variant Name="Rørpakke, omstøpt, 7x6xØ110"/>
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
-   <SetValue Key="Frozen" Value="False"/>
+   <SetValue Key="Frozen" Value="false"/>
    <SetValue Key="CustomTransformation" Value="True"/>
   </DynamicProperty>
   <CustomProperty DataType="Boolean" Name="UnderTrackCrossing" DisplayName="Krysser under spor" DefaultValue="true" Description="If true, then the pipes are meant to cross under one or more tracks, connecting two cable pits (manholes).
@@ -13694,7 +13620,7 @@ end
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="IteratedGeometry3D">
    <SetValue Key="RotationBeforeOffset" Value="True"/>
-   <SetValue Key="CustomTransformation" Value="False"/>
+   <SetValue Key="CustomTransformation" Value="false"/>
   </DynamicProperty>
   <CustomProperty DataType="Enumeration" Name="RoadNumberOfLanes" DisplayName="Felt" Description="The road's number of lanes.">
    <Values Variant="Bilvei">
@@ -17734,7 +17660,7 @@ end
    </Variant>
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
-   <SetValue Key="CustomTransformation" Value="False"/>
+   <SetValue Key="CustomTransformation" Value="false"/>
   </DynamicProperty>
   <CustomProperty DataType="Enumeration" Name="WireType" DisplayName="Ledertype" DefaultValue="Cu95" Description="The earthing wire type (ewt) [6/16/25/35/50/70/95/120/150 mm2 Cu], or aluminum corresponding to the copper conductivities.">
    <Values>
@@ -18335,7 +18261,7 @@ end
    <Variant Name="Returkabel"/>
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
-   <SetValue Key="CustomTransformation" Value="False"/>
+   <SetValue Key="CustomTransformation" Value="false"/>
   </DynamicProperty>
   <LuaExpression Name="Linetype">
    <Formula>_JBTEH_LED_Linetype()</Formula>
@@ -18798,7 +18724,7 @@ end
    <Variant Name="Kontaktledning, avspenningsline"/>
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
-   <SetValue Key="CustomTransformation" Value="False"/>
+   <SetValue Key="CustomTransformation" Value="false"/>
   </DynamicProperty>
   <LuaExpression Name="name">
    <Formula>_JBTEH_KTL_name()</Formula>
@@ -19221,7 +19147,7 @@ end
    <Variant Name="Fixline"></Variant>
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
-   <SetValue Key="CustomTransformation" Value="False"/>
+   <SetValue Key="CustomTransformation" Value="false"/>
   </DynamicProperty>
   <CustomProperty DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A" Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08].">
    <Values>
@@ -36551,7 +36477,7 @@ end
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
    <SetValue Key="SignSpeed" Value="40"/>
   </InsertPointObject>
-  <InsertPointObject Name="Signal 68B Økt hastighet" DisplayName="68B Økt hastighet" DisplayBlockName="NO-BN-2D-JBTKO_SKT-SKILT-KJOERENDE-SIGNAL-68B-OEKT-HASTIGHET-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
+  <InsertPointObject Name="Signal 68B Økt hastighet" DisplayName="68B Økt hastighet" DisplayBlockName="NO-BN-2D-JBTKO_SKT-SKILT-KJOERENDE-SIGNAL-68B-OEKT-HASTIGHET-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
    <SetValue Key="SignSpeed" Value="80"/>
@@ -36662,6 +36588,7 @@ end
   </DockPointDefinitions>
   <DisplayPointDefinitions>
    <SnapPoints>
+    <SnapPoint X="0" Y="0"/>
     <SnapPoint X="3" Y="3"/>
     <SnapPoint X="3" Y="-3"/>
     <SnapPoint X="-3" Y="3"/>
