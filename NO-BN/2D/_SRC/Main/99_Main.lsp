@@ -119,7 +119,12 @@
 				((= _LISPSYS_ 2) (TraceLevel1 "Running under Visual Studio with AutoLisp debugging extension, using ASCII (MBCS) char set."))
 			)
 			(command _BCLOSE_ _ENTER_) ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
-			(LDOFF) ; If debugging in a Norconsult environment, also turn OFF lee-mac.com Layer Director routines (see web on LM)
+			(LDOFF) ; If debugging with Lee-Mac helpers, also turn OFF lee-mac.com Layer Director routines (see web on LM)
+
+			; The global acad variable 'MEASUREMENT' must be set to 1 to use metric hatches.
+			; 0 = Imperial; uses the hatch pattern file and linetype file designated by the ANSIHatch and ANSILinetype registry settings.
+			; 1 = Metric; uses the hatch pattern file and linetype file designated by the ISOHatch and ISOLinetype registry settings.
+			(setvar 'MEASUREMENT 1)
 
 			; NB: The sequence matters in the following statements:
 			(TraceLevel1 "Setting AutoCAD parameters and layer '0' properties...")
