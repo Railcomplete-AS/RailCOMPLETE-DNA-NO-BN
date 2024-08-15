@@ -119,6 +119,7 @@
 				((= _LISPSYS_ 2) (TraceLevel1 "Running under Visual Studio with AutoLisp debugging extension, using ASCII (MBCS) char set."))
 			)
 			(command _BCLOSE_ _ENTER_) ; Assume called from VLIDE debugger and exit BE if last debug run stranded in the Block Editor.
+			
 			(LDOFF) ; If debugging with Lee-Mac helpers, also turn OFF lee-mac.com Layer Director routines (see web on LM)
 
 			; The global acad variable 'MEASUREMENT' must be set to 1 to use metric hatches.
