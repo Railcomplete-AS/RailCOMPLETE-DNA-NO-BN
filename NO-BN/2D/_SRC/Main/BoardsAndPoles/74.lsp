@@ -20,7 +20,7 @@
 	; Train length
 	;
 	; TL---------TR
-	; |  7 4 2 m  |
+	; |  1 1 0 m  |
 	; BL----.----BR
 	;
 	(setq
@@ -28,10 +28,10 @@
 		description "SKILT 74-1 TOGLENGDESKILT ALT 1"
 		x 7.5
 		y 3.0
-		attDef '("TOGLENGDE" "Toglengde" "220m")
+		attDef '("TOGLENGDE" "Toglengde" "110m")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
-	(AddTextAttributeAtPoint layDef_Zero _th250_ _origin_ attDef)
+	(AddTextAttributeAtPoint layDef_Zero _th180_ _origin_ attDef)
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
@@ -45,9 +45,9 @@
 	; Train length (old type, narrow stacked)
 	;
 	; TL---TR
-	; |  7  |  ; p1
-	; |  4  |  ; p2
-	; |  2  |  ; p3
+	; |  1  |  ; p1
+	; |  1  |  ; p2
+	; |  0  |  ; p3
 	; |  m  |  ; p4
 	; BL-.-BR
 	;
@@ -60,16 +60,16 @@
 		p2 (list 0 4.55)
 		p3 (list 0 2.65)
 		p4 (list 0 1.00)
-		attHundred	'("HUNDRE_M" "100 m" "2")
-		attTen		'("TI_M" 	"10 m" "2")
+		attHundred	'("HUNDRE_M" "100 m" "1")
+		attTen		'("TI_M" 	"10 m" "1")
 		attOne		'("EN_M" 	 "1 m" "0")
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(MoveUp (HalfOf y))
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p1 attHundred)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p2 attTen)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p3 attOne)
-	(AddTextAtPoint layDef_Zero _th180_ p4 "m")
+	(AddTextAttributeAtPoint layDef_Zero _th150_ p1 attHundred)
+	(AddTextAttributeAtPoint layDef_Zero _th150_ p2 attTen)
+	(AddTextAttributeAtPoint layDef_Zero _th150_ p3 attOne)
+	(AddTextAtPoint layDef_Zero _th150_ p4 "m")
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
