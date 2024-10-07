@@ -12,7 +12,7 @@
 
 ; Thumbnail for sweeped iterated platform element along the platform edge
 
-(defun THUMBNAIL-PLATFORM-ELEMENT ( / blockName ) 
+(defun THUMBNAIL-PLATFORM-ELEMENT ( side / blockName ) 
 	; Platform element along the platform edge
 	;
 	;    9---------------8
@@ -28,7 +28,7 @@
 	;   .------------------1
 	;
 	
-	(setq blockName (strcat _RC_ thumbnailInfix "-PLATFORM-EDGE"		))
+	(setq blockName (strcat _RC_ thumbnailInfix "-PLATFORM-EDGE-" side		))
 	(command
 		_POLYLINE_ 
 			_origin_ ; Lower left corner '.'
@@ -50,6 +50,7 @@
 		_SCALE_ _selectAll_ _ENTER_ _origin_ _tenth_
 		_SCALE_ _selectAll_ _ENTER_ _origin_ _tenth_
 	)
-	(CreateSchematicBlockFromCurrentGraphics (strcat blockName "-LEFT"))
-	(CreateAnnotativeBlockFromScaledSchematicBlock (strcat blockName "-LEFT") _one_)
+	(if (eq side "LEFT") (MirrorAboutYaxis _eraseMirrorSource_))
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

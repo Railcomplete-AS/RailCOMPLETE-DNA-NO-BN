@@ -63,7 +63,7 @@
 	(TraceLevel1 "25_GENERATE-LOWVOLTAGE-OBJECTS")				(25_GENERATE-LOWVOLTAGE-OBJECTS)
 	(TraceLevel1 "26_GENERATE-SIGNALLING-OBJECTS")				(26_GENERATE-SIGNALLING-OBJECTS)
 	(TraceLevel1 "27_GENERATE-TELECOM-OBJECTS")					(27_GENERATE-TELECOM-OBJECTS)
-	
+
 	;;;; (GENERATE-SYMBOL-OVERVIEW-TABLE) ; Only for internal use - produce table showing all available 2D symbols.
 	
 	; Store (as the name of dummy blocks) the number of blocks generated (AutoCAD doesn't count them for you):
