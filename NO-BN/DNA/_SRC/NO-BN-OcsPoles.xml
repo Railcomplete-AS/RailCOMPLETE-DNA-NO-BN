@@ -295,6 +295,10 @@
 				<SetValue Key="OcsPoleCrossSection" Value="HEB240"/>
 				<SetValue Key="OcsPoleHeight" Value="10000"/>
 			</Variant>
+			<Variant Name="Bjelkemast, forsterket">
+				<SetValue Key="OcsPoleCrossSection" Value="HEM260"/>
+				<SetValue Key="OcsPoleHeight" Value="10000"/>
+			</Variant>
 			<!-- TODO: Få ekte data for GMB-mastene -->
 			<Variant Name="GMB-mast">
 				<SetValue Key="OcsPoleCrossSection" Value="HEB240"/>
@@ -337,13 +341,16 @@
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true"><Formula>JBTEH_MAS_getOtherObjectsToModelcheck()</Formula></LuaExpression>
 
 		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Masteprofil"
-			Description="The overhead catenary system (OCS) pole profile (omp) [HEB200..280 | H3..H6 | B2..B6 | 240x240 | Ø260].">
+			Description="The overhead catenary system (OCS) pole profile (omp) [HEB200..280 | HEM260 | H3..H6 | B2..B6 | 240x240 | Ø260].">
 			<Values Variant="Bjelkemast">
 				<Value>HEB280</Value>
 				<Value>HEB260</Value>
 				<Value>HEB240</Value>
 				<Value>HEB220</Value>
 				<Value>HEB200</Value>
+			</Values>
+			<Values Variant="Bjelkemast, forsterket">
+				<Value>HEM260</Value>
 			</Values>
 			<!-- TODO: Få ekte data for GMB-mastene -->
 			<Values Variant="GMB-mast">
@@ -421,6 +428,19 @@
 				<Value>7000</Value>
 				<Value>6500</Value>
 				<Value>6000</Value>
+			</Values>
+			<Values Variant="Bjelkemast, forsterket">
+				<Value>13000</Value>
+				<Value>12500</Value>
+				<Value>12000</Value>
+				<Value>11500</Value>
+				<Value>11000</Value>
+				<Value>10500</Value>
+				<Value>10000</Value>
+				<Value>9500</Value>
+				<Value>9000</Value>
+				<Value>8500</Value>
+				<Value>8000</Value>
 			</Values>
 			<Values Variant="GMB-mast">
 				<!-- TODO: Få ekte data for GMB-mastene -->
@@ -520,6 +540,12 @@
 		
 		<CustomProperty DataType="Enumeration" Name="OcsPoleDepth" DisplayName="Mastedybde" DefaultValue="0"
 			Description="Only applicable to wooden and concrete poles. The overhead catenary system (OCS) pole depth below ground reference level (omd) [mm].">
+			<Values Variant="Bjelkemast">
+				<Value>0</Value>
+			</Values>
+			<Values Variant="Bjelkemast, forsterket">
+				<Value>0</Value>
+			</Values>
 			<Values Variant="GMB-mast">
 				<Value>0</Value>
 			</Values>
@@ -625,6 +651,8 @@
 				function _JBTEH_MAS_ocsPole_Geometry3DName()
 					if Variant == "Bjelkemast" then
 						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsPoleCrossSection .."-191x374xM36-"..OcsPoleHeight
+					elseif Variant == "Bjelkemast, forsterket" then
+						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsPoleCrossSection .."-191x374xM36-"..OcsPoleHeight
 					elseif Variant == "GMB-mast" then
 						--TODO: Få ekte data for GMB-mastene, Lage 3D GMB-master
 						return "NO-BN-3D-EH-MAS-GMBMAST-" ..OcsPoleCrossSection .."-" ..OcsPoleHeight
@@ -646,6 +674,13 @@
 		</LuaFunction>
 
 		<InsertPointObject Name="Bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-BJELKEMAST-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
+		</InsertPointObject>
+		
+		<InsertPointObject Name="Bjelkemast, forsterket" DisplayBlockName="NO-BN-2D-JBTEH_MAS-BJELKEMAST-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
@@ -699,6 +734,7 @@
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_MAS
 				{% if    Variant == 'Bjelkemast' %}BJELKEMAST
+				{% elsif Variant == 'Bjelkemast, forsterket' %}BJELKEMAST
 				{% elsif Variant == 'GMB-mast' %}GMBMAST
 				{% elsif Variant == 'B-mast' %}GITTERMAST-B
 				{% elsif Variant == 'H-mast' %}GITTERMAST-H
