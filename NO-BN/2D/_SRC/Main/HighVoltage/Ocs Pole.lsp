@@ -49,8 +49,10 @@
 	; :  |           Footplate / top-plate thickness: w2 
 	; .  1           Rounding radius = r
 	;
-	(setq blockName (strcat _OCS_ "MAS-" "BJELKEMAST"		))
-	(setq description (strcat "KL-MAST, HEB BJELKEMAST"		))
+	(setq blockNameHEB (strcat _OCS_ "MAS-" "BJELKEMAST"			))
+	(setq blockNameHEM (strcat _OCS_ "MAS-" "BJELKEMAST-FORSTERKET"	))
+	(setq descriptionHEB (strcat "KL-MAST, HEB BJELKEMAST"			))
+	(setq descriptionHEM (strcat "KL-MAST, HEM BJELKEMAST"			))
 	(setq
 		x (/ 3.0 2) ; Halfwidth
 		y (/ 3.0 2) ; Halfheight
@@ -65,16 +67,29 @@
 		p6	(list x y)
 		p7	(list 0 y)
 	)
-	; Draw the first quadrant of an "I" shaped beam, then mirror+mirror:
+	; Draw the first quadrant of an "I" shaped beam, then mirror+mirror
+	; 'HEM' type 2D symbol
 	(DrawLine layDef_Zero p1 p2)
 	(DrawArc layDef_Zero p2 p3 p4)
 	(command _POLYLINE_ p4 p5 p6 p7 _openPolyline_)
 	(MirrorAboutYaxis _keepMirrorSource_)
 	(MirrorAboutXaxis _keepMirrorSource_)
 	(DrawHatchAtPoint _denseHatch_ _origin_ _angleZero_ _offsetZero_)
-	(AddDescriptionBelowOrigin description y)
-	(CreateSchematicBlockFromCurrentGraphics blockName)
-	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	(AddDescriptionBelowOrigin descriptionHEB y)
+	(CreateSchematicBlockFromCurrentGraphics blockNameHEB)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockNameHEB _one_)
+
+	; Repeat all steps
+	; 'HEB' 2D symbol
+	(DrawLine layDef_Zero p1 p2)
+	(DrawArc layDef_Zero p2 p3 p4)
+	(command _POLYLINE_ p4 p5 p6 p7 _openPolyline_)
+	(MirrorAboutYaxis _keepMirrorSource_)
+	(MirrorAboutXaxis _keepMirrorSource_)
+	(DrawHatchAtPoint _denseHatch_ _origin_ _angleZero_ _offsetZero_)
+	(AddDescriptionBelowOrigin descriptionHEM y)
+	(CreateSchematicBlockFromCurrentGraphics blockNameHEM)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockNameHEM _one_)
 )
 
 
