@@ -3278,9 +3278,9 @@ end
 
 		<LuaExpression Name="code"><Formula>getNearbyAlignments()[0].code</Formula></LuaExpression>
 		
-		<!-- NB: Already defined in macro -->
+		<!-- NB: Already defined in macro-->
 		<!-- Assume portal placement, but stay away from exact ventre track in order to keep the tail drawing in place: -->
-		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3 --Override of macro for LateralOffset</Formula></LuaExpression>
 		
 		<!-- In alignment snap mode, assume pole,l not portal. -->
 		<InsertPointObject Name="Spornummer" DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SPORNUMMER-{{SymbolMode}}" 
@@ -3667,7 +3667,7 @@ end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_SignNssArrow_Geometry3DOffsetY()</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Y"><Formula>_JBTSA_MSS_SignNssArrow_Geometry3DOffsetY()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_SignNssArrow_Geometry3DOffsetY()" 
 				ReturnType="Double"
 				HideFromUser="false"
@@ -3692,7 +3692,7 @@ end
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_MSS_SignNssArrow_Geometry3DOffsetZ()</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>_JBTSA_MSS_SignNssArrow_Geometry3DOffsetZ()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_MSS_SignNssArrow_Geometry3DOffsetZ()" 
 				ReturnType="Double"
 				HideFromUser="false"
@@ -3717,7 +3717,6 @@ end
 			</Formula>
 		</LuaFunction>
 		
-
 		<InsertPointObject Name="Signal 102-1 Pil mot høyre" DisplayName="102-1 Pilskilt" 
 				DisplayBlockName="NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-102-1-PIL-H-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
@@ -5237,12 +5236,22 @@ end
 		Description="Returns the default pole 3D offset Z, i.e. the height of the pole.">
 		<Signature>Double NOBN_bnp_getBoardOffset3DZ()</Signature>
 		<Formula>
--- This formula does not catch all board configurations. If you have a complicated board configuration it's likely that you will have to delete it and configure the Z offset manually to get the right behaviour for your 3D model.
--- The formula is intended to handle the following cases: i) rctype_SignErtmsMiscBoard alone, ii) rctype_SignErtmsMiscBoard with attached rctype_SignErtmsIdBoard, iii) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, iv) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, with attached rctype_SignErtmsIdBoard.
--- Note in particular that the formula does not handle the case where two rctype_SignErtmsMiscBoard are attached to a single stop sign (rctype_SignErtmsMarkerBoard).
---
--- Returns the height of the Attachment board, if any.
-function getAttachmentBoardHeight()
+--[[
+This formula does not catch all board configurations. If you have a complicated board configuration it is
+likely that you will have to delete it and configure the Z offset manually to get the right behaviour for
+your 3D model.
+
+The formula is intended to handle the following cases: i) rctype_SignErtmsMiscBoard alone,
+ii) rctype_SignErtmsMiscBoard with attached rctype_SignErtmsIdBoard, iii) rctype_SignErtmsMiscBoard attached
+to rctype_SignErtmsMarkerBoard, iv) rctype_SignErtmsMiscBoard attached to rctype_SignErtmsMarkerBoard, with
+attached rctype_SignErtmsIdBoard.
+
+Note in particular that the formula does not handle the case where two rctype_SignErtmsMiscBoard are attached
+to a single stop sign (rctype_SignErtmsMarkerBoard).
+
+Returns the height of the Attachment board, if any.
+--]]
+function NOBN_bnp_getBoardOffset3DZ()
 	if Attachment == nil then return nil
 	elseif Attachment.Variant == "E35 Stop sign, side of track" then return 0.400
 	elseif Attachment.Variant == "E35 Stop sign, side of track med dverg" then return 0.400

@@ -813,6 +813,35 @@ end
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_SIGNAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 
+		<DynamicProperty Type="Projection2DCollection" Subtype="Projection2D">
+			<LuaExpression Name="Name"><Formula>name</Formula></LuaExpression>
+			<LuaExpression Name="MinimumBound"><Formula>RightSided and "-9 -0.5 -5" or "-5 -0.5 -5"</Formula></LuaExpression>
+			<LuaExpression Name="MaximumBound"><Formula>RightSided and "5 0.5 9" or "9 0.5 9"</Formula></LuaExpression>
+			<LuaExpression Name="Rotation.Z"><Formula>dir == "up" and 0 or 180</Formula></LuaExpression>
+			<!-- Annotation in grid: -->
+			<LuaExpression Name="Annotation.Contents"><Formula>_JBTSA_SIG_Annotation2D()</Formula></LuaExpression>
+			<SetValue Key="Annotation.Margin" Value="1.000"/>
+			<SetValue Key="Annotation.Justify" Value="TopCenter"/>
+			<SetValue Key="Annotation.TextHeight" Value="0.200"/>
+			<SetValue Key="Annotation.Style" Value="Standard"/>
+		</DynamicProperty>
+
+		<LuaFunction Name="_JBTSA_SIG_Annotation2D()" ReturnType="String"
+			Description="Returns info about object placement for use in 2D projections.">
+			<Signature>_JBTSA_SIG_Annotation2D()</Signature>
+			<Formula>
+				function _JBTSA_SIG_Annotation2D()
+					local railHeadDistance = Alignment.AlignmentSystem.AlignmentGauge
+					return name
+					.."\\PKm."..NOBN_trk_toKm(ReferenceMileage)
+					.."\\PDirection: "..(dir == "up" and "Increasing Km" or "Decreasing Km")
+					.."\\PSide of alignment in increasing Km-direction: "..SideOfAlignment
+					.."\\PLateral offset from closest inner rail: "..RC__round(LateralOffset + (LeftSided and 1 or -1)*railHeadDistance/2, 3)
+					.."\\PVertical offset from lowest rail top: "..RC__round(VerticalOffset, 3)
+				end
+			</Formula>
+		</LuaFunction>
+
 		<!-- Variant has been added solely to show the user something - it is not needed, since all signal items have this same Variant. -->
 		<Variants DefaultValue="Sammensatt signal">
 			<Variant Name="Sammensatt signal"/>

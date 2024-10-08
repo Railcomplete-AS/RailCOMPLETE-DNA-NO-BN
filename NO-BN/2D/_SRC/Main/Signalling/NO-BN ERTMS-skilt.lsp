@@ -37,7 +37,7 @@
 	; ERTMS boards
 	; E106A
 	; ( there is no "BEGIN" here)
-	(TraceLevel2 "ERTMS-SHUNTING-AREA"))
+	(TraceLevel2 "ERTMS-SHUNTING-AREA")
 	(NOBN-ERTMS-SHUNTING-AREA "END" nil)
 	(NOBN-ERTMS-SHUNTING-AREA "END" "YOKE")
 
