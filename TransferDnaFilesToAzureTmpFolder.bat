@@ -15,7 +15,7 @@ echo         Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tuto
 
 Rem Move to ..\Customization\XX-YY\DNA folder:
 cd .\%ADM%\DNA
-call ..\..\_TOOLBOX\BatchFiles\CompileDna.bat
+Rem call ..\..\_TOOLBOX\BatchFiles\CompileDna.bat
 
 Rem Move to ..\Customization\XX-YY folder:
 cd ..
