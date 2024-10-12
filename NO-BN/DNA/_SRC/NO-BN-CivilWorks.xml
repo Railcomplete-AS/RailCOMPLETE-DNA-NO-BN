@@ -20,13 +20,13 @@
 		<Formula>
 			function NOBN_sub_getFoundationCode(obj)
 				local tol = 0.50 --[m] Look for a matching object close to 'obj'
-				local function fn(obj,objectTypes,errMsg)
+				local function fn(obj, objectTypes, errMsg)
 						--Check for matching objects in prioritized order.
-					local ot,n,o
+					local ot, n, o
 					ot = getCollectionFromTable(objectTypes)
 					n = ot.Count
-					for i=0,n-1 do
-						o = getNearbyPointObjects2D(tol,ot[i],obj)
+					for i=0, n-1 do
+						o = getNearbyPointObjects2D(tol, ot[i],obj)
 						if getCollectionLength(o) &gt; 0 then return o[0].code end
 					end
 					return errMsg 
@@ -143,10 +143,10 @@
 
 		<!-- 3D geometries: -->
 		<!-- '_position' is an intrinsic variable available to sampled Lua functions. -->
-		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFK_Geometry3DName(true,true)</Formula></LuaExpression>
+		<LuaExpression Name="SweptGeometry3D_0.Name"><Formula>_JBTKU_KFK_Geometry3DName(true, true)</Formula></LuaExpression>
 		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 
-		<LuaExpression Name="IteratedGeometry3D_1.Name"><Formula>_JBTKU_KFK_Geometry3DName(true,false)</Formula></LuaExpression>
+		<LuaExpression Name="IteratedGeometry3D_1.Name"><Formula>_JBTKU_KFK_Geometry3DName(true, false)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Offset.X"><Formula>_JBTKU_KFK_Geometry3DOffsetX(_position)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Offset.Z"><Formula>_JBTKU_KFK_Geometry3DOffsetZ(_position)</Formula></LuaExpression>
 		<LuaExpression Name="IteratedGeometry3D_1.Separation"><Formula>_JBTKU_KFK_IteratedGeometry3DSeparation(_position)</Formula></LuaExpression>
@@ -157,7 +157,7 @@
 				Description="Returns the cable duct's default 3D geometry name, covered or uncovered. Set second argument to 'true' if a sweep profile is needed.">
 			<Signature>String _JBTKU_KFK_Geometry3DName([boolean Covered,)</Signature>
 			<Formula>
-				function _JBTKU_KFK_Geometry3DName(Covered,Swept)
+				function _JBTKU_KFK_Geometry3DName(Covered, Swept)
 
 					if Covered == nil or Covered == false then Covered = false
 					elseif Covered == true then --do nothing
@@ -182,14 +182,14 @@
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTKU_KFK_getStartEndAndJump()"
-				ReturnType="AlignmentInfo,AlignmentInfo,Double"
+				ReturnType="AlignmentInfo, AlignmentInfo, Double"
 				HideFromUser="false"
 				Description="Sampled formula. Returns 'AlignmentInfo' data structures for one duct element's start and end, plus the jump length from start to end along the duct's alignment. Must be called with '_position' as input argument (_position.Ref = alignment GUID, _position.Pos = distAlong).">
-			<Signature>alignmentInfo,alignmentInfo,Double _JBTKU_KFK_getStartEndAndJump(_position)</Signature>
+			<Signature>alignmentInfo, alignmentInfo, Double _JBTKU_KFK_getStartEndAndJump(_position)</Signature>
 			<Formula>
 				function _JBTKU_KFK_getStartEndAndJump(_position)
 					--Interpret 'Cant' stored in duct's alignment as extra offset (usually the lift of the closest rail) [mm]:
-					local id,pos,len2d,offset,s,e,a,b
+					local id, pos, len2d, offset, s, e, a, b
 					id = _position.Ref.id
 					pos = _position.Pos
 					len2d = getObjectFromId(id).RcAlignment.HorizontalGeometry.Length
@@ -204,9 +204,9 @@
 						a = pos - offset
 						b = pos + offset
 					end
-					s = getAlignmentInfo(getAlignmentPos(id,a))
-					e = getAlignmentInfo(getAlignmentPos(id,b))
-					return s,e,b-a
+					s = getAlignmentInfo(getAlignmentPos(id, a))
+					e = getAlignmentInfo(getAlignmentPos(id, b))
+					return s, e, b-a
 				end
 			</Formula>
 		</LuaFunction>
@@ -218,7 +218,7 @@
 			<Signature>Double _JBTKU_KFK_Geometry3DOffsetX(_position)</Signature>
 			<Formula>
 				function _JBTKU_KFK_Geometry3DOffsetX(_position)
-					local s,e = _JBTKU_KFK_getStartEndAndJump(_position)
+					local s, e = _JBTKU_KFK_getStartEndAndJump(_position)
 					local ai = getAlignmentInfo(_position.ref.id,(s.Point.X + e.Point.X)/2,(s.Point.Y + e.Point.Y)/2)
 					return ai.DistanceToAlignment
 				end	
@@ -232,7 +232,7 @@
 			<Signature>Double _JBTKU_KFK_Geometry3DOffsetZ(_position)</Signature>
 			<Formula>
 				function _JBTKU_KFK_Geometry3DOffsetZ(where)
-					local _Geometry3DOffsetZstartAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
+					local _Geometry3DOffsetZstartAi, endAi, jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
 					local mid = getAlignmentInfo(where)
 					local startElevation = startAi.Elevation
 					local endElevation = endAi.Elevation
@@ -257,7 +257,7 @@
 			<Signature>Double _JBTKU_KFK_Rotation3DX(_position)</Signature>
 			<Formula>
 				function _JBTKU_KFK_Rotation3DX(where)
-					local startAi,endAi,jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
+					local startAi, endAi, jumpDist = _JBTKU_KFK_getStartEndAndJump(where)
 					local startElevation = startAi.Elevation
 					local endElevation = endAi.Elevation
 					local midCantRotation = getAlignmentInfo(where).CantRotation
@@ -270,7 +270,7 @@
 						--If 'AddElevationIfCant' is "NONE" or "CW" or "CCW" but we are not currently in a curve:
 						deltaZ = endElevation - startElevation
 					end
-					return math.deg(math.atan(deltaZ,jumpDist))
+					return math.deg(math.atan(deltaZ, jumpDist))
 				end
 			</Formula>
 		</LuaFunction>
@@ -460,8 +460,8 @@
 					local warnBelowSlope = 4 --[o/oo]
 					local p1 = RcAlignment.StartPoint
 					local p2 = RcAlignment.EndPoint
-					local t1 = getNearbyAlignments(getPoint3D(p1.X,p1.Y))[0]
-					local t2 = getNearbyAlignments(getPoint3D(p2.X,p2.Y))[0]
+					local t1 = getNearbyAlignments(getPoint3D(p1.X, p1.Y))[0]
+					local t2 = getNearbyAlignments(getPoint3D(p2.X, p2.Y))[0]
 					local m1 = getNearbyPointObjects2D(p1, 2.5, rctype_CablePit)
 					local m2 = getNearbyPointObjects2D(p2, 2.5, rctype_CablePit)
 					local n1 = getCollectionLength(m1)
@@ -471,17 +471,17 @@
 				
 					if n1 + n2 == 0 then
 						--Manhole not found at start nor at end:
-						z1 = getAlignmentInfo(t1.id,p1.X,p1.Y).Elevation + StartPointVerticalOffset
-						z2 = getAlignmentInfo(t2.id,p2.X,p2.Y).Elevation + EndPointVerticalOffset
+						z1 = getAlignmentInfo(t1.id, p1.X, p1.Y).Elevation + StartPointVerticalOffset
+						z2 = getAlignmentInfo(t2.id, p2.X, p2.Y).Elevation + EndPointVerticalOffset
 						t = "track "..RC__identify(t1).." / track "..RC__identify(t2)
 					elseif n2 == 0 then
 						--Manhole found at start, none found at end:
 						z1 = m1[0].geoCoord.Z + StartPointVerticalOffset
-						z2 = getAlignmentInfo(t2.id,p2.X,p2.Y).Elevation + EndPointVerticalOffset
+						z2 = getAlignmentInfo(t2.id, p2.X, p2.Y).Elevation + EndPointVerticalOffset
 						t = "manhole "..RC__identify(m1).." / track "..RC__identify(t2)
 					elseif n1 == 0 then
 						--Manhole found at end, none found at start:
-						z1 = getAlignmentInfo(t1.id,p1.X,p1.Y).Elevation + StartPointVerticalOffset
+						z1 = getAlignmentInfo(t1.id, p1.X, p1.Y).Elevation + StartPointVerticalOffset
 						z2 = m2[0].geoCoord.Z + EndPointVerticalOffset
 						t = "track "..RC__identify(t1).." / manhole "..RC__identify(m2)
 					else
@@ -496,14 +496,14 @@
 					local slope = (dZ/dL) * 1000 --[o/oo]
 
 					if math.abs(slope) &lt;= errorBelowSlope then 
-						return _error,string.format("%.01f: ERROR - %s slope from elevation %.03f to %.03f is not within tolerance %.01f o/oo. Ref. %s.",
-							slope, (slope &gt;= 0.0 and "upwards" or "downwards"), z1,z2,errorBelowSlope,t)
+						return _error, string.format("%.01f: ERROR - %s slope from elevation %.03f to %.03f is not within tolerance %.01f o/oo. Ref. %s.",
+							slope, (slope &gt;= 0.0 and "upwards" or "downwards"), z1, z2, errorBelowSlope, t)
 					elseif math.abs(slope) &lt;= warnBelowSlope then 
-						return _warning,string.format("%.01f: WARNING - %s slope from elevation %.03f to %.03f is close to but still within tolerance %.01f o/oo. Ref. %s.",
-							slope, (slope &gt;= 0.0 and "upwards" or "downwards"), z1,z2,errorBelowSlope,t)
+						return _warning, string.format("%.01f: WARNING - %s slope from elevation %.03f to %.03f is close to but still within tolerance %.01f o/oo. Ref. %s.",
+							slope, (slope &gt;= 0.0 and "upwards" or "downwards"), z1, z2, errorBelowSlope, t)
 					else
-						return _ok,string.format("%.01f: OK - %s slope from elevation %.03f to %.03f is greater than %.01f o/oo. Ref. %s.",
-							slope, (slope &gt;= 0.0 and "upwards" or "downwards"), z1,z2,warnBelowSlope,t)
+						return _ok, string.format("%.01f: OK - %s slope from elevation %.03f to %.03f is greater than %.01f o/oo. Ref. %s.",
+							slope, (slope &gt;= 0.0 and "upwards" or "downwards"), z1, z2, warnBelowSlope, t)
 					end
 				end
 			</Formula>
@@ -767,8 +767,8 @@
 				
 					local p1 = RcAlignment.StartPoint
 					local p2 = RcAlignment.EndPoint
-					local t1 = getNearbyAlignments(getPoint3D(p1.X,p1.Y))[0]
-					local t2 = getNearbyAlignments(getPoint3D(p2.X,p2.Y))[0]
+					local t1 = getNearbyAlignments(getPoint3D(p1.X, p1.Y))[0]
+					local t2 = getNearbyAlignments(getPoint3D(p2.X, p2.Y))[0]
 					local m1 = getNearbyPointObjects2D(p1, 2.5, rctype_CablePit)
 					local m2 = getNearbyPointObjects2D(p2, 2.5, rctype_CablePit)
 					local n1 = getCollectionLength(m1)
@@ -777,22 +777,22 @@
 				
 					if n1 + n2 == 0 then
 						--Manhole not found at start nor at end:
-						z1 = getAlignmentInfo(t1.id,p1.X,p1.Y).Elevation + StartPointVerticalOffset
-						z2 = getAlignmentInfo(t2.id,p2.X,p2.Y).Elevation + EndPointVerticalOffset
+						z1 = getAlignmentInfo(t1.id, p1.X, p1.Y).Elevation + StartPointVerticalOffset
+						z2 = getAlignmentInfo(t2.id, p2.X, p2.Y).Elevation + EndPointVerticalOffset
 					elseif n2 == 0 then
 						--Manhole found at start, none found at end:
 						z1 = m1[0].geoCoord.Z + StartPointVerticalOffset
-						z2 = getAlignmentInfo(t2.id,p2.X,p2.Y).Elevation + EndPointVerticalOffset
+						z2 = getAlignmentInfo(t2.id, p2.X, p2.Y).Elevation + EndPointVerticalOffset
 					elseif n1 == 0 then
 						--Manhole found at end, none found at start:
-						z1 = getAlignmentInfo(t1.id,p1.X,p1.Y).Elevation + StartPointVerticalOffset
+						z1 = getAlignmentInfo(t1.id, p1.X, p1.Y).Elevation + StartPointVerticalOffset
 						z2 = m2[0].geoCoord.Z + EndPointVerticalOffset
 					else
 						--Manhole found at start and at end:
 						z1 = m1[0].geoCoord.Z + StartPointVerticalOffset
 						z2 = m2[0].geoCoord.Z + EndPointVerticalOffset
 					end
-					--if true then return z1,z2,StartPointVerticalOffset,EndPointVerticalOffset end --DEBUG
+					--if true then return z1, z2, StartPointVerticalOffset, EndPointVerticalOffset end --DEBUG
 				
 					local dZ = z2 - z1
 					local dL = RcAlignment.HorizontalGeometry.Length
@@ -1066,11 +1066,11 @@
 			<Formula>
 				function _JBTKU_KFT_Offset3DZ(cursor)
 					local P1 = RcAlignment.StartPoint
-					local ducts = getNearbyAlignments(getPoint3D(P1.X,P1.Y), rctype_CableTrough)
+					local ducts = getNearbyAlignments(getPoint3D(P1.X, P1.Y), rctype_CableTrough)
 					if getCollectionLength(ducts) == 0 then
 						return 0, _info("UNFINISHED - No cable duct found at flexible tube's geometry start point.")
 					end
-					local Zref = getAlignmentInfo(ducts[0].id,P1.X,P1.Y).Point.Z
+					local Zref = getAlignmentInfo(ducts[0].id, P1.X, P1.Y).Point.Z
 					
 					local ini = 0.2		--Length of initial level part
 					local c = 0.8		--Length of cosine part
@@ -1245,7 +1245,7 @@
 			<Formula>
 				function _JBTKU_KFOE_manhole_code()
 					local entireKm = math.floor(ReferenceMileage/1000)
-					return string.format("TK-%d-%02d",entireKm,Seq), _info("Manhole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable Seq ("..Seq..").")
+					return string.format("TK-%d-%02d",entireKm, Seq), _info("Manhole's code is inherited from reference mileage ("..ReferenceMileage..") and the local variable Seq ("..Seq..").")
 				end
 			</Formula>
 		</LuaFunction>
@@ -1752,7 +1752,7 @@
 		baseOffsetY: millimeters offset of center base plate in Y direction, from origo
 		shaft: from top of bottom plate to top of foundation (reference level Z)
 		type: B3, BJELKEMAST, H3, BORET-Ø355, BORET-Ø555
-		boltX, boltY: Placing of bolt in the first quadrant. Ø355 has 8 bolts with angle 27DD from East / North instead of x,y coordinates.
+		boltX, boltY: Placing of bolt in the first quadrant. Ø355 has 8 bolts with angle 27DD from East / North instead of x, y coordinates.
 		boltsize: M24 or M36
 		Insertion point: Center of bolt group
 
