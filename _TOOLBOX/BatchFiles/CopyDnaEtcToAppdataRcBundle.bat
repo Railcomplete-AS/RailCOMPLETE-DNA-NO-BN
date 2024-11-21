@@ -1,7 +1,7 @@
-@echo off
+echo off
 rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
-@echo	ENTER CopyDnaEtcToAppdataRcBundle.bat
-@echo		Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
+echo	ENTER CopyDnaEtcToAppdataRcBundle.bat
+echo		Settings Adm=%ADM% Release=%RELEASE% Log=%LOG% Copy3D=%COPY3D% Tutorials=%TUTORIALS% Clean=%CLEAN%
 rem			*********************************************************************************
 rem			
 rem			In the following, 'XX-YY' denotes any administration. This batch file is identical for all.
@@ -72,78 +72,59 @@ if "%CLEAN%" neq "yes" goto Continue1
 	rmdir /s /q "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%"
   
 :Continue1
-	@echo          *********************************************************************************
-	@echo          Transfering customization files for %ADM% to local machine's APPDATA folder...
-	@echo          *********************************************************************************
-	@echo          ON
+	echo          *********************************************************************************
+	echo          Transfering customization files for %ADM% to local machine's APPDATA folder...
+	echo          *********************************************************************************
+	echo          ON
 	
-	@echo.
-	@echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
+	echo - 2D symbols and thumbnails for RC-CreateXxxx functions:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\2D    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\2D"
 
 if "%COPY3D%" neq "yes" goto Continue2
-	@echo.
-	@echo - 3D object models:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D"
+	echo - 3D object models:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\3D    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\3D"
 
 :Continue2
-	@echo.
-	@echo - AutoCAD stuff (color table, fonts etc):
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\AutoCAD"
+	echo - AutoCAD stuff (color table, fonts etc):
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\AutoCAD    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\AutoCAD"
 
-	@echo.
-	@echo - DNA, switches and DNA mappings:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
+	echo - DNA, switches and DNA mappings:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\DNA    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\DNA"
 
-	@echo.
-	@echo - FAQ:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
+	echo - FAQ:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
 
-	@echo.
-	@echo - Lua snippets and Tooltips (Lua and XAML code):
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua\LuaTooltipPages    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua\LuaTooltipPages"
+	echo - Lua scripts, Lua functions snippets and Tooltips (Lua and XAML code):
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua"
 
-	@echo.
-	@echo - Release notes:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\ReleaseNotes"
+	echo - Psets:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Psets    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Psets"
+
+	echo - Release notes:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\ReleaseNotes"
 
 if "%TUTORIALS%" neq "yes" goto Continue3
-	@echo.
- 	@echo - Administration-specific tutorials:
-	@echo.
+ 	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
 	set TARGETFOLDER=%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
-	@echo Source=%SOURCEFOLDER%
-	@echo Target=%TARGETFOLDER%
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"
+	echo Source=%SOURCEFOLDER%
+	echo Target=%TARGETFOLDER%
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"
 	rem Remove excess target folders (folder name starts with an underscore) - and its files, including subfolders:
-	@echo Run: for /f "tokens=*" %G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%G"
+	echo Run: for /f "tokens=*" %G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%G"
 	for /f "tokens=*" %%G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%%G"
 
 :Continue3
-	@echo .
-	@echo - Vector images (administration's logo etc):
-	@echo .
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\VectorImages"
+	echo - Vector images (administration's logo etc):
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\VectorImages"
 
-	@echo .
-	@echo - WebLinks:
-	@echo .
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
+	echo - WebLinks:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\WebLinks    "%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\WebLinks"
 
-	@echo .
-	@echo OFF
-	@echo          *********************************************************************************
-	@echo          ...Transfer completed.
-	@echo          *********************************************************************************
-	@echo .
+	echo OFF
+	echo          *********************************************************************************
+	echo          ...Transfer completed.
+	echo          *********************************************************************************
 
 :TheEnd
-@echo	EXIT CopyDnaEtcToAppdataBundle.bat
+echo	EXIT CopyDnaEtcToAppdataBundle.bat

@@ -90,13 +90,14 @@ if "%COPY3D%" neq "yes" goto Noecho
 	echo - FAQ:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ    "%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\FAQ"
 
-	echo - Lua snippets and Tooltips (Lua and XAML code):
+	echo - Lua scripts, Lua functions snippets and Tooltips (Lua and XAML code):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua    "%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Lua"
 
-	@echo.
-	@echo - Release notes:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\ReleaseNotes"
+	echo - Psets:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Psets    "%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Psets"
+
+	echo - Release notes:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\ReleaseNotes"
 
 if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
  	echo - Administration-specific tutorials:
@@ -104,16 +105,13 @@ if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
 	set TARGETFOLDER=%programdata%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
-	echo .
 	rem echo d | xcopy /Y /E /I: /Y Suppress prompt to confirm overwriting a file. Can be preset in the echo d | xcopy /Y /E /ICMD env
 	rem echo d | xcopy /Y /E /I: /E echo d | xcopy /Y /E /I folders and subfolders, including Empty folders. Can be used to modify /T.
 	rem echo d | xcopy /Y /E /I: /I If in doubt always assume the destination is a folder e.g. when the destination does not exist.
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"
-	echo .
 	rem Remove excess target folders (folder name starts with an underscore) - and its files, including subfolders:
 	echo Run: for /f "tokens=*" %G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%G"
 	for /f "tokens=*" %%G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%%G"
-	echo .
 :Noxcopy /Y /E /ITutorials
 
 	echo - Vector images (administration's logo etc):
