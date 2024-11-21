@@ -4501,7 +4501,7 @@
     <InsertionScaleUnit>Meters</InsertionScaleUnit>
     <LightingUnits>International</LightingUnits>
   </Units>
-  <DnaIdentification Name="NO-BN 2021.a (Patch 10 DRAFT 2024-10-12.">
+  <DnaIdentification Name="NO-BN 2021.a (patch 10, 2024-11-21)">
     <DnaIri>
       <AdministrationCountry>NO</AdministrationCountry>
       <AdministrationDelimiter>-</AdministrationDelimiter>
@@ -13080,9 +13080,6 @@ return s</Data>
   
   
   
-    <Layer Name="JBTFE_PRX" Locked="false" On="false" Off="false" Frozen="false" Color="62" Description="Proxy object, added by user to this drawing (FE)" />
-  
-  
  <ObjectType AllowedRepresentation3DTypes="" DataType="RailCOMPLETEWatch" Class="RailwayPlacedObject" Name="JBTFE_PRX Proxy" Layer="JBTFE_PRX" Color="ByLayer" DrawTail="false" DrawTailExtension="false" Group="Felles/Proxy-objekter" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
     <Variants DefaultValue="Proxy type 1">
       <Variant Name="Proxy type 1" />
@@ -13429,7 +13426,7 @@ return s</Data>
       <Formula>NOBN_com_FDVBaneDataHoeydeFra()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
-    <LuaExpression Name="ProxySymbolText" IsModelCheck="false">
+    <LuaExpression Name="ProxySymbolAttdefText" IsModelCheck="false">
       <Formula>"Replace this formula by a text string, or by a formula of your choice, returning the text to be displayed inside our proxy symbol, as long as it contains an ATTDEF entity with tag 'PROXYTEXT'.</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
@@ -55586,6 +55583,49 @@ return s</Data>
 			end
         </Formula>
   </LuaFunction>
+  
+	<LuaFunction Name="NOBN_com_Name3D()" Description="Returns a name for the exported 3D block corresponding to one RC object." ReturnType="String" HideFromUser="false">
+		<Signature>String NOBN_com_Name3D()</Signature>
+		<Formula>
+			function NOBN_com_Name3D()
+				local t1, t2, t3
+				--Vi glemte å omnavne "SA-MSS Merkser, skilt og stolper" til "JBTSA_MSS" i DNA versjon 2021.a:
+				t1 = RcType:match("SA%-MSS") and RcType:sub(1,7) or RcType:sub(4,9):gsub("_","-")
+				if RcType:match("JBTKO_SKT") or RcType:match("SA%-MSS") then
+					t2 = NOBN_bnp_getBoardOrPoleName()
+				else
+					t2 = RC__identify()
+				end
+				local parent = this
+				while parent.Attachment do parent = parent.Attachment end
+				local r, n
+				r1 = parent:getRelatedObjects("Har NSS_balisegruppe")
+				r2 = parent:getRelatedObjects("Er skilt for sporveksel")
+				r3 = {this}
+				r, n = getUnionOfCollections({r1, r2, r3})
+				t3 = (n > 0) and r[0]:RC__identify() or ""
+				return t1.." : "..t2..((RcType:match("JBTSA_SIG") or t3 == t2) and "" or " ["..t3.."]")
+			end
+		</Formula>
+	</LuaFunction>
+	
+    <LuaFunction Name="NOBN_com_Layer3D()" Description="Returns a name for the exported 3D block corresponding to one RC object." ReturnType="String" HideFromUser="false">
+		<Signature>String NOBN_com_Layer3D()</Signature>
+		<Formula>
+			function NOBN_com_Layer3D()
+				local t1, t2, t3
+				if Layer:match("SA%-MSS") then
+					t1 = "S"
+				else
+					t1 = Layer:sub(4,5):gsub("SA","S")
+				end
+				t2 = Layer:match("(FAS%d%d%d%d%-%d%d%d%d)") or "FAS0000-9999"
+				t3 = "_3D"
+				return t1.."_"..t2.."_"..t3
+			end
+		</Formula>
+    </LuaFunction>
+  
   <LuaFunction Name="NOBN_com_Pset_BaneNORBaneDataID()" Description="Avledet fra property [Grunnleggende].[RC Type] (RcType). Returnerer BaneData objekt-ID, på formen 'ff-ttt-nnnnnn' der ff er en av [FE|KU|KO|EH|SA|TE|EL], ttt er 3-bokstavers BaneData objekttypekode innenfor fagkoden, nnnnnn er et unikt nummer i innenfor angitt fag og objekttype. Forklaring til fagkoder: FE=felles (markører, tabeller, områder m.m.), KU=konstruksjon underbygning (terreng, fundamenter, føringsveier, broer, veier, bygninger, drenering), KO=konstruksjon overbygning (ballast, spor, sporobjekter, plattformer), EH=elektro høyspent (KL, jording, kjørestrøm), SA=signalanlegg, TE=tele, EL=elektro lavspent. Skilt er fordelt på alle disipliner. Merk at fagkode FE er ikke en offisiell BaneData fagkode. Funksjonen henter informasjon fra objektets egenskap 'RcType'. RcType må være på formen 'JBTff_ttt &lt;objekttypenavn&gt;' for å gjenkjennes feilfritt." ReturnType="String" HideFromUser="false">
     <Constructor>String NOBN_com_Pset_BaneNORBaneDataID()</Constructor>
     <Formula>
@@ -59628,83 +59668,81 @@ end
 			end
 		</Formula>
   </LuaFunction>
+  
   <LuaFunction Name="NOBN_bnp_getBoardOrPoleName()" Description="Returns a short type name for signs (boards and poles), according to the object's variant." ReturnType="String" HideFromUser="false">
     <Constructor>String NOBN_bnp_getBoardOrPoleName()</Constructor>
     <Formula>
-			function NOBN_bnp_getBoardOrPoleName()
-				if Variant:find("ERTMS Level crossing, announcement") then 
-					return "Fs-PLO"
-				elseif Variant:find("E36 Level crossing, location") then 
-					return "PLO"
-				elseif Variant:find("E36 Level crossing, location") then
-					s = s.."PLO"
-				elseif Variant:find("ERTMS Level crossing, announcement") then
-					s = s.."PLO-Fs"
-				elseif Variant:find("E108 Interlocked area") then
-					s = s.."Sh.start"
-				elseif Variant:find("E106 Stop for shunting") then
-					s = s.."Sh.slutt"
-				elseif Variant:find("E107 Unsecured area with handoperated points")
-					then s = s.."Sup.slutt"
-				elseif Variant:find("Bevegelig kryss") then
-					return "Bev.X"
-				elseif Variant:find("refleks") then
-					return "Refl."
-				elseif Variant:find("Baliseskilt") then
-					return "Balise"
-				elseif Variant:find("innkoblet") then
-					return "Innkobl."
-				elseif Variant:find("utkoblet") then
-					return "Utkobl."
-				elseif Variant:find("Nødtelefon") then
-					return "Nødtlf."
-				elseif Variant:find("1000V") then
-					return "1000V"
-				elseif Variant:find("se og lytt") then
-					return "Se/lytt"
-				elseif Variant:find("enkeltspor") then --Veisignal
-					return "138"
-				elseif Variant:find("flere spor") then --Veisignal
-					return "138-fler"
-				elseif Variant:find("Sidespor") then
-					return "Ssp."
-				elseif Variant:find("Kjedebrudd") then
-					return "Kj.br."
-				elseif Variant:find("meterangivelse") then
-					return "Meterang."
-				elseif Variant:find("Spornummer") then
-					return "Spornr"
-				elseif Variant:find("Anleggsområde") then
-					return "Anl.omr."
-				elseif Variant:find("Rømningsavstand") then
-					local s, r, n
-					s = "Har markør"
-					r, n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then 
-						return "UNFINISHED - Relate with '"..s.."' to one or two marker objects (marking the escape route entrances)."
-					else
-						return "Rømn.avst."
-					end
-				elseif Variant:find("Arbeidsområdeskilt Type 1%-2") then
-					return "Ao type 1-2"
-				elseif Variant:find("Arbeidsområdeskilt Type 1%-3") then
-					return "Ao type 1-3"
-				elseif Variant:find("Arbeidsområdeskilt Type 2%-2") then
-					return "Ao type 2-2"
-				elseif Variant:find("Arbeidsområdeskilt Type 2%-3") then
-					return "Ao type 2-3"	
-				elseif Variant:find("Arbeidsområdeskilt Orienterende") then
-					return "Ao type Orient."
-				elseif Variant:match("%d+%w+-%d") then
-					return Variant:match("%d+%w+-%d")
-				elseif Variant:match("%d+-%w+") then
-					return Variant:match("%d+-%w+")
-				elseif Variant:match("%d+%w+") then
-					return Variant:match("%d+%w+")
+		function NOBN_bnp_getBoardOrPoleName()
+			if Variant:find("E36 Level crossing, location") then 
+				return "PLO"
+			elseif Variant:find("ERTMS Level crossing, announcement") then
+				return "PLO-Fs"
+			elseif Variant:find("E106 Stop for shunting") then
+				return "Shunting stop"
+			elseif Variant:find("E107 Unsecured area with handoperated points") then
+				return "Supervision end"
+			elseif Variant:find("E108 Interlocked area") then
+				return "Supervision begin"
+			elseif Variant:find("Bevegelig kryss") then
+				return "Bev.X"
+			elseif Variant:find("refleks") then
+				return "Refl."
+			elseif Variant:find("Baliseskilt") then
+				return "Balise"
+			elseif Variant:find("innkoblet") then
+				return "Innkobl."
+			elseif Variant:find("utkoblet") then
+				return "Utkobl."
+			elseif Variant:find("Nødtelefon") then
+				return "Nødtlf."
+			elseif Variant:find("1000V") then
+				return "1000V"
+			elseif Variant:find("se og lytt") then
+				return "Se/lytt"
+			elseif Variant:find("enkeltspor") then --Veisignal
+				return "138"
+			elseif Variant:find("flere spor") then --Veisignal
+				return "138-fler"
+			elseif Variant:find("Sidespor") then
+				return "Ssp."
+			elseif Variant:find("Kjedebrudd") then
+				return "Kj.br."
+			elseif Variant:find("meterangivelse") then
+				return "Meterang."
+			elseif Variant:find("Spornummer") then
+				return "Spornr"
+			elseif Variant:find("Anleggsområde") then
+				return "Anl.omr."
+			elseif Variant:find("Rømningsavstand") then
+				local s,r,n
+				s = "Har markør"
+				r,n = RC__getCollectionOfRelatedObjects(s)
+				if n == 0 then 
+					return "UNFINISHED - Relate with '"..s.."' to one or two marker objects (marking the escape route entrances)."
+				else
+					return "Rømn.avst."
 				end
+			elseif Variant:find("Arbeidsområdeskilt Type 1%-2") then
+				return "Ao type 1-2"
+			elseif Variant:find("Arbeidsområdeskilt Type 1%-3") then
+				return "Ao type 1-3"
+			elseif Variant:find("Arbeidsområdeskilt Type 2%-2") then
+				return "Ao type 2-2"
+			elseif Variant:find("Arbeidsområdeskilt Type 2%-3") then
+				return "Ao type 2-3"
+			elseif Variant:find("Arbeidsområdeskilt Orienterende") then
+				return "Ao type Orient."
+			elseif Variant:match("%d+%w+-%d") then
+				return Variant:match("%d+%w+-%d")
+			elseif Variant:match("%d+-%w+") then
+				return Variant:match("%d+-%w+")
+			elseif Variant:match("%d+%w+") then
+				return Variant:match("%d+%w+")
 			end
-        </Formula>
+		end
+	</Formula>
   </LuaFunction>
+  
   <LuaFunction Name="NOBN_bnp_getEscapeDistanceBoardTexts()" Description="Returns a table {'Left'=Lval,'Right'=Rval} with distance to nearest related marker. Default step 10, default offset 0. '?':missing marker, '+':multiple markers found." ReturnType="String" HideFromUser="false">
     <Constructor>String NOBN_bnp_getEscapeDistanceBoardTexts([Int step[, Int offset]])</Constructor>
     <Formula>

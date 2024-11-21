@@ -872,27 +872,46 @@
 
 	
 	
-    <LuaFunction Name="NOBN_com_Name3D()" ReturnType="String"
-		Description="Returns a name for the generated 3D geometry's block when exporting to DWG or to IFC.">
-        <Signature>String NOBN_com_Name3D()</Signature>
-		<Formula>
-			function NOBN_com_Name3D()
-				return "3D_"..RcType:sub(1,9).."_"..RC__identify()
-			end
-		</Formula>
-	</LuaFunction>
-
-
-
     <LuaFunction Name="NOBN_com_Layer3D()" ReturnType="String"
 		Description="Returns a name for the generated 3D geometry's layer in the CAD system (DWG file). For ease of deleting temporary 3D geometries, the same layer name will be assigned to all 3D geometries (point objects, iterated geometries along an alignment, swept alignments, 3D annotations).">
         <Signature>String NOBN_com_Layer3D()</Signature>
 		<Formula>
 			function NOBN_com_Layer3D()
-				return "3D_"..Discipline
+				local t1, t2, t3
+				t1 = Layer:sub(4,5) --Layer:sub(4,5):gsub("SA","S") --If required by many users, "SA" could be mapped to just "S".
+				t2 = Layer:match("(FAS%d%d%d%d%-%d%d%d%d)") or "FAS0000-9999"
+				t3 = "_3D"
+				return t1.."_"..t2.."_"..t3
 			end
 		</Formula>
 	</LuaFunction>
+
+
+
+	<LuaFunction Name="NOBN_com_Name3D()" ReturnType="String" 
+		Description="Returns a name for the exported 3D block corresponding to one RC object.">
+		<Signature>String NOBN_com_Name3D()</Signature>
+		<Formula>
+			function NOBN_com_Name3D()
+				local t1, t2, t3
+				t1 = RcType:sub(4,9):gsub("_","-")
+				if RcType:match("JBTKO_SKT") or RcType:match("JBTSA_MSS") then
+					t2 = NOBN_bnp_getBoardOrPoleName()
+				else
+					t2 = RC__identify()
+				end
+				local parent = this
+				while parent.Attachment do parent = parent.Attachment end
+				local r1, r2, r3, r, n
+				r1 = parent:getRelatedObjects("Har NSS_balisegruppe")
+				r2 = parent:getRelatedObjects("Er skilt for sporveksel")
+				r3 = {this}
+				r, n = getUnionOfCollections({r1, r2, r3})
+				t3 = (n > 0) and r[0]:RC__identify() or ""
+				return t1.." : "..t2..((RcType:match("JBTSA_SIG") or t3 == t2) and "" or " ["..t3.."]")
+			end
+		</Formula>
+    </LuaFunction>
 
 
 
