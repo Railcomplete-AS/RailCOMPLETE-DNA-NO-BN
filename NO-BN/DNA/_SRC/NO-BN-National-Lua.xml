@@ -916,7 +916,8 @@
 		<Signature>String NOBN_com_Name3D()</Signature>
 		<Formula>
 			function NOBN_com_Name3D()
-				local t1, t2, t3
+				local t1, t2, t3, t4, t5
+				local r1, r2, r3, r4
 				t1 = RcType:sub(4,9):gsub("_","-")
 				if RcType:match("JBTKO_SKT") or RcType:match("JBTEH_BKT") or RcType:match("JBTSA_MSS") then
 					t2 = NOBN_bnp_getBoardOrPoleName()
@@ -925,13 +926,17 @@
 				end
 				local parent = this
 				while parent.Attachment do parent = parent.Attachment end
-				local r1, r2, r3, r, n
-				r1 = parent:getRelatedObjects("Har NSS_balisegruppe")
-				r2 = parent:getRelatedObjects("Er skilt for sporveksel")
-				r3 = {this}
-				r, n = getUnionOfCollections({r1, r2, r3})
-				t3 = (n > 0) and r[0]:RC__identify() or ""
-				return t1.."___"..t2..((RcType:match("JBTSA_SIG") or t3 == t2) and "" or "___["..t3.."]")
+				local r, n
+				r1 = getRelatedObjects("Har NSS_balisegruppe")
+				r2 = parent:getRelatedObjects("Har NSS_balisegruppe")
+				r3 = parent:getRelatedObjects("Er skilt for sporveksel")
+				r4 = {this}
+				r, n = getUnionOfCollections({r1, r2, r3, r4}) --Use only the first found, if any
+				t3 = (n &gt; 0) and r[0]:RC__identify() or ""
+				t3 = (t3 == r[0].id) and r[0].Variant or t3
+				t4 = t1.."___"..t2..((RcType:match("JBTSA_SIG") or t3 == t2) and "" or "___["..t3.."]")
+				t5 = tostring(t4):gsub("%-","_"):gsub(" ","_"):gsub(",","_"):gsub("/","_") --replace special characters by underscore
+				return t5 --t5 is just the stripped string (gsub returned more stuff)
 			end
 		</Formula>
     </LuaFunction>
