@@ -70,6 +70,9 @@ goto TheEnd
 
 	echo - Lua snippets and Tooltips (Lua and XAML code):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua    "..\TMP\%ADM%\Lua"
+	
+	echo - Old Psets:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Psets    "..\TMP\%ADM%\Psets"
 
 	@echo - Release notes:
 	@echo.
