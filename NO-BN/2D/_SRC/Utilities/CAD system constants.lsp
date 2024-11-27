@@ -363,6 +363,7 @@
 		_textStyleNoObliquing_						"0.0"
 		_textStyleNotBackwards_						"_N"
 		_textStyleNotUpsideDown_					"_N"
+		_textStyleNotVertical_						"_N"	;Extra question that appears only for shx fonts (not for True-Type fonts)
 		
 		
 		; Text justification, used by commands TEXT, MTEXT, ATTDEF

@@ -14,17 +14,17 @@
 ; Mileage / Raise/Lower snow-clearing device / Mileage chain break
 
 ; For debugging:
-; (75A-1) (75A-2) (75A-3) (75B) (75C-1) (75C-2) (75D-1) (75D-2) (75E)
+; (75A-1) (75A-2) (75A-3) (75B) (75C-1) (75C-2) (75D-1) (75D-2) (75E-1) (75E-2)
 
 (defun 75A-1 ( / blockName description x y p1 p2 attWholeKm attHalfKm )
 	; Mileage, modern type, single-sided
 	;
-	; TL-----TR
+	; +-------+
 	; |       |
 	; |  p1   | 
 	; |  p2   |
 	; |       |
-	; BL--.--BR
+	; +---.---+
 	;
 	(setq 
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-75A-1-KILOMETER-ENKELSIDET"
@@ -51,9 +51,9 @@
 (defun 75A-2 ( / blockName description x y attWholeKm )
 	; Mileage, old type, single-sided, just Km
 	;
-	; TL-----TR
+	; +-------+
 	; |  462  |
-	; BL--.--BR
+	; +---.---+
 	;
 	(setq 
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-75A-2-KILOMETER-GAMMEL"
@@ -76,13 +76,15 @@
 (defun 75A-3 ( / blockName description x y attWholeKm attHalfKm p1 p2 p3 p4 p5 p6 pLeft pRight attWholeKm attHalfKm attWholeKm2 attHalfKm2 )
 	; Mileage, modern type, double-sided
 	;
+	; Example: Double-sided kilometration board at Km.462,5:
+	;
 	; |----x----|--3--|----x----|
 	;
-	; TL-------TR     TL-------TR    ---
+	; +---------+     +---------+    ---
 	; |   4     |     |     4   |     |
 	; |   6 5   p5-.-p6   5 6   |     y
 	; |   2     |     |     2   |     |
-	; BL-------BR     BL-------BR    ---
+	; +---------+     +---------+    ---
 	;    p1 p2          p3 p4
 	;  
 	(setq 
@@ -126,10 +128,11 @@
 (defun 75B ( / blockName description x y p1 p2 p3 p4a p4b p5 p6 p7a p7b p8 p9 p10 p11 p12 pLeft pRight )
 	; Mileage, tunnel type, double-sided and narrow
 	;
+	; Example: Double-sided kilometration board at Km.462,5:
 	;
-	; TL------+---TR     TL---+------TR
+	; +-------+----+     +----+-------+
 	; | 4 6 2 | 5 11--.--12 5 | 2 6 4 | y
-	; BL------+---BR     BL---+------BR
+	; +-------+----+     +----+-------+
 	;  p1 2 3 4 5          p6 7 8 9 10
 	;      x       |<-3->|      x
 	(setq
@@ -306,51 +309,127 @@
 
 
 
-(defun 75E ( / blockName description x y p1 p2 p3 p4 p5 p6 attFrom1 attFrom2 attTo1 attTo2 attJump p7 p8 p9 p10 p11 p12 )
+(defun 75E_1 ( / blockName description x y p1 p2 p3 p4 p5 p6 attFrom1 attFrom2 attTo1 attTo2 attJump t1 a1 a2 a3 a4 a5 a6 a7 ) ; Note: 75e-1 would be translated to 7.5 (75*10^-1 = 7.5)
 	; Mileage chain break
 	;
-	; TL-----------TR
-	; | KJEDEBRUDD  | ;   p7		fixed text
-	; 1------5------2
-	; |FRA_1 |TIL_1 | ; p8  p10		text attributes
-	; |FRA_2 |FRA_2 | ; p9  p11		text attributes
-	; 3------6------4
-	; |   SPRANG    | ;   p12		text attribute
-	; BL-----.-----BR
-	; 
+	; Rounded reference mileage "Km" - meant for wayside informative boards, front towards the track, informing maintenance
+	; personnel (and tamping machine drivers) where they are in relation to the 'linear address position name' for the
+	; overall railway line. More often than not, this means the rightmost straightest track if more tracks are present.
+	;
+	; Example: In = 462999,83775, Out = 465123,75678, Jump = +2123,91903
+	;
+	; +-------------------------+ ;                               +-------------------------+
+	; |        KJEDEBRUDD       | ;     t1        fixed text      |        KJEDEBRUDD       |
+	; 1------------5------------2 ;                               +------------+------------+
+	; |    FRA_1   |   TIL_1    | ;  a1    a3     text attributes |     463    |    465     |
+	; |    FRA_2   |   TIL_2    | ;  a2    a4     text attributes |     000    |    124     |
+	; 3------------6------------4 ;                               +------------+------------+
+	; | FRA_REF SPRANG  TIL_REF | ;  a6 a5 a7     text attribute  | DBVB     +2124m    DBSB |
+	; +-----------.-------------+ ;                               +------------.------------+
+	;
 	(setq 
-		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75E-KJEDEBRUDD"
-		description "SKILT SIGNAL 75E KJEDEBRUDD"
-		x 15.75
-		y 11.25
-		p1 (list (* -0.5 x) (*  0.25 y))
-		p2 (list (*  0.5 x) (*  0.25 y))
-		p3 (list (* -0.5 x) (* -0.25 y))
-		p4 (list (*  0.5 x) (* -0.25 y))
-		p5 (list (*  0.0 x) (*  0.25 y))
-		p6 (list (*  0.0 x) (* -0.25 y))
-		attFrom1	'("FRA_1" "Fra km:"   "15")
-		attFrom2	'("FRA_2" "Fra meter/millimeter:" "422")
-		attTo1		'("TIL_1" "Til km:"   "15")
-		attTo2		'("TIL_2" "Til meter/millimeter:" "450")
-		attJump		'("SPRANG" "Sprang:"   "+28m")
-		p7  (list (*  0.00 x) (*  0.375 y))
-		p8  (list (* -0.25 x) (*  0.125 y))
-		p9  (list (* -0.25 x) (* -0.125 y))
-		p10 (list (*  0.25 x) (*  0.125 y))
-		p11 (list (*  0.25 x) (* -0.125 y))
-		p12 (list (*  0.00 x) (* -0.375 y))
+		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75E-1-KJEDEBRUDD"
+		description "SKILT SIGNAL 75E-1 KJEDEBRUDD"
+		x 20 ; 15.75 in BN symbol library
+		y 12 ; 11.25 in BN synbol library
+		p1 (list (* -0.500 x) (*  0.250 y))
+		p2 (list (*  0.500 x) (*  0.250 y))
+		p3 (list (* -0.500 x) (* -0.250 y))
+		p4 (list (*  0.500 x) (* -0.250 y))
+		p5 (list (*  0.000 x) (*  0.250 y))
+		p6 (list (*  0.000 x) (* -0.250 y))
+		attFrom1	'("FRA_1" "Fra km:"               "463"		)
+		attFrom2	'("FRA_2" "Fra meter:"            "000"		)
+		attFrom3	'("FRA_REF" "Fra referanselinje:" "DBVB"	)
+		attTo1		'("TIL_1" "Til km:"               "465"		)
+		attTo2		'("TIL_2" "Til meter:"            "124"		)
+		attTo3		'("TIL_REF" "Til referanselinje:" "DBSB"	)
+		attJump		'("SPRANG" "Sprang:"              "+2124m"	)
+		t1 (list (*  0.000 x) (*  0.375 y))
+		a1 (list (* -0.250 x) (*  0.125 y))
+		a2 (list (* -0.250 x) (* -0.125 y))
+		a3 (list (*  0.250 x) (*  0.125 y))
+		a4 (list (*  0.250 x) (* -0.125 y))
+		a5 (list (*  0.000 x) (* -0.375 y))
+		a6 (list (* -0.450 x) (* -0.375 y))
+		a7 (list (*  0.450 x) (* -0.375 y))
 	)
 	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
 	(DrawLine layDef_Zero p1 p2)
 	(DrawLine layDef_Zero p3 p4)
 	(DrawLine layDef_Zero p5 p6)
-	(AddTextAtPoint layDef_Zero _th150_ p7 "KJEDEBRUDD")
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p8 attFrom1)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p9 attFrom2)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p10 attTo1)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p11 attTo2)
-	(AddTextAttributeAtPoint layDef_Zero _th180_ p12 attJump)
+	(AddTextAtPoint layDef_Zero _th150_ t1 "KJEDEBRUDD")
+	(SetLayer layDef_Zero)
+	; Use AddAtt (instead of AddTextAttributeAtPoint) in order to dictate justification left/middle/right:
+	;(AddAtt              attTag              attPrompt        attDefaultValue point textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddAtt (eval (nth 0 attFrom1)) (eval (nth 1 attFrom1)) (eval (nth 2 attFrom1)) a1 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attFrom2)) (eval (nth 2 attFrom2)) (eval (nth 2 attFrom2)) a2 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attTo1  )) (eval (nth 1 attTo1  )) (eval (nth 2 attTo1  )) a3 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attTo2  )) (eval (nth 2 attTo2  )) (eval (nth 2 attTo2  )) a4 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attJump )) (eval (nth 3 attJump )) (eval (nth 2 attJump )) a5 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attFrom3)) (eval (nth 3 attFrom3)) (eval (nth 2 attFrom3)) a6 _th150_ _angleZero_ _rcTextStyle_ _middleLeft_	)
+	(AddAtt (eval (nth 0 attTo3  )) (eval (nth 3 attTo3  )) (eval (nth 2 attTo3  )) a7 _th150_ _angleZero_ _rcTextStyle_ _middleRight_	)
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigin description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	description ; Used if table is created
+)
+
+
+
+(defun 75E_2 ( / blockName description x y p1 p2 p3 p4 p5 p6 attFrom1 attFrom2 attTo1 attTo2 attJump t1 a1 a2 a3 a4 a5 ) ; Note: 75e-2 would be translated to 0.75 (75*10^-2 = 0.75)
+	; Exact mileage chain break - meant for being glued as an engraved yellow plate, approx 7x15 cm, to the side of a rail
+	; at the exact point where the chain break takes place.
+	; Note: 'profile' means the distance along 'linear position name' in that particular track.
+	;
+	; Example: In = 462999,83775, Out = 465123,75678, Jump = +2123,91903
+	;
+	; +-------------------------+ ;                               +-------------------------+
+	; |    EKSAKT KJEDEBRUDD    | ;     t1        fixed text      |    EKSAKT KJEDEBRUDD    |
+	; 1------------5------------2 ;                               +------------5------------+
+	; |      FRA_1 | TIL_1      | ;  a1    a2     text attributes |    Pr.462, | Pr.465,    |
+	; |      FRA_2 | TIL_2      | ;  a3    a4     text attributes |    999838  | 123757     |
+	; 3------------6------------4 ;                               +------------6------------+
+	; |         SPRANG          | ;     a5        text attribute  |        +2123,919m       |
+	; +-----------.-------------+ ;                               +-----------.-------------+
+	; 																		          
+	(setq 
+		blockName "NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75E-2-EKSAKT-KJEDEBRUDD"
+		description "SKILT SIGNAL 75E-2 EKSAKT KJEDEBRUDD"
+		x 20
+		y 12
+		p1 (list (* -0.500 x) (*  0.250 y))
+		p2 (list (*  0.500 x) (*  0.250 y))
+		p3 (list (* -0.500 x) (* -0.250 y))
+		p4 (list (*  0.500 x) (* -0.250 y))
+		p5 (list (*  0.000 x) (*  0.250 y))
+		p6 (list (*  0.000 x) (* -0.250 y))
+		attFrom1	'("FRA_1" "Fra km:"         "Pr.462,"	)
+		attFrom2	'("FRA_2" "Fra millimeter:" "999838"	)
+		attTo1		'("TIL_1" "Til km:"         "Pr.465,"	)
+		attTo2		'("TIL_2" "Til millimeter:" "123757"	)
+		attJump		'("SPRANG" "Sprang:"        "+2123,919"	)
+		t1 (list (*  0.000 x) (*  0.375 y))
+		a1 (list (* -0.250 x) (*  0.125 y))
+		a2 (list (* -0.250 x) (* -0.125 y))
+		a3 (list (*  0.250 x) (*  0.125 y))
+		a4 (list (*  0.250 x) (* -0.125 y))
+		a5 (list (*  0.000 x) (* -0.375 y))
+	)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawLine layDef_Zero p1 p2)
+	(DrawLine layDef_Zero p3 p4)
+	(DrawLine layDef_Zero p5 p6)
+	(AddTextAtPoint layDef_Zero _th150_ t1 "EKSAKT KJEDEBRUDD")
+	(SetLayer layDef_Zero)
+	; Use AddAtt (instead of AddTextAttributeAtPoint) in order to dictate justification left/middle/right:
+	;(AddAtt               attTag             attPrompt        attDefaultValue point textHeight _angleZero_ _rcTextStyle_ _middleCenter_)
+	(AddAtt (eval (nth 0 attFrom1)) (eval (nth 1 attFrom1)) (eval (nth 2 attFrom1)) a1 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attFrom2)) (eval (nth 2 attFrom2)) (eval (nth 2 attFrom2)) a2 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attTo1  )) (eval (nth 1 attTo1  )) (eval (nth 2 attTo1  )) a3 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attTo2  )) (eval (nth 2 attTo2  )) (eval (nth 2 attTo2  )) a4 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
+	(AddAtt (eval (nth 0 attJump )) (eval (nth 3 attJump )) (eval (nth 2 attJump )) a5 _th150_ _angleZero_ _rcTextStyle_ _middleCenter_	)
 	(MoveUp (HalfOf y))
 	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)

@@ -198,12 +198,12 @@
 (defun CreateIsoTextStyle ( / )
 	;
 	; >>>>>>When debugging on your computer, make sure the default ISO font also resides in "\Program Files\Autodesk\AutoCAD 2020\Fonts".<<<<<<
-	; (i.e. to the font folder for the acad version you are using).
+	; (i.e. to the font folder for the acad version you are using, substitute "2020" for your AutoCAD version's year).
 	;
 	; The preferred font will result in an error if not present in the appropriate AutoCAD folder.
 	; Place your preferred font file in the GitHub RailCOMPLETE folder "...\Customization\XX-YY\2D\_SRC\Fonts".
 	; Change the folder name according to your AutoCAD application (2018, 2019, 2020...)
-	; Set _defaultFontShx_ to the filename (with extension) for the font file, e.g. "es_icocp.shx" etc.
+	; Set _defaultFontShx_ to the filename (with extension) for the font file, e.g. "es_isocp.shx" etc.
 	;
 	; NB! Include this line: <<<_textStyleAnnotativity_ _textStyleIsAnnotative_ _textStyleOrientationIsNotMatchedToLayout_>>> after
 	; the "_defaultFontShx_" line if the text style should be annotative.
@@ -214,15 +214,19 @@
 	;
 	; "TextHeight = 0.0" means that the text can vary in size (after creation). 'Width' is the width ratio, 0.8 makes narrow letters etc.
 	;
+	; Be aware that if you go for one of AutoCAD's .shx fonts instead of a .ttf font, there will be one more question to answer in
+	; the -STYLE command's prompt sequence, about vertical text.  So you would need another "".
+	;
 	(command _STYLE_ 
 		_rcTextStyle_
 		_defaultFontShx_ 
-;		_textStyleAnnotativity_ _textStyleIsAnnotative_ _textStyleOrientationIsNotMatchedToLayout_
+;		_textStyleAnnotativity_ _textStyleIsAnnotative_ _textStyleOrientationIsNotMatchedToLayout_ ; Comment out if annotativity not needed
 		_textStyleHeightZeroMeansScalable_
 		_textStyleWidthFactorOne_
 		_textStyleNoObliquing_
 		_textStyleNotBackwards_
 		_textStyleNotUpsideDown_ 
+		_textStyleNotVertical_ ; Note: This question will only be asked if the font in question is an shx (not truetype) font
 	)
 	'CreateIsoTextStyle
 )

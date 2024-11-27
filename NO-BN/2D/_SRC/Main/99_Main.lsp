@@ -131,7 +131,7 @@
 			(TraceLevel1 "Setting AutoCAD parameters and layer '0' properties...")
 			(setvar 'CMDECHO 0) ; maximum speed, minimum verbosity
 			(setvar 'OSMODE 0) ; Otherwise LINE and other commands will produce bogus results, according to research on 'acad silent console mode'.
-			(command ; Special treatment for layer 0 in ACAD...
+			(command ; Special treatment for layer 0 and Defpoints in ACAD (both may exist already and they cannot be purged):
 				_LAYER_
 					_colorizeLayer_		_colorWhite_ "0"
 					_createNewLayer_	"Defpoints"
