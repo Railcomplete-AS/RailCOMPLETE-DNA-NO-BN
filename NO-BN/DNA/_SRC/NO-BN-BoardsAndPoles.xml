@@ -68,8 +68,10 @@
 					return "138-fler"
 				elseif Variant:find("Sidespor") then
 					return "Ssp."
-				elseif Variant:find("Kjedebrudd") then
-					return "Kj.br."
+				elseif Variant == "Signal 75E-1 Kjedebrudd" then
+					return "75E-1"
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					return "75E-2"
 				elseif Variant:find("meterangivelse") then
 					return "Meterang."
 				elseif Variant:find("Spornummer") then
@@ -4499,6 +4501,160 @@ end
 			<Variant Name="Signal 75E-2 Eksakt kjedebrudd"/>
 		</Variants>
 		
+		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
+		
+	<!--
+	; See also LISP file for board 75E
+	;
+	; Example: In = 462999,83775, Out = 465123,75678, Jump = +2123,91903
+	;
+	; +-------------------------+  +-------------------------+
+	; |        KJEDEBRUDD       |  |        KJEDEBRUDD       |
+	; 1------------5------------2  +------------+------------+
+	; |      FRA_1 | TIL_1      |  |        463 | 465        |
+	; |      FRA_2 | TIL_2      |  |        000 | 124        |
+	; 3------------6------------4  +------------+------------+
+	; | FRA_REF SPRANG  TIL_REF |  | DBVB     +2124m    DBSB |
+	; +-----------.-------------+  +------------.------------+
+	;
+	; +-------------------------+  +-------------------------+
+	; |    EKSAKT KJEDEBRUDD    |  |    EKSAKT KJEDEBRUDD    |
+	; 1------------5------------2  +------------5------------+
+	; |      FRA_1 | TIL_1      |  |    Pr.462, | Pr.465,    |
+	; |      FRA_2 | TIL_2      |  |    999838  | 123757     |
+	; 3------------6------------4  +------------6------------+
+	; |         SPRANG          |  |        +2123,919m       |
+	; +-----------.-------------+  +-----------.-------------+
+	; 																		          
+	-->
+		<CustomProperty DataType="String" Name="FRA_1" DisplayName="Fra Km / Pr" DefaultValue="463"/>
+		<CustomProperty DataType="String" Name="FRA_2"  DisplayName="Fra m / mm" DefaultValue="000"/>
+		<CustomProperty DataType="String" Name="TIL_1" DisplayName="Til Km / Pr" DefaultValue="465"/>
+		<CustomProperty DataType="String" Name="TIL_2"  DisplayName="Til m / mm" DefaultValue="124"/>
+		<CustomProperty DataType="String" Name="SPRANG" DisplayName="Sprang i m" DefaultValue="+2124m"/>
+		<CustomProperty DataType="String" Name="FRA_REF"  DisplayName="Fra referanselinje" DefaultValue="XB"/>
+		<CustomProperty DataType="String" Name="TIL_REF" DisplayName="Til referanselinje" DefaultValue="YB"/>
+
+		<LuaExpression Name="FRA_1">
+			<Formula>
+				local ai = getAlignmentInfo()
+				if Variant == "Signal 75E-1 Kjedebrudd" then
+					local refId = ai.ReferenceAlignmentId
+					local rm = getAlignmentInfo(refId, ai.Point).NearestMileageChange.MileageIn
+					return RC__isNan(rm) and "Km.?" or string.format("%d", RC__round(rm) // 1000)
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					local m = ai and ai.NearestMileageChange.MileageIn or 0
+					return RC__isNan(m) and "Pr. ?," or string.format("Pr. %d,", RC__round(m*1000) // 1e6)
+				else
+					return "Unrecognized variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="FRA_2">
+			<Formula>
+				local ai = getAlignmentInfo()
+				if Variant == "Signal 75E-1 Kjedebrudd" then
+					local refId = ai.ReferenceAlignmentId
+					local rm = getAlignmentInfo(refId, ai.Point).NearestMileageChange.MileageIn
+					return RC__isNan(rm) and "???" or string.format("%03d", RC__round(rm) % 1000)
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					local m = ai and ai.NearestMileageChange.MileageIn or 0
+					return RC__isNan(m) and "??????" or string.format("%06d", RC__round(m*1000) % 1e6)
+				else
+					return "Unrecognized variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="TIL_1">
+			<Formula>
+				local ai = getAlignmentInfo()
+				if Variant == "Signal 75E-1 Kjedebrudd" then
+					local refId = ai.ReferenceAlignmentId
+					local rm = getAlignmentInfo(refId, ai.Point).NearestMileageChange.MileageOut
+					return RC__isNan(rm) and "Km.?" or string.format("%d", RC__round(rm) // 1000)
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					local m = ai and ai.NearestMileageChange.MileageOut or 0
+					return RC__isNan(m) and "Pr. ?," or string.format("Pr. %d,", RC__round(m*1000) // 1e6)
+				else
+					return "Unrecognized variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="TIL_2">
+			<Formula>
+				local ai = getAlignmentInfo()
+				if Variant == "Signal 75E-1 Kjedebrudd" then
+					local refId = ai.ReferenceAlignmentId
+					local rm = getAlignmentInfo(refId, ai.Point).NearestMileageChange.MileageOut
+					return RC__isNan(rm) and "???" or string.format("%03d", RC__round(rm) % 1000)
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					local m = ai and ai.NearestMileageChange.MileageOut or 0
+					return RC__isNan(m) and "??????" or string.format("%06d", RC__round(m*1000) % 1e6)
+				else
+					return "Unrecognized variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="SPRANG">
+			<Formula>
+				if Variant == "Signal 75E-1 Kjedebrudd" then
+					local ai = getAlignmentInfo()
+					local refAi = getAlignmentInfo(ai.ReferenceAlignmentId, ai.Point)
+					rmIn = refAi and refAi.NearestMileageChange.MileageIn or 0
+					rmOut = refAi and refAi.NearestMileageChange.MileageOut or 0
+					return (RC__isNan(rmIn) or RC__isNan(rmOut)) and "Km.?" or string.format("%s%.0fm", rmOut-rmIn > 0 and '+' or '', rmOut-rmIn)
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					local ai = getAlignmentInfo()
+					mIn = ai and ai.NearestMileageChange.MileageIn or 0
+					mOut = ai and ai.NearestMileageChange.MileageOut or 0
+					return (RC__isNan(mIn) or RC__isNan(mOut)) and "Pr.?," or string.format("%s%.3fm", mOut-mIn > 0 and '+' or '', (mOut-mIn))
+				else
+					return "Unrecognized variant ["..Variant.."]."
+				end
+			</Formula>
+		</LuaExpression>
+				   
+		<LuaExpression Name="FRA_REF">
+			<Formula>
+				--Find point close to track a little before the chain break, deduce its reference alignment code
+				local ai = getAlignmentInfo() --The chain break object's own alignment
+				local p = getVectorSum(ai.Point, getVectorScalarProduct(-1.0, getPoint3D(ai.Tangent.X, ai.Tangent.Y)))
+				local nearbyTrack = getNearbyAlignments(rctype_Track, p)[0]
+				local nextReferenceAlignmentId = getAlignmentInfo(nearbyTrack.id, v).ReferenceAlignmentId
+				return getObjectFromId(nextReferenceAlignmentId).code
+			</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="TIL_REF">
+			<Formula>
+				--Find point close to track a little after the chain break, deduce its reference alignment code
+				local ai = getAlignmentInfo() --The chain break object's own alignment
+				local p = getVectorSum(ai.Point, getVectorScalarProduct(1.0, getPoint3D(ai.Tangent.X, ai.Tangent.Y)))
+				local nearbyTrack = getNearbyAlignments(rctype_Track, p)[0]
+				local nextReferenceAlignmentId = getAlignmentInfo(nearbyTrack.id, v).ReferenceAlignmentId
+				return getObjectFromId(nextReferenceAlignmentId).code
+			</Formula>
+		</LuaExpression>
+		
+		<LuaExpression Name="Mileage">
+			<Formula>
+				local ai = getAlignmentInfo()
+				if Variant == "Signal 75E-1 Kjedebrudd" then
+					local refId = ai.ReferenceAlignmentId
+					local rm = getAlignmentInfo(refId, ai.Point).NearestMileageChange.MileageOut
+				elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
+					local m = ai and ai.NearestMileageChange.MileageOut or 0
+					return RC__isNan(m) and getPropertyValue("Mileage") or m
+				else
+					return getPropertyValue("Mileage"), _info("Unrecognized variant ["..Variant.."].")
+				end
+			</Formula>
+		</LuaExpression>
+
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTKO_SKT_75E_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SKT_75E_Geometry3DName()" 
 				ReturnType="String"
@@ -4517,91 +4673,14 @@ end
 			</Formula>
 		</LuaFunction>
 		
-
-		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
-
-		<CustomProperty DataType="String" Name="FRA_1" DisplayName="Fra km" DefaultValue="15"/>
-		<CustomProperty DataType="String" Name="FRA_2"  DisplayName="Fra m hhv. mm" DefaultValue="422"/>
-		<CustomProperty DataType="String" Name="TIL_1" DisplayName="Til km" DefaultValue="15"/>
-		<CustomProperty DataType="String" Name="TIL_2"  DisplayName="Til m. hhv. mm" DefaultValue="450"/>
-		<CustomProperty DataType="String" Name="SPRANG" DisplayName="Sprang i m" DefaultValue="+28 m"/>
-
-		<LuaExpression Name="FRA_1">
-			<Formula>
-				local ai = getAlignmentInfo()
-				local m = ai and ai.NearestMileageChange.MileageIn or 0.0
-				return RC__isNan(m) and "0" or string.format("%0.f",math.floor(m))
-			</Formula>
-		</LuaExpression>
-		<LuaExpression Name="FRA_2">
-			<Formula>
-				local ai = getAlignmentInfo()
-				local m = ai and ai.NearestMileageChange.MileageIn or 0.0
-				if RC__isNan(m) then
-					return "0",_warning, _info("Missing own alignment.")
-				else
-					if Variant == "Signal 75E-1 Kjedebrudd" then
-						return string.format("%.0f",m%1e3)
-					elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
-						return string.format("%.0f",(m*1000)%1e6)
-					else
-						return "Unrecognized variant ["..Variant.."]."
-					end
-				end
-			</Formula>
-		</LuaExpression>
-		
-		<LuaExpression Name="TIL_1">
-			<Formula>
-				local ai = getAlignmentInfo()
-				local m = ai and ai.NearestMileageChange.MileageOut or 0.0
-				return RC__isNan(m) and "0" or string.format("%0.f",math.floor(m))
-			</Formula>
-		</LuaExpression>
-		
-		<LuaExpression Name="TIL_2">
-			<Formula>
-				local ai = getAlignmentInfo()
-				local m = ai and ai.NearestMileageChange.MileageOut or 0.0
-				if RC__isNan(m) then
-					return "0",_warning, _info("Missing own alignment.")
-				else
-					if Variant == "Signal 75E-1 Kjedebrudd" then
-						return string.format("%.0f",m%1e3)
-					elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
-						return string.format("%.0f",(m*1000)%1e6)
-					else
-						return "Unrecognized variant ["..Variant.."]."
-					end
-				end
-			</Formula>
-		</LuaExpression>
-		
-		<LuaExpression Name="SPRANG">
-			<Formula>
-				local ai = getAlignmentInfo()
-				if ai then 
-					local mileageChange = getAlignmentInfo().NearestMileageChange
-					if Variant == "Signal 75E-1 Kjedebrudd" then
-						return string.format("%.0f", (mileageChange.MileageOut - mileageChange.MileageIn))
-					elseif Variant == "Signal 75E-2 Eksakt kjedebrudd" then
-						return string.format("%.3f", (mileageChange.MileageOut - mileageChange.MileageIn))
-					else
-						return "Unrecognized variant ["..Variant.."]."
-					end
-				else
-					return "0"
-				end
-			</Formula>
-		</LuaExpression>
-				   
-		<InsertPointObject Name="Signal 75E-1 Kjedebrudd" DisplayBlockName="NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75E-KJEDEBRUDD-{{SymbolMode}}"
+		<InsertPointObject Name="Signal 75E-1 Kjedebrudd" DisplayBlockName="NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75E-1-KJEDEBRUDD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Signal 75E-2 Eksakt kjedebrudd" DisplayBlockName="NO-BN-2D-SKILT-VEDLIKEHOLD-SIGNAL-75E-EKSAKT-KJEDEBRUDD-{{SymbolMode}}"
+		<InsertPointObject Name="Signal 75E-2 Eksakt kjedebrudd" DisplayBlockName=
+		"NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL-75E-2-EKSAKT-KJEDEBRUDD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
@@ -4619,46 +4698,30 @@ end
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 			NO-BN-2D-JBTSK_SKV-SKILT-VEDLIKEHOLD-SIGNAL
-			{% if Variant == 'Signal 75E-1 Kjedebrudd' %}75E-KJEDEBRUDD
-			{% elsif Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}75E-EKSAKT-KJEDEBRUDD
+			{% if Variant == 'Signal 75E-1 Kjedebrudd' %}75E-1-KJEDEBRUDD
+			{% elsif Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}75E-2-EKSAKT-KJEDEBRUDD
 			{% else %}BAD_Variant_{{Variant}}
 			{% endif %}
 			{{SymbolMode}}
 			</BlockNameFormat>
 
-			<SymbolAttribute Tag="FRA_1">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}</Value>
-			</SymbolAttribute>
-			<SymbolAttribute Tag="FRA_2">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}</Value>
-			</SymbolAttribute>
-			<SymbolAttribute Tag="TIL_1">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_1}},{% else %}{{TIL_1}}{% endif %}</Value>
-			</SymbolAttribute>
-			<SymbolAttribute Tag="TIL_2">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_3}},{% else %}{{TIL_2}}{% endif %}</Value>
-			</SymbolAttribute>
-			<SymbolAttribute Tag="SPRANG">
-				<Value>{% if sprang &gt; 0 %}+{% endif %}{{SPRANG}} m</Value>
-			</SymbolAttribute>
+			<SymbolAttribute Tag="FRA_1"><Value>{{FRA_1}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="FRA_2"><Value>{{FRA_2}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="TIL_1"><Value>{{TIL_1}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="TIL_2"><Value>{{TIL_2}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="FRA_REF"><Value>{{FRA_REF}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="TIL_REF"><Value>{{TIL_REF}}</Value></SymbolAttribute>
+			<SymbolAttribute Tag="SPRANG"><Value>{{SPRANG}}</Value></SymbolAttribute>
 		</SymbolDefinition>
 
 		<Annotation3DTagDefinition>
-			<Attribute Tag="T01">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{FRA_1}},{% else %}{{FRA_1}}{% endif %}"</Value>
-			</Attribute>
-			<Attribute Tag="T02">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}{{FRA_3}},{% else %}{{FRA_2}}{% endif %}</Value>
-			</Attribute>
-			<Attribute Tag="T03">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_1}},{% else %}{{TIL_1}}{% endif %}</Value>
-			</Attribute>
-			<Attribute Tag="T04">
-				<Value>{% if Variant == 'Signal 75E-2 Eksakt kjedebrudd' %}Km{{TIL_3}},{% else %}{{TIL_2}}{% endif %}</Value>
-			</Attribute>
-			<Attribute Tag="T05">
-				<Value>{% if sprang &gt; 0 %}+{% endif %}{{SPRANG}} m</Value>
-			</Attribute>
+			<Attribute Tag="T01"><Value>{{FRA_1}}</Value></Attribute>
+			<Attribute Tag="T02"><Value>{{FRA_2}}</Value></Attribute>
+			<Attribute Tag="T03"><Value>{{TIL_1}}</Value></Attribute>
+			<Attribute Tag="T04"><Value>{{TIL_2}}</Value></Attribute>
+			<Attribute Tag="T05"><Value>{{FRA_REF}}</Value></Attribute>
+			<Attribute Tag="T06"><Value>{{TIL_REF}}</Value></Attribute>
+			<Attribute Tag="T07"><Value>{{SPRANG}}</Value></Attribute>
 		</Annotation3DTagDefinition>
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
