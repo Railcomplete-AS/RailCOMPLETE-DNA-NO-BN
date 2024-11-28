@@ -2,11 +2,12 @@
 ;
 ; 75.lsp
 ;
-; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
+; Copyright (c) 2015-2025 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
+; 2024-11-27 CLFEY Rename 75E to 75E_1, added 75E_2.
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet

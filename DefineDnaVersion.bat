@@ -8,9 +8,9 @@ rem Set TUTORIALS to no or yes to decide if copying the tutorials files is neede
 rem Set CLEAN to no or yes to decide if existing files in target folders shall be deleted.
 
 set       ADM=NO-BN
-set   RELEASE=2024.a
+set   RELEASE=2025.a
 set       LOG=no
-set    COPY3D=no
+set    COPY3D=yes
 set TUTORIALS=yes
 set     CLEAN=no
 
