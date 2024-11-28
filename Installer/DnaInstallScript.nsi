@@ -58,10 +58,10 @@
 
 Section "${PRODUCT}" SecRC1 
 
+  SetOutPath "$INSTDIR"
+
   ;Delete poorly named release note
   Delete "$INSDIR\ReleaseNotes\2021.a NO-BN-Release Note.txt"
-
-  SetOutPath "$INSTDIR"
   
   ;Add files
   File /r "..\TMP\${BUNDLEDIR}\*"
