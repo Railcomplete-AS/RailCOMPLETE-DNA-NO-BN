@@ -1,4 +1,5 @@
 echo off
+rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo     ENTER CopyDnaEtcToAzureTmpFolder.bat
 echo        Settings Adm=%ADM% 
 rem			*********************************************************************************
@@ -68,28 +69,24 @@ goto TheEnd
 	echo - FAQ:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\FAQ    "..\TMP\%ADM%\FAQ"
 
-	echo - Lua snippets and Tooltips (Lua and XAML code):
+	echo - Lua scripts, Lua functions snippets and Tooltips (Lua and XAML code):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Lua    "..\TMP\%ADM%\Lua"
-	
-	echo - Old Psets:
+
+	echo - Psets:
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\Psets    "..\TMP\%ADM%\Psets"
 
-	@echo - Release notes:
-	@echo.
-	@echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "..\TMP\%ADM%\ReleaseNotes"
+	echo - Release notes:
+	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "..\TMP\%ADM%\ReleaseNotes"
 
  	echo - Administration-specific tutorials:
 	set SOURCEFOLDER=..\%ADM%\Tutorials
 	set TARGETFOLDER=..\TMP\%ADM%\Tutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
-	echo .
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"
-	echo .
 	rem Remove excess target folders (folder name starts with an underscore) - and its files, including subfolders:
 	echo Run: for /f "tokens=*" %G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%G"
 	for /f "tokens=*" %%G in ('dir /b "%TARGETFOLDER%\_*"') do rd /Q /S "%TARGETFOLDER%\%%G"
-	echo .
 
 	echo - Vector images (administration's logo etc):
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\VectorImages    "..\TMP\%ADM%\VectorImages"
