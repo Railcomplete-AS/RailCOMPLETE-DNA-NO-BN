@@ -101,8 +101,8 @@ if "%COPY3D%" neq "yes" goto Noecho
 
 if "%TUTORIALS%" neq "yes" goto Noxcopy /Y /E /ITutorials
  	echo - Administration-specific tutorials:
-	set SOURCEFOLDER=..\%ADM%\Tutorials
-	set TARGETFOLDER=%USERPROFILE%\Documents\Github\RailCOMPLETE\Solutions\RC.bundle\Adm\%ADM%\Tutorials
+	set SOURCEFOLDER=..\%ADM%\NationalTutorials
+	set TARGETFOLDER=%USERPROFILE%\Documents\Github\RailCOMPLETE\Solutions\RC.bundle\Adm\%ADM%\NationalTutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
 	rem echo d | xcopy /Y /E /I: /Y Suppress prompt to confirm overwriting a file. Can be preset in the echo d | xcopy /Y /E /ICMD env

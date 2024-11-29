@@ -105,8 +105,8 @@ if "%COPY3D%" neq "yes" goto Continue2
 
 if "%TUTORIALS%" neq "yes" goto Continue3
  	echo - Administration-specific tutorials:
-	set SOURCEFOLDER=..\%ADM%\Tutorials
-	set TARGETFOLDER=%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\Tutorials
+	set SOURCEFOLDER=..\%ADM%\NationalTutorials
+	set TARGETFOLDER=%APPDATA%\Autodesk\ApplicationPlugins\RC.bundle\Adm\%ADM%\NationalTutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"

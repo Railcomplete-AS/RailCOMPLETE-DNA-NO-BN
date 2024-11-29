@@ -79,8 +79,8 @@ goto TheEnd
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt ..\%ADM%\ReleaseNotes    "..\TMP\%ADM%\ReleaseNotes"
 
  	echo - Administration-specific tutorials:
-	set SOURCEFOLDER=..\%ADM%\Tutorials
-	set TARGETFOLDER=..\TMP\%ADM%\Tutorials
+	set SOURCEFOLDER=..\%ADM%\NationalTutorials
+	set TARGETFOLDER=..\TMP\%ADM%\NationalTutorials
 	echo Source=%SOURCEFOLDER%
 	echo Target=%TARGETFOLDER%
 	echo d | xcopy /Y /E /I /exclude:..\xcopyignore.txt "%SOURCEFOLDER%" "%TARGETFOLDER%"
