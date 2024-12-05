@@ -182,6 +182,7 @@ return pri + delta</Data>
 						<Sort>Ascending</Sort>
 						<Guid>be5a9dbd-24ed-4eca-8694-c8bc64016af4</Guid>
 						<Alignment>MiddleCenter</Alignment>
+						<HideColumn>true</HideColumn>
 					</ColumnSpecification>
 					<ColumnSpecification>
 						<Headers>
@@ -448,93 +449,92 @@ end </Data>
 							</Header>
 						</Headers>
 						<Width>350</Width>
-						<Data>local s0 = ""
-local s1 = ""
-local s5 = ""
-if Variant then s0 = Variant else s0 = "" end
-if (attachment == nil) then
-	s1 = ""
-	s5 = ""
-else
-	if getCollectionLength(Relations[rel_Object_Has_NssBaliseGroup]) == 0 then
-	
-		--TODO: Bruk heller getCollectionLength(Relations[rel_MarkerPole_Locates_AxleCounter] &gt; 0 etc
-		if Variant:match("64E") and Relations[rel_MarkerPole_Locates_AxleCounter] and Relations[rel_MarkerPole_Locates_AxleCounter][0] then
-			s1 = "\nTilhører \t\t"..Relations[rel_MarkerPole_Locates_AxleCounter][0].RcType
-			
-		elseif Variant:match("68") or Variant:match("64E") or Variant:match("Signal 60") then
-			obj = getNearbyPointObjects2D(15)
-			s1 = " "
-			for i = 0, obj.Count-1 do
-				if obj[i].Variant:match("balisegruppe") or obj[i].RcType:match("sporingsindikator")  then
-					if obj[i].Relations[rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup] then
-						if obj[i].Relations[rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup].Count ~= 0 then 
-							s1 = "\nTilhører \t\t"..obj[i].name.." med målpunkt i NSS_balisegruppe "..obj[i].Relations[rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup][0].name
-							break
-						else 
-							s1 = "\nTilhører \t\t"..obj[i].name
-							break
-						end
-					end
-				elseif obj[i].RcType:match("Telle") and Variant:match("64E") then
-					s1 = "\nTilhører \t\t"..obj[i].RcType
-					break
-				end	
+						<Data>
+--Find relevant related object(s):
+local r1 = getRelatedObjects("Har ETCS_balisegruppe")
+local r2 = getRelatedObjects("Har NSS_balisegruppe")
+local r3 = getRelatedObjects("Er skilt for sporveksel")
+local r5 = getRelatedObjects("Er stolpe for tellepunkt")
+local r4 = getRelatedObjects("Montert på skiltfeste/signal/markerboard/skilt/kl-mast")
+local r = getUnionOfCollections({r1, r2, r3, r4, r5})
+local nRelated = getCollectionLength(r)
+
+--Look for more boards at the same location:
+local peerRadius = 0.65 --m
+local peers = getNearbyPointObjects2D(peerRadius):filter(
+	function (x)
+		--Tolerate legacy DNAs with errors in RcType spelling:
+		return (x.RcType:match("JBTSA_SIG") or x.RcType:match("JBTEH_BKT") or x.RcType:match("JBTKO_SKT") or x.RcType:match("JBTSA_MSS") or x.RcType:match("JBTFE_DIV")  --Modern DNAs
+				or x.RcType:match("FE%-DIV") or x.RcType:match("KO%-SKT") or x.RcType:match("SA%-MSS"))
+			and not x.Variant:lower():match("refl")
+	end)
+--Drop peers that are already related:
+peers = peers:filter(
+	function (x)
+		local found
+		for i = 0, nRelated-1 do
+			if x.id == r[i].id then
+				found = true
 			end
-		else
-			s1 = " "
 		end
-		
-		if Variant:match("kryss") then
-			obj = getNearbyPointObjects2D(10)
-			s1 = " "
-			for i = 0, obj.Count-1 do
-				if obj[i].RcType:match("veksel") then
-					s1="\nTilhører \t\t".."V."..tostring(obj[i].code)
-					break
-				elseif obj[i].RcType:match("Drivmaskin") then
-					Cd = tostring(obj[i].name)
-					place = string.find(Cd,"%.")
-					s1 = "\nTilhører \t\t".."V."..string.sub(Cd,1, place-1)	
-					break
-				end				
-			end
-		end	
-		
-	else 
-		if Relations[rel_Object_Has_NssBaliseGroup][0].Relations[rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup] then
-			if Relations[rel_Object_Has_NssBaliseGroup][0].Relations[rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup].Count ~= 0 then 
-				s1 = "\nTilhører \t\t"..Relations[rel_Object_Has_NssBaliseGroup][0].name.." med målpunkt i NSS_balisegruppe "..Relations[rel_Object_Has_NssBaliseGroup][0].Relations[rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup][0].name
-			end
-		else
-			s1 = "\nTilhører \t\t"..Relations[rel_Object_Has_NssBaliseGroup][0].name
-		end
-	end
-	
-	if (Attachment.Variant == nil) then 
-		s5 = ""
-	elseif Attachment.RcType:match("SPB") then
-		s5 = "\nMontert på \t\t"..this.Attachment.Variant
-	elseif Attachment.RcType:match("SA%-SIG") then
-		s5="\nMontert på \t\t"..tostring(Attachment.name)
+		return not found 
+	end)
+local nPeers = getCollectionLength(peers)
+local signalPeers = peers:filter(function (x) return x.RcType:match("JBTSA_SIG") end)
+local nSignalPeers = getCollectionLength(signalPeers )
+
+if Variant == nil or Variant == "" then return "Ukjent type: ["..RcType.."]." end
+
+local function identify(x)
+	local t = x.RcType:match("JBTKO_SPV") and "sporveksel " or ""
+	if x.name and x.name ~= "" then return t..x.name
+	elseif x.code and x.code ~= "" then return t..x.code
 	else
-		obj= getNearbyPointObjects2D(10)
-		for i=0, obj.Count-1 do
-			if obj[i].RcType:match("SA%-SIG") and not this.RcType:match("Signal 68") then
-				s5="\nMontert på \t\t"..tostring(obj[i].name)
-				break
-			elseif obj[i].RcType:match("SPB") then
-				s5="\nMontert på \t\t"..tostring(obj[i].Variant)
-				break
-			else
-				s5 = "\nMontert på \t\t"..this.Attachment.Variant				
-			end				
-		end		
-			
+		if x.RcType:match("FE%-DIV") or x.RcType:match("KO%-SKT") or x.RcType:match("SA%-MSS") 
+		or x.RcType:match("JBTFE_DIV")  or x.RcType:match("JBTKO_SKT") or x.RcType:match("JBTSA_MSS") then
+			return t..x.Variant --alternatively: RcType:sub(8)
+		else
+			return t..x.RcType:sub(11)
+		end
 	end
 end
-return s0..s1..s5
-</Data>
+
+local t
+if nRelated == 0 then
+	if nPeers == 0 then
+		--Free-standing pole or board with no obvious reason to be there
+		return Variant.."."
+
+	elseif nSignalPeers &gt; 0 then
+		--Board co-located with optical signal
+		return Variant..", på "..identify(signalPeers[0]).."." --Boards mounted on optical signal
+
+	else
+		--Board co-located with something else than an optical signal, probably other boards
+		t = Variant
+	end		
+
+else --nRelated &gt; 0:
+	--På signal, skiltfeste eller KL-mast / ved balisegruppe, sporveksel, tellepunkt
+	if r[0].RcType:match("JBTSA_SIG") or r[0].RcType:match("JBTEH_BKT") or r[0].RcType:match("JBTEH_MAS") then
+		t = Variant..", på "..identify(r[0])
+	else
+		t = Variant..", ved "..identify(r[0])
+	end
+end
+
+if nPeers &gt; 0 then
+	t = t..", på samme mast / stolpe som "
+	for i = 0, nPeers-1 do
+		t = t..identify(peers[i])
+		if i &lt; nPeers-2 then t = t..", " end
+		if i &lt; nPeers-1 then t = t.." og " end
+	end
+end
+
+return t.."."
+
+						</Data>
 						<Title>Anmerkning</Title>
 						<Sort />
 						<Guid>089c3e0b-5fd8-44ce-8e86-9dc08934f5ec</Guid>
@@ -4088,7 +4088,7 @@ then
 		elseif medrettet and bf.Variant == "Bardunfeste fotplate, enkel"  then s = s..npil
 		elseif medrettet and bf.Variant == "Bardunfeste fotplate, dobbel" then s = s..npil..npil
 		else
-			return bf.variant --"Feil skal ikke skje" -- Har ingen Bardun
+			return bf.Variant --"Feil skal ikke skje" -- Har ingen Bardun
 		end
 		first = false
 	end
