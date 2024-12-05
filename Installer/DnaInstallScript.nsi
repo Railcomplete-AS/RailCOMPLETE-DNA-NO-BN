@@ -5,6 +5,7 @@
 ;--------------------------------
 ; Last changed: 2021-05-14 THBEN/CLFEY
 ; Change: Rely on PRODUCT and BUNDLEDIR to be defined by calling YAML file
+; Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 ;--------------------------------
 ;
 ;Include Modern UI
@@ -59,9 +60,6 @@
 Section "${PRODUCT}" SecRC1 
 
   SetOutPath "$INSTDIR"
-
-  ;Delete poorly named release note
-  Delete "$INSTDIR\ReleaseNotes\2021.a NO-BN-Release Note.txt"
   
   ;Add files
   File /r "..\TMP\${BUNDLEDIR}\*"
