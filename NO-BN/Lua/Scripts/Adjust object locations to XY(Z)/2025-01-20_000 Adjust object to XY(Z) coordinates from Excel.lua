@@ -17,14 +17,16 @@ show([[
 	-	Use Edit Script and enable the Log output window to see more info from the execution.
 	
 	Usage:
-	-	Select Excel coordinate file, select an existing RC object (to get its RcType), start the insertion.
+	-	Select Excel coordinate file, select an existing RC object (to get its RcType), input the radius around
+		the coordinates to search for objects,  start the insertion.
 	-	Any DNA-formula on VerticalOffset property will be replaced by the difference in elevation between the
 		closest relevant alignment (railway tracks for most objects, contact wire for CW insulators etc) and then
 		Z elevation from the Excel file (if Z is provided).
 	-	If no 'Z' column exists in Excel, then default formulas and values apply for the VerticalOffset property.
 	
 	Output:
-	-	Fresh RC Objects are inserted on their default layer (as per current DNA) for each Excel file XY(Z) row.
+	-	For each valid row in the coordinate file the closest RC object of the same RcType as the selected object
+		and is within the tolerance in 2D distance is adjusted to the coordinates.
 	]])
 
 local tmp = runCommand("_RC-ShowVersion  ").log
@@ -48,94 +50,77 @@ local sheets = getExpandoObjectPropertyNames(file)
 local sheetName = sheets[0]
 local items = file[sheetName]
 local nItems = getCollectionLength(items)
-local nObjectsCreated = 0
+local nObjectsAdjusted = 0
 show(nItems.." rows found in sheet "..sheetName.." in file "..filename)
 
 local objTable = {}
-local alternativeInsertPointObjectOptionName
 
 --Select object type:
 local modelObject = askForObject("Select an existing object, we will use its RcType, Variant and its alignment's type when inserting new objects")
 
-local tolerance = askForDouble("Select the radius around data points to be searched for objects")
-
-if modelObject.Alignment == nil then
-	show("\nAborting: Selected model object must have a non-nil alignment (we need to see that alignment's RcType).")
-else
-
-	local xCaption = "X"
-	local yCaption = "Y"
-	local zCaption = "Z"
-	local obj
-	
-	if rcVersion > "2024.2" then beginUndoBufferItem() end
-	for i = 0,nItems-1 do
-	    local item = items[i]
-		local x = item[xCaption]
-		local y = item[yCaption]
-		local z = item[zCaption]
-	
-	    if type(x) == "number" and type(y) == "number" and (type(z) == "number" or type(z) == "nil") then --Trip on strings instead of a number (or no z value at all)
-	
-	    	if showPositionWithCircleOnCurrentLayer then
-			    if rcVersion > "2024.2" then
-			    	--This call ensures that undo buffering works (Ctrl+Z will undo all CIRCLEs in one operation):
-		    		local insertionPoint = cadInterface.createCadEntity("Geometry.Point3d", {x, y, 0})
-			    	local normalVector = cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1})
-		    		local circle = cadInterface.createCadEntity("DatabaseServices.Circle", {insertionPoint, normalVector, radius})
-	    			cadInterface.addEntitiesToModelSpace({circle}) --Add graphics to drawing
-		    	else
-					runCommand("_CIRCLE "..x..","..y..(z and ", "..z or "").." "..radius.." ")
-				end
-			end			
-
-			local p = getPoint3D(x,y)
-	   		local bestGuessAlignment = table.firstOrNil(getNearbyAlignments(p, modelObject.Alignment.RcType))
-	   		if bestGuessAlignment == nil then
-	   			writeln("Skipping row "..tostring(i+1)..": Object cannot be inserted at ("..x..", "..y..") because no alignment of type '"..modelObject.Alignment.RcType.."' was found.")
-	   		else
-	   			local nearbyObjects, numberOfObjects = getNearbyPointObjects2D(modelObject.RcType, p, tolerance)
-	   			if numberOfObjects > 0 then
-	   				local obj = nearbyObjects[0]
-	   				local newLinearAddress = getLinearAddress(p, obj.Alignment)
-	   				--Delete any formulas that may stop us from moving askForObject()
-	   				obj.Mileage = "="
-	   				obj.ReferenceMileage = "="
-	   				obj.DistanceAlong = "="
-	   				
-	   				obj.DistanceToAlignment = "="
-	   				obj.LateralOffset = "="
-	   				
-	   				--Place object at new linear address
-	   				obj.DistanceAlong = newLinearAddress.DistanceAlong
-	   				obj.LateralOffset = newLinearAddress.LateralOffset
-	   				obj.LongitudinalOffset = newLinearAddress.LongitudinalOffset
-
-			    	--Adjust z if needed:
-		    		if z then
-		    			obj.VerticalOffset = "=" --remove formula, if existing
-		    			obj.VerticalOffset = z - obj.geoCoord.Z
-		    		end
+local tolerance = askForDouble("Input the radius around data points to be searched for objects")
 
 
-	    			table.insert(objTable, obj)
-					writeln(tostring(i+1)..": ("..x..", "..y..(z and ", "..z or "")..")")
-					nObjectsCreated = nObjectsCreated + 1
-	   				
-	   			else
-	   				writeln("Skipping row number "..tostring(i+1)..": No point object of type "..modelObject.RcType.." found within "..tostring(tolerance).." m of point ("..x..", "..y..").")
-	   			end
-	   			
-		    end
+local xCaption = "X"
+local yCaption = "Y"
+local zCaption = "Z"
+local obj
+
+if rcVersion > "2024.2" then beginUndoBufferItem() end
+for i = 0,nItems-1 do
+    local item = items[i]
+	local x = item[xCaption]
+	local y = item[yCaption]
+	local z = item[zCaption]
+
+    if type(x) == "number" and type(y) == "number" and (type(z) == "number" or type(z) == "nil") then --Trip on strings instead of a number (or no z value at all)
+
+		local p = getPoint3D(x, y, z)
+
+		local nearbyObjects, numberOfObjects = getNearbyPointObjects2D(modelObject.RcType, p, tolerance)
+		if numberOfObjects > 0 then
+			local obj = nearbyObjects[0]
+			local newLinearAddress = getLinearAddress(p, obj.Alignment)
+			
+			--Delete any formulas that may stop us from moving askForObject()
+			obj.Mileage = "="
+			obj.ReferenceMileage = "="
+			obj.DistanceAlong = "="
+			
+			obj.DistanceToAlignment = "="
+			obj.LateralOffset = "="
+			
+			--Place object at new linear address
+			obj.DistanceAlong = newLinearAddress.DistanceAlong
+			obj.LateralOffset = newLinearAddress.LateralOffset
+			obj.LongitudinalOffset = newLinearAddress.LongitudinalOffset
+
+    	--Adjust z if needed:
+		if z then
+			obj.VerticalOffset = "=" --remove formula, if existing
+			obj.RelativeElevation = "="
+			
+			obj.VerticalOffset = newLinearAddress.VerticalOffset
+		end
+
+		table.insert(objTable, obj)
+		writeln(tostring(i+1)..": ("..x..", "..y..(z and ", "..z or "")..")")
+		nObjectsAdjusted = nObjectsAdjusted + 1
+			
 		else
-			if z then
-				writeln(string.format("Skipping row number %d: %s='%s' or %s='%s' or %s='%s' is not a number.", i+1, xCaption, tostring(x), yCaption, tostring(y), zCaption, tostring(z)))
-			else
-				writeln(string.format("Skipping row number %d: %s='%s' or %s='%s' is not a number.", i+1, xCaption, tostring(x), yCaption, tostring(y)))
-			end
+			writeln("Skipping row number "..tostring(i+1)..": No point object of type "..modelObject.RcType.." found within "..tostring(tolerance).." m of point ("..x..", "..y..").")
+		end
+   
+	else
+		if z then
+			writeln(string.format("Skipping row number %d: %s='%s' or %s='%s' or %s='%s' is not a number.", i+1, xCaption, tostring(x), yCaption, tostring(y), zCaption, tostring(z)))
+		else
+			writeln(string.format("Skipping row number %d: %s='%s' or %s='%s' is not a number.", i+1, xCaption, tostring(x), yCaption, tostring(y)))
 		end
 	end
-	if rcVersion > "2024.2" then endUndoBufferItem() end
 end
-show("\n"..nObjectsCreated.." objects were inserted.")
+
+if rcVersion > "2024.2" then endUndoBufferItem() end
+
+show("\n"..nObjectsAdjusted.." objects were adjusted.")
 setSelectionSet(objTable)
