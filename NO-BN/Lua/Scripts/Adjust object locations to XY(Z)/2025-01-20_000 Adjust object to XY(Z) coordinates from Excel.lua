@@ -29,19 +29,6 @@ show([[
 		and is within the tolerance in 2D distance is adjusted to the coordinates.
 	]])
 
-local tmp = runCommand("_RC-ShowVersion  ").log
-local rcVersion = tmp:match("version (%d+%.%d+)%.%d+%.%d+")
-
---[[Example output from RC-ShowVersion:
-RailCOMPLETE® version 2024.2.1.0
-DNA version information:
-Name: NO-BN 2021.a (Patch 9 2024-10-11: Ny variant for KL 'Bjelkemast, forsterket' - HEM260 med 3D). Fjernet 'legacy' Pset data (unntatt legacy NOBN_com_Pset[...] funksjoner).
-Version: 2021.a
-Administration: Bane NOR SF
-Agent: Railcomplete AS
-Date: 2021-11-27T21:11:27+01:00
-Description: RailCOMPLETE(r) Definisjon av nettverkselementer for Bane NOR
---]]
 
 --Open Excel file:
 local filename =  askForFileName("Select Excel file with XY coordinates columns with captions 'X', 'Y' (and optionally 'Z')")
@@ -66,7 +53,8 @@ local yCaption = "Y"
 local zCaption = "Z"
 local obj
 
-if rcVersion > "2024.2" then beginUndoBufferItem() end
+beginUndoBufferItem()
+
 for i = 0,nItems-1 do
     local item = items[i]
 	local x = item[xCaption]
@@ -120,7 +108,7 @@ for i = 0,nItems-1 do
 	end
 end
 
-if rcVersion > "2024.2" then endUndoBufferItem() end
+endUndoBufferItem()
 
 show("\n"..nObjectsAdjusted.." objects were adjusted.")
 setSelectionSet(objTable)
