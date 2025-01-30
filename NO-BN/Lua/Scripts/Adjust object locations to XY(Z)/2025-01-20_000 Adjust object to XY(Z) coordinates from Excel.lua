@@ -4,11 +4,10 @@ function show(t) writeln(t) askForKeyword(t, {"OK"}) end
 show([[
 	Adjust object at XY(Z) coordinates from Excel
 	=============================================
-	2024-12-05_000 CLFEY Created (from similar script inserting just a circle at XY).
-	2025-01-17_001 KNHEL Changed elevation to use elevation above mean sea level rather than relative to track
+	2025-01-30_000 KNHEL Created (from similar script inserting object at XYZ).
 	
 	Input:
-	-	Script is run insed a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
+	-	Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
 	-	Excel file with captions 'X'=Easting and 'Y'=Northing coordinates in the top row (the insertion point coords).
 	-	The Excel file may contain an additional column 'Z' providing insertion point elevation above mean sea level.
 	-	Subsequent rows contain X and Y coordinates (and Z) in the 'X' and the 'Y' (and Z) columns.
@@ -19,6 +18,8 @@ show([[
 	Usage:
 	-	Select Excel coordinate file, select an existing RC object (to get its RcType), input the radius around
 		the coordinates to search for objects,  start the insertion.
+	-	Any DNA-formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlingment or LateralOffset will be
+		replaced by the coordinate data.
 	-	Any DNA-formula on VerticalOffset property will be replaced by the difference in elevation between the
 		closest relevant alignment (railway tracks for most objects, contact wire for CW insulators etc) and then
 		Z elevation from the Excel file (if Z is provided).
@@ -92,7 +93,7 @@ for i = 0,nItems-1 do
 		end
 
 		table.insert(objTable, obj)
-		writeln(tostring(i+1)..": ("..x..", "..y..(z and ", "..z or "")..")")
+		writeln(tostring(i+1)..": Adjusted object with code "..obj.code.." and id "..obj.id.." to coordinates ("..x..", "..y..(z and ", "..z or "")..")")
 		nObjectsAdjusted = nObjectsAdjusted + 1
 			
 		else
