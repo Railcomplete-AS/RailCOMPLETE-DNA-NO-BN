@@ -4,7 +4,7 @@ function show(t) writeln(t) askForKeyword(t, {"OK"}) end
 show([[
 	Adjust object at XY(Z) coordinates from Excel
 	=============================================
-	2025-01-30_000 KNHEL Created (from similar script inserting object at XYZ).
+	2025-02-04_000 KNHEL Created (from similar script inserting object at XYZ).
 	
 	Input:
 	-	Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
@@ -38,7 +38,6 @@ local sheets = getExpandoObjectPropertyNames(file)
 local sheetName = sheets[0]
 local items = file[sheetName]
 local nItems = getCollectionLength(items)
-local nObjectsAdjusted = 0
 show(nItems.." rows found in sheet "..sheetName.." in file "..filename)
 
 local objTable = {}
@@ -94,7 +93,6 @@ for i = 0,nItems-1 do
 
 		table.insert(objTable, obj)
 		writeln(tostring(i+1)..": Adjusted object with code "..obj.code.." and id "..obj.id.." to coordinates ("..x..", "..y..(z and ", "..z or "")..")")
-		nObjectsAdjusted = nObjectsAdjusted + 1
 			
 		else
 			writeln("Skipping row number "..tostring(i+1)..": No point object of type "..modelObject.RcType.." found within "..tostring(tolerance).." m of point ("..x..", "..y..").")
@@ -111,5 +109,5 @@ end
 
 endUndoBufferItem()
 
-show("\n"..nObjectsAdjusted.." objects were adjusted.")
+show("\n"..#objTable.." objects were adjusted.")
 setSelectionSet(objTable)
