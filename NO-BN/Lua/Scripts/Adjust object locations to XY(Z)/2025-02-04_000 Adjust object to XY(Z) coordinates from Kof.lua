@@ -30,6 +30,7 @@ show([[
 
 --Open Kof file:
 local filename =  askForFileName("Select Kof coordinate file")
+
 local file = getContentsFromFile(FileType.Text,"", filename)
 
 lines = {}
@@ -76,7 +77,7 @@ end
 local objTable = {}
 
 --Select object type:
-local modelObject = askForObject("Select an existing object, we will use its RcType, Variant and its alignment's type when inserting new objects")
+local modelObject = askForObject("Select an existing object, we will adjust objects with its RcType")
 
 local tolerance = askForDouble("Input the radius around data points to be searched for objects")
 
