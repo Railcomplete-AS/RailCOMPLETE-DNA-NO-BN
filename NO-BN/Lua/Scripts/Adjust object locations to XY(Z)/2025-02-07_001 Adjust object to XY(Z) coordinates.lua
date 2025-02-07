@@ -4,6 +4,7 @@ show([[
 Adjust object at XY(Z) coordinates from Excel
 =============================================
 2025-02-07_000 KNHEL Created. See also similar Lua scripts inserting circle or object at XY(Z).
+2025-02-07_001 CLFEY Some spelling errors corrected.
 
 INPUT
 Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
@@ -31,10 +32,10 @@ USAGE
 1. Use the 'Edit Script' command and enable the Log output window to see more info from the execution.
 2. Select file format and an appropriate coordinate file, the file is then read.
 3. Select whether to find objects based on key or proximity and select either the RC property to match with,
-   or input the radius around	the coordinates to search for objects.
+   or input the radius around the coordinates to search for objects.
 4. Select an existing RC object to get its RcType.
 5. The script starts searching for objects and adjusting their position.
-6. Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlingment or LateralOffset will be
+6. Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlignment or LateralOffset will be
    replaced by the coordinate data.
 7. Any formula on VerticalOffset property will be replaced by the difference in elevation between the object's
    own alignment (railway tracks for most objects, contact wire for CW insulators etc) and then Z elevation from
