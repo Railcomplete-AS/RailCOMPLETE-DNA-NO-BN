@@ -1,5 +1,53 @@
 function writeln(t, symbol) write((t or "").."\n", symbol and symbol or _noSymbol) end
-function show(t) writeln(t) askForKeyword(t, {"OK"}) end
+function show(t) writeln(t) local t = askForKeyword(t, {"OK", "Abort"}) if t == "Abort" then Halt() end end
+show([[
+Adjust object at XY(Z) coordinates from Excel
+=============================================
+2025-02-07_000 KNHEL Created. See also similar Lua scripts inserting circle or object at XY(Z).
+
+INPUT
+Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
+The source data can come from an Excel file a KOF 2.0 file or a 'simple KOF' file.
+
+EXCEL FORMAT
+Input may be Excel with captions 'X'=Easting and 'Y'=Northing coordinates in the top row (insertion point coords).
+The Excel file may contain an additional column 'Z' providing insertion point elevation above mean sea level.
+Note that an object's elevation relative to its alignment (VerticalOffset) will be set to 0 when using this script.
+The Excel file title row may contain captions 'name', 'code' or 'id' of the objects (searched in this priority).
+Subsequent Excel rows contain X and Y coordinates (and Z) in the 'X' and the 'Y' (and Z) columns.
+Close the Excel file before running the script.
+
+KOF FORMAT
+See the KOF specification 2.0 from 2025-08-12.
+For both KOF 2.0 and simple KOF, only datablocks 01 and 05 are treated.
+For KOF 2.0 the 'Punkt' field (point name) is treated as keydata.
+For Simple KOF, the second non-whitespace block is treated as keydata.
+For both KOF formats, scale and northing-easting configurations from 01 blocks are respected.
+For both KOF formats, X is by default treated as Easting, Y is Northing, distances in meters.
+Ensure your model represents the same coordinate system as your XY(Z) survey points are referencing.
+RailCOMPLETE adjusts objects using World Coordinates also when a different User Coordinate System is in effect.
+
+USAGE
+1. Use the 'Edit Script' command and enable the Log output window to see more info from the execution.
+2. Select file format and an appropriate coordinate file, the file is then read.
+3. Select whether to find objects based on key or proximity and select either the RC property to match with,
+   or input the radius around	the coordinates to search for objects.
+4. Select an existing RC object to get its RcType.
+5. The script starts searching for objects and adjusting their position.
+6. Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlingment or LateralOffset will be
+   replaced by the coordinate data.
+7. Any formula on VerticalOffset property will be replaced by the difference in elevation between the object's
+   own alignment (railway tracks for most objects, contact wire for CW insulators etc) and then Z elevation from
+   the coordinate file (if Z is provided).
+8. If no 'Z' data is given in the coordinate file, then existing formulas and values for the VerticalOffset
+   property are kept unchanged.
+
+OUTPUT
+-	For each valid row in the coordinate file the best match RC object of the same RcType as the selected object
+    has been adjusted to the given coordinates.
+]])
+
+
 function parseStrictKOF(lines)
 	local result = {}
 	local enheter = {retning = 1, vinkler = 1, avstand = 1}
@@ -24,17 +72,25 @@ function parseStrictKOF(lines)
 				end
 				
 				if enheter.retning == 1 then
-					record.Y = tonumber(line:sub(25, 36))*scale
-					record.X = tonumber(line:sub(38, 48))*scale
+					record.Y = tonumber(line:sub(25, 36))
+					record.X = tonumber(line:sub(38, 48))
 				elseif enheter.retning == 2 then
-					record.X = tonumber(line:sub(25, 36))*scale
-					record.Y = tonumber(line:sub(38, 48))*scale
+					record.X = tonumber(line:sub(25, 36))
+					record.Y = tonumber(line:sub(38, 48))
 				end			
-				record.Z = tonumber(line:sub(50, 57))*scale
+				record.Z = tonumber(line:sub(50, 57))
+
+				record.X = record.X and record.X*scale
+				record.Y = record.Y and record.Y*scale
+				record.Z = record.Z and record.Z*scale
+
 				--record.bk = tonumber(line:sub(59, 60))
 				--record.merknad = line:sub(62, 68):gsub("%s+", "")
 				table.insert(result, record)
-				writeln("Data block 05, read data as { key: "..record.key..", X: "..record.X..", Y: "..record.Y..", Z: "..record.Z.."}")
+				writeln("Data block 05, read data as { key: "..record.key..
+					", X: "..(record.X and record.X or "-")..
+					", Y: "..(record.Y and record.Y or "-")..
+					", Z: "..(record.Z and record.Z or "-").."}")
 			else
 				writeln("Data block type "..line:sub(2,3).." is not implemented. Skipping line "..i, _warning)
 			end
@@ -44,6 +100,7 @@ function parseStrictKOF(lines)
 	end
 	return result
 end
+
 function parseSimpleKOF(lines)
 	local result = {}
 	local enheter = {retning = 1, vinkler = 1, avstand = 1}
@@ -56,7 +113,6 @@ function parseSimpleKOF(lines)
 			for field in line:gmatch("[^%s]+") do 
 				table.insert(fields, field)
 			end
-
 
 			if fields[1] == "00" then
 				writeln("Datablock 00, no data")
@@ -74,17 +130,25 @@ function parseSimpleKOF(lines)
 				end
 				
 				if enheter.retning == 1 then
-					record.Y = tonumber(fields[4])*scale
-					record.X = tonumber(fields[5])*scale
+					record.Y = tonumber(fields[4])
+					record.X = tonumber(fields[5])
 				elseif enheter.retning == 2 then
-					record.X = tonumber(fields[4])*scale
-					record.Y = tonumber(fields[5])*scale
+					record.X = tonumber(fields[4])
+					record.Y = tonumber(fields[5])
 				end			
-				record.Z = tonumber(fields[6])*scale
+				record.Z = tonumber(fields[6])
+				
+				record.X = record.X and record.X*scale
+				record.Y = record.Y and record.Y*scale
+				record.Z = record.Z and record.Z*scale
+
 				table.insert(result, record)
-				writeln("Data block 05, read data as { key: "..record.key..", X: "..record.X..", Y: "..record.Y..", Z: "..record.Z.."}")
+				writeln("Data block 05, read data as { key: "..record.key..
+					", X: "..(record.X and record.X or "-")..
+					", Y: "..(record.Y and record.Y or "-")..
+					", Z: "..(record.Z and record.Z or "-").."}")
 			else
-				writeln("Data block type "..fields[1].." is not implemented. Skipping line "..i, _warning)
+				writeln("Data block type "..fields[1].." is not implemented - skipping line "..i, _warning)
 			end
 		else
 			writeln("Comment line, no data")
@@ -94,50 +158,13 @@ function parseSimpleKOF(lines)
 end
 
 
-show([[
-Adjust object at XY(Z) coordinates from Excel
-=============================================
-2025-02-04_000 KNHEL Created (from similar script inserting object at XYZ).
-
-Input:
--	Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
--	The source data can come from an Excel file a KOF 2.0 file or a 'simple KOF' file.
--	Excel file with captions 'X'=Easting and 'Y'=Northing coordinates in the top row (the insertion point coords).
--	The Excel file may contain an additional column 'Z' providing insertion point elevation above mean sea level.
--	The Excel file may contain a column which matches either 'name', 'code' or 'id' of the objects.
--	Subsequent rows contain X and Y coordinates (and Z) in the 'X' and the 'Y' (and Z) columns.
--	Close the Excel file before running the script.
--	For both KOF 2.0 or simple KOF only datablocks 01 and 05 are read.
--	For KOF 2.0 the 'Punkt' field is read as keydata
--	For Simple KOF the second non-whitespace block is read as keydata
--	For both KOF formats scale and northing easting configurations from 01 blocks are respected
--	Ensure your model represents the same coordinate system as your XY(Z) survey points are referencing.
--	Use Edit Script and enable the Log output window to see more info from the execution.
-
-Usage:
--	Select file format and the coordinate file, the file is then read.
--	Select whether to find objects based on key or proximity and select either the RC property to match with or
-	input the radius around	the coordinates to search for objects.
--	Select an existing RC object to get its RcType.
--	The script starts searching for objects and adjusting their position.
--	Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlingment or LateralOffset will be
-	replaced by the coordinate data.
--	Any formula on VerticalOffset property will be replaced by the difference in elevation between the object's
-	own alignment (railway tracks for most objects, contact wire for CW insulators etc) and then Z elevation from 
-	the coordinate file (if Z is provided).
--	If no 'Z' column exists in the coordinate file, then default formulas and values apply for the VerticalOffset property.
-
-Output:
--	For each valid row in the coordinate file the best match RC object of the same RcType as the selected object
-	is adjusted to the coordinates.
-]])
-
 
 local items
 
-local fileFormat = askForKeyword("Select input file type", {"Excel", "KOF 2.0", "Simple KOF"})
+local fileFormat = askForKeyword("Select input file type", {"Excel", "KOF 2.0", "Simple KOF", "Abort"}, "Abort")
 
-if fileFormat == "Excel" then
+if fileFormat == "Abort" then Halt()
+elseif fileFormat == "Excel" then
 	--Open Excel file:
 	local filename =  askForFileName("Select Excel file with XY coordinates columns with captions 'X', 'Y' (and optionally 'Z')")
 	local file = getContentsFromFile(FileType.Excel,"", filename)
@@ -185,7 +212,7 @@ end
 
 
 --Select object type:
-local modelObject = askForObject("Select an existing object, we will adjust objects with its RcType")
+local modelObject = askForObject("Select an existing object, we will only adjust objects with the same RcType")
 
 local objectCollection
 if selectionStrategy == "Key" then
@@ -230,7 +257,7 @@ for i, item in ipairs(items) do
 			if candidates.Count > 0 then
 				obj = candidates[0]
 			else
-				writeln("Skipping row number "..tostring(i)..": No point object of type "..modelObject.RcType.." found with "..keyProperty.." "..tostring(item[keyColumn])..")", _warning)
+				writeln("Skipping row number "..tostring(i)..": No point object of type "..modelObject.RcType.." found with "..keyProperty.." '"..tostring(item[keyColumn]).."'.", _warning)
 			end
 		
 		end
