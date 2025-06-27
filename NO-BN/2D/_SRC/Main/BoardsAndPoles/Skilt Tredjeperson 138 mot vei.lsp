@@ -2,7 +2,7 @@
 ;
 ; Skilt Tredjeperson 138 mot vei.lsp
 ;
-; Copyright (c) 2015-2025 Railcomplete AS, Norway, NO916118503
+; Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
