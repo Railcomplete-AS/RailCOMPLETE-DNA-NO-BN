@@ -72,9 +72,9 @@ function NOBN_com_Pset_BaneNORRives()
 		_info(usage.."WARNING - Ugyldig fasekode i 'Fasekode XXxx-YYyy' (Stage), kan ikke avgjøre om objektet skal rives.")
 	else
 		if YYyy == '9999' then
-			return 'Nei'
+			return 'Nei', _info(usage)
 		else
-			return 'Ja'
+			return 'Ja', _info(usage)
 		end
 	end
 end
@@ -90,9 +90,9 @@ function NOBN_com_Pset_BaneNORRivesFase()
 			_info(usage.."WARNING - Ugyldig fasekode i 'Fasekode XXxx-YYyy' (Stage), kan ikke avgjøre når objektet rives.")
 	else
 		if YYyy == 9999 then
-			return "---"
+			return "---", _info(usage)
 		else
-			return string.format("%02d.%02d",YYyy//100, YYyy%100)
+			return string.format("%02d.%02d",YYyy//100, YYyy%100), _info(usage)
 		end
 	end
 end
@@ -107,7 +107,7 @@ function NOBN_com_Pset_BaneNORByggesFase()
 		return _warning, 'Ukjent',
 			_info(usage.."WARNING - Ugyldig fasekode i 'Fasekode XXxx-YYyy' (Stage), kan ikke avgjøre når objektet bygges.")
 	else
-		return string.format("%02d.%02d",XXxx//100, XXxx%100)
+		return string.format("%02d.%02d",XXxx//100, XXxx%100), _info(usage)
 	end
 end
 
@@ -164,9 +164,9 @@ function NOBN_com_FDVBaneDataReferansesporFra()
 				_info(usage.."Referanselinjen "..RC__identify(getObjectFromId(refId)).." som er angitt i linjeobjektets startpunkt må ha RcType 'JBTKO_SPO Spor' eller 'JBTFE_HJL Hjelpelinje'.")
 		else
 			if refId == this.id then
-				return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId).." (self)"
+				return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId.." (samme som egen linje)\n\n"..usage)
 			else
-				return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId)
+				return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId.."\n\n"..usage)
 			end
 		end
 	elseif Alignment then 
@@ -182,7 +182,7 @@ function NOBN_com_FDVBaneDataReferansesporFra()
 			return _warning, refId.." / "..(getObjectFromId(refId).name or getObjectFromId(refId).code or ""),
 				_info(usage.."Punktobjektets referanselinje "..RC__identify(getObjectFromId(refId)).." må ha RcType 'JBTKO_SPO Spor' eller 'JBTFE_HJL Hjelpelinje'.")
 		else
-			return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId)
+			return (getObjectFromId(refId).name or getObjectFromId(refId).code or ""), _info(refId.."\n\n"..usage)
 		end
 	else
 		--Punktobjekt som ikke tilhører en linje:
@@ -267,7 +267,7 @@ function NOBN_com_FDVBaneDataSideFra()
 			--Punktobjekt som tilhører et jernbanespor:
 			d = getAlignmentInfo(Alignment.id, x, y).DistanceToAlignment
 			t = (math.abs(d) < eps) and "Senter" or (d < 0) and "Venstre" or "Høyre"
-			return t, _info(t.." i forhold til eget spor "..RC__identify(Alignment))
+			return t, _info(t.." i forhold til eget spor "..RC__identify(Alignment).."\n\n"..usage)
 		else
 			--Punktobjekt som tilhører en linje som ikke er et jernbanespor:
 			refId = getAlignmentInfo(Alignment, x, y).ReferenceAlignmentId
@@ -275,7 +275,7 @@ function NOBN_com_FDVBaneDataSideFra()
 			if ai.NormalProjectionExists then
 				d = ai.DistanceToAlignment
 				t = (math.abs(d) < eps) and "Senter" or (d < 0) and "Venstre" or "Høyre"
-				return t, _info(t.." i forhold til referanselinje "..RC__identify(getObjectFromId(refId))).."."
+				return t, _info(t.." i forhold til referanselinje "..RC__identify(getObjectFromId(refId)).."\n\n"..usage)
 			else
 				return _warning, "Ukjent",
 					_info(usage.."Punktobjektet har ikke en projeksjon på sin referanselinje "..RC__identify(getObjectFromId(refId))..", kan ikke utlede side av spor.")
@@ -321,7 +321,7 @@ function NOBN_com_FDVBaneDataSportypeFra()
 		for i = 0, n-1 do
 			ai = getAlignmentInfo(t[i].id, x, y)
 			if ai.NormalProjectionExists then  
-				return t[i].FDV_BaneData.Sportype_fra_
+				return t[i].FDV_BaneData.Sportype_fra_, _info(usage)
 			end
 		end
 		--Fant ingen spor vi kunne projisere oss inn på:
@@ -368,14 +368,14 @@ function NOBN_com_FDVBaneDataSporNrFra()
 		for i = 0, n-1 do
 			ai = getAlignmentInfo(t[i].id, x, y)
 			if ai.NormalProjectionExists then  
-				return RC__identify(t[i])
+				return RC__identify(t[i]), _info(usage)
 			end
 		end
 		--Fant ingen spor vi kunne projisere oss inn på:
 		if RcAlignment then 
-			return _warning, "Linjens startpunkt har ikke en projeksjon på noen av sporene i modellen, kan ikke utlede sportilhørighet."
+			return _warning, _info(usage.."Linjens startpunkt har ikke en projeksjon på noen av sporene i modellen, kan ikke utlede sportilhørighet.")
 		else
-			return _warning, "Punktobjektet har ikke en projeksjon på noen av sporene i modellen, kan ikke utlede sportilhørighet."
+			return _warning, _info(usage.."Punktobjektet har ikke en projeksjon på noen av sporene i modellen, kan ikke utlede sportilhørighet.")
 		end
 	end
 end
