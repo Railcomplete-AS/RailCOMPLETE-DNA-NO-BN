@@ -16,30 +16,59 @@
 	Domain-specific Lua functions, stored in Global Extension Dictionary (not in each object).
 =========================================================================================================-->
 	<!-- INFO: Function used e.g. when computing info for switch tables: -->
-	<LuaFunction Name="NOBN_trk_getFoulingPointReferenceMileage()" ReturnType="String"
-		Description="Returns the reference mileage for the fouling point being farthest from the stock rail joint, using reference alignment mileage. Assumes caller is a switch unless argument 'v' is given.">
-		<Signature>String NOBN_trk_getFoulingPointReferenceMileage(tSwitch v)</Signature>
+	<LuaFunction Name="NOBN_trk_getFarthestFoulingPoint()" ReturnType="Fouling point data structure or an error message String"
+		Description=
+		"Returns the getFoulingPoints() data structure (see F1) for the fouling point (FP) located *farthest* from the stock rail joint.
+		\n
+		\nFoulingPoint             : Triplet {X,Y,Z) in world coordinates.
+		\nClearanceDistance        : FP's 2D straight-line distance from stock rail joint. This is also the FP's NorRailView 'Position'.
+		\nFoulingDistance          : The sum of the lateral offsets from FP to its Branch1 and to its Branch2.
+		\n
+		\nBranch1                  : FP's linear address relative to the switch object's Branch1 alignment.
+		\nBranch1.AlignmentRef     : - Branch1 alignment's object reference.
+		\nBranch1.Mileage          : - Mileage in Branch1.
+		\nBranch1.Point            : - Triplet (X, Y, Z), the FP's projection onto Branch1.
+		\nBranch1.ReferenceMileage : - Reference mileage calculated via Branch1.
+		\n
+		\nBranch2                  : FP's linear address relative to the switch object's Branch2 alignment.
+		\nBranch2.AlignmentRef     : - Branch2 alignment's object reference.
+		\nBranch2.Mileage          : - Mileage in Branch2.
+		\nBranch2.Point            : - Triplet (X, Y, Z), the FP's projection onto Branch2.
+		\nBranch2.ReferenceMileage : - Reference mileage calculated via Branch2.
+		\n
+		\nUsage:    NOBN_trk_getFoulingPoint(integer fpMethod, tSwitch swRef = this)
+		\n
+		\nwhere swRef is an optional reference to a switch object and fpMethod is mandatory, being one of 1, 2, 3 or 4, meaning:
+		\n          1 Ny bane, tog/*,
+		\n          2 Ny bane, skift/skift,
+		\n          3 Eks. bane, tog/*
+		\n          4 Eks. bane, skift/skift,
+		">
+		<Signature>String NOBN_trk_getFarthestFoulingPoint(int fpMethod, tSwitch sw)</Signature>
 		<Formula>
-			function NOBN_trk_getFoulingPointReferenceMileage(v)
-				if v == nil then v = getObjectFromId(id) end
-				if v.RcType ~= rctype_Switch then
-					return "Bad object type ["..RcType.."], '"..rctype_Switch.."' was expected"
+			function NOBN_trk_getFarthestFoulingPoint(fpMethod, sw)
+				--Note: fpMethods must be spelled exactly as shown in RC-Settings - see those declarations in NO-BN.Foulingpoint.xml.
+				--TODO: Replace (when ready) with code exploiting a new feature in getFoulingPoints() code that accesses FP methods directly.
+				local fpMethods = {
+					"1 Ny bane, tog/*",
+					"2 Ny bane, skift/skift",
+					"3 Eksist. bane, tog/*",
+					"4 Eksist. bane, skift/skift"
+				}
+				sw = sw or this
+				fpMethod = math.floor(fpMethod) or 1
+				if fpMethod &lt; 1 or fpMethod &gt; 4 then
+					return "Bad fouling point method index ["..fpMethod.."] - 1, 2, 3 or 4 was expected."
+				end
+				if sw.RcType ~= rctype_Switch then
+					return "Bad object type ["..sw.RcType.."], '"..rctype_Switch.."' was expected."
 				else
-					local fp, dmax, w, d
-					fp = getFoulingPoints(v)
-					dmax = 0
-					w = nil
-					for i = 0, fp.Count-1 do
-						d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
-						if d &gt; dmax then
-							dmax = d
-							w = fp[i].Branch1.ReferenceMileage
-						end
-					end
-					if dmax == 0 then
+					local fp, nFp
+					fp, nFp = getFoulingPoints(fpMethods[fpMethod], sw) --These are already sorted on ClearanceDistance byAscending.
+					if nFp == 0 then
 						return "(no fouling points found)"
 					else
-						return w
+						return fp[nFp-1]
 					end
 				end
 			end 
@@ -48,39 +77,6 @@
 
 
 
-	<!-- INFO: Function used e.g. when computing info for switch tables: -->
-	<LuaFunction Name="NOBN_trk_getFoulingPointMileage()" ReturnType="String"
-		Description="Returns the own alignment mileage for the fouling point being farthest from the stock rail joint, using own alignment mileage. Assumes caller is a switch unless argument 'v' is given.">
-		<Signature>String NOBN_trk_getFoulingPointMileage(tSwitch v)</Signature>
-		<Formula>
-			function NOBN_trk_getFoulingPointMileage(v)
-				if v == nil then v = getObjectFromId(id) end
-				if v.RcType ~= rctype_Switch then
-					return "Bad object type ["..RcType.."], '"..rctype_Switch.."' was expected"
-				else
-					local fp, dmax, w, i, d
-					fp = getFoulingPoints(v)
-					dmax = 0
-					w = nil
-					for i = 0, fp.Count-1 do
-						d = math.sqrt((fp[i].FoulingPoint.x - v.geocoord.x)^2 + (fp[i].FoulingPoint.y - v.geocoord.y)^2)
-						if d &gt; dmax then
-							dmax = d
-							w = fp[i].Branch1.Mileage
-						end
-					end
-					if dmax == 0 then
-						return "(no fouling points found)",_warning
-					else
-						return w
-					end
-				end
-			end 
-		</Formula>
-	</LuaFunction>
-
-	
-	
 <!--========================================================================================================
 	TRACK AND EMBANKMENT
 	ALIGNMENT CONTINUATIONS
