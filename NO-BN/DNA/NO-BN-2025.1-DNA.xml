@@ -736,7 +736,7 @@
 		</Formula>
  </LuaFunction>
  <ShowLayerMenu HideMissingLayerSets="true"/>
- <ShowLayer Name="COM_ShowDepointsLayer" DisplayName="Generelt/Defpoints">
+ <ShowLayer Name="COM_ShowDefpointsLayer" DisplayName="Generelt/Defpoints">
   <LayerSelection Type="PartialMatch" CaseSensitive="false">Defpoints</LayerSelection>
  </ShowLayer>
  <ShowLayer Name="COM_ShowInsertionPoint" DisplayName="Generelt/Innsettingspunkt">
@@ -20730,8 +20730,8 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
    <Formula>
 				function _JBTEH_BAR_Offset3DZ()
 					--2025-10-08 CLFEY Ny kode, som takler at bardunen kan være tegnet fra ankeret til masten (ønske fra kunde)
-					local atp = getRelatedObjects("Har kraftoverføringskonsoll")[0]
-					local gwf = getRelatedObjects( "Har forankring")[0]
+					local atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_AnchoringToOcsPole)[0]
+					local gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
 					local L = RcAlignment.HorizontalGeometry.Length
 					local z0, z1, dZ
 					local d = RC__getDistance2D(getPoint3D(gwf), RcAlignment.HorizontalGeometry.StartPoint)
@@ -24135,6 +24135,7 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
    </Variant>
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
+  <DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
   <CustomProperty DataType="Enumeration" Name="Length" DisplayName="Lengde" DefaultValue="11m" Description="The overhead catenary system (OCS) portal length (oyl), given in predefined lengths in 1 meter steps. Each may be composed of subparts, where the joints may hinder drop arm mounting.">
    <Values Variant="Type 12">
     <Value Description="Type 12 I">11m</Value>
@@ -24513,6 +24514,56 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
 					else
 						return "Bad OCS portal Variant ["..Variant.."]",_warning
 					end
+				end
+			</Formula>
+  </LuaFunction>
+  <LuaExpression Name="Geometry3D_1.Name">
+   <Formula>
+				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
+				r, n = getRelatedObjects(RelationName)				
+				return _JBTEH_AAK_KONSOLL_Geometry3DName(r[0],n)
+			</Formula>
+  </LuaExpression>
+  <LuaFunction Name="_JBTEH_AAK_KONSOLL_Geometry3DName()" ReturnType="String" Description="Returns the brackets's 3D object model name.">
+   <Signature>Userdata _JBTEH_AAK_KONSOLL_Geometry3DName()</Signature>
+   <Formula>
+				function _JBTEH_AAK_KONSOLL_Geometry3DName(mast,n)
+					local m = mast
+					local crossSection = m.OcsPoleCrossSection
+					local placement = _JBTEH_AAK_KONSOLL_Placement(m)
+					local a = placement - tonumber(crossSection:match("%d+"))*0.0005 -- Calculates the distance between insertion point and edge of portal
+					if n == 2 then
+						if variant == "Type 14" then
+							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-14-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", a>0.250 and "1" or "2", crossSection))
+							-- Have to change when renaming the brackets
+						elseif variant == "Type 12" then
+							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-12-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", a>0.250 and "1" or "2", crossSection))
+							-- Have to change when renaming the brackets
+						end
+					else
+						return nil
+					end
+				end
+			</Formula>
+  </LuaFunction>
+  <LuaExpression Name="Geometry3D_1.Offset.Y">
+   <Formula>
+				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
+				r, n = getRelatedObjects(RelationName)
+				return _JBTEH_AAK_KONSOLL_Placement(r[0])
+			</Formula>
+  </LuaExpression>
+  <LuaFunction Name="_JBTEH_AAK_KONSOLL_Placement()" ReturnType="Double" Description="Returns the bracket's placement on the portal.">
+   <Signature>Userdata _JBTEH_AAK_KONSOLL_Placement()</Signature>
+   <Formula>
+				function _JBTEH_AAK_KONSOLL_Placement(mast)
+					local m = mast
+					local x1 = m.geoCoord.X
+					local y1 = m.geoCoord.Y
+					local x2 = geoCoord.X
+					local y2 = geoCoord.Y
+					local konsollPlacmentOrgin = -math.sqrt((x2-x1)^2+(y2-y1)^2)
+					return konsollPlacmentOrgin
 				end
 			</Formula>
   </LuaFunction>
@@ -35161,18 +35212,18 @@ end
   </LuaExpression>
   <Variants DefaultValue="Telefon langs spor">
    <Variant Name="Telefon langs spor">
-    <SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-JBTTE-TELEFON-LANGS-SPOR"/>
+    <SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-JBTTE-TOGLEDERTELEFON"/>
    </Variant>
   </Variants>
   <LuaExpression Name="name">
    <Formula>"Tlf."..code</Formula>
   </LuaExpression>
-  <InsertPointObject Name="Telefon langs spor" DisplayBlockName="NO-BN-2D-JBTTE_TLT-TELEFON-LANGS-SPOR-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
+  <InsertPointObject Name="Telefon langs spor" DisplayBlockName="NO-BN-2D-JBTTE_TLT-TOGLEDERTELEFON-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
    <SetValue Key="dir" Value="both"/>
   </InsertPointObject>
-  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTTE_TLT-TELEFON-LANGS-SPOR-{{SymbolMode}}" AllowSymbolMove="true">
+  <SymbolDefinition DefaultBlockName="NO-BN-2D-JBTTE_TLT-TOGLEDERTELEFON-{{SymbolMode}}" AllowSymbolMove="true">
    <Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
 														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
