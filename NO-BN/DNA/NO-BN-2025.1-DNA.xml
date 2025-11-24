@@ -24136,6 +24136,7 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
   </Variants>
   <DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
   <DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
+  <DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
   <CustomProperty DataType="Enumeration" Name="Length" DisplayName="Lengde" DefaultValue="11m" Description="The overhead catenary system (OCS) portal length (oyl), given in predefined lengths in 1 meter steps. Each may be composed of subparts, where the joints may hinder drop arm mounting.">
    <Values Variant="Type 12">
     <Value Description="Type 12 I">11m</Value>
@@ -24529,16 +24530,20 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
    <Formula>
 				function _JBTEH_AAK_KONSOLL_Geometry3DName(mast,n)
 					local m = mast
-					local crossSection = m.OcsPoleCrossSection
-					local placement = _JBTEH_AAK_KONSOLL_Placement(m)
-					local a = placement - tonumber(crossSection:match("%d+"))*0.0005 -- Calculates the distance between insertion point and edge of portal
-					if n == 2 then
+					if n == 2 or (n == 1 and m ~= nil) then
+						local crossSection = m.OcsPoleCrossSection
+						local placement = _JBTEH_AAK_KONSOLL_Placement(m)
+						local a = placement - tonumber(crossSection:match("%d+"))*0.0005 -- Calculates the distance between insertion point and edge of portal
 						if variant == "Type 14" then
 							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-14-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", a>0.250 and "1" or "2", crossSection))
-							-- Have to change when renaming the brackets
+							-- TODO: Placeholder name is used, change when renaming the bracket to its "official name"
 						elseif variant == "Type 12" then
 							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-12-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", a>0.250 and "1" or "2", crossSection))
-							-- Have to change when renaming the brackets
+							-- TODO: Placeholder name is used, change when renaming the bracket to its "official name"
+						-- elif varient == "Type 40"
+						else
+							return nil
+							--Should there be an error message here?
 						end
 					else
 						return nil
@@ -24546,6 +24551,9 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
 				end
 			</Formula>
   </LuaFunction>
+  <LuaExpression Name="Geometry3D_1.Parent">
+   <Formula>0</Formula>
+  </LuaExpression>
   <LuaExpression Name="Geometry3D_1.Offset.Y">
    <Formula>
 				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
@@ -24567,6 +24575,23 @@ instead copy an existing, or insert a new one from DNA and modify its formulas a
 				end
 			</Formula>
   </LuaFunction>
+  <LuaExpression Name="Geometry3D_2.Name">
+   <Formula>
+				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
+				r, n = getRelatedObjects(RelationName)				
+				return _JBTEH_AAK_KONSOLL_Geometry3DName(r[1],n)
+			</Formula>
+  </LuaExpression>
+  <LuaExpression Name="Geometry3D_2.Parent">
+   <Formula>0</Formula>
+  </LuaExpression>
+  <LuaExpression Name="Geometry3D_2.Offset.Y">
+   <Formula>
+				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
+				r, n = getRelatedObjects(RelationName)
+				return _JBTEH_AAK_KONSOLL_Placement(r[1])
+			</Formula>
+  </LuaExpression>
   <InsertPointObject Name="Type 12" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
    <OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
