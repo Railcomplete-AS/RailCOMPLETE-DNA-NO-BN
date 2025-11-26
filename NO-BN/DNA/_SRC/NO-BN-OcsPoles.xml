@@ -1777,16 +1777,19 @@
 					if n == 2 or (n == 1 and m ~= nil) then
 						local crossSection = m.OcsPoleCrossSection
 						local placement = _JBTEH_AAK_KONSOLL_Placement(m)
-						local a = placement - tonumber(crossSection:match("%d+"))*0.0005 -- Calculates the distance between insertion point and edge of portal
+						local aOrgin = math.abs(placement) - tonumber(crossSection:match("%d+"))*0.0005 -- Calculates the distance between insertion point and edge of portal
+						local L = tonumber(_JBTEH_AAK_Length():match("%d+"))
+						local aEnd = L-aOrgin
 						if variant == "Type 14" then
-							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-14-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", a>0.250 and "1" or "2", crossSection))
+							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-14-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", ((aOrgin > 0.250) or (L - aEnd > 0.250)) and "1" or "2", crossSection))
 							-- TODO: Placeholder name is used, change when renaming the bracket to its "official name"
 						elseif variant == "Type 12" then
-							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-12-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", a>0.250 and "1" or "2", crossSection))
+							return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-Type-12-%s-0%s-KONSOLL-%s",Strengthened and "2" or "1", ((aOrgin > 0.250) or (L - aEnd > 0.250)) and "1" or "2", crossSection))
 							-- TODO: Placeholder name is used, change when renaming the bracket to its "official name"
 						-- elif varient == "Type 40"
 						else
 							return nil
+							--Should there be an error message here?
 							--Should there be an error message here?
 						end
 					else
@@ -1820,7 +1823,34 @@
 				end
 			</Formula>
 		</LuaFunction>
-
+		
+		<LuaExpression Name="Geometry3D_1.Rotation.Z">
+			<Formula>
+				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
+				r, n = getRelatedObjects(RelationName)
+				return _JBTEH_AAK_KONSOLL_Rotation(r[0])
+			</Formula>
+		</LuaExpression>
+		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Rotation()" ReturnType="Double"
+			Description="Rotates the bracket when the portal–mast distance a is less than 250 mm">
+			<Signature>Userdata _JBTEH_AAK_KONSOLL_Rotation</Signature>
+			<Formula>
+				function _JBTEH_AAK_KONSOLL_Rotation(mast)
+					local m = mast
+					local crossSection = m.OcsPoleCrossSection
+					local placement = _JBTEH_AAK_KONSOLL_Placement(m)
+					local a = math.abs(placement - tonumber(crossSection:match("%d+"))*0.0005) -- Calculates the distance between insertion point and edge of portal
+					if a > 0.250 then
+						return 0
+					else
+						return 180
+					end
+				end
+			</Formula>
+		</LuaFunction>
+		
+		<LuaExpression Name="Geometry3D_1.RotationBeforeOffset"><Formula>true</Formula></LuaExpression>
+		
 		<LuaExpression Name="Geometry3D_2.Name">
 			<Formula>
 				RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
@@ -1838,7 +1868,9 @@
 				return _JBTEH_AAK_KONSOLL_Placement(r[1])
 			</Formula>
 		</LuaExpression>
-		
+					
+		<LuaExpression Name="Geometry3D_2.RotationBeforeOffset"><Formula>true</Formula></LuaExpression>
+
 		
 		<InsertPointObject Name="Type 12" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
