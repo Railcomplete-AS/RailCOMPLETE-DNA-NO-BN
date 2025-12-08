@@ -893,12 +893,12 @@
 						return t, _info(t.." i forhold til eget spor "..RC__identify(Alignment))
 					else
 						--Punktobjekt som tilhører en linje som ikke er et jernbanespor:
-						refId = getAlignmentInfo(Alignment,x,y).ReferenceAlignmentId
+						refId = getAlignmentInfo(Alignment.id,x,y).ReferenceAlignmentId
 						ai = getAlignmentInfo(refId,x,y)
 						if ai.NormalProjectionExists then
 							d = ai.DistanceToAlignment
 							t = (math.abs(d) &lt; eps) and "Senter" or (d &lt; 0) and "Venstre" or "Høyre"
-							return t, _info(t.." i forhold til referansespor "..RC__identify(getObjectFromId(refId))).."."
+							return t, _info(t.." i forhold til referansespor "..RC__identify(getObjectFromId(refId))..".")
 						else
 							return _warning, "Ukjent",
 								_info("Punktobjektet har ikke en projeksjon på referansespor "..RC__identify(getObjectFromId(refId))..", kan ikke utlede side av spor.")
@@ -9026,8 +9026,22 @@ else
 			
 	end
 end
-return s0..s1..s5
-</Data>
+
+if nPeers &gt; 0 then
+	t = t..", på samme mast / stolpe som "
+	for i = 0, nPeers-1 do
+		t = t..identify(peers[i])
+		if i &lt; nPeers-2 then
+			t = t..", "
+		elseif i &lt; nPeers-1 then
+			t = t.." og "
+		end
+	end
+end
+
+return t.."."
+
+						</Data>
       <Title>Anmerkning</Title>
       <Sort/>
       <Guid>089c3e0b-5fd8-44ce-8e86-9dc08934f5ec</Guid>
@@ -23173,7 +23187,7 @@ end
 					local tol = 0.050 --[m]
 					ps = alg.RcAlignment.StartPoint
 					pe = alg.RcAlignment.EndPoint
-					trackGauge = alg.AlignmentSystemAlignmentGauge
+					trackGauge = alg.AlignmentSystem.AlignmentGauge
 					--Get point near midpoint of rail:
 					pm = getAlignmentInfo(alg.id,(ps.X+pe.X)/2.0,(ps.Y+pe.Y)/2.0).Point 
 					--Note: If the rail alignment starts or ends in a connection element, then there may be several close candidates:
@@ -31981,7 +31995,23 @@ end
 				end
 			</Formula>
   </LuaFunction>
-  <CustomAttribute DataType="Double" Name="CantileverLength" DisplayName="Strekkstag kuttlengde" DefaultValue="4.0" Description="The cantilever's length [m] is measured from console (mast side) to contact wire, perpendicularly to the track. Cariboni is more restricted."/>
+  <CustomProperty DataType="Double" Name="CantileverLength" DisplayName="Utliggerlengde" DefaultValue="4.0" Description="The cantilever's length [m] is measured from console (pole side) to contact wire clamp, perpendicularly to the track. The Cariboni variant has a constant length of 1200 mm."/>
+  <LuaExpression Name="CantileverLength">
+   <Formula>_JBTEH_UTL_CantileverLength()</Formula>
+  </LuaExpression>
+  <LuaFunction Name="_JBTEH_UTL_CantileverLength()" ReturnType="String" Description="Returns the cantilever's length, adjusted for OCS pole placement and pole profile, pole's side of track, stagger and local cant. Cariboni is always 1200 mm long.">
+   <Signature>Double _JBTEH_UTL_CantileverLength(Double CantileverLength)</Signature>
+   <Formula>
+				function _JBTEH_UTL_CantileverLength()
+					if Variant == "Cariboni" then
+						return 1.200
+					else
+						local cl = math.abs(DistanceToAlignment) + Stagger
+						return string.format("%.03f",cl)
+					end
+				end
+			</Formula>
+  </LuaFunction>
   <CustomAttribute DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" DefaultValue="4000" Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long."/>
   <LuaExpression Name="CantileverLengthDisplay">
    <Formula>_JBTEH_UTL_CantileverLengthDisplay(CantileverLength)</Formula>
@@ -32018,30 +32048,38 @@ end
   </LuaExpression>
   <CustomAttribute DataType="Double" Name="StitchWireLength" DisplayName="Y-line lengde" DefaultValue="0.00" Description="The stitch wire length (swl) [m] denotes the length, measured as a difference in mileage, from start to end (where it attaches to the catenary wire). Zero length means 'no stitch wire'."/>
   <CustomAttribute DataType="Double" Name="Stagger" DisplayName="Sikk-sakk" DefaultValue="0.000" Description="Stagger [m] (zigzag) denotes the distance from contact wire clamp to centre track, measured co-linearly with the top-of-rail plane. A positive stagger means pushing away from mast, negative means pulling towards mast."/>
-  <CustomAttribute DataType="String" Name="StaggerDisplay" DisplayName="Sikk-sakk visning" DefaultValue="" Description="The stagger value, as shown next to the cantilever [cm]."/>
-  <TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="5.5" Layer="JBTEH@SIKKSAKK" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <CustomProperty DataType="String" Name="StaggerDisplay" DisplayName="Sikk-sakk visning" DefaultValue="" Description="The stagger value, as shown next to the cantilever [cm]."/>
+  <TextAttribute Annotative="true" BindingProperty="StaggerDisplay" CadAttributeTag="SIKKSAKK" X="-2.75" Y="-6" Layer="JBTEH@SIKKSAKK" Color="ByLayer" Justify="MiddleCenter" Height="1.25" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
   <LuaExpression Name="StaggerDisplay">
-   <Formula>string.format("%.f",Stagger*100) --Centimeters</Formula>
+   <Formula>_JBTEH_UTL_StaggerDisplay()</Formula>
   </LuaExpression>
-  <CustomAttribute DataType="String" Name="OcsWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" Description="The cantilever's associated OCS wire."/>
-  <TextAttribute Annotative="true" BindingProperty="OcsWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="6" Layer="JBTEH@UTL_LEDNING" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="-90" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
-  <LuaExpression Name="OcsWireNameDisplay">
-   <Formula>_JBTEH_UTL_OcsWireNameDisplay()</Formula>
-  </LuaExpression>
-  <LuaFunction Name="_JBTEH_UTL_OcsWireNameDisplay()" ReturnType="String" Description="Identifies this cantilever's associated OCS wire. Uses relation 'Tilhører kl-mast' to access the related object's data.">
-   <Constructor>String _JBTEH_UTL_OcsWireNameDisplay(cantilever)</Constructor>
+  <LuaFunction Name="_JBTEH_UTL_StaggerDisplay()" ReturnType="Double" HideFromUser="false" Description="Returns the rounded stagger value in centimeters. A negative stagger means that the cantilever holds the contact wire in a position such that it touches a passing train's pantograph side which is closest to the OCS pole. Note that the tip of the cantilever's 2D symbol is located in 2D relative to the track's 2D polyline representation, which does not show the effect of cant. The actual contact wire position in 3D is shifted sideways as a function of the track's cant. The net effect is that the 2D cantilever's tip is located at the stagger distance from the 2D contact wire.">
+   <Signature>Double _JBTEH_UTL_StaggerDisplay()</Signature>
    <Formula>
-				function _JBTEH_UTL_OcsWireNameDisplay(cantilever)
+				function _JBTEH_UTL_StaggerDisplay()
+					return string.format("%.0f",Stagger*100) --Centimeters
+				end
+			</Formula>
+  </LuaFunction>
+  <CustomProperty DataType="String" Name="ContactWireNameDisplay" DisplayName="Ledningsnavn visning" DefaultValue="" Description="The cantilever's associated OCS wire. Uses relation '&quot;..rel_Cantilever_Holds_ContactWire..&quot;' to access the related object's data."/>
+  <TextAttribute Annotative="true" BindingProperty="ContactWireNameDisplay" CadAttributeTag="UTLIGGER_LEDNING" X="0" Y="-6" Layer="JBTEH@UTLIGGER_LEDNING" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" Invisible="false" Lock="false" MText="false"/>
+  <LuaExpression Name="ContactWireNameDisplay">
+   <Formula>_JBTEH_UTL_ContactWireNameDisplay()</Formula>
+  </LuaExpression>
+  <LuaFunction Name="_JBTEH_UTL_ContactWireNameDisplay()" ReturnType="String" Description="Identifies this cantilever's associated OCS wire. Uses relation '&quot;..rel_Cantilever_Holds_ContactWire..&quot;' to access the related object's data.">
+   <Signature>String _JBTEH_UTL_ContactWireNameDisplay(cantilever)</Signature>
+   <Formula>
+				function _JBTEH_UTL_ContactWireNameDisplay(cantilever)
 					if cantilever == nil then cantilever = this end
-					if cantilever.RcType ~= "JBTEH_UTL Utligger" then
+					if cantilever.RcType ~= rctype_Cantilever then
 						return nil, _info("Unrecognised calling object type ["..cantilever.RcType.."].")
 					end
-					local s = "Utligger for kontaktledning"
-					local r,n = RC__getCollectionOfRelatedObjects(s)
+					local s = rel_Cantilever_Holds_ContactWire
+					local r, n = getRelatedObjects(s)
 					if n == 1 then return 
-						"("..RC__identify(r[0])..")"
+						RC__identify(r[0])
 					else
-						return "UNFINISHED - Relate cantilever to OCS wire with relation '"..s.."'"
+						return "CW=?"
 					end		
 				end
 			</Formula>
@@ -32055,21 +32093,15 @@ end
    <Formula>
 				function _JBTEH_UTL_WireClampLateralOffset()
 					--TODO: Adapt function to dual cant.
-					ai = getAlignmentInfo()
-					c = ai.Cant
-					h = RC__isNan(c) and 0 or c/1000.0
+					local ai = getAlignmentInfo()
+					local c = ai.Cant
+					local h = RC__isNan(c) and 0 or c/1000.0
 					if h == 0 then 
-						return Stagger
+						return (LeftSided and 1 or -1)*Stagger
 					else
-						ss = h/Alignment.AlignmentSystem.CantGauge
-						cc = math.sqrt(1 - ss^2)
-						if ai.CantRotation == "CW" then 
-							return ss*ContactWireHeight + cc*Stagger
-						elseif ai.CantRotation == "CCW" then
-							return -ss*ContactWireHeight + cc*Stagger
-						else
-							return _error,0.999
-						end
+						local ss = h/Alignment.AlignmentSystem.CantGauge --sin(theta)
+						local cc = math.sqrt(1 - ss^2) --cos(theta)
+						return RC__round((ai.CantRotation == "CW" and 1 or -1)*ss*ContactWireHeight + (LeftSided and 1 or -1)*cc*Stagger,3)
 					end
 				end
 			</Formula>
@@ -32083,21 +32115,15 @@ end
    <Formula>
 				function _JBTEH_UTL_WireClampVerticalOffset()
 					--TODO: Adapt function to dual cant.
-					ai = getAlignmentInfo()
-					c = ai.Cant
-					h = RC__isNan(c) and 0 or c/1000.0
+					local ai = getAlignmentInfo()
+					local c = ai.Cant
+					local h = RC__isNan(c) and 0 or c/1000.0
 					if h == 0 then 
-						return ContactWireHeight
+						return RC__round(ContactWireHeight,3)
 					else
-						ss = h/Alignment.AlignmentSystem.CantGauge
-						cc = math.sqrt(1 - ss^2)
-						if ai.CantRotation == "CW" then 
-							return h/2 + cc*ContactWireHeight - ss*Stagger
-						elseif ai.CantRotation == "CCW" then
-							return h/2 + cc*ContactWireHeight + ss*Stagger
-						else
-							return _error,0.999
-						end
+						local ss = h/Alignment.AlignmentSystem.CantGauge --sine
+						local cc = math.sqrt(1 - ss^2) --cosine
+						return RC__round(h/2 + cc*ContactWireHeight + (ai.CantRotation == "CW" and -1 or 1)*ss*Stagger,3)
 					end
 				end
 			</Formula>
@@ -41460,22 +41486,7 @@ end
 				function _JBTSA_SIG_signal_model3DName()
 					--Ref. https://orv.banenor.no/orv/doku.php?id=tjn:Kapittel_8 fra "Bane NOR – Trafikkregler for jernbanenettet (TJN) – gyldig fra 16.6.2019. Endret 24.4.2019."
 					--Ref LISP-code for NO-BN's 2D library, file "Signal combinations.lsp" ca line number 350 where the symbol's CAD block name is constructed.
-					local t
-					if (Markerboard ~= "-") then
-						t = "NO-BN-3D-SA-SIG-ERTMS"
-						if not Yokemounted then
-							if (RightSided and (dir == 'up')) or (LeftSided and (dir == 'down')) then 
-								t = t.."-E35L"
-							else
-								t = t.."-E35R"
-							end
-						elseif Yokemounted then
-							t = t.."-E35D"
-						end
-						if (ErtmsDwarfSignal ~= "-") then t = t.."-DS" end
-						return t
-					end
-					
+					local t				
 					t = "NO-BN-3D-SA-SIG-NSI63"
 					if     (MainSignal == "RepHs1") then t = t.."-HSREP1" --RepHs 1-lys (øvre grønn i 2-lysramme, blendet nedre lanterne) - uten kne, oppover-montering, f.eks. på vegg
 					elseif (MainSignal == "RepHs2") then t = t.."-HSREP2" --RepHs 1-lys (to grønne i 2-lysramme) - uten kne, oppover-montering, f.eks. på vegg
@@ -43806,11 +43817,11 @@ end
     <SetValue Key="name" Value="V.(flerspor)"/>
    </Variant>
   </Variants>
-  <InsertPointObject VariantName="Veisignal/Enkelt signal mot vei" DisplayName="Planovergang/Enkelt signal mot vei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-VEISIGNAL-1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
+  <InsertPointObject VariantName="Veisignal/Enkelt signal mot vei" DisplayName="Planovergang/Enkelt signal mot vei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-VEISIGNAL-VS1-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
    <OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
-  <InsertPointObject VariantName="Veisignal/Dobbelt signal mot vei" DisplayName="Planovergang/Dobbelt signal mot vei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-VEISIGNAL-2-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
+  <InsertPointObject VariantName="Veisignal/Dobbelt signal mot vei" DisplayName="Planovergang/Dobbelt signal mot vei" DisplayBlockName="NO-BN-2D-JBTSA_SIG-VEISIGNAL-VS2-{{SymbolMode}}" DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="6.0">
    <OwnAlignmentTargetSpace>vei</OwnAlignmentTargetSpace>
    <JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
   </InsertPointObject>
@@ -43825,8 +43836,8 @@ end
 														{% endif %}"/>
    <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_SIG-VEISIGNAL
-				{% if Variant == 'Veisignal/Enkelt signal mot vei' %}1
-				{% elsif Variant == 'Veisignal/Dobbelt signal mot vei' %}2
+				{% if Variant == 'Veisignal/Enkelt signal mot vei' %}VS1
+				{% elsif Variant == 'Veisignal/Dobbelt signal mot vei' %}VS2
 				{% else %}BAD_Variant
 				{% endif %}
 				{{SymbolMode}}
