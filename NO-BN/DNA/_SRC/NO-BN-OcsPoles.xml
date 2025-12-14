@@ -107,17 +107,19 @@
 		<Formula>
 			function _JBTEH_MAS_SpanlengthDisplay()
 				--[[
-					It is assumed that Spanlength holds a collection of dictionaries, each of which holds a
+					Prerequisites:
+					a) A text attribute that displays multiple spanlengths must have IsMText == true to treat '\\P' as 'newline'.
+					b) The Spanlength property holds a collection of dictionaries, each of which holds a
 					contact wire's name [String] and its corresponding spanlength [Double].
 			
 					The return value has format:
 			
-					Show this:									...if property Spanlength is:
-					=================================			=========================================================
-					"-57.8-"									...a collection of just one dictionary {Spanlength = [double], Wirename = [string]}
-					"L30-536 -52.6- /.../  L30-537 -37.8-"		...a collection of several such dictionaries.
+					Show this:							...if property Spanlength is:
+					=================================	=========================================================
+					"L27-478:57.8"						...a collection of just one dictionary {Spanlength = [double], Wirename = [string]}
+					"L30-536:52.6 /.../ L30-537:37.8"	...a collection of several such dictionaries.
 				--]]
-				
+			
 				local Spanlengths = getCollectionFromTable(_JBTEH_MAS_getSpanlengths())
 				local nSpanlengths = getCollectionLength(Spanlengths)
 				local s
@@ -125,14 +127,14 @@
 					return "", _info("No spanlength(s) - expected format is {{Spanlength = [double], Wirename = [string]}+}")
 				elseif nSpanlengths == 1 then
 					local sl = Spanlengths[0]
-					return sl.Spanlength == 0 and "" or string.format("-%.01f-",sl.Spanlength)
+					return sl.Spanlength == 0 and "" or string.format("%s:%.01f", sl.Wirename, sl.Spanlength)
 				else
 					for i = 0, nSpanlengths-1 do
 						local sl = Spanlengths[i]
 						if i == 0 then
-							s = string.format("%s -%.01f-",sl.Wirename, sl.Spanlength)
+							s = string.format("%s:%.01f",sl.Wirename, sl.Spanlength)
 						else
-							s = s..string.format(" / %s -%.01f-",sl.Wirename, sl.Spanlength)
+							s = s..string.format("\\P%s:%.01f",sl.Wirename, sl.Spanlength)
 						end
 					end
 				end
@@ -143,24 +145,25 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
-			Description="Returns a World Coordinate System offset vector for the span length custom text position attribute, by default from the object's insertion point to halfway between the concerned poles' display points. Optionally, specify offsets as [LateralOffset [,LongitudinalOffset]]). RC will adapt input offsets to the current drawing scale if different from 1:1.">
-		<Signature>{Double, Double} _JBTEH_MAS_SpanlengthTextPosition(Double LateralOffset, Double LongitudinalOffset = 0)</Signature>
+			Description="Returns an Alignment Coordinate System (ACS) vector for the span length's text position attribute, halfway between the OCS pole's display point and the next OCS pole's display point. Optionally, specify additional ACS offsets as [LateralOffset = 0, LongitudinalOffset = 0]. The text attribute's 'ScalePosition' must be false.">
+		<Signature>{Double, Double} _JBTEH_MAS_SpanlengthTextPosition(Double LongitudinalOffset = 0, Double LongitudinalOffset = 0)</Signature>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthTextPosition(LateralOffset, LongitudinalOffset)
-				local wcsX, wcsY = RC__getWcsVectorFromAcsVector(RC__scale((RightSided and 1 or -1)*LateralOffset, LongitudinalOffset))
+				LateralOffset = -LateralOffset or 0 --Invert sign, Unit is meter.
+				LongitudinalOffset = LongitudinalOffset or 0 --Unit is meter.
 				local r, n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
 				if n == 0 then
-					return {wcsX, wcsY}
+					return 0, 0 --Irrelevant, since SpanlengthDisplay will be the empty string when there is no next OCS pole.
 				else
-					local target = r[0]
-
+					local wcsX, wcsY = RC__getWcsVectorFromAcsVector((RightSided and 1 or -1)*LateralOffset, LongitudinalOffset)
+					local target = r[0] --Place spanlength text item halfway to the *first* OCS pole (index 0) even if there might be more 'next poles'. 
 					--Offset from object's insertion point to the midpoint between the displaypoints for the poles that are involved:
 					local startX = geoCoord.X + SymbolOffset.X
 					local startY = geoCoord.Y + SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
-	
-					return { SymbolOffset.X + (endX - startX)/2 + wcsX, SymbolOffset.Y + (endY - startY)/2 + wcsY }
+					--Take into consideration that the display point for this OCS pole may not be at the pole's  insertion point:
+					return RC__getAcsVectorFromWcsVector(SymbolOffset.X + (endX - startX)/2 + wcsX, SymbolOffset.Y + (endY - startY)/2 + wcsY)
 				end
 			end
 		</Formula>
@@ -247,23 +250,23 @@
 </xpp:define>
 
 <!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
-<xpp:define name="JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH">
+<xpp:define name="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH">
 	<xpp:bloc>
 		<CustomProperty DataType="Collection" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0" 
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'."/>
 		<LuaExpression Name="Spanlength"><Formula>_JBTEH_MAS_getSpanlengths()</Formula></LuaExpression>
-		<CustomProperty DataType="String" Name="SpanlengthDisplay" DisplayName="Spennlengde visning" DefaultValue="" 
-			Description="The span length value [m] being displayed close to the OCS pole."/>
-		<LuaExpression Name="SpanlengthDisplay"><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
-        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
-			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" Constant="false" 
-			Invisible="false" Lock="false" MText="false"/>
+
 		<CustomProperty DataType="Double" Name="SpanlengthTextLateralOffset" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text lateral offset [m] denotes the distance, transversal to the pole's local track direction, to offset the text element(s)."/>      
+			Description="The span length(s) text lateral offset [m] denotes the distance, transversal to the pole's local track direction, to offset the spanlength text."/>      
 		<CustomProperty DataType="Double" Name="SpanlengthTextLongitudinalOffset" DisplayName="Longitudinal offset for Spanlength text" DefaultValue="0"
-			Description="The span length(s) text longitudinal offset [m] denotes the distance, along the pole's local track direction, to offset the text element(s)."/>
-		<TextPositionLuaExpression Name="SPENNLENGDE"><Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextLateralOffset, SpanlengthTextLongitudinalOffset)</Formula></TextPositionLuaExpression>
-		<TextRotationLuaExpression Name="SPENNLENGDE"><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></TextRotationLuaExpression>
+			Description="The span length(s) text longitudinal offset [m] denotes the distance, along the pole's local track direction, to offset the spanlength text."/>
+
+        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" ScalePosition="false"/>
+		<LuaExpression Name="TextAttribute_SPENNLENGDE.Content"><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_SPENNLENGDE.Position">
+			<Formula>_JBTEH_MAS_SpanlengthTextPosition(SpanlengthTextLateralOffset, SpanlengthTextLongitudinalOffset)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_SPENNLENGDE.Rotation"><Formula>_JBTEH_MAS_SpanlengthTextRotation()</Formula></LuaExpression>
 	</xpp:bloc>
 </xpp:define>
 
@@ -329,9 +332,9 @@
 		
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING"/>
 
-		<TextPositionLuaExpression Name="OBJEKTNAVN"><Formula>RC__TextAttributePosition(4,0)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTID"><Formula>RC__TextAttributePosition(22,0)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTINFO"><Formula>RC__TextAttributePosition(24,0)</Formula></TextPositionLuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>4, 0</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>22,0</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>24, 0</Formula></LuaExpression>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
@@ -588,7 +591,7 @@
 		</CustomProperty>
 		
 		<!-- Span length -->
-		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH"/>
+		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH"/>
 
 		<CustomProperty DataType="Boolean" Name="SupportArm" DisplayName="Support arm" DefaultValue="false"
 			Description="True if the OCS pole features a support arm holding autotransformer conductors [ True | False ]."/>
@@ -778,9 +781,10 @@
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-fundament"/> 
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="autotransformator"/> 
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="avskjerming"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="forankring_på_mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="konsoll_på_mast"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="avspenning"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bryter"/> 
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kontaktledning"/> 
 			</SnapPoints>
 		</DockPointDefinitions>
 	</ObjectType>
@@ -887,7 +891,7 @@
         </CustomProperty>
 
 		<!-- Span length -->
-		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH"/>
+		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH"/>
 
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
 		<LuaExpression Name="code"><Formula>JBTEH_MAS_nonPortalPole_code()</Formula></LuaExpression>
@@ -984,7 +988,7 @@
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="utligger"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-fundament"/> 
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="avskjerming"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="forankring_på_mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="konsoll_på_mast"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 
@@ -1094,7 +1098,7 @@
 		</CustomProperty>
 		
 		<!-- Span length -->
-		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE_AND_LUA___SPANLENGTH"/>
+		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH"/>
 
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
 	
@@ -1322,7 +1326,7 @@
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="seksjonsutliggerkonsoll"/> 
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="utligger"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="avskjerming"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="forankring_på_mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="konsoll_på_mast"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 

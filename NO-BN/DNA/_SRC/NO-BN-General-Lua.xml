@@ -79,9 +79,8 @@
 		<Signature>{Double ACS.X, Double ACS.Y} RC__TextAttributePosition(Double LateralOffset = 0, Double LongitudinalOffset = 0)</Signature>
 		<Formula>
 			function RC__TextAttributePosition(LateralOffset, LongitudinalOffset)
-				local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
-				LateralOffset = (LateralOffset or 0)/scale
-				LongitudinalOffset = (LongitudinalOffset or 0)/scale
+				LateralOffset = LateralOffset or 0
+				LongitudinalOffset = LongitudinalOffset or 0
 				return RC__getWcsVectorFromAcsVector((RightSided and 1 or -1) * LateralOffset, LongitudinalOffset)
 			end
 		</Formula>
@@ -260,6 +259,19 @@
 				--	Optional argument AlongAxisWcsAngleInRadians = angle in Decimal Degrees between WCS East (X-axis) and the alignment's tangent direction.
 				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
 				return  acsX*math.sin(angle) + acsY*math.cos(angle), -acsX*math.cos(angle) + acsY*math.sin(angle)
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="RC__getAcsVectorFromWcsVector()" ReturnType="String"
+		Description="Converts a World Coordinate System (WCS) 2D vector {wcsX, wcsY} into an Alignment Coordinate System (ACS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
+		<Signature>{Double, Double} RC__getAcsVectorFromWcsVector(wcsX, wcsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
+		<Formula>
+			function RC__getAcsVectorFromWcsVector(wcsX,wcsY,AlongAxisWcsAngleInRadians)
+				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
+				return -wcsY * math.cos(angle) + wcsX * math.sin(angle), wcsY * math.sin(angle) + wcsX * math.cos(angle)
 			end
 		</Formula>
 	</LuaFunction>
