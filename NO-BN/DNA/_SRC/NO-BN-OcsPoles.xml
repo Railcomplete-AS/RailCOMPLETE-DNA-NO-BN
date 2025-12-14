@@ -100,6 +100,61 @@
 		</Formula>
 	</LuaFunction>
 
+<!-- ======== Start of WIP ======================================== -->
+	<LuaFunction Name="_JBTEH_UTL_SpanlengthDisplay()" ReturnType="String"
+			HideFromUser="false"
+			Description="Returns a text string containing the ContactWireName and Spanlength for this cantilever, from its wire clamp position to its next cantilever wire clamp or wire tension balancer's, measured as a straight-line 2D length. Example: A 2D spanlength of 57.8 meters for contact wire 'L27-478' will read as '- L27-478:57.8 -'. Modify the cantilever's lateral (ACS.X) and longitudinal (ACS.Y) spanlength text offset properties to place your text without overlapping other items in your drawing." >
+		<Signature>String _JBTEH_UTL_SpanlengthDisplay()</Signature>
+		<Formula>
+			function _JBTEH_UTL_SpanlengthDisplay()
+				--Identify the applicable contact wire:
+				local cow, nCow, cw, cwName
+				if RcType == rctype_WireTensioningBalancer then
+					if Alignment == nil then
+						return "", _info("Wire tensioning balancer has no Own Alignment - cannot compute spanlength.")
+					else
+						p1 = getPoint3D()
+						cw = Alignment
+					end
+				else
+					--RcType == rctype_Cantilever:
+					cow, nCow = getRelatedObjects(rel_Cantilever_Holds_ContactWire)
+					if nCow == 0 then
+						return "", _info("Cantilever is missing relation '"..rel_Cantilever_Holds_ContactWire.."' - cannot compute spanlength.")
+					else
+						p1 = NOBN_ocs_getWireClampPoint3D()
+						cw = cow[0]
+					end
+				end
+
+				--Search for subsequent cantilever or wire tensioning balancer:
+				--TODO: Locate next item based on their DistanceAlong values in their common contact wire,
+				--      then replace relation "Next cantilever or WTB" by a suitable function.
+				local nextItems, nNextItems = getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)
+				if nNextItems == 0 then
+					if RcType == rctype_WireTensioningBalancer then
+						return "", _info("Wire tensioning balancer has no next cantilever (or wire tension balancer) - cannot compute spanlength.")
+					else
+						--RcType == rctype_Cantilever:
+						return "", _info("Cantilever has no next cantilever or wire tension balancer - cannot compute spanlength.")
+					end
+				else
+					local nextItem = nextItems[0]
+					local p2
+					if nextItem.RcType == rctype_WireTensioningBalancer then
+						p2 = nextItem:getPoint3D()
+					else
+						--nextItem.RcType == rctype_Cantilever:
+						p2 = nextItem:NOBN_ocs_getWireClampPoint3D()
+					end
+					local spanlength2D = RC__getDistance2D(p1, p2)
+					local t = string.format("%s:%.01f", cwName, spanlength2D)
+					return t, _info("Spanlength from "..RC__identify(this).." to "..RC__identify(nextItem).." is "..RC__round(spanlength2D,1).." meters.")
+				end
+			end
+		</Formula>
+	</LuaFunction>
+	
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthDisplay()" ReturnType="String"
 			HideFromUser="false"
 			Description="Returns a text string containing the ContactWireName and Spanlength for each cantilever located on this OCS pole, from wire clamp to next canitlever's wire clamp (measured as a straight-line 2D length).">
@@ -117,7 +172,7 @@
 					Show this:							...if property Spanlength is:
 					=================================	=========================================================
 					"L27-478:57.8"						...a collection of just one dictionary {Spanlength = [double], Wirename = [string]}
-					"L30-536:52.6 /.../ L30-537:37.8"	...a collection of several such dictionaries.
+					"L30-536:52.6\n...\nL30-537:37.8"	...a collection of several such dictionaries.
 				--]]
 			
 				local Spanlengths = getCollectionFromTable(_JBTEH_MAS_getSpanlengths())
@@ -142,6 +197,8 @@
 			end
 		</Formula>
 	</LuaFunction>
+
+<!-- ========End of WIP ======================================== -->
 
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
