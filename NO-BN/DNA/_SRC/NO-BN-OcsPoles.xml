@@ -144,23 +144,26 @@
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
 			Description="Returns a World Coordinate System offset vector for the span length custom text position attribute, by default from the object's insertion point to halfway between the concerned poles' display points. Optionally, specify offsets as [LateralOffset [,LongitudinalOffset]]). RC will adapt input offsets to the current drawing scale if different from 1:1.">
-		<Signature>{Double, Double} _JBTEH_MAS_SpanlengthTextPosition(Double LateralOffset, Double LongitudinalOffset = 0)</Signature>
+		<Signature>{Double, Double} _JBTEH_MAS_SpanlengthTextPosition(Double LateralOffset = 0, Double LongitudinalOffset = 0, Reference obj = this)</Signature>
 		<Formula>
-			function _JBTEH_MAS_SpanlengthTextPosition(LateralOffset, LongitudinalOffset)
-				local wcsX, wcsY = RC__getWcsVectorFromAcsVector(RC__scale((RightSided and 1 or -1)*LateralOffset, LongitudinalOffset))
-				local r, n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
+			function _JBTEH_MAS_SpanlengthTextPosition(LateralOffset, LongitudinalOffset, obj)
+				obj = obj or this
+				LateralOffset = LateralOffset or 0
+				LongitudinalOffset = LongitudinalOffset or 0
+				local r, n = obj:getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
 				if n == 0 then
-					return {wcsX, wcsY}
+					return acsOffsetX, acsOffsetY
 				else
 					local target = r[0]
-
-					--Offset from object's insertion point to the midpoint between the displaypoints for the poles that are involved:
-					local startX = geoCoord.X + SymbolOffset.X
-					local startY = geoCoord.Y + SymbolOffset.Y
+					--Find WCS offset from object's insertion point to the midpoint between the WCS displaypoints for the poles that are involved:
+					local startX = obj.geoCoord.X + obj.SymbolOffset.X
+					local startY = obj.geoCoord.Y + obj.SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
-	
-					return { SymbolOffset.X + (endX - startX)/2 + wcsX, SymbolOffset.Y + (endY - startY)/2 + wcsY }
+					local wcsX = obj.SymbolOffset.X + (endX - startX)/2 + LongitudinalOffset
+					local wcsY = obj.SymbolOffset.Y + (endY - startY)/2 + LateralOffset
+					local acsX, acsY = -wcsY, wcsX --Flip WCS into ACS
+					return RC__round(acsX, 3), RC__round(acsY, 3)
 				end
 			end
 		</Formula>
