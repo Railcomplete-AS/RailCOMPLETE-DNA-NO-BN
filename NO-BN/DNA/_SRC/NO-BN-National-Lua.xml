@@ -825,13 +825,13 @@
 	
 	
     <LuaFunction Name="NOBN_trk_getYawFromDir()" ReturnType="Double"
-		Description="Returns the 3D rotation of an object [Decimal Degrees] according to its orientation ('dir' property up/down/none/both) and its lateral position in relation to the axis, in the direction of increasing PKs. If a 'rotation' argument [DD] is supplied, its value will be added to the base angle [0|90|180|270] corresponding to the 'dir' property and the side of the object's axis. If no 'rotation' argument has been supplied, the intrinsic 'AngularOffset' property [DD] will be added to the basic rotation. Objects which do not feature the 'dir' property will return 0.">
-        <Signature>Double NOBN_trk_getYawFromDir([Double rotation])</Signature>
+		Description="Returns the 3D rotation of an object [Decimal Degrees] according to its orientation ('dir' property up/down/none/both) and its lateral position in relation to the axis, in the direction of increasing PKs. If a 'angularOffsetInDegrees' argument [DD] is supplied, its value will be added to the base angle [0|90|180|270] corresponding to the 'dir' property and the side of the object's axis. If no 'angularOffsetInDegrees' argument has been supplied, the intrinsic 'AngularOffset' property [DD] will be added to the basic rotation. Objects which do not feature the 'dir' property will return 0.">
+        <Signature>Double NOBN_trk_getYawFromDir(Double angularOffsetInDegrees = obj.AngularOffset, Reference obj = this)</Signature>
 		<Formula>
-			function NOBN_trk_getYawFromDir(rotation)
-				local d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
+			function NOBN_trk_getYawFromDir(angularOffsetInDegrees, obj)
+				local d = obj:getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
 				if d == nil then return 0 end
-				if rotation == nil and AngularOffset == nil then
+				if angularOffsetInDegrees == nil and obj.AngularOffset == nil then
 					-- No argument given, and no standard property 'AngularOffset' exists for the current object
 					if d == 'up' then
 						return 0.0
@@ -846,12 +846,12 @@
 					end
 				else
 					--Modify 'dir' with extra rotation:
-					if rotation == nil then
+					if angularOffsetInDegrees == nil then
 						--No arg given, use object's own AngularOffset:
-						rotation = AngularOffset
+						angularOffsetInDegrees = obj.AngularOffset
 					else 
-						if math.abs(rotation) &lt; 4e-4 then 
-							rotation = 0.0 --remove small inaccuracies
+						if math.abs(angularOffsetInDegrees) &lt; 4e-4 then 
+							angularOffsetInDegrees = 0.0 --remove small inaccuracies
 						end
 					end
 					if d == 'up' then
