@@ -815,6 +815,8 @@ positive feeder in AT system				positiv leder i AT-system
 					local prev = getRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
 					local p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
 
+					local zeroAngularOffsetInDegrees = 0
+
 					local wc1
 					if prev.RcType == rctype_WireTensioningBalancer then
 						--Preceded by a Wire Tension Balancer.
@@ -824,7 +826,7 @@ positive feeder in AT system				positiv leder i AT-system
 						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 						local t = getAlignmentInfo(prev.Alignment.id, p1).Tangent
 						local tg = math.atan(t.Y, t.X)
-						local U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+						local U = getPoint3D(RC__AcsToWcs(prev.WireClampLateralOffset - prev.DistanceToAlignment, zeroAngularOffsetInDegrees, prev))
 						wc1 = getVectorSum(p1, U)
 					end
 				
@@ -833,7 +835,7 @@ positive feeder in AT system				positiv leder i AT-system
 					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 					local t = getAlignmentInfo(this.Alignment.id, p2).Tangent
 					local tg = math.atan(t.Y, t.X)
-					local V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
+					local V = getPoint3D(RC__AcsToWcs(this.WireClampLateralOffset - this.DistanceToAlignment, zeroAngularOffsetInDegrees, this))
 					local wc2 = getVectorSum(p2, V)
 				
 					--Next:
@@ -848,7 +850,7 @@ positive feeder in AT system				positiv leder i AT-system
 						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 						t = getAlignmentInfo(nxt.Alignment.id, p3).Tangent --local track tangent vector t.XYZ
 						tg = math.atan(t.Y, t.X)
-						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
+						W = getPoint3D(RC__AcsToWcs(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, zeroAngularOffsetInDegrees, nxt))
 						wc3 = getVectorSum(p3, W)
 					end
 				
@@ -1092,7 +1094,7 @@ end
 				<!-- --Add vector from insertion point to contact wire clamp, in WCS coordinates: -->
 				<!-- t = getAlignmentInfo(this.Alignment.id, vv).Tangent --local track tangent vector t.XYZ -->
 				<!-- tg = math.atan(t.Y, t.X) -->
-				<!-- cantileverVector = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset-this.DistanceToAlignment,0, tg)) -->
+				<!-- cantileverVector = getPoint3D(RC__AcsToWcs(this.WireClampLateralOffset-this.DistanceToAlignment,0, tg)) -->
 				<!-- v = getVectorSum(vv, cantileverVector) -->
 				
 				<!-- --Next cantilever: -->
@@ -1108,7 +1110,7 @@ end
 					<!-- else -->
 						<!-- t = getAlignmentInfo(nextItem.Alignment.id, ww).Tangent --local track tangent vector t.XYZ -->
 						<!-- tg = math.atan(t.Y, t.X) -->
-						<!-- wcNext = getPoint3D(RC__getWcsVectorFromAcsVector(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0, tg)) -->
+						<!-- wcNext = getPoint3D(RC__AcsToWcs(nextItem.WireClampLateralOffset-nextItem.DistanceToAlignment,0, tg)) -->
 						<!-- w = getVectorSum(ww, wcNext) -->
 					<!-- end -->
 			
@@ -1313,7 +1315,7 @@ end
 
 					if nCantilevers == 1 then
 						--(it is always at least 1...)
-						return RC__getWcsVectorFromAcsVector(
+						return RC__AcsToWcs(
 							RightSided and LateralOffset or -LateralOffset, 
 							RightSided and -LongitudinalOffset or LongitudinalOffset)
 
@@ -1334,7 +1336,7 @@ end
 								end
 							end
 						end
-						return RC__getWcsVectorFromAcsVector(
+						return RC__AcsToWcs(
 							RightSided and LateralOffset or -LateralOffset,
 							index == 1 and LongitudinalOffset or -LongitudinalOffset)
 					end
