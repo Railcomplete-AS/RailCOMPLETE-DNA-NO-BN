@@ -16184,9 +16184,12 @@ return s</Data>
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="beskyttelse" />
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="seksjonsutliggerkonsoll" />
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="kraftoverføringskonsoll" />
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="kl-bryter"/>
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="kontaktledning"/> 
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="bardun"/> 
       </SnapPoints>
     </DockPointDefinitions>
-    <DisplayPointDefinitions Annotative="true" />
+   <DisplayPointDefinitions Annotative="true" />
   <LuaExpression Name="Name3D"><Formula>NOBN_com_Name3D()</Formula></LuaExpression>
 	<LuaExpression Name="Layer3D"><Formula>NOBN_com_Layer3D()</Formula></LuaExpression>
 	</ObjectType>
@@ -16591,6 +16594,10 @@ return s</Data>
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="skilt" />
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="utligger" />
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="beskyttelse" />
+        <SnapPoint X="0" Y="0" Z="0" TargetSpace="kraftoverføringskonsoll" />
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="avspenning" />
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="kontaktledning"/> 
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="bardun"/> 
       </SnapPoints>
     </DockPointDefinitions>
     <DisplayPointDefinitions Annotative="true" />
@@ -17137,6 +17144,10 @@ return s</Data>
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="skilt" />
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="utligger" />
         <SnapPoint X="0" Y="0" Z="0" TargetSpace="beskyttelse" />
+        <SnapPoint X="0" Y="0" Z="0" TargetSpace="kraftoverføringskonsoll" />
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="avspenning" />
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="kontaktledning"/> 
+		<SnapPoint X="0" Y="0" Z="0" TargetSpace="bardun"/> 
       </SnapPoints>
     </DockPointDefinitions>
     <DisplayPointDefinitions Annotative="true" />
@@ -17843,7 +17854,7 @@ return s</Data>
         <Value>N/A</Value>
       </Values>
     </CustomProperty>
-    <CustomProperty DataType="Double" Name="CantileverLength" DisplayName="Strekkstag kuttlengde" Description="The cantilever's length [m] is measured from console (mast side) to contact wire, perpendicularly to the track. Cariboni is more restricted." DefaultValue="4.0" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
+    <CustomProperty DataType="Double" Name="CantileverLength" DisplayName="Lengde fra konsoll til trådklemme" Description="The cantilever's length [m] is measured from console (mast side) to contact wire, perpendicularly to the track. Cariboni is more restricted." DefaultValue="4.0" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" /><LuaExpression Name="CantileverLength"><Formula>math.abs(LateralOffset) + Stagger</Formula></LuaExpression>
     <CustomProperty DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long." DefaultValue="4000" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <CustomProperty DataType="Double" Name="ContactWireHeight" DisplayName="Kontakttrådhøyde" Description="The contact wire height (cwh) [m] denotes the orthogonal distance from the rolling plane formed by the top-of-rails to the contact wire clamp." DefaultValue="5.00" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <CustomProperty DataType="Double" Name="SystemHeight" DisplayName="Systemhøyde" Description="The cantilever system height (sh) [m] denotes the vertical Z coordinate difference from the contact wire clamp to the catenary clamp." DefaultValue="1.00" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
@@ -17991,7 +18002,11 @@ return s</Data>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
     <LuaExpression Name="name" IsModelCheck="false">
-      <Formula>code</Formula>
+      <Formula>""</Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>    
+	<LuaExpression Name="PushDirection" IsModelCheck="false">
+      <Formula>_JBTEH_UTL_PushDirection()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
     <LuaExpression Name="ReferenceMileage" IsModelCheck="false">
@@ -18030,22 +18045,24 @@ return s</Data>
     <SetValue Key="EarthingMethod" Value="None" />
     <SetValue Key="PushDirection" Value="Pull" />
     <RelationSpace>utligger</RelationSpace>
-    <LuaFunction Name="_JBTEH_UTL_code()" Description="Obtains the 'code' for this OCS cantilever. Uses relation 'Tilhører kl-mast' to access the related object's data." ReturnType="String" HideFromUser="false">
-      <Signature>String _JBTEH_UTL_code()</Signature>
-      <Formula>
+		<LuaFunction Name="_JBTEH_UTL_code()" 
+			ReturnType="String"
+			Description="Obtains the 'code' for this OCS cantilever, consisting of the pole's code, a slash '/', and the contact wire's literal name. Missing info is shown as '?'.
+						\n
+						\nExample:
+						\nPole code	Wire name 	Cantilever code
+						\n71-13		L30-447		71-13/L30-447
+						\n">
+			<Signature>String _JBTEH_UTL_code()</Signature>
+			<Formula>
 				function _JBTEH_UTL_code()
-					s = "Tilhører kl-mast"
-					r, n = RC__getCollectionOfRelatedObjects(s)
-					if n == 0 then
-						return "UNFINISHED - Relate with '"..s.."' to an OCS mast."
-					else
-						--Empty string as code, just show the info tooltip.
-						return "", _info("Cantilever belongs to mast "..RC__identify(r[0]))
-					end
+					local pol = getRelatedObjects("Tilhører kl-mast")[0]
+					local cow = getRelatedObjects("Utligger for kontaktledning")[0]
+					return (pol and pol.code or "?") .."/".. (cow and cow.code or "?")
 				end
 			</Formula>
-    </LuaFunction>
-    <LuaFunction Name="_JBTEH_UTL_CantileverLengthDisplay()" Description="Returns the cantilever's display length, min 1000mm, max 6000mm, rounded to nearest multiple of 100mm. Cariboni is always 1200 mm long." ReturnType="String" HideFromUser="false">
+		</LuaFunction>
+     <LuaFunction Name="_JBTEH_UTL_CantileverLengthDisplay()" Description="Returns the cantilever's display length, min 1000mm, max 6000mm, rounded to nearest multiple of 100mm. Cariboni is always 1200 mm long." ReturnType="String" HideFromUser="false">
       <Signature>Int _JBTEH_UTL_CantileverLengthDisplay(Double CantileverLength)</Signature>
       <Formula>
 				function _JBTEH_UTL_CantileverLengthDisplay(CantileverLength)
@@ -18067,6 +18084,112 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
+		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
+			ReturnType="String"
+			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever. Direction change angle [DD] and lateral force [N] are shown as tooltip info.">
+			<Signature>String _JBTEH_UTL_PushDirection()</Signature>
+			<Formula>
+				function _JBTEH_UTL_PushDirection()
+					--[=[
+						Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever.
+						The trick is to check the sign of the Z component of the cross product of vectors from the middle wire clamp to the prev/next
+						wire clamp (or the prev/next wire tension balancer = OCS pole insertion point). The next/prev vectors are treated in the XY plane.
+						.
+						Find the net force acting on a cantilever, return Push or Pull accordingly.
+						p2 = this cantilever
+						wc = this cantilever's contact wire clamp
+						.
+						.   (prev)  (this)   (next)
+						.     p1      p2      p3     Cantilevers (attached to OCS pole). Note: The very first p1 can be a WTB.
+						.      |       |       |
+						.     U|      V|      W|     Vectors from cantilever's insertion point to corresponding wire clamp (in 2D but including cant effect) 
+						.   ---v-------^-------v---  Contact wire
+						.     wc1     wc2     wc3    Wire clamps
+						.
+						.   All coordinates are in WCS.
+					--]=]
+					local function p2s(u) return string.format(" (%.03f,%.03f)",u.X, u.Y) end --Used for debugging purposes, pretty-print 2D point
+				
+					--Previous:
+					local p1
+					local prev = getRelatedObjects("Forrige utligger")[0]
+					if prev == nil then
+						local cow = getRelatedObjects("Utligger for kontaktledning")[0]
+						local wtbs = cow:getRelatedObjects("Har avspenning")
+						prev = getNearbyPointObjects2D(cow.RcAlignment.StartPoint, wtbs, math.huge)[0]
+					end
+					p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
+					local wc1
+					if prev.RcType == "JBTEH_AEH Avspenning" then
+						--Preceded by a Wire Tension Balancer.
+						wc1 = p1
+					else
+						--Preceded by a cantilever.
+						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+						local t = getAlignmentInfo(prev.Alignment.id, p1).Tangent
+						local tg = math.atan(t.Y, t.X)
+						local U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+						wc1 = getVectorSum(p1, U)
+					end
+				
+					--This:
+					local p2 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+					local t = getAlignmentInfo(this.Alignment.id, p2).Tangent
+					local tg = math.atan(t.Y, t.X)
+					local V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
+					local wc2 = getVectorSum(p2, V)
+				
+					--Next:
+					local p3
+					local nxt = getRelatedObjects("Neste utligger")[0]
+					if nxt == nil then
+						local cow = getRelatedObjects("Utligger for kontaktledning")[0]
+						local wtbs = cow:getRelatedObjects("Har avspenning")
+						nxt = getNearbyPointObjects2D(cow.RcAlignment.EndPoint, wtbs, math.huge)[0]
+					end
+					local p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
+					local wc3
+					if nxt.RcType == "JBTEH_AEH Avspenning" then
+						--Followed by a Wire Tension Balancer.
+						wc3 = p3
+					else
+						--Followed by a cantilever.
+						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
+						t = getAlignmentInfo(nxt.Alignment.id, p3).Tangent --local track tangent vector t.XYZ
+						tg = math.atan(t.Y, t.X)
+						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
+						wc3 = getVectorSum(p3, W)
+					end
+				
+					local toPrev = getVectorDifference(wc1, wc2)
+					local toNext = getVectorDifference(wc3, wc2)
+					local crossProduct = getVectorCrossProduct(toPrev, toNext)
+				
+					--Find contact wire lateral force:
+					local ocsSystem 
+					if Variant == "Cariboni" then ocsSystem = "Cariboni"
+					elseif Variant == "System 35" then ocsSystem = "S35MS"
+					else ocsSystem = "S"..Variant:match("System (.+)$")
+					end
+					local contactWireTension = NOBN_ocs_getTensioningStandardValues(ocsSystem).cwtf * 1000 --Table contains kN values
+					local toPrevForceVector =  getVectorScalarProduct(contactWireTension, getVectorNormalized(toPrev))
+					local toNextForceVector = getVectorScalarProduct(contactWireTension, getVectorNormalized(toNext))
+					local lateralForceVector = getVectorSum(toPrevForceVector, toNextForceVector)
+					local lateralForce = getVectorModulus(lateralForceVector)
+					local directionChangeDD = (crossProduct.Z &gt; 0 and -1 or 1) * getVectorAngleDD(getVectorScalarProduct(-1, toPrev),toNext)
+					local forceDirection = (RightSided and crossProduct.Z &gt; 0 or LeftSided and crossProduct.Z &lt; 0) and "Push" or "Pull"
+					--if true then return p2s(toPrevForceVector),p2s(toNextForceVector),p2s(lateralForceVector),lateralForce, directionChangeDD end
+				
+					local msg = string.format("'%s' with lateral force %.01f Newton and direction change %.03f decimal degrees"
+						.." was deduced from previous cantilever/WTB '%s', this cantilever '%s'"
+						.." and next cantilever/WTB '%s'.",
+						forceDirection, lateralForce, directionChangeDD, RC__identify(prev),RC__identify(this),RC__identify(nxt))
+				
+					return forceDirection, _info(msg)
+				end
+			</Formula>
+		</LuaFunction>
     <LuaFunction Name="_JBTEH_UTL_OcsWireNameDisplay()" Description="Identifies this cantilever's associated OCS wire. Uses relation 'Tilhører kl-mast' to access the related object's data." ReturnType="String" HideFromUser="false">
       <Signature>String _JBTEH_UTL_OcsWireNameDisplay(cantilever)</Signature>
       <Formula>
@@ -32075,7 +32198,7 @@ return s</Data>
     <Relation Name="Avspenning" AskForRelation="true" Color="200" RelationLineScale="10">
       <TargetSpace>kontaktledning</TargetSpace>
       <RelatesTo Prompt="Avspenner" Min="1" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
-      <ReverseRelatesTo Prompt="Har" Min="1" Max="2" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
+      <ReverseRelatesTo Prompt="Har" Min="2" Max="3" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
     </Relation>
   </Relations>
   <Relations>
@@ -32927,6 +33050,33 @@ return s</Data>
 			end
 		</Formula>
   </LuaFunction>
+  
+	<LuaFunction Name="RC__getWcsVectorFromAcsVector()" ReturnType="String"
+		Description="Converts an Alignment Coordinate System (ACS) 2D vector {acsX, acsY} = {LateralOffset, LongitudinalOffset} into a World Coordinate System (WCS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
+		<Signature>{Double, Double} RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
+		<Formula>
+			function RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians)
+				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
+				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept:
+				--	Argument acsX = Lateral offset to the right, perpendicular to the object's alignment axis.
+				--	Argument acsY = Along offset in the direction of increasing distAlong, along the object's alignment axis.
+				--	Optional argument AlongAxisWcsAngleInRadians = angle in Decimal Degrees between WCS East (X-axis) and the alignment's tangent direction.
+				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
+				return  acsX*math.sin(angle) + acsY*math.cos(angle), -acsX*math.cos(angle) + acsY*math.sin(angle)
+			end
+		</Formula>
+	</LuaFunction>
+
+	<LuaFunction Name="RC__getAcsVectorFromWcsVector()" ReturnType="String"
+		Description="Converts a World Coordinate System (WCS) 2D vector {wcsX, wcsY} into an Alignment Coordinate System (ACS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
+		<Signature>{Double, Double} RC__getAcsVectorFromWcsVector(wcsX, wcsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
+		<Formula>
+			function RC__getAcsVectorFromWcsVector(wcsX,wcsY,AlongAxisWcsAngleInRadians)
+				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
+				return -wcsY * math.cos(angle) + wcsX * math.sin(angle), wcsY * math.sin(angle) + wcsX * math.cos(angle)
+			end
+		</Formula>
+	</LuaFunction>
   <LuaFunction Name="RC__acsVector2wcsVector()" Description="Converts an Alignment Coordinate System (ACS) 2D vector into a World Coordinate System (WCS) 2D vector. Usage: wx, wy = RC__acsVector2wcsVector(lateralOffset, alongOffset) or wx, wy = RC__acsVector2wcsVector(lateralOffset, alongOffset, alongAxisWcsAngleInRadians)." ReturnType="String" HideFromUser="false">
     <Signature>Double, Double RC__acsVector2wcsVector(lateralOffset, alongOffset [,alongAxisWcsAngleInRadians = this.AlignmentTangent])</Signature>
     <Formula>
