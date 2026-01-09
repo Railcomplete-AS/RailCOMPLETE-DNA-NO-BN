@@ -249,21 +249,35 @@
 
 
 	<LuaFunction Name="RC__getWcsVectorFromAcsVector()" ReturnType="String"
-		Description="Converts an Alignment Coordinate System (ACS) 2D vector {acsX, acsY} = {LateralOffset, LongitudinalOffset} into a World Coordinate System (WCS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
-		<Signature>{Double, Double} RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
-		<Formula>
-			function RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians)
-				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
-				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept:
-				--	Argument acsX = Lateral offset to the right, perpendicular to the object's alignment axis.
-				--	Argument acsY = Along offset in the direction of increasing distAlong, along the object's alignment axis.
-				--	Optional argument AlongAxisWcsAngleInRadians = angle in Decimal Degrees between WCS East (X-axis) and the alignment's tangent direction.
-				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
-				return  acsX*math.sin(angle) + acsY*math.cos(angle), -acsX*math.cos(angle) + acsY*math.sin(angle)
-			end
+		Description="Converts an Alignment Coordinate System (ACS) tuple (acsX, acsY) = (LateralOffset, LongitudinalOffset) into a World Coordinate System (WCS) tuple (wcsX, wcsY). An angular offset in decimal degrees can be given, which will be added to the object's alignment's tangent direction. An object reference can be given as an alternative to 'this' (needed when using this function from a script).">
+        <Signature>Double,Double RC__getWcsVectorFromAcsVector(Double lateralOffset, Double longitudinalOffset, Double angularOffsetInDegrees = 0, Reference obj = this)</Signature>
+        <Formula>
+            function RC__getWcsVectorFromAcsVector(lateralOffset, longitudinalOffset, angularOffsetInDegrees, obj)
+				obj = obj or this
+				angularOffsetInDegrees = angularOffsetInDegrees or 0
+                local angle = obj.AlignmentTangent + math.rad(angularOffsetInDegrees)
+                local x, y = longitudinalOffset, -lateralOffset --Express ACS coordinates as WCS before rotation
+                return x*math.cos(angle) - y*math.sin(angle), x*math.sin(angle) + y*math.cos(angle) --Rotate
+            end
 		</Formula>
 	</LuaFunction>
 
+
+
+    <LuaFunction Name="RC__getAcsVectorFromWcsVector()"
+		Description="Converts a World Coordinate System (WCS) tuple (wcsX, wcsY) into an Alignment Coordinate System (ACS) tuple (acsX, acsY = LateralOffset, LongitudinalOffset). An angular offset in decimal degrees can be given, which will be added to the object's alignment's tangent direction. An object reference can be given as an alternative to 'this' (needed when using this function from a script).">
+        <Signature>Double,Double RC__getAcsVectorFromWcsVector(Double wcsX, Double wcsY, Double angularOffsetInDegrees = 0, Reference obj = this)</Signature>
+        <Formula>
+            function RC__getAcsVectorFromWcsVector(wcsX, wcsY, angularOffsetInDegrees, obj)
+				obj = obj or this
+				angularOffsetInDegrees = angularOffsetInDegrees or 0
+                local angle = obj.AlignmentTangent + math.rad(angularOffsetInDegrees)
+				local x, y = wcsX*math.cos(-angle) - wcsY*math.sin(-angle), wcsX*math.sin(-angle) + wcsY*math.cos(-angle) --Rotate back
+                return -y, x --Express as ACS coordinates after rotation around the WCS origin.
+            end
+        </Formula>
+    </LuaFunction>
+	
 
 
 	<LuaFunction Name="RC__identify()" ReturnType="String"
