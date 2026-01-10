@@ -825,43 +825,40 @@
 	
 	
     <LuaFunction Name="NOBN_trk_getYawFromDir()" ReturnType="Double"
-		Description="Returns the 3D rotation of an object [Decimal Degrees] according to its orientation ('dir' property up/down/none/both) and its lateral position in relation to the axis, in the direction of increasing PKs. If a 'rotation' argument [DD] is supplied, its value will be added to the base angle [0|90|180|270] corresponding to the 'dir' property and the side of the object's axis. If no 'rotation' argument has been supplied, the intrinsic 'AngularOffset' property [DD] will be added to the basic rotation. Objects which do not feature the 'dir' property will return 0.">
-        <Signature>Double NOBN_trk_getYawFromDir([Double rotation])</Signature>
+		Description="Returns the 3D rotation of an object [Decimal Degrees] according to its orientation ('dir' property up/down/none/both) and its lateral position in relation to the axis, in the direction of increasing PKs. If an 'angularOffsetInDecimalDegrees' argument [DD] is supplied, its value will be added to the base angle [0|90|180|270] corresponding to the 'dir' property and the side of the object's axis. If no 'angularOffsetInDecimalDegrees' argument has been supplied, the object's intrinsic 'AngularOffset' property [DD] will be added to the basic rotation. Objects which do not feature the 'dir' property will return 0.">
+        <Signature>Double NOBN_trk_getYawFromDir(Double angularOffsetInDecimalDegrees = obj.AngularOffset, Reference obj = this)</Signature>
 		<Formula>
-			function NOBN_trk_getYawFromDir(rotation)
-				local d = getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
+			function NOBN_trk_getYawFromDir(angularOffsetInDecimalDegrees, obj)
+				obj = obj or this
+				angularOffsetInDecimalDegrees = angularOffsetInDecimalDegrees or obj.AngularOffset
+				if math.abs(angularOffsetInDecimalDegrees) &lt; 4e-4 then 
+					angularOffsetInDecimalDegrees = 0.0 --remove small inaccuracies
+				end
+				local d = obj:getPropertyValue("dir") --Strip off _symbol and _info() if any, get just the plain string value
 				if d == nil then return 0 end
-				if rotation == nil and AngularOffset == nil then
-					-- No argument given, and no standard property 'AngularOffset' exists for the current object
+				if angularOffsetInDecimalDegrees == nil then
+					-- No override argument given, and no standard property 'AngularOffset' exists for the current object
 					if d == 'up' then
 						return 0.0
 					elseif d == 'down' then
 						return 180.0
 					elseif d == 'both' then
-						return RightSided and -90.0 or 90.0
+						return obj.RightSided and -90.0 or 90.0
 					elseif d == 'none' then
-						return RightSided and 90.0 or -90.0
+						return obj.RightSided and 90.0 or -90.0
 					else --d == unknown':
 						return 45.0, _warning, _info("EnableDirectionSetting is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning.")
 					end
 				else
 					--Modify 'dir' with extra rotation:
-					if rotation == nil then
-						--No arg given, use object's own AngularOffset:
-						rotation = AngularOffset
-					else 
-						if math.abs(rotation) &lt; 4e-4 then 
-							rotation = 0.0 --remove small inaccuracies
-						end
-					end
 					if d == 'up' then
-						return rotation, _info("'up' with "..rotation.." degrees extra rotation.")
+						return angularOffsetInDecimalDegrees, _info("'up' with "..angularOffsetInDecimalDegrees.." degrees extra rotation.")
 					elseif d == 'down' then
-						return 180.0+rotation, _info("'down' with "..rotation.." degrees extra rotation.")
+						return 180.0 + angularOffsetInDecimalDegrees, _info("'down' with "..angularOffsetInDecimalDegrees.." degrees extra rotation.")
 					elseif d == 'both' then
-						return (RightSided and -90.0 or 90.0) + rotation, _info("'both' with "..rotation.." degrees extra rotation.")
+						return (obj.RightSided and -90.0 or 90.0) + angularOffsetInDecimalDegrees, _info("'both' with "..angularOffsetInDecimalDegrees.." degrees extra rotation.")
 					elseif d == 'none' then
-						return (RightSided and 90.0 or -90.0) + rotation, _info("'none' with "..rotation.." degrees extra rotation.")
+						return (obj.RightSided and 90.0 or -90.0) + angularOffsetInDecimalDegrees, _info("'none' with "..angularOffsetInDecimalDegrees.." degrees extra rotation.")
 					else --d == unknown':
 						return 45.0, _warning, _info("The basic direction is 'unknown', cannot compute yaw, assuming 45 degrees as a visual warning .")
 					end
