@@ -202,23 +202,27 @@
 
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
 			HideFromUser="false" 
-			Description="Returns an Alignment Coordinate System (ACS) vector for the span length's text position attribute, halfway between the OCS pole's display point and the next OCS pole's display point. Optionally, specify additional ACS offsets as [LateralOffset = 0, LongitudinalOffset = 0]. The text attribute's 'ScalePosition' must be false.">
-		<Signature>Double, Double _JBTEH_MAS_SpanlengthTextPosition(Double LongitudinalOffset = 0, Double LongitudinalOffset = 0)</Signature>
+			Description="Returns an Alignment Coordinate System (ACS) vector for the span length's text position attribute, halfway between the OCS pole's display point and the next OCS pole's display point. Optionally, specify additional ACS offsets as [LateralOffset = 0, LongitudinalOffset = 0]. The spanlength text attribute's 'ScalePosition' must be set to False.">
+		<Signature>Double, Double _JBTEH_MAS_SpanlengthTextPosition(Double LongitudinalOffset = 0, Double LongitudinalOffset = 0, Reference obj = this)</Signature>
 		<Formula>
-			function _JBTEH_MAS_SpanlengthTextPosition(LateralOffset, LongitudinalOffset)
+			function _JBTEH_MAS_SpanlengthTextPosition(LateralOffset, LongitudinalOffset, obj)
+				obj = obj or this
+				LateralOffset = LateralOffset or 0
+				LongitudinalOffset = LongitudinalOffset or 0
 				local r, n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
 				if n == 0 then
 					return 0, 0 --Irrelevant, since SpanlengthDisplay will be the empty string when there is no next OCS pole.
 				else
-					local wcsX, wcsY = RC__AcsToWcs((RightSided and 1 or -1)*LateralOffset, LongitudinalOffset)
-					local target = r[0] --Place spanlength text item halfway to the *first* OCS pole (index 0) even if there might be more 'next poles'. 
-					--Offset from object's insertion point to the midpoint between the displaypoints for the poles that are involved:
-					local startX = geoCoord.X + SymbolOffset.X
-					local startY = geoCoord.Y + SymbolOffset.Y
+					local target = r[0]
+					--Find WCS offset from object's insertion point to the midpoint between the WCS displaypoints for the poles that are involved:
+					local startX = obj.geoCoord.X + obj.SymbolOffset.X
+					local startY = obj.geoCoord.Y + obj.SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
-					--Take into consideration that the display point for this OCS pole may not be at the pole's  insertion point:
-					return RC__WcsToAcs(SymbolOffset.X + (endX - startX)/2 + wcsX, SymbolOffset.Y + (endY - startY)/2 + wcsY)
+					local wcsX = obj.SymbolOffset.X + (endX - startX)/2 + LongitudinalOffset
+					local wcsY = obj.SymbolOffset.Y + (endY - startY)/2 + LateralOffset
+					local acsX, acsY = -wcsY, wcsX --Flip WCS into ACS
+					return RC__round(acsX, 3), RC__round(acsY, 3)
 				end
 			end
 		</Formula>
@@ -241,6 +245,7 @@
 					local startY = geoCoord.Y + SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
+					--(Note: Lateral / longitudinal offsets shall not affect the rotation of the text)
 					return math.deg(math.atan(endY - startY, endX - startX)) + (MileageIncreasesTowardsLeft and 180 or 0)
 				end
 			end
