@@ -10,6 +10,38 @@
 <xpp:bloc>
 
 <!--========================================================================================================
+
+	General
+	=======
+	
+	The RC universe consists of three levels of data:
+	
+	a)	The "Generic Product", called "RailCOMPLETE", denotes the basic application, written in C#, which is
+		the same for all users with all clients. The generic product is a plug-in to a CAD system such as
+		AutoCAD, BricsCAD, Ares Commander, GstarCad etc., all consistent with the Intellicad(TM) family of
+		CAD editors.
+	   
+	b)	A "Generic Application", being this DNA or any other DNA - a Definition of Network Assets.
+	
+	c)	The concrete RC models made by end users, using the Generic Product and a suitable Generic Application.
+	
+
+	Properties
+	==========
+	
+	All object types contain properties, named places where data is stored. Deleting an object instance will delete
+	the property's value. Copying an object instance will copy its property values to the copied object. RC has
+	multiple ways to transfer data - property values - from one object instance to another. There are three types
+	of properties:
+	
+	Intrinsic property	Property declared in the Generic Product. Display names are given by the ResX language system.
+	Custom property		Property declared as a Custom Property in the Generic Application, a DNA.
+	Dynamic property	Property that a user (or a DNA) has added in addition to intrinsic and custom properties.
+	
+	Intrinsic and custom properties cannot be removed from an object instance. Dynamic properties can be added and
+	removed. Dynamic properties can be copied from one object instance to another with an RC command.
+
+
 	PropertyCategory
 	================
 	
@@ -42,6 +74,7 @@
 	
 	Note: The order of appearance of the PropertyCategory elements in DNA dictates the categories' order of appearance 
 	in the Manage Properties tool
+
 
 	Property[Attribute]Override
 	===========================
@@ -89,22 +122,23 @@
 =========================================================================================================-->
 
 <!--
-	Use these declarations to manage the naming, order of appearence and on-file-opening open/collaspsed 
-	state in RC-ManageProperties. You may also suppress a particular property from appearing in RC-M.P.
+	Guide to ordering of items in the RC property Manager
+	=====================================================
 	
-	Category names and display names are case sensitive.
-	'True' / 'true' and 'False' / 'false' may be used interchangeably.
-
-	'Intrinsic' means that the category is known in C#, and its display name is given by the ResX language system.
-	'Custom' means that the category has been declared in at least one CustomProperty DNA declaration somewhere.
-
+	The order of appearance of categories, i.e. the various tabs that appear in the RC property manager, is
+	decided by the RC generic product, RailCOMPLETE. This order can be modified using the
+	<PropertyCategory> element in DNA, where their order of appearance in DNA will be reflected in the RC property
+	manager.
+	
 	The property declarations' order of appearance in the assembled DNA file decides their order of appearance 
-	in the Manage Properties tool.
+	in the Manage Properties tool, inside the cateagory they have been assigned to. Note that an intrinsic property, or
+	a custom property, can be controlled 
 	
-	NOTE : Property overrides for properties may contain a displayname, but we presume that all intrinsic properties have already been translated in ResX.
-	Any custom property is assumed to have been assigned a sensible locale name, so it does not need a (different) display name.
+	NOTE : Property overrides for properties may contain a displayname, but we presume that all intrinsic properties have already
+	been translated in ResX. Any custom property is assumed to have been assigned a sensible locale name, so it does not need a
+	(different) display name.
 
-	Note: Identifiers that stem from railML are camelCased, such as 'name' and 'additionalNames'.
+	Note: Identifiers that stem from railML are camelCased, such as 'code', 'name', 'description', 'sight' and 'additionalNames'.
 -->
 
 <!--
@@ -322,7 +356,7 @@
 <xpp:define name="NOBN_com_DISCIPLINE">
 	<xpp:bloc>
 		<CustomProperty DataType="Enumeration" Name="Discipline" DisplayName="Discipline" DefaultValue="" Category="General"
-			Description="The custom 'Discipline' attribute [Felles | Skilt | Overbygning | Underbygning | Kontaktledning | Signal | Tele | Lavspent] identifies the discpline owning the object.">
+			Description="The custom 'Discipline' attribute [Felles | Overbygning | Underbygning | Kontaktledning | Signal | Tele | Lavspent | Skilt] identifies the discpline owning the object.">
 			<Values>
 				<Value>Felles</Value>
 				<Value>Underbygning</Value>
@@ -708,7 +742,7 @@
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 		<LuaExpression Name="name"><Formula>NOBN_sig_getSignalFullName()</Formula></LuaExpression>
 		<LuaExpression Name="sight"><Formula>NOBN_sig_getSignalSightingRequirement()</Formula></LuaExpression>
-		<LuaExpression Name="Bane_NOR.Beskrivelse"><Formula>NOBN_sig_getSignalPartNames()</Formula></LuaExpression>
+		<LuaExpression Name="description"><Formula>NOBN_sig_getSignalPartNames()</Formula></LuaExpression>
 		<LuaExpression Name="LateralOffset"><Formula>RightSided and 3.5 or -3.5</Formula></LuaExpression>
 		<LuaExpression Name="VerticalOffset"><Formula>PortalMounted and 8.0 or 0</Formula></LuaExpression>
 	</xpp:bloc>
@@ -894,13 +928,13 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			Layer="JBTEH@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO"
 			Layer="JBTEH@OBJEKTINFO" 
 			Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
@@ -930,14 +964,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="0.5" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="-1.8"
 			Layer="JBTKO@OBJEKTID"
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO"
 			X="0" Y="2.4" 
 			Layer="JBTKO@OBJEKTINFO" 
@@ -960,14 +994,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="0.5" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="-1.8"
 			Layer="JBTEH@OBJEKTID"
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO"
 			X="0" Y="2.4" 
 			Layer="JBTEH@OBJEKTINFO" 
@@ -995,7 +1029,7 @@
 		 />
 		<!-- No TAG -->
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="33" 
 			Layer="JBTEH@OBJEKTINFO" 
@@ -1022,14 +1056,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="0.5" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="2"
 			Layer="JBTKO@OBJEKTID"
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="4" 
 			Layer="JBTKO@OBJEKTINFO" 
@@ -1056,14 +1090,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="3" 
 			Layer="JBTEH@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="7" 
 			Layer="JBTEH@OBJEKTINFO" 
@@ -1089,14 +1123,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="5" 
 			Layer="JBTFE@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTFE@OBJEKTINFO" 
@@ -1117,14 +1151,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="5" 
 			Layer="JBTKU@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTKU@OBJEKTINFO" 
@@ -1145,14 +1179,14 @@
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="5" 
 			Layer="JBTKO@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTKO@OBJEKTINFO" 
@@ -1180,7 +1214,7 @@
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTEH@OBJEKTINFO" 
@@ -1209,14 +1243,14 @@ Justification=
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="5" 
 			Layer="JBTSA@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description"
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTSA@OBJEKTINFO" 
@@ -1237,14 +1271,14 @@ Justification=
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="5" 
 			Layer="JBTEL@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse" 
+			BindingProperty="description" 
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTEL@OBJEKTINFO" 
@@ -1265,14 +1299,14 @@ Justification=
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" 
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
 			X="0" Y="5" 
 			Layer="JBTTE@OBJEKTID" 
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" ObliqueAngle="0"
 		 />
 		<TextAttribute Annotative="true" 
-			BindingProperty="Bane_NOR.Beskrivelse"
+			BindingProperty="description"
 			CadAttributeTag="OBJEKTINFO" 
 			X="0" Y="11" 
 			Layer="JBTTE@OBJEKTINFO" 
@@ -1297,13 +1331,13 @@ Justification=
 			Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"
 		/>
 		<TextAttribute Annotative="true"
-			BindingProperty="Bane_NOR.BaneData_ID"
+			BindingProperty="Tag"
 			CadAttributeTag="OBJEKTID"
             X="0" Y="11"
 			Layer="JBTFE@OBJEKTID"
 			Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
 		<TextAttribute Annotative="true"
-			BindingProperty="Bane_NOR.Beskrivelse"
+			BindingProperty="description"
 			CadAttributeTag="OBJEKTINFO"
             X="0" Y="17"
 			Layer="JBTFE@OBJEKTINFO"
@@ -1317,11 +1351,11 @@ Justification=
 <xpp:define name="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS">
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
-                   X="0" Y="18" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
-                   X="0" Y="16" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
-                   X="0" Y="22" Layer="JBTEH@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
+			X="0" Y="18" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15" Style="RC-ARIAL"/>
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
+			X="0" Y="16" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0" Style="RC-ARIAL"/>
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
+			X="0" Y="22" Layer="JBTEH@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0" Style="RC-ARIAL"/>
 	</xpp:bloc>
 </xpp:define>
 
@@ -1332,9 +1366,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="14" Layer="JBTSA@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="11" Layer="JBTSA@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="0" Y="17" Layer="JBTSA@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1349,9 +1383,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="20" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="22" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="0" Y="24" Layer="JBTEH@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1361,9 +1395,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="20" Layer="JBTSA@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="22" Layer="JBTSA@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="0" Y="24" Layer="JBTSA@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1378,9 +1412,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="24" Layer="JBTSA@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="26" Layer="JBTSA@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="0" Y="28" Layer="JBTSA@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1395,9 +1429,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTFE@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTFE@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTFE@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1407,9 +1441,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="40" Layer="JBTKU@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTKU@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>  
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTKU@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1419,9 +1453,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="40" Layer="JBTKO@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTKO@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>  
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTKO@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1431,9 +1465,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTEH@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1443,9 +1477,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTSA@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTSA@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTSA@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1455,9 +1489,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTEL@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTEL@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTEL@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1467,9 +1501,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="40" Layer="JBTTE@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="40" Layer="JBTTE@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="40" Layer="JBTTE@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1485,9 +1519,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTFE@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="30" Layer="JBTFE@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="30" Layer="JBTFE@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1497,9 +1531,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="30" Layer="JBTKU@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="30" Layer="JBTKU@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>  
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="30" Layer="JBTKU@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1509,9 +1543,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN" 
                    X="1.4" Y="30" Layer="JBTKO@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="30" Layer="JBTKO@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>  
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="30" Layer="JBTKO@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1521,9 +1555,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="30" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="30" Layer="JBTEH@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1536,7 +1570,7 @@ Justification=
 		<!-- <LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>"1.4 30"</Formula></LuaExpression> -->
 		<!-- <LuaExpression Name="TextAttribute_OBJEKTNAVN.Rotation"><Formula>-90</Formula></LuaExpression> -->
 														  
-		<!-- <TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID" -->
+		<!-- <TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID" -->
 		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTID"
                    Layer="JBTSA@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-85"/>
 		<!-- <SetValue Key="TextAttribute_OBJEKTID.Rotation" Value="-80" /> -->
@@ -1544,7 +1578,7 @@ Justification=
 		<LuaExpression Name="TextAttribute_OBJEKTID.Rotation"><Formula>-70</Formula></LuaExpression>
 		<SetValue Key="TextAttribute_OBJEKTID.Justify" Value="TopLeft"/>
 
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="0.5" Y="3" Layer="JBTSA@OBJEKTINFO" Justify="MiddleCenter" Height="0.9"/>
 		<!-- <LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>"-1.4 30"</Formula></LuaExpression> -->
 		<!-- <LuaExpression Name="TextAttribute_OBJEKTINFO.Rotation"><Formula>-90</Formula></LuaExpression> -->
@@ -1556,9 +1590,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTEL@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="30" Layer="JBTEL@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="30" Layer="JBTEL@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1568,9 +1602,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="30" Layer="JBTTE@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="30" Layer="JBTTE@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="30" Layer="JBTTE@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1585,9 +1619,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="1.4" Y="20" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="0" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="20" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="20" Layer="JBTEH@OBJEKTINFO" Justify="MiddleCenter" Height="0.9" Rotation="0"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1604,9 +1638,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="10" Layer="JBTKO@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="18" Layer="JBTKO@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="18" Layer="JBTKO@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1616,9 +1650,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTEH@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="15" Layer="JBTEH@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="15" Layer="JBTEH@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1628,9 +1662,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTSA@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="15" Layer="JBTSA@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="15" Layer="JBTSA@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>
@@ -1640,9 +1674,9 @@ Justification=
 	<xpp:bloc>
 		<TextAttribute Annotative="true" BindingProperty="name" CadAttributeTag="OBJEKTNAVN"
                    X="0" Y="7" Layer="JBTEL@OBJEKTNAVN" Color="ByBlock" Justify="MiddleCenter" Height="1.25" Rotation="-90" ObliqueAngle="15"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.BaneData_ID" CadAttributeTag="OBJEKTID"
+		<TextAttribute Annotative="true" BindingProperty="Tag" CadAttributeTag="OBJEKTID"
                    X="0" Y="15" Layer="JBTEL@OBJEKTID" Color="ByLayer" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
-		<TextAttribute Annotative="true" BindingProperty="Bane_NOR.Beskrivelse" CadAttributeTag="OBJEKTINFO"
+		<TextAttribute Annotative="true" BindingProperty="description" CadAttributeTag="OBJEKTINFO"
                    X="-1.4" Y="15" Layer="JBTEL@OBJEKTINFO" Color="ByBlock" Justify="MiddleCenter" Height="0.9" Rotation="-90"/>
 	</xpp:bloc>
 </xpp:define>

@@ -35,13 +35,12 @@
 =========================================================================================================-->
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" LuaName="rctype_AuxiliaryLine" Name="JBTFE_HJL Hjelpelinje"
 				Layer="JBTFE_HJL" Color="ByLayer"
-				Group="Felles/Hjelpelinjer"
+				Group="Felles"
 				>
 
 		<RelationSpace>hjelpelinje</RelationSpace>
 		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___COM"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___COM"/>
 		
 		<AlignmentSystems DefaultSystemName="Hjelpelinje">
@@ -72,6 +71,88 @@
 
 	</ObjectType>
 			
+
+
+<!--========================================================================================================
+	GENERAL
+	REFERENCE ALIGNMENT
+	Used to calculate reference mileage for objects that belong to other alignments.
+=========================================================================================================-->
+	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" LuaName="rctype_ReferenceAlignment" Name="JBTFE_REF Referanselinje for kilometrering"
+				Layer="JBTFE_REF" Color="ByLayer" 
+				Group="Felles"
+				>
+
+		<RelationSpace>referanselinje</RelationSpace>
+		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE___COM"/>
+
+		<AlignmentSystems DefaultSystemName="Referanselinje for kilometrering">
+			<AlignmentSystem Name="Referanselinje for kilometrering"
+				CantGauge="0.000"
+				AlignmentGauge="0.000"
+				LiftWithCant="false"
+		 />
+		</AlignmentSystems>
+
+		<Variants DefaultValue="Referanselinje for kilometrering">
+			<Variant Name="Referanselinje for kilometrering">
+				<SetValue Key="Color" Value="ByLayer"/>
+				<SetValue Key="Linetype" Value="RC-DASHED"/>
+				<SetValue Key="GlobalWidth" Value="1.00"/>
+				<SetValue Key="AlignmentSystem" Value="Referanselinje for kilometrering"/>
+			</Variant>
+		</Variants>
+		
+		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
+
+		<PropertyPrompt Key="code" DefaultValue="REF-" AcceptEmptyValue="false"/>
+
+		<InsertAlignment Name="Referanselinje for kilometrering" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-USPESIFISERT-{{SymbolMode}}" DefaultToTangentContinuity="false">
+			<IncludeSegmentType>Tangent</IncludeSegmentType>
+			<IncludeSegmentType>Curve</IncludeSegmentType>
+		</InsertAlignment>
+
+		<DynamicProperty Type="Representation3D" Subtype="IteratedAnnotation3D">
+			<LuaExpression Name="Content"><Formula>_JBTFE_REF_Annotation3D(_position)</Formula></LuaExpression>
+			<SetValue Key="Parent" Value="ACS"/>
+			<SetValue Key="Justify" Value="BottomCenter"/>
+			<SetValue Key="TextHeight" Value="0.250"/>
+			<SetValue Key="TextThickness" Value="0.050"/>
+			<SetValue Key="Rotation.X" Value="90"/>
+			<SetValue Key="RotationBeforeOffset" Value="False"/>
+			<LuaExpression Name="IterationStepSize"><Formula>getStepFromNextRoundedMileage(this, 10, _position.Pos)</Formula></LuaExpression>
+			<LuaExpression Name="InitialLinearOffset"><Formula>getStepFromNextRoundedMileage(this, 10, _position.Pos)</Formula></LuaExpression>
+		</DynamicProperty>
+
+		<LuaFunction Name="_JBTFE_REF_Annotation3D()" ReturnType="String"
+			Description="Renvoie le 'PK axe de référence' tous les 100 mètres mesurés depuis l'axe de référence. Les 10 mètres et les 50 mètres seront aussi marqués.">
+			<Signature>_JBTFE_REF_Annotation3D(AlignmentPos _position)</Signature>
+			<Formula>
+				function _JBTFE_REF_Annotation3D(_position)
+					local eps = 1e-3
+					local majorStep = 100
+					local middleStep = majorStep / 2
+					local minorStep = majorStep / 10
+					local m = getAlignmentInfo(_position).Mileage --This alignment is itself a reference alignment
+					local err1 = math.min(m % majorStep, majorStep - m % majorStep)
+					local err2 = math.min(m % middleStep, middleStep - m % middleStep)
+					local isMajorStep = err1 &lt; eps
+					local isMiddleStep = err2 &lt; eps
+					if isMajorStep then
+						return "Km."..NOBN_trk_toKm(m).."\\P(Ref."..this.code..")".."\\P|"
+					elseif isMiddleStep then
+						return "_______"
+					else
+						return "___"
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+	</ObjectType>
+
 
 
 <!--========================================================================================================
@@ -1184,7 +1265,7 @@ Description="The 'MarkerColor' custom enum property [Rød (RED) | Gul (YELLOW) |
 			</Formula>
 		</LuaFunction>
 		
-	   <LuaExpression Name="Bane_NOR.Beskrivelse"><Formula>_JBTFE_DIV_sporbrukgrense_objectInfo()</Formula></LuaExpression>
+	   <LuaExpression Name="TextAttribute_OBJEKTINFO.Content"><Formula>_JBTFE_DIV_sporbrukgrense_objectInfo()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTFE_DIV_sporbrukgrense_objectInfo()" ReturnType="String"
 				Description="Obtains the 'Bane_NOR.Beskrivelse' (formerly known as 'ObjectInfo') text for the track usage delimiter element.">
 			<Signature>String _JBTFE_DIV_sporbrukgrense_objectInfo()</Signature>
