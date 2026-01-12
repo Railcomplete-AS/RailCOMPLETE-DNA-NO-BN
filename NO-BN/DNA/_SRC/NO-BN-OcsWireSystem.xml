@@ -41,7 +41,9 @@
 		
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_40_OFF_NO_TAG___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_VERY_FAR"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -174,7 +176,9 @@
 
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 
 		<Variants DefaultValue="AT-line">
@@ -606,11 +610,12 @@
 			\n[awMat] = Midpoint anchoring line (wire) material
 			\n[gwMat] = Guywire material
 			\n">
-		<Signature>Table[5*Double] NOBN_ocs_getWireMaterialTable(OcsSystem os)</Signature>
+		<Signature>Table[5*Double] NOBN_ocs_getWireMaterialTable(OcsSystem os = obj.OcsSystem, Reference obj = this)</Signature>
 		<Formula>
 			--This function is declared as global in the DNA, accessible from all object types.
-			function NOBN_ocs_getWireMaterialTable(os)
-				os = os or OcsSystem
+			function NOBN_ocs_getWireMaterialTable(os, obj)
+				obj = obj or this
+				os = os or obj:NOBN_ocs_getOcsSystem()
 				local ContactWireValues = {
 					--Note: Siemens' catenary wire clamp is about 12 cm high (117mm), above the upper tube
 					["Unknown"]  = {cwMat="",        mwMat="",            twMat="",            awMat="",            gwMat=""           },
@@ -634,20 +639,74 @@
 			end 
 		</Formula>
 	</LuaFunction>
-		
+
 
 
 	<LuaFunction Name="NOBN_ocs_getOcsSystem()" 
 		ReturnType="Enumeration"
-		Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection.">
-		<Signature>Enumeration NOBN_ocs_getOcsSystem()</Signature>
+		Description="Returns the Ocs System (System 20A/B/C, System 25, Cariboni etc) as defined by the wire tension balancer at the associated contact wire's START-of-alignment. The calling object may be a wire tension balancer / cantilever / midpoint anchor / contact wire / midpoint anchor line.">
+		<Signature>Enumeration NOBN_ocs_getOcsSystem(Reference obj = this)</Signature>
 		<Formula>
-			function NOBN_ocs_getOcsSystem()
-				os = getPropertyValue("OcsSystem")
-				if os == "Unknown" then
-					return os, _unfinished, _info("UNFINISHED - Press F4 to select OCS System.")
+			function NOBN_ocs_getOcsSystem(obj)
+				obj = obj or this
+				local cow, nCow, cw
+				if obj.RcType ~= rctype_WireTensioningBalancer
+				and obj.RcType ~= rctype_Cantilever
+				and obj.RcType ~= rctype_MidpointAnchor
+				and obj.RcType ~= rctype_ContactWire
+				and obj.RcType ~= rctype_MidpointAnchorLine then
+					return "Unknown", _info("ERROR - Bad calling RcType ["..obj.RcType.."] - wire tension balancer, cantilever, midpoint anchor, contact wire or midpoint anchor line was expected.")
+				end
+				if (obj.RcType == rctype_WireTensioningBalancer and obj.Alignment.RcType == rctype_ContactWire) or obj.RcType == rctype_MidpointAnchor then
+					--WTBs for the CW and its midpoint anchor use the contact wire as own alignment:
+					cw = obj.Alignment
+				elseif obj.RcType == rctype_WireTensioningBalancer and obj.Alignment.RcType == rctype_MidpointAnchorLine then
+					--WTBs for the midpoint anchoring line use the midpoint anchoring line as own alignment:
+					--Find the midpoint anchor, then use its contact wire:
+					local mpa, nMpa = obj.Alignment:getRelatedObjects(rel_MidpointAnchoringLine_Anchors_MidpointAnchor)
+					if nMpa == 0 then
+						return "Unknown", _info("UNFINISHED - ".." The midpoint anchor line being tensioned by this WTB "..RC__identify(obj).." has no midpoint anchor - cannot locate a WTB at the midpoint anchor's CW alignment's low end.")
+					else
+						cw = mpa[0].Alignment
+					end
+				elseif obj.RcType == rctype_Cantilever then
+					cow, nCow = obj:getRelatedObjects(rel_Cantilever_Holds_ContactWire)
+					if nCov == 0 then
+						return "Unknown", _info("UNFINISHED - "..RC__identify(obj).." is not connected to a contact wire - cannot locate a WTB at the CW alignment's low end.")
+					else
+						cw = cow[0]
+					end
+				elseif obj.RcType == rctype_ContactWire then
+					cw = obj
+				elseif obj.RcType == rctype_MidpointAnchorLine then
+					--Find the midpoint anchor, use its contact wire:
+					local mpa, nMpa = obj:getRelatedObjects(rel_MidpointAnchoringLine_Anchors_MidpointAnchor)
+					if nMpa == 0 then
+						return "Unknown", _info("UNFINISHED - "..RC__identify(obj).." has no midpoint anchor - cannot locate a WTB at the midpoint anchor's CW alignment's low end.")
+					else
+						cw = mpa[0].Alignment
+					end
+				end
+				--Look for a WTBs having the contact wire as own alignment and being located very close to the CW's start point:
+				local wtb, nWtb = cw:getRelatedObjects(rel_ContactWireOrMidpointAnchoringLineOrHvConductor_IsTensionedBy_Wtb)
+				if nWtb == 0 then
+					return "Unknown", _info("UNFINISHED - "..RC__identify(obj).." has no related WTBs - insert a WTB at the contact wire's start point, relate to CW with '"..
+						rel_Wtb_Tensions_ContactWireOrMidpointAnchoringLineOrHvConductor.."', then set its OCS system manually.")
 				else
-					return os
+					--Look for a WTB at the very start of the CW:
+					local startWtb, nStartWtb = getNearbyPointObjects2D(cw.RcAlignment.StartPoint, wtb, 0.3)
+					if nStartWtb == 0 then
+						return "Unknown", _info("UNFINISHED - "..RC__identify(obj).." has no WTB at its start-of-alignment (which should define the OCS system type).")
+					else
+						--Avoid loop if the calling object is the low-end WTB itself - use getPropertyValue():
+						if obj.id == startWtb[0].id then
+							return wtb[0]:getPropertyValue("OcsSystem"), 
+								_info("The OCS System is defined by this wire tension balancer '"..RC__identify(obj).."' located at the start of contact wire "..RC__identify(cw)..".")
+						else
+							return startWtb[0].OcsSystem,
+								_info("The OCS System was deduced from wire tension balancer '"..RC__identify(startWtb[0]).."' located at the start of contact wire "..RC__identify(cw)..".")
+						end
+					end
 				end
 			end
 		</Formula>
@@ -672,8 +731,11 @@
 
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
+		<xpp:expand select="NOBN_ocs_STD_CUSTOMATTRIBUTES___OCS_SYSTEM"/>
 
 		<Variants DefaultValue="Kontaktledning, kjørbar">
 			<Variant Name="Kontaktledning, kjørbar"/> 
@@ -727,25 +789,6 @@
 				end
 			</Formula>
 		</LuaFunction>
-
-		<CustomProperty DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S25"
-			Description="The OCS System is one of [ Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08 ].">
-			<Values>
-				<Value>Unknown</Value>
-				<Value>S25</Value>
-				<Value>S20A</Value>
-				<Value>S20AR</Value>
-				<Value>S20B</Value>
-				<Value>S20BR</Value>
-				<Value>S20C1</Value>
-				<Value>S20C2</Value>
-				<Value>S35</Value>
-				<Value>S35MS</Value>
-				<Value>Cariboni</Value>
-				<Value>TET08</Value>
-			</Values>
-		</CustomProperty>
-		<LuaExpression Name="OcsSystem"><Formula>NOBN_ocs_getOcsSystem()</Formula></LuaExpression>
 
 		<CustomProperty DataType="Enumeration" Name="ContactWireMaterial" DisplayName="Kontaktledning materiale" DefaultValue=""
 			Description="The overhead catenary system (OCS) contact wire material." 
@@ -1111,8 +1154,11 @@
 		
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
+		<xpp:expand select="NOBN_ocs_STD_CUSTOMATTRIBUTES___OCS_SYSTEM"/>
 
 		<Variants DefaultValue="Fixline">
 			<Variant Name="Fixline">
@@ -1122,40 +1168,6 @@
 		<DynamicProperty Type="Representation3D" Subtype="SweptGeometry3D">
 			<SetValue Key="CustomTransformation" Value="false"/>
 		</DynamicProperty>
-
-		<CustomProperty DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
-			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08].">
-			<Values>
-				<Value>Unknown</Value>
-				<Value>S25</Value>
-				<Value>S20A</Value>
-				<Value>S20AR</Value>
-				<Value>S20B</Value>
-				<Value>S20BR</Value>
-				<Value>S20C1</Value>
-				<Value>S20C2</Value>
-				<Value>S35</Value>
-				<Value>S35MS</Value>
-				<Value>Cariboni</Value>
-				<Value>TET08</Value>
-			</Values>
-		</CustomProperty>
-		<LuaExpression Name="OcsSystem"><Formula>_JBTEH_FIL_OcsSystem()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIL_OcsSystem()" 
-			ReturnType="Enumeration"
-			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection.">
-			<Signature>Enumeration _JBTEH_FIL_OcsSystem()</Signature>
-			<Formula>
-				function _JBTEH_FIL_OcsSystem()
-					os = getPropertyValue("OcsSystem")
-					if os == "Unknown" then
-						return os, _unfinished, _info("UNFINISHED - Press F4 to select OCS System.")
-					else
-						return os
-					end
-				end
-			</Formula>
-		</LuaFunction>
 
 		<CustomProperty DataType="Enumeration" Name="AnchoringLineMaterial" DisplayName="Fixline materiale" DefaultValue="Bz II 50/19" 
 			Description="The overhead catenary system (OCS) midpoint anchoring line material [Bz II 50/19 | Bz II 70/19 | Bz II 50/19 isolert].">
@@ -1224,8 +1236,11 @@
 		<AttachmentCategory Name="kl-bardun" PassAttachmentToTarget="true"/>		
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
+		<xpp:expand select="NOBN_ocs_STD_CUSTOMATTRIBUTES___OCS_SYSTEM"/>
 
 		<Variants DefaultValue="Bardun">
 			<Variant Name="Bardun">
@@ -1306,26 +1321,6 @@
 				end
 			</Formula>
 		</LuaFunction>
-
-		<CustomProperty DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
-			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08].">
-			<Values>
-				<Value>Unknown</Value>
-				<Value>S25</Value>
-				<Value>S20A</Value>
-				<Value>S20AR</Value>
-				<Value>S20B</Value>
-				<Value>S20BR</Value>
-				<Value>S20C1</Value>
-				<Value>S20C2</Value>
-				<Value>S35</Value>
-				<Value>S35MS</Value>
-				<Value>Cariboni</Value>
-				<Value>TET08</Value>
-			</Values>
-		</CustomProperty>
-
-		<LuaExpression Name="OcsSystem"><Formula>NOBN_ocs_getOcsSystem()</Formula></LuaExpression>
 
 		<!-- Dimensjon på firkantstål i strevere: Se EH.800240, HUP120x120x6,3 -->
 		<!-- https://trv.banenor.no/ts/Kontaktledning/Liner, _tr%C3%A5d, _ledning_og_kabel#EN_50149 -->
@@ -1449,7 +1444,9 @@
 		
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 
 		<Variants DefaultValue="Strever">
@@ -1578,7 +1575,9 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_VERTICAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_STACKED"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/> -->
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -1756,7 +1755,9 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_FAR___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_VERTICAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_FAR"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/> -->
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -1962,7 +1963,9 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -2049,7 +2052,9 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXATTRIBUTES___VERTICAL_AND_VERY_FAR___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_VERTICAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_VERY_FAR"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/> -->
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -2475,28 +2480,28 @@
 		ReturnType="Table[4*Double]"
 		Description="Returns a table with standard tensioning force (tf) values, indexed as follows:
 		\n
-		\n[cwtf] Contact wire tensioning force
-		\n[mwtf] Messenger wire tensioning force
-		\n[swtf] Stitch wire tensioning force
-		\n[awtf] Midpoint anchor line (wire) tensioning force
+		\n[cwtf] Contact Wire Tensioning Force
+		\n[mwtf] Messenger Wire Tensioning Force
+		\n[swtf] Stitch Wire Tensioning Force
+		\n[altf] midpoint Anchor Line Tensioning Force
 		\n">
 		<Signature>Table[4*Double] NOBN_ocs_getWireTensioningDataTable(OcsSystem os = OcsSystem)</Signature>
 		<Formula>
 			function NOBN_ocs_getWireTensioningDataTable(os)
 				os = os or OcsSystem
 				local TensioningForces = {
-					["Unknown"] = {cwtf=0, 		mwtf=0.0, 	swtf=0,		awtf=0 },
-					["S25"]		= {cwtf=15,		mwtf=15,	swtf=2.8, 	awtf=10},
-					["S20A"]	= {cwtf=10, 	mwtf=10,	swtf=2.3,	awtf=10},
-					["S20AR"]	= {cwtf=7.06,	mwtf=7.06,	swtf=2.3, 	awtf=10},
-					["S20B"]	= {cwtf=10,		mwtf=10,	swtf=0, 	awtf=10},
-					["S20BR"]	= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	awtf=10},
-					["S20C1"]	= {cwtf=13,		mwtf=13,	swtf=2.3, 	awtf=10},
-					["S20C2"]	= {cwtf=13,		mwtf=13,	swtf=2.3, 	awtf=10},
-					["S35"]		= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	awtf=10},
-					["S35MS"]	= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	awtf=10},
-					["Cariboni"]= {cwtf=13,		mwtf=13,	swtf=0, 	awtf=13},
-					["TET08"]	= {cwtf=13,		mwtf=13,	swtf=0, 	awtf=13}
+					["Unknown"] = {cwtf=0, 		mwtf=0.0, 	swtf=0,		altf=0 },
+					["S25"]		= {cwtf=15,		mwtf=15,	swtf=2.8, 	altf=10},
+					["S20A"]	= {cwtf=10, 	mwtf=10,	swtf=2.3,	altf=10},
+					["S20AR"]	= {cwtf=7.06,	mwtf=7.06,	swtf=2.3, 	altf=10},
+					["S20B"]	= {cwtf=10,		mwtf=10,	swtf=0, 	altf=10},
+					["S20BR"]	= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	altf=10},
+					["S20C1"]	= {cwtf=13,		mwtf=13,	swtf=2.3, 	altf=10},
+					["S20C2"]	= {cwtf=13,		mwtf=13,	swtf=2.3, 	altf=10},
+					["S35"]		= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	altf=10},
+					["S35MS"]	= {cwtf=7.06,	mwtf=7.06,	swtf=0, 	altf=10},
+					["Cariboni"]= {cwtf=13,		mwtf=13,	swtf=0, 	altf=13},
+					["TET08"]	= {cwtf=13,		mwtf=13,	swtf=0, 	altf=13}
 				}
 				if TensioningForces[os] then
 					return TensioningForces[os]
@@ -2519,12 +2524,15 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
+		<xpp:expand select="NOBN_ocs_STD_CUSTOMATTRIBUTES___OCS_SYSTEM"/>
 
 		<Variants DefaultValue="Loddavspenning, dobbel">
 			<Variant Name="Fastavspenning, enkel"/>
@@ -2535,10 +2543,10 @@
 			<Variant Name="Fjæravspenning, dobbel"/>
 		</Variants>
 				
-		<!-- Text attribute positions are stated in ACS for the 1:1 drawing scale: -->
-		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>1, 16*(dir == "up" and 1 or -1)</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>1, 16*(dir == "up" and 1 or -1)</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>1, 16*(dir == "up" and 1 or -1)</Formula></LuaExpression>
+		<!-- Override macro's text attribute positions: -->
+		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(-1, 16)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>RC__flipAcsTuple(3, 16)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>RC__flipAcsTuple(7, 16)</Formula></LuaExpression>
 
         <LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
 
@@ -2639,40 +2647,6 @@
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="Enumeration" Name="OcsSystem" DisplayName="KL-system" DefaultValue="S20A"
-			Description="The OCS System is one of [Unknown | S25 | S20A | S20AR | S20B | S20BR | S20C1 | S20C2 | S35 | S35MS | Cariboni | TET08].">
-			<Values>
-				<Value>Unknown</Value>
-				<Value>S25</Value>
-				<Value>S20A</Value>
-				<Value>S20AR</Value>
-				<Value>S20B</Value>
-				<Value>S20BR</Value>
-				<Value>S20C1</Value>
-				<Value>S20C2</Value>
-				<Value>S35</Value>
-				<Value>S35MS</Value>
-				<Value>Cariboni</Value>
-				<Value>TET08</Value>
-			</Values>
-		</CustomProperty>
-		<LuaExpression Name="OcsSystem"><Formula>_JBTEH_AEH_OcsSystem()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_AEH_OcsSystem()" 
-			ReturnType="Enumeration"
-			Description="Flags the attribute as 'Unknown' if the OCS system has not yet been selected. Click F4 to change selection.">
-			<Signature>Enumeration _JBTEH_AEH_OcsSystem()</Signature>
-			<Formula>
-				function _JBTEH_AEH_OcsSystem()
-					os = getPropertyValue("OcsSystem")
-					if os == "Unknown" then
-						return os, _unfinished, _info("UNFINISHED - Press F4 to select OCS System.")
-					else
-						return os
-					end
-				end
-			</Formula>
-		</LuaFunction>
-
 		<CustomProperty DataType="String" Name="PrimaryTensioningForce" DisplayName="Primær strekkraft"
 			Description="The contact wire (or midpoint anchor line) tensioning force [kN]."/>
 		<LuaExpression Name="PrimaryTensioningForce"><Formula>_JBTEH_AEH_PrimaryTensioningForce(OcsSystem)</Formula></LuaExpression>
@@ -2684,7 +2658,7 @@
 				function _JBTEH_AEH_PrimaryTensioningForce()
 					if Variant == "Fastavspenning, enkel" then
 						--Assume that this is a midpoint anchor wire (though it MIGHT be a single, short cw in a tunnel where you would split the WTB into two wall mounts):
-						return NOBN_ocs_getWireTensioningDataTable(OcsSystem).awtf
+						return NOBN_ocs_getWireTensioningDataTable(OcsSystem).altf
 					else
 						--Assume that this is the contact wire:
 						return NOBN_ocs_getWireTensioningDataTable(OcsSystem).cwtf
@@ -2712,7 +2686,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<TextAttribute Annotative="true" CadAttributeTag="STREKKRAFT" Layer="JBTEH@STREKKRAFT" Justify="MiddleCenter" Height="0.9"
+		<TextAttribute Annotative="true" Style="RC-ARIAL" CadAttributeTag="STREKKRAFT" Layer="JBTEH@STREKKRAFT" Justify="MiddleCenter" Height="0.9"
 			Description="The tensioning force Value, as shown close to the tensioning device [kN]."/>
 		<LuaExpression Name="TextAttribute_STREKKRAFT.Content"><Formula>_JBTEH_AEH_TensioningForceDisplay(OcsSystem)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_TensioningForceDisplay()" 
@@ -2727,7 +2701,7 @@
 					local tf = NOBN_ocs_getWireTensioningDataTable(OcsSystem)
 					if Variant == "Fastavspenning, enkel" then
 						 --Assume that this is an anchoring wire, for the midpoint anchor (but it MIGHT be a CW or MW in a narrow tunnel):
-						return tf.awtf.." kN (fix)", _info("Midpoint anchor wire")
+						return tf.altf.." kN (fix)", _info("Midpoint anchor wire")
 					else
 						if Variant == "Fjæravspenning, dobbel"
 						or Variant == "Loddavspenning, dobbel"
@@ -2744,7 +2718,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-		<LuaExpression Name="TextAttribute_STREKKRAFT.Position"><Formula>3, 16*(dir == "up" and 1 or -1)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_STREKKRAFT.Position"><Formula>RC__flipAcsTuple(1, 16)</Formula></LuaExpression>
 
 		<LuaExpression Name="Geometry3D_0.Name" ><Formula>_JBTEH_AEH_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AEH_Geometry3DName()" 
@@ -2915,16 +2889,37 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
+		<xpp:expand select="NOBN_ocs_STD_CUSTOMATTRIBUTES___OCS_SYSTEM"/>
 		<!-- <xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT" /> --> <!-- Only contains 3d properties, but this object doesn't have 3d yet knhel 2023-05-09 -->
 
 		<Variants DefaultValue="Fixpunkt">
 			<Variant Name="Fixpunkt"/>
 		</Variants>
 		
+		<LuaExpression Name="Alignment"><Formula>_JBTEH_FIX_Alignment()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_Alignment()" 
+			ReturnType="String"
+			Description="Obtains the Alignment property (a contact wire) for this fixpoint, deduced from the cantilever it is related to with '{{rel_MidpointAnchor_Locks_Cantilever}}'.">
+			<Signature>String _JBTEH_FIX_Alignment()</Signature>
+			<Formula>
+				function _JBTEH_FIX_Alignment()
+					local cnt, nCnt = getRelatedObjects(rel_MidpointAnchor_Locks_Cantilever)
+					if nCnt == 0 then
+						return getPropertyValue("Alignment"), "UNFINISHED - Relate midpoint anchor to a cantilever with '{{rel_MidpointAnchor_Locks_Cantilever}}'.", _unfinished
+					else
+						local cow = cnt[0]:getRelatedObjects(rel_Cantilever_Holds_ContactWire)
+						return cow[0] --The midpoint anchor hooks up to same CW as its cantilever.
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<LuaExpression Name="code"><Formula>_JBTEH_FIX_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_FIX_code()" 
 			ReturnType="String"
@@ -2932,26 +2927,7 @@
 			<Signature>String _JBTEH_FIX_code()</Signature>
 			<Formula>
 				function _JBTEH_FIX_code()
-					local sCnt = rel_MidpointAnchor_Locks_Cantilever
-					local _rCnt, nCnt = getRelatedObjects(sCnt)
-					if nCnt == 0 then
-						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
-					elseif nCnt == 1 then
-						local sCow = rel_MidpointAnchor_Locks_ContactWire
-						local rCow, nCow = getRelatedObjects(sCow)
-						if nCow == 0 then
-							return _unfinished,"UNFINISHED - Relate midpoint anchor to its contact wire with '" ..sCow.."'."
-						elseif nCow == 1 then
-							local cow = rCow[0]
-							--Filter out the suffix letter 'a'..'e', if present:
-							local tmp = cow.code:match("(.-)[abcde]$") and cow.code:sub(1,-2) or cow.code
-							return tmp, _info("Code was deduced from related contact wire "..cow.code..".")
-						else
-							return _error,"ERROR - Midpoint anchor is related to more than one visible contact wire."
-						end
-					else
-						return _error,"ERROR - Midpoint anchor is related to more than one visible cantilever."
-					end
+					return Alignment.code
 				end
 			</Formula>
 		</LuaFunction>
@@ -2968,50 +2944,28 @@
 			</Formula>
 		</LuaFunction>
 
-		<LuaExpression Name="ReferenceMileage"><Formula>_JBTEH_FIX_ReferenceMileage()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIX_ReferenceMileage()" 
+		<LuaExpression Name="ReferenceMileage"><Formula>_JBTEH_FIX_DistanceAlong()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_FIX_DistanceAlong()" 
 			ReturnType="String"
-			Description="Obtains the reference mileage value for this fixpoint, obtained from its related cantilever. NB! This function assumes that the contact wire has a defined relationship to the local ReferenceAlignment, use RC-AlignmentManager to define this.">
-			<Signature>String _JBTEH_FIX_ReferenceMileage()</Signature>
+			Description="Obtains the position for this midpoint anchor (fixpoint), deduced from its related cantilever and CW.">
+			<Signature>String _JBTEH_FIX_DistanceAlong()</Signature>
 			<Formula>
-				function _JBTEH_FIX_ReferenceMileage()
-					local s = rel_MidpointAnchor_Locks_Cantilever
-					local r, n = getRelatedObjects(s)
+				function _JBTEH_FIX_DistanceAlong()
+					local cnt, nCnt = getRelatedObjects(rel_MidpointAnchor_Locks_Cantilever)
 					if n == 0 then
-						return getPropertyValue("ReferenceMileage"),_warning, _info("UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'.")
-					elseif n == 1 then
-						return r[0].ReferenceMileage, _info("UNFINISHED - Relate fixpoint to its cantilever with '"..s.."'.")
+						return getPropertyValue("ReferenceMileage"),_warning, _info("UNFINISHED - Relate fixpoint to its cantilever with '"..rel_MidpointAnchor_Locks_Cantilever.."'.")
 					else
-						return getPropertyValue("ReferenceMileage"),_error, _info("ERROR - Fixpoint should fix just one cantilever (per construction phase).")
+						local la = getLinearAddress(getPoint3D(cnt[0]), Alignment) --Projection of cantilever onto its CW
+						return la.DistanceAlong, _info("Midpoint anchor (fixpoint) position was deduced from its cantilever related with '"..rel_MidpointAnchor_Locks_Cantilever.."'.")
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-        <LuaExpression Name="LateralOffset"><Formula>_JBTEH_FIX_LateralOffset()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_FIX_LateralOffset()" 
-			ReturnType="String"
-			Description="Obtains the LateralOffset for this midpoint anchor, deduced from its cantilever.">
-			<Signature>String _JBTEH_FIX_LateralOffset()</Signature>
-			<Formula>
-				function _JBTEH_FIX_LateralOffset()
-					local sCnt = rel_MidpointAnchor_Locks_Cantilever
-					local rCnt, nCnt = getRelatedObjects(sCnt)
-					if nCnt == 0 then
-						return _unfinished,"UNFINISHED - Relate midpoint anchor to its cantilever with '"..sCnt.."'."
-					elseif nCnt == 1 then
-						local cnt = rCnt[0]
-						return cnt.Stagger, _info("LateralOffset was copied from the stagger of related cantilever "..RC__identify(cnt)..".")
-					else
-						return _error,"ERROR - Midpoint anchor has zero or more than one related contact wire."
-					end
-				end
-			</Formula>
-		</LuaFunction>
-
+        <LuaExpression Name="LateralOffset"><Formula>1e-4</Formula></LuaExpression>
         <LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
 
-		<!-- Model check: That FIX point is as close to the CW midpoint as possible and that is actually needed: -->
+		<!-- Model check: That FIX point is as close to the CW midpoint as possible and that it is actually needed: -->
 						<!-- if Variant:lower():match("fix") then -->
 							<!-- local RelationName = "Avspenner kontaktledning" -->
 							<!-- local r, n = getRelatedObjects(RelationName) -->
@@ -3027,7 +2981,7 @@
 		
 		<InsertPointObject Name="Fixpunkt" DisplayBlockName="NO-BN-2D-JBTEH_AEH-AVSPENNING-FIXPUNKT-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kontaktledning</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 		
@@ -3044,6 +2998,11 @@
 		
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
 
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="fixline"/>
+			</SnapPoints>
+		</DockPointDefinitions>
 	</ObjectType>
 
 
@@ -3178,7 +3137,9 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>		
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_SMALL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CENTERED"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>

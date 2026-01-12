@@ -18,7 +18,7 @@ local usage = [[
 	Distance and gradient to target (ref Bane NOR TRV:06212)
 	========================================================
 	2024-10-19_000 CLFEY Created.
-	2024-11-02_001 CLFEY Scripts continues, alsoafter non-successful chiuce of object.
+	2024-11-02_001 CLFEY Script continues, also after non-successful choice of object.
 	
 	Beregning av høyder, målavstand og gradient til målet.
 	

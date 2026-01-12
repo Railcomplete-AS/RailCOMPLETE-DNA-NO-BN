@@ -73,32 +73,6 @@
 
 
 
-	<LuaFunction Name="RC__TextAttributePosition()" ReturnType="Vector2D" 
-			HideFromUser="false"
-			Description="Returns a World Coordinate System offset vector in the current drawing scale for a text attribute. Input coordinates provide the acsX = lateral offset (positive to the right side of the object's alignment) and the acsY = longitudinal offset (positive in the direction of increasing mileages), both stated for drawing scale 1:1 (1:1000).">
-		<Signature>Double, Double RC__TextAttributePosition(Double LateralOffset = 0, Double LongitudinalOffset = 0)</Signature>
-		<Formula>
-			function RC__TextAttributePosition(LateralOffset, LongitudinalOffset)
-				return RC__AcsToWcs(LateralOffset, LongitudinalOffset)
-				--return RC__AcsToWcs((RightSided and 1 or -1) * LateralOffset, (dir == "up" and 1 or -1) * LongitudinalOffset)
-			end
-		</Formula>
-	</LuaFunction>
-
-
-
-	<LuaFunction Name="RC__TextAttributeRotation()" ReturnType="String"
-			Description="Returns the rotation of the text element in the world coordinate system. The input argument specifies the angle in decimal degrees between the tangent direction of the object's alignment direction and the orientation of the text. The default value is -90 decimal degrees.">
-		<Signature>DecimalDegrees RC__TextAttributeRotation(Double RelativeAngle = -90)</Signature>
-		<Formula>
-			function RC__TextAttributeRotation(RelativeAngle)
-				return math.deg(AlignmentTangent) + (RelativeAngle or -90.0)
-			end
-		</Formula>
-	</LuaFunction>
-
-
-
 	<LuaFunction Name="RC__getAngleFromDir()" ReturnType="Double"
 		Description="Returns the angle in Decimal Degrees corresponding to the given direction [up | down | both | none | unknown]. 'Direction' and 'Rightsided' are optional arguments.">
 		<Signature>Double RC__getAngleFromDir([LaxDirection Direction = InheritedDirection [, Boolean RightSided = false]])</Signature>
@@ -272,6 +246,19 @@
                 local angle = obj.AlignmentTangent + math.rad(angularOffsetInDegrees)
 				local x, y = wcsX*math.cos(-angle) - wcsY*math.sin(-angle), wcsX*math.sin(-angle) + wcsY*math.cos(-angle) --Rotate back
                 return -y, x --Express as ACS coordinates after rotation around the WCS origin.
+            end
+        </Formula>
+    </LuaFunction>
+
+
+
+    <LuaFunction Name="RC__flipAcsTuple()"
+		Description="Flips an ACS tuple laterally if the object is LeftSided, flips longitudinally if the object's 'dir' is 'down'.">
+        <Signature>Double, Double RC__flipAcsTuple(Double lateralOffset, Double longitudinalOffset, Reference obj = this)</Signature>
+        <Formula>
+            function RC__flipAcsTuple(lateralOffset, longitudinalOffset, obj)
+				obj = obj or this
+                return (obj.RightSided and 1 or -1)*lateralOffset, (obj.dir == "up" and 1 or -1)*longitudinalOffset
             end
         </Formula>
     </LuaFunction>
@@ -553,23 +540,6 @@
 			end
         </Formula>
     </LuaFunction>
-
-
-
-	<LuaFunction Name="RC__scale()" ReturnType="{Double, Double}" 
-			HideFromUser="false" 
-			Description="Scales a 2D vector intended for 1:1 drawing scale into the corresponding vector for the current drawing scale.">
-		<Signature>{Double, Double} RC__scale(Double LateralOffset = 0, Double LongitudinalOffset = 0)</Signature>
-		<Formula>
-			function RC__scale( LateralOffset, LongitudinalOffset )
-				local scale = DocumentData.Document.Database.Cannoscale.Scale --CAD system's annotative scale
-				LateralOffset = (LateralOffset or 0)/scale
-				LongitudinalOffset = (LongitudinalOffset or 0)/scale
-				local wcsX, wcsY = RC__AcsToWcs(LateralOffset, LongitudinalOffset)
-				return { SymbolOffset.X + wcsX, SymbolOffset.Y + wcsY }
-			end
-		</Formula>
-	</LuaFunction>
 
 
 

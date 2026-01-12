@@ -38,7 +38,7 @@
 
 	<LuaFunction Name="_JBTEH_MAS_getSpanlengths()" ReturnType="Double" 
 			HideFromUser="false"
-			Description="Returns a collection of dictionaries {Spanlength = [String], Wirename = [String]}, one such dictionary for each cantilever present on this catenary pole, from wireclamp to the related cantilever's next wireclamp, measured as a 2D straight-line distance.">
+			Description="Returns a collection of dictionaries {Spanlength = [String], Wirename = [String]}, one such dictionary for each cantilever / WTB present on this catenary pole. The spanlengths are measured as 2D straight-line distances along the contact wire from WTB / wire clamp position to the subsequent one.">
 		<Signature>Double _JBTEH_MAS_getSpanlengths()</Signature>
 		<Formula>
 			function _JBTEH_MAS_getSpanlengths()
@@ -154,25 +154,29 @@
 			end
 		</Formula>
 	</LuaFunction>
+
+<!-- ========End of WIP >>======================================== -->
+
+
 	
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthDisplay()" ReturnType="String"
 			HideFromUser="false"
-			Description="Returns a text string containing the ContactWireName and Spanlength for each cantilever located on this OCS pole, from wire clamp to next canitlever's wire clamp (measured as a straight-line 2D length).">
+			Description="Returns a text string containing the ContactWireName and Spanlength for each cantilever located on this OCS pole, from each associated wire clamp position to the next cantilever's wire clamp position (measured as a straight-line 2D length).">
 		<Signature>String _JBTEH_MAS_SpanlengthDisplay()</Signature>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthDisplay()
 				--[[
 					Prerequisites:
-					a) A text attribute that displays multiple spanlengths must have IsMText == true to treat '\\P' as 'newline'.
+					a) A text attribute that displays multiple spanlengths must have IsMTextAttribute == true to treat '\\P' as 'newline'.
 					b) The Spanlength property holds a collection of dictionaries, each of which holds a
 					contact wire's name [String] and its corresponding spanlength [Double].
 			
 					The return value has format:
 			
-					Show this:							...if property Spanlength is:
-					=================================	=========================================================
-					"L27-478:57.8"						...a collection of just one dictionary {Spanlength = [double], Wirename = [string]}
-					"L30-536:52.6\n...\nL30-537:37.8"	...a collection of several such dictionaries.
+					Show this:									...if property Spanlength is:
+					=================================			=========================================================
+					"- L27-478:57.8 -"							...a collection of just one dictionary {Spanlength = [double], Wirename = [string]}
+					"- L30-536:52.6 -\n...\n- L30-537:37.8 -"	...a collection of several such dictionaries.
 				--]]
 			
 				local Spanlengths = getCollectionFromTable(_JBTEH_MAS_getSpanlengths())
@@ -182,14 +186,14 @@
 					return "", _info("No spanlength(s) - expected format is {{Spanlength = [double], Wirename = [string]}+}")
 				elseif nSpanlengths == 1 then
 					local sl = Spanlengths[0]
-					return sl.Spanlength == 0 and "" or string.format("%s:%.01f", sl.Wirename, sl.Spanlength)
+					return sl.Spanlength == 0 and "" or string.format("- %s:%.01f -", sl.Wirename, sl.Spanlength)
 				else
 					for i = 0, nSpanlengths-1 do
 						local sl = Spanlengths[i]
 						if i == 0 then
-							s = string.format("%s:%.01f",sl.Wirename, sl.Spanlength)
+							s = string.format("- %s:%.01f -",sl.Wirename, sl.Spanlength)
 						else
-							s = s..string.format("\\P%s:%.01f",sl.Wirename, sl.Spanlength)
+							s = s..string.format("\\P- %s:%.01f -",sl.Wirename, sl.Spanlength)
 						end
 					end
 				end
@@ -198,11 +202,11 @@
 		</Formula>
 	</LuaFunction>
 
-<!-- ========End of WIP >>======================================== -->
 
-	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Vector2D" 
+
+	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Tuple" 
 			HideFromUser="false" 
-			Description="Returns an Alignment Coordinate System (ACS) vector for the span length's text position attribute, halfway between the OCS pole's display point and the next OCS pole's display point. Optionally, specify additional ACS offsets as [LateralOffset = 0, LongitudinalOffset = 0]. The spanlength text attribute's 'ScalePosition' must be set to False.">
+			Description="Returns an Alignment Coordinate System (ACS) tuple for the span length's text position attribute, halfway between the OCS pole's display point and the next OCS pole's display point. Optionally, specify additional ACS offsets as [LateralOffset = 0, LongitudinalOffset = 0]. The spanlength text attribute's 'ScalePosition' must be set to False, otherwise the spanlength text will move closer to its OCS pole as you reduce the drawing's scale.">
 		<Signature>Double, Double _JBTEH_MAS_SpanlengthTextPosition(Double LongitudinalOffset = 0, Double LongitudinalOffset = 0, Reference obj = this)</Signature>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthTextPosition(LateralOffset, LongitudinalOffset, obj)
@@ -220,7 +224,7 @@
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
 					local wcsX = obj.SymbolOffset.X + (endX - startX)/2 + LongitudinalOffset
-					local wcsY = obj.SymbolOffset.Y + (endY - startY)/2 + LateralOffset
+					local wcsY = obj.SymbolOffset.Y + (endY - startY)/2 - LateralOffset
 					local acsX, acsY = -wcsY, wcsX --Flip WCS into ACS
 					return RC__round(acsX, 3), RC__round(acsY, 3)
 				end
@@ -318,10 +322,10 @@
 
 		<CustomProperty DataType="Double" Name="SpanlengthTextLateralOffset" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text lateral offset [m] denotes the distance, transversal to the pole's local track direction, to offset the spanlength text."/>      
-		<CustomProperty DataType="Double" Name="SpanlengthTextLongitudinalOffset" DisplayName="Longitudinal offset for Spanlength text" DefaultValue="0"
+		<CustomProperty DataType="Double" Name="SpanlengthTextLongitudinalOffset" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text longitudinal offset [m] denotes the distance, along the pole's local track direction, to offset the spanlength text."/>
 
-        <TextAttribute Annotative="true" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+        <TextAttribute Annotative="true" Style="RC-ARIAL" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" ScalePosition="false"/>
 		<LuaExpression Name="TextAttribute_SPENNLENGDE.Content"><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_SPENNLENGDE.ScalePosition"><Formula>false</Formula></LuaExpression>
@@ -347,7 +351,9 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_CLOSE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_CLOSE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -392,10 +398,6 @@
 		</Variants>
 		
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING"/>
-
-		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>4, 0</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>22,0</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>24, 0</Formula></LuaExpression>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
@@ -839,15 +841,17 @@
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="skilt"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="utligger"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="avspenning"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-fundament"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="autotransformator"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="avskjerming"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="seksjonsutliggerkonsoll"/> 
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-fundament"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="autotransformator"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="avskjerming"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="seksjonsutliggerkonsoll"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="konsoll_på_mast"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bryter"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kontaktledning"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardun"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever"/> 
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bryter"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kontaktledning"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardun"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="fixline"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="ledning"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 	</ObjectType>
@@ -869,7 +873,9 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_LARGE"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -889,9 +895,10 @@
 		
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING"/>
 
-		<TextPositionLuaExpression Name="OBJEKTNAVN"><Formula>RC__TextAttributePosition(20,0)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTID"><Formula>RC__TextAttributePosition(22,0)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTINFO"><Formula>RC__TextAttributePosition(24,0)</Formula></TextPositionLuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(20, 0)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>RC__flipAcsTuple(22, 0)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>RC__flipAcsTuple(24, 0)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTINFO.IsMTextAttribute"><Formula>true</Formula></LuaExpression>
 
 		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Masteprofil" DefaultValue="Sirkulær, Ø120"
 			Description="The overhead catenary system (OCS) drop arm profile (smp) [ Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ].">
@@ -1055,6 +1062,8 @@
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kontaktledning"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardun"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever"/> 
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="fixline"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="ledning"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 
@@ -1076,7 +1085,9 @@
 
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_LARGE"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE"/>
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
@@ -1090,9 +1101,10 @@
 			</Variant>
 		</Variants>
 		
-		<TextPositionLuaExpression Name="OBJEKTNAVN"><Formula>RC__TextAttributePosition(0,10)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTID"><Formula>RC__TextAttributePosition(2,10)</Formula></TextPositionLuaExpression>
-		<TextPositionLuaExpression Name="OBJEKTINFO"><Formula>RC__TextAttributePosition(4,10)</Formula></TextPositionLuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(10, 0)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>RC__flipAcsTuple(22, 0)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>RC__flipAcsTuple(24, 0)</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTINFO.IsMTextAttribute"><Formula>true</Formula></LuaExpression>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
 			DisplayName="Andre objekter som modelsjekkes" 
@@ -1395,7 +1407,7 @@
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="avspenning"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kontaktledning"/>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="bardun"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever"/> 
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="fixline"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 
@@ -1419,7 +1431,10 @@
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR___OCS"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_LARGE"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR"/>
+		
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
