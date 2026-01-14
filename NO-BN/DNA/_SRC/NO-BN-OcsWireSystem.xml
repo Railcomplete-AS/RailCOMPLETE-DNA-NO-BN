@@ -2231,32 +2231,27 @@
 				function _JBTEH_KPM_VerticalOffset()
 					local defaultGuywireHeight = 6.50 --TODO: Check value
 					local defaultSpannerHeight = 4.80 --TODO: Check value
-					
-					local s = rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb
-					local r, _n = getRelatedObjects(s)
-
+				
+					local r, _ = getRelatedObjects(rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb)
 					if Variant == "Konsoll på mast for avspenning med bardun" or Variant == "Konsoll på mast for avspenning uten bardun" then
-						local rWtb = r:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+						local rWtb = r:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
 						local nWtb = getCollectionLength(rWtb)
 						if nWtb == 0 then
 							return 0, _warning, _info("WARNING - No related WTB")
 						end
-
 						local wtb = rWtb[0]
-						local sWir = rel_Wtb_Tensions_ContactWireOrMidpointAnchoringLineOrHvConductor
-						local rWir, nWir = getRelatedObjects(sWir, wtb)
+						local rWir, nWir = wtb:getRelatedObjects(rel_Wtb_Tensions_ContactWireOrMidpointAnchoringLineOrHvConductor)
 						if nWir == 0 then
 							return 0, _warning, _info("WARNING - Related WTB has no related wire")
 						end
-
 						local wir = rWir[0]
+						
 						if wir.RcType == rctype_ContactWire then
 							--Ref Bane NOR Elkraftportalen, EH-707469 (S20) or EH-707487 (S25). 
 							--Standard for weighted WTB: 0.235m  = 0.150 + 0.085 (from anchoring device's mounting on 
 							--the OCS pole down to the center of the pulley wheel, minus 0.085 radius of small pulley wheel).
 							--Note: The standard pulley wheel has 3:1 gearing. Other gearing numbers are allowed at Bane NOR,
 							--but only subject to derogation acceptance.
-
 							local offset = 0.0
 							if wtb.Variant:match("Lodd") then
 								offset = 0.235
@@ -2267,7 +2262,7 @@
 								--Applies to single contact wire or messenger wire:
 								offset = 0.0
 							end
-							
+				
 							--Find associated neighbor cantilever:
 							local sCnt1 = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
 							local sCnt2 = rel_CantileverOrWtb_HasNext_CantileverOrWtb
@@ -2283,7 +2278,7 @@
 							end
 
 						elseif wir.RcType == rctype_MidpointAnchorLine then
-							--Locate the cantilever at the midopint anchor:
+							--Locate the cantilever at the midpoint anchor:
 							local mal = rWir[0]
 							local sMap = rel_MidpointAnchoringLine_Anchors_MidpointAnchor
 							local rMap, nMap = getRelatedObjects(sMap, mal)
@@ -2303,13 +2298,13 @@
 										..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
 								end
 							end
+							
 						elseif wir.RcType == rctype_HighVoltageConductor then
 							return 0, _warning,"WARNING - The related WTB tensions a high voltage conductor - delete this formula and define the anchoring device's height manually."
 						end
-						
+				
 					elseif Variant == "Konsoll på mast for kurvebardun" then
 						return defaultGuywireHeight, _warning, _info("WARNING - Using default guywire height on OCS pole. Delete this formula and adjust manually.")
-
 					elseif Variant == "Konsoll på mast for strever" then
 						return defaultSpannerHeight, _warning, _info("WARNING - Using default spanner height on OCS pole. Delete this formula and adjust manually.")
 					end

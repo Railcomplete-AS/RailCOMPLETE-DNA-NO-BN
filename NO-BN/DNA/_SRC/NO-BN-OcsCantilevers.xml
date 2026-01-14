@@ -787,10 +787,11 @@ positive feeder in AT system				positiv leder i AT-system
 
 		<LuaFunction Name="_JBTEH_UTL_PushDirection()" 
 			ReturnType="String"
-			Description="Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever. Direction change angle [DD] and lateral force [N] are shown as tooltip info.">
-			<Signature>String _JBTEH_UTL_PushDirection()</Signature>
+			Description="Returns the (middle) cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever. Direction change angle [DD] and lateral force [N] are shown as tooltip info.">
+			<Signature>String _JBTEH_UTL_PushDirection(Reference middle)</Signature>
 			<Formula>
-				function _JBTEH_UTL_PushDirection()
+				function _JBTEH_UTL_PushDirection(middle)
+					middle = middle or this
 					--[=[
 						Returns the cantilever's push/pull direction, deduced from the contact wire's angular change at this cantilever.
 						The trick is to check the sign of the Z component of the cross product of vectors from the middle wire clamp to the prev/next
@@ -811,9 +812,9 @@ positive feeder in AT system				positiv leder i AT-system
 					--]=]
 					local function p2s(u) return string.format(" (%.03f,%.03f)",u.X, u.Y) end --Used for debugging purposes, pretty-print 2D point
 				
-					--Previous:
-					local prev = getRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
-					local p1 = getPoint3D(prev.geoCoord.X, prev.geoCoord.Y)
+					--Previous cantilever:
+					local prev = middle:getRelatedObjects(rel_CantileverOrWtb_HasPrevious_CantileverOrWtb)[0]
+					local p1 = getPoint3D(prev)
 
 					local zeroAngularOffsetInDegrees = 0
 
@@ -830,17 +831,17 @@ positive feeder in AT system				positiv leder i AT-system
 						wc1 = getVectorSum(p1, U)
 					end
 				
-					--This:
-					local p2 = getPoint3D(this.geoCoord.X, this.geoCoord.Y)
+					--Middle cantilever:
+					local p2 = getPoint3D(middle)
 					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 					local t = getAlignmentInfo(this.Alignment.id, p2).Tangent
 					local tg = math.atan(t.Y, t.X)
-					local V = getPoint3D(RC__AcsToWcs(this.WireClampLateralOffset - this.DistanceToAlignment, 0, zeroAngularOffsetInDegrees, this))
+					local V = getPoint3D(RC__AcsToWcs(middle.WireClampLateralOffset - middle.DistanceToAlignment, 0, zeroAngularOffsetInDegrees, middle))
 					local wc2 = getVectorSum(p2, V)
 				
-					--Next:
+					--Next cantilever:
 					local nxt = getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)[0]
-					local p3 = getPoint3D(nxt.geoCoord.X, nxt.geoCoord.Y)
+					local p3 = getPoint3D(nxt)
 					local wc3
 					if nxt.RcType == rctype_WireTensioningBalancer then
 						--Followed by a Wire Tension Balancer.
@@ -879,35 +880,35 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomProperty DataType="Double" Name="CantileverLength" DisplayName="Utliggerlengde" DefaultValue="4.0"
-			Description="The cantilever's length [m] is measured from console (pole side) to contact wire clamp, perpendicularly to the track. The Cariboni variant has a constant length of 1200 mm.">
+			Description="The cantilever length [m] is the sum of the cantilever's lateral offset and its stagger. This represents the length from its insertion point to the apparent wire clamp position (as if there is no cant), as seen from above in 2D modelspace and assuming that the cantilever is perpendicular to its associated track (its alignment). The Cariboni variant has a constant length of 1200 mm.">
 		</CustomProperty>
 		<LuaExpression Name="CantileverLength"><Formula>_JBTEH_UTL_CantileverLength()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_CantileverLength()" 
 			ReturnType="String"
-			Description="Returns the cantilever's length, adjusted for OCS pole placement and pole profile, pole's side of track, stagger and local cant. Cariboni is always 1200 mm long.">
+			Description="Returns the cantilever's apparent length, to be shown as a 2D symbol in modelspace. It is the sum of the lateral offset and the stagger.">
 			<Signature>Double _JBTEH_UTL_CantileverLength(Double CantileverLength)</Signature>
 			<Formula>
 				function _JBTEH_UTL_CantileverLength()
 					if Variant == "Cariboni" then
 						return 1.200
 					else
-						local cl = math.abs(DistanceToAlignment) + Stagger
+						local cl = math.abs(LateralOffset) + Stagger
 						return string.format("%.03f",cl)
 					end
 				end
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="Int32" Name="CantileverLengthDisplay" DisplayName="Utliggerlengde visning" DefaultValue="4000"
-			Description="The cantilever's display length [mm] [1000..6000], rounded to closest multiple of 10 mm. Cariboni is always 1200 mm long.">
+		<CustomProperty DataType="Int32" Name="Cantilever2DSymbolLength" DisplayName="Utliggerlengde visning" DefaultValue="4000"
+			Description="The cantilever's 2D symbol's length [mm] [1000..6000], rounded to the closest multiple of 10 mm. The resulting number is used by RailCOMPLETE to fetch a corresponding 2D symbol from the DNA's 2D symbol library file.">
 		</CustomProperty>
-		<LuaExpression Name="CantileverLengthDisplay"><Formula>_JBTEH_UTL_CantileverLengthDisplay(CantileverLength)</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_CantileverLengthDisplay()" 
+		<LuaExpression Name="Cantilever2DSymbolLength"><Formula>_JBTEH_UTL_Cantilever2DSymbolLength(CantileverLength)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_Cantilever2DSymbolLength()" 
 			ReturnType="String"
 			Description="Returns the cantilever's display length, min 1000mm, max 6000mm, rounded to nearest multiple of 100mm. Cariboni is always 1200 mm long.">
-			<Signature>Int _JBTEH_UTL_CantileverLengthDisplay(Double CantileverLength)</Signature>
+			<Signature>Int _JBTEH_UTL_Cantilever2DSymbolLength(Double CantileverLength)</Signature>
 			<Formula>
-				function _JBTEH_UTL_CantileverLengthDisplay(CantileverLength)
+				function _JBTEH_UTL_Cantilever2DSymbolLength(CantileverLength)
 					if Variant == "Cariboni" then
 						return "1200"
 					else
@@ -928,6 +929,7 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
+<!-- TODO Start of WIP - suggested function as an alternative to spanlengths held as a collection in an OCS pole -->
 		<CustomProperty DataType="Double" Name="CantileverSpanlength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
 			Description="The cantilever span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using '&quot;..rel_CantileverOrWtb_HasNext_CantileverOrWtb..&quot;'/'&quot;..rel_CantileverOrWtb_HasPrevious_CantileverOrWtb..&quot;'."/>
 		<LuaExpression Name="CantileverSpanlength"><Formula>_JBTEH_UTL_Spanlength()</Formula></LuaExpression>
@@ -936,141 +938,142 @@ positive feeder in AT system				positiv leder i AT-system
 			Description="Returns the straight-line 2D distance span length [m] between this cantilever's wire clamp and its related next cantilever's wire clamp (this is the wire's 2D length - the 3D length is slightly longer).">
 			<Signature>Double _JBTEH_UTL_Spanlength()</Signature>
 			<Formula>
---[[
-	_JBTEH_UTL_Spanlength() (opprinnelig fra _JBTEH_MAS_Spanlength())
-	2022-06-09_000 SinBre
-		Fjernet at man ser etter a, b, c, osv. bak ledningsnavnet, da vi bare bruker det på koden, ikke 
-		på navnet på ledningen. Lagt inn filter slik at man ikke returnerer spennlengder for fixliner.
-		Dette skjedde da fixlinen har samme navn som kjørbar ledning. Lagt til formel nederst på arket
-		for å ta med spennlengde fra avspenning til utligger ved start av ledning, selv om masten også
-		har en utligger for en annen ledning. Dette ble ikke med før. Dette kan nok integreres i for-
-		løkkene, men fungerer tilsynelatende greit slik det ble gjort nå også.
-	2022-06-15_001 CLFEY Wrapped code in a function call. Refactored code / better identifier names.
-	2022-06-16_002 SinBre Created "for-loop" for identifying several wtbs at poles which also contains
-		cantilevers. Added possibility of several wtbs at pole without cantilevers
---]]
-function _JBTEH_UTL_Spanlength()
-	tol = 1.0 --[m] Tolerance when searching for wire tension balancers at an OCS pole.
-	result = {}
-
-	function wireClampPoint(cnt)
-		--Compute the WCS 3D coordinates for a given cantilever's contact wire clamp:
-		function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
-		trackId = cnt.Alignment.id
-		ai = getAlignmentInfo(trackId,cnt.geoCoord.X,cnt.geoCoord.Y)
-		sign = cnt.RightSided and -1 or 1
-		cwh = cnt.ContactWireHeight
-		zigzag = cnt.Stagger
-		h = ai.cant/1000.0
-		cr = ai.CantRotation
-		theta = math.atan(h/cnt.Alignment.AlignmentSystem.CantGauge)
-		theta = cr and (cr == "CW" and theta or -theta) or 0
-		centreTrack = ai.point  --The point where the cantilever is projected onto its track
-		phi = math.atan(ai.tangent.Y, ai.tangent.X)
-		--(x,y,z):
-		x = cwh*math.sin(theta) + sign*zigzag*math.cos(theta)
-		y = 0						-- No longitudinal wire clamp offset
-		z = h/2 + cwh*math.cos(theta) - sign*zigzag*math.sin(theta)
-		--(X,Y,Z):
-		X,Y = rot(-y,x,phi)			-- Adjust for potential cosmetic angular offset (to show cantilevers under portals)
-		Z = z
-		return getPoint3D(centreTrack.X + X, centreTrack.Y + Y, centreTrack.Z + Z)
-	end
-	
-	--Check if this OCS pole has no cantilevers, but holds at least one wtb:
-	local rCnt,n = RC__getCollectionOfRelatedObjects(rel_OcsPole_Has_Cantilever)
-	if n == 0 then															
-		if getCollectionLength(getNearbyPointObjects2D(this,1,rctype_WireTensioningBalancer)) &gt; 0 then
-			n = getCollectionLength(getNearbyPointObjects2D(this,1,rctype_WireTensioningBalancer))
-		else
-			--Portal supporting poles will exist, with neither wtbs nor cantilevers at the pole:
-			return {{"No spanlengths",0}}
-		end
-	end
-	
-	rNextPole,nNextPole = RC__getCollectionOfRelatedObjects(rel_OcsPole_HasNext_OcsPole)
-	
-	for i = 0,n-1 do
-		if getCollectionLength(rCnt) &gt; 0 then
-			fromItem = Relations[rel_OcsPole_Has_Cantilever][i] 
-			cowName = fromItem.Relations[rel_Cantilever_Holds_ContactWire][0].name
-		else
-			--No cantilevers here, assume there is at least one wtb:
-			fromItem = getNearbyPointObjects2D(this, tol, rctype_WireTensioningBalancer)[0]
-			cowName = fromItem.Relations["Avspenner kontaktledning"][0].name
-		end
-		
-		--Iterate over all 'next OCS pole' occurences, see if it has a cantilever holding our contact wire:
-		for i = 0,nNextPole-1 do
-			nextPole = rNextPole[i]
-			rCnt2,nCnt2 = RC__getCollectionOfRelatedObjects("Er kl-mast for utligger",nextPole)
-
-			--Look for wtb that does not serve a midpoint anchor line (they are tagged with wire name suffix 'f'):
-			if getCollectionLength(getNearbyPointObjects2D(nextPole,tol,"JBTEH_AEH Avspenning"):
-				filter(function (x) return x.code:sub(-1) ~= "f" end)) > 0 
-			then
-				wtb = getNearbyPointObjects2D(nextPole,tol,"JBTEH_AEH Avspenning")[0] --pick its first wtb (could be wrong one!)
-				if getCollectionLength(wtb.Relations["Avspenner kontaktledning"]) > 0 then
-					otherCowName = wtb.Relations["Avspenner kontaktledning"][0].name
-					if cowName == otherCowName then
-						distance2D = RC__round(RC__getDistance2D(wireClampPoint(fromItem),wtb),1)
-						table.insert(result,{cowName,distance2D})
-					else
-						--if no matching wire name then ignore next pole's wtb
-					end	
-				end
-			end	
-	
-			--Iterate over all cantilevers found at the next OCS pole:
-			for j = 0,nCnt2-1 do
-				targetItem = rCnt2[j] --at least one such targetItem must exist
-				if targetItem.Relations["Utligger for kontaktledning"][0] == nil then
-					--(just ignore this cantilever if it has not been connected to a wire yet)
-				else
-					--Check if our candidate cnt2's contact wire name matches our 'fromItem's contact wire name:
-					otherCowName = targetItem.Relations["Utligger for kontaktledning"][0].name
-					if cowName == otherCowName then
-						if fromItem.RcType == "JBTEH_AEH Avspenning" then
-							distance2D = RC__round(RC__getDistance2D(fromItem,wireClampPoint(targetItem)),1)
+				--[[
+					_JBTEH_UTL_Spanlength() (opprinnelig fra _JBTEH_MAS_Spanlength())
+					2022-06-09_000 SinBre
+						Fjernet at man ser etter a, b, c, osv. bak ledningsnavnet, da vi bare bruker det på koden, ikke 
+						på navnet på ledningen. Lagt inn filter slik at man ikke returnerer spennlengder for fixliner.
+						Dette skjedde da fixlinen har samme navn som kjørbar ledning. Lagt til formel nederst på arket
+						for å ta med spennlengde fra avspenning til utligger ved start av ledning, selv om masten også
+						har en utligger for en annen ledning. Dette ble ikke med før. Dette kan nok integreres i for-
+						løkkene, men fungerer tilsynelatende greit slik det ble gjort nå også.
+					2022-06-15_001 CLFEY Wrapped code in a function call. Refactored code / better identifier names.
+					2022-06-16_002 SinBre Created "for-loop" for identifying several wtbs at poles which also contains
+						cantilevers. Added possibility of several wtbs at pole without cantilevers
+				--]]
+				function _JBTEH_UTL_Spanlength()
+					tol = 1.0 --[m] Tolerance when searching for wire tension balancers at an OCS pole.
+					result = {}
+				
+					function wireClampPoint(cnt)
+						--Compute the WCS 3D coordinates for a given cantilever's contact wire clamp:
+						function rot(x,y,phi) return x*math.cos(phi) - y*math.sin(phi), x*math.sin(phi) + y*math.cos(phi) end
+						trackId = cnt.Alignment.id
+						ai = getAlignmentInfo(trackId,cnt.geoCoord.X,cnt.geoCoord.Y)
+						sign = cnt.RightSided and -1 or 1
+						cwh = cnt.ContactWireHeight
+						zigzag = cnt.Stagger
+						h = ai.cant/1000.0
+						cr = ai.CantRotation
+						theta = math.atan(h/cnt.Alignment.AlignmentSystem.CantGauge)
+						theta = cr and (cr == "CW" and theta or -theta) or 0
+						centreTrack = ai.point  --The point where the cantilever is projected onto its track
+						phi = math.atan(ai.tangent.Y, ai.tangent.X)
+						--(x,y,z):
+						x = cwh*math.sin(theta) + sign*zigzag*math.cos(theta)
+						y = 0						-- No longitudinal wire clamp offset
+						z = h/2 + cwh*math.cos(theta) - sign*zigzag*math.sin(theta)
+						--(X,Y,Z):
+						X,Y = rot(-y,x,phi)			-- Adjust for potential cosmetic angular offset (to show cantilevers under portals)
+						Z = z
+						return getPoint3D(centreTrack.X + X, centreTrack.Y + Y, centreTrack.Z + Z)
+					end
+					
+					--Check if this OCS pole has no cantilevers, but holds at least one wtb:
+					local rCnt,n = RC__getCollectionOfRelatedObjects(rel_OcsPole_Has_Cantilever)
+					if n == 0 then															
+						if getCollectionLength(getNearbyPointObjects2D(this,1,rctype_WireTensioningBalancer)) &gt; 0 then
+							n = getCollectionLength(getNearbyPointObjects2D(this,1,rctype_WireTensioningBalancer))
 						else
-							distance2D = RC__round(RC__getDistance2D(wireClampPoint(fromItem),wireClampPoint(targetItem)),1)
+							--Portal supporting poles will exist, with neither wtbs nor cantilevers at the pole:
+							return {{"No spanlengths",0}}
 						end
-						table.insert(result,{cowName, distance2D})
-					end			
+					end
+					
+					rNextPole,nNextPole = RC__getCollectionOfRelatedObjects(rel_OcsPole_HasNext_OcsPole)
+					
+					for i = 0,n-1 do
+						if getCollectionLength(rCnt) &gt; 0 then
+							fromItem = Relations[rel_OcsPole_Has_Cantilever][i] 
+							cowName = fromItem.Relations[rel_Cantilever_Holds_ContactWire][0].name
+						else
+							--No cantilevers here, assume there is at least one wtb:
+							fromItem = getNearbyPointObjects2D(this, tol, rctype_WireTensioningBalancer)[0]
+							cowName = fromItem.Relations["Avspenner kontaktledning"][0].name
+						end
+						
+						--Iterate over all 'next OCS pole' occurences, see if it has a cantilever holding our contact wire:
+						for i = 0,nNextPole-1 do
+							nextPole = rNextPole[i]
+							rCnt2,nCnt2 = RC__getCollectionOfRelatedObjects("Er kl-mast for utligger",nextPole)
+				
+							--Look for wtb that does not serve a midpoint anchor line (they are tagged with wire name suffix 'f'):
+							if getCollectionLength(getNearbyPointObjects2D(nextPole,tol,"JBTEH_AEH Avspenning"):
+								filter(function (x) return x.code:sub(-1) ~= "f" end)) > 0 
+							then
+								wtb = getNearbyPointObjects2D(nextPole,tol,"JBTEH_AEH Avspenning")[0] --pick its first wtb (could be wrong one!)
+								if getCollectionLength(wtb.Relations["Avspenner kontaktledning"]) > 0 then
+									otherCowName = wtb.Relations["Avspenner kontaktledning"][0].name
+									if cowName == otherCowName then
+										distance2D = RC__round(RC__getDistance2D(wireClampPoint(fromItem),wtb),1)
+										table.insert(result,{cowName,distance2D})
+									else
+										--if no matching wire name then ignore next pole's wtb
+									end	
+								end
+							end	
+					
+							--Iterate over all cantilevers found at the next OCS pole:
+							for j = 0,nCnt2-1 do
+								targetItem = rCnt2[j] --at least one such targetItem must exist
+								if targetItem.Relations["Utligger for kontaktledning"][0] == nil then
+									--(just ignore this cantilever if it has not been connected to a wire yet)
+								else
+									--Check if our candidate cnt2's contact wire name matches our 'fromItem's contact wire name:
+									otherCowName = targetItem.Relations["Utligger for kontaktledning"][0].name
+									if cowName == otherCowName then
+										if fromItem.RcType == "JBTEH_AEH Avspenning" then
+											distance2D = RC__round(RC__getDistance2D(fromItem,wireClampPoint(targetItem)),1)
+										else
+											distance2D = RC__round(RC__getDistance2D(wireClampPoint(fromItem),wireClampPoint(targetItem)),1)
+										end
+										table.insert(result,{cowName, distance2D})
+									end			
+								end
+							end
+						end
+					end
+					
+					--Look for OCS poles featuring both cantilever AND wtb (not for midtpoint anchor lines), and where 
+					--the OCS pole has a 'next pole' relation to a pole featuring a cantilever with matching wire name:
+					Nearbywtb = getNearbyPointObjects2D(tol,"JBTEH_AEH Avspenning"):filter(function (x) return x.code:sub(-1) ~= "f" end)
+					nNearbywtb = getCollectionLength(Nearbywtb)
+					if getCollectionLength(rCnt) > 0 and nNearbywtb > 0 then
+						for i = 0,nNearbywtb-1 do
+							wtb = getNearbyPointObjects2D(tol,"JBTEH_AEH Avspenning")[i]
+							nextPole = Relations["Neste kl-mast"]:
+								filter(function (x) return getCollectionLength(x.Relations["Er kl-mast for utligger"]:
+									filter(function (y) return y.Relations["Utligger for kontaktledning"][0].name 
+										== wtb.Relations["Avspenner kontaktledning"][0].name
+									end)) > 0
+								end)[0]
+							if nextPole ~= nil then
+								table.insert(result,
+									{
+										wtb.Relations["Avspenner kontaktledning"][0].name,
+										RC__round(nextPole.Relations["Er kl-mast for utligger"]:
+											filter(function (y) 
+												return y.Relations["Utligger for kontaktledning"][0].name == wtb.Relations["Avspenner kontaktledning"][0].name
+											end)[0].mileage - this.mileage,1)
+									})
+							end
+						end
+					end
+					return result --collection of collections of type {WireName,SpanLength}
 				end
-			end
-		end
-	end
-	
-	--Look for OCS poles featuring both cantilever AND wtb (not for midtpoint anchor lines), and where 
-	--the OCS pole has a 'next pole' relation to a pole featuring a cantilever with matching wire name:
-	Nearbywtb = getNearbyPointObjects2D(tol,"JBTEH_AEH Avspenning"):filter(function (x) return x.code:sub(-1) ~= "f" end)
-	nNearbywtb = getCollectionLength(Nearbywtb)
-	if getCollectionLength(rCnt) > 0 and nNearbywtb > 0 then
-		for i = 0,nNearbywtb-1 do
-			wtb = getNearbyPointObjects2D(tol,"JBTEH_AEH Avspenning")[i]
-			nextPole = Relations["Neste kl-mast"]:
-				filter(function (x) return getCollectionLength(x.Relations["Er kl-mast for utligger"]:
-					filter(function (y) return y.Relations["Utligger for kontaktledning"][0].name 
-						== wtb.Relations["Avspenner kontaktledning"][0].name
-					end)) > 0
-				end)[0]
-			if nextPole ~= nil then
-				table.insert(result,
-					{
-						wtb.Relations["Avspenner kontaktledning"][0].name,
-						RC__round(nextPole.Relations["Er kl-mast for utligger"]:
-							filter(function (y) 
-								return y.Relations["Utligger for kontaktledning"][0].name == wtb.Relations["Avspenner kontaktledning"][0].name
-							end)[0].mileage - this.mileage,1)
-					})
-			end
-		end
-	end
-	return result --collection of collections of type {WireName,SpanLength}
-end
 			</Formula>
 		</LuaFunction>
+<!-- End of  WIP - suggested function as an alternative to spanlengths held as a collection in an OCS pole -->
 
 		<CustomProperty DataType="Double" Name="WireClampLateralOffset" DisplayName="Kontakttråd sideavsett" DefaultValue="0.00" 
 			Description="The contact wire clamp's lateral offset (wclo) [m] denotes the horizontal distance from the track's gradient curve (XYZ before cant effects) to the contact wire clamp (center of contact wire). It depends on contact wire height, stagger (zigzag) and track cant."/>
