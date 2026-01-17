@@ -10,7 +10,9 @@
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
 ; 2024-04-16 SVNOE Added E37B. Clarified E106 vs E107 and E108, todo: update symbol graphics accordingly.
 ; 2026-01-16 CLFEY Fjernet skilt ERTMS-LEVEL-TRANSITION og ERTMS-LEVEL-ZERO. Disse fanges opp som "E37" og
-;                  "E37-ZERO" av rutine (GetBoardAndPoleNames) som kalles fra 21_BoardsAndPoles.lsp.
+;                  "E37B" av rutine (GetBoardAndPoleNames) som kalles fra 21_BoardsAndPoles.lsp.
+
+; TODO 2026-01-16 CLFEY rename alle ERTMS boards according to same conventsions as oprdinary signals. Use ORV numbers.
 
 ;=========================================================================================================================
 
@@ -35,11 +37,12 @@
 	(NOBN-ERTMS-LEVEL-CROSSING nil "PORTAL")
 
 	; ERTMS boards
-	; E106A
-	; ( there is no "BEGIN" here)
-	(TraceLevel2 "ERTMS-SHUNTING-AREA")
-	(NOBN-ERTMS-SHUNTING-AREA "END" nil)
-	(NOBN-ERTMS-SHUNTING-AREA "END" "PORTAL")
+	; E106A - Stop for shunting, location
+	; E106B - Stop for shunting, announcement
+	(TraceLevel2 "E106A")					(E106 "LOCATION"		nil		)
+	(TraceLevel2 "E106A portalmounted")		(E106 "LOCATION" 		"PORTAL")
+	(TraceLevel2 "E106B")					(E106 "ANNOUNCEMENT"	nil		)
+	(TraceLevel2 "E106B portalmounted")		(E106 "ANNOUNCEMENT"	"PORTAL")
 
 	; E107
 	(TraceLevel2 "ERTMS-INTERLOCKED-AREA")
@@ -54,13 +57,17 @@
 
 
 
-(defun NOBN-ERTMS-LEVEL-CROSSING ( distantSignal mounting / blockName pole portalPole x y )
+(defun NOBN-ERTMS-LEVEL-CROSSING ( locationOrAnnouncement mounting / blockName pole portalPole x y )
 	(setq
 		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "LEVEL-CROSSING")
 		pole 6.0
 		portalPole 2.0
 		x 6.0 ; surrounding box
 		y x
+	)
+	(if (= locationOrAnnouncement "LOCATION")
+		(setq description "SKILT ERTMS VEISIKRINGSANLEGG")
+		(setq description "SKILT ERTMS VARSEL OM VEISIKRINGSANLEGG")
 	)
 	(if distantSignal
 		(setq blockName (strcat blockName "-" distantSignal))
@@ -116,33 +123,63 @@
 
 
 
-(defun NOBN-ERTMS-SHUNTING-AREA ( beginOrEnd mounting / blockName pole portalPole x y txtHeight )
+(defun E106 ( locationOrAnnouncement mounting / blockName pole portalPole x y txtHeight )
+;
+; +----------+
+; | 2----1\  |
+; | |    6 5 | 	; Medium hatch = "yellow" = location 106A
+; | |(8)(9)| | 	; No hatch = "white" = announcement 106B
+; | |      | |
+; | 3------4 |
+; +----------+
+;
+	(if (= locationOrAnnouncement "LOCATION")
+		(progn
+			(setq blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E106A-STOPP-FOR-SKIFT")
+			(setq description "SKILT E106A STOPP FOR SKIFT")
+		)
+		(progn
+			(setq blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E106B-VARSEL-OM-STOPP-FOR-SKIFT")
+			(setq description "SKILT E106B VARSEL OM STOPP FOR SKIFT")
+		)
+	)
 	(setq
-		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "SHUNTING-AREA-" beginOrEnd)
 		pole 6.0
 		portalPole 2.0
 		x 6.0 ; surrounding box
 		y x
-		txtHeight (* pole 0.60)
+		r (* 0.100 x)
+
+		p1 (list (* x  0.100) (* y  0.350))	; Dwarf signal outline
+		p2 (list (* x -0.350) (* y  0.350))
+		p3 (list (* x -0.350) (* y -0.400))
+		p4 (list (* x  0.350) (* y -0.400))
+		p5 (list (* x  0.350) (* y  0.100))
+		
+		p6 (list (* x  0.100) (* y  0.100))	; Center of arc p1-p5
+
+		p7 (list (* x -0.175) (* y  0.075)) ; Left 'eye'
+		p8 (list (* x  0.175) (* y  0.075)) ; Right 'eye
 	)
 	(if mounting
 		(setq blockName (strcat blockName "-" mounting))
 	)
-	
-	; Surrounding box:
+
 	(DrawBox layDef_Zero x y _noWipeout_)
 	
-	; Text 'SH' for 'shunting':
-	(AddTextAtPoint layDef_Zero txtHeight _origin_ "SH")
+	; Draw dark 'eyes'
+	(DrawCircleAtPoint layDef_Zero p7 r _noWipeout_)
+	(DrawHatchAtPoint _denseHatch_ p7 _angleZero_ _offsetZero_)
+	(DrawCircleAtPoint layDef_Zero p8 r _noWipeout_)
+	(DrawHatchAtPoint _denseHatch_ p8 _angleZero_ _offsetZero_)
 
-	(if (= beginOrEnd "END")
-		; Add three inclined 'slash' lines (symbol is drawn upright here)
-		(command
-			_LINE_ (list (/ x -2) (/ y -2)) (list (/ x 2) (/ y 2)) _ENTER_ ; Diagonal
-			_LINE_ (list (/ x -2) (/ y -3)) (list (/ x 3) (/ y 2)) _ENTER_ ; Above diagonal
-			_LINE_ (list (/ x -3) (/ y -2)) (list (/ x 2) (/ y 3)) _ENTER_ ; Below diagonal
-		)
+	(if (= locationOrAnnouncement "LOCATION")
+		(DrawHatchAtPoint _sparseHatch_ _origin_ _angleZero_ _offsetZero_)
 	)
+
+	; Dwarf signal outline
+	(command _POLYLINE_ p1 p2 p3 p4 p5 _openPolyline_)
+	(DrawArcByCenter layDef_Zero p6 p5 p1)
 
 	; Epilogue:
 	(if (= mounting "PORTAL")
@@ -160,6 +197,7 @@
 			(command _ROTATE_ _selectAll_ _ENTER_ _origin_ _angle90_) ; rotate back to upright orientation
 		)
 	)
+	(AddDescriptionBelowOrigin description 0)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )
@@ -223,31 +261,6 @@
 			(command _ROTATE_ _selectAll_ _ENTER_ _origin_ _angle90_) ; rotate back to upright orientation
 		)
 	)
-	(CreateSchematicBlockFromCurrentGraphics blockName)
-	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-)
-
-
-
-(defun NOBN-ERTMS-LEVEL-TRANSITION ( / blockName x y txtHeight )
-	; NB In example Bane NOR drawing ERP-S0-S-00005_00B_002, this symbol had a short mast pole (1.5) and just a line as a base (3).
-	; We decided to treat this one as a board - i.e RC will provide the tail, be it in schematic or in geo mode.
-	; We also decided to reduce it to same size as other ERTMS signals, 6 by 6, and remove the circle inside the signal.
-	; See https://orv.banenor.no/orv/doku.php?id=tjn:Kapittel_8 section 8,76 "Signal for systemovergang på strekning med ERTMS".
-	(setq
-		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "LEVEL-TRANSITION")
-		x 6.0 ; surrounding box (not 9 as in Bane NOR's example found in an old drawing)
-		y x
-		txtHeight (* x 0.30)
-	)
-
-	; Surrounding box:
-	(DrawBox layDef_Zero x y _noWipeout_)
-	(AddTextAtPoint layDef_Zero  _th180_ (list 0 (* 0.25 y)) "LT")
-	(AddTextAtPoint layDef_Zero  _th180_ (list 0 (* -0.25 y)) "ETCS")
-	
-	; Epilogue:
-	(MoveUp (HalfOf y))
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

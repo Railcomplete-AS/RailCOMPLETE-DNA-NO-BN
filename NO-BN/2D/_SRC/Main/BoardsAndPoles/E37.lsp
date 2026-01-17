@@ -7,7 +7,7 @@
 ;
 ; Change log:
 ; 2022-06-02 KNHEL New sign E37A. See also E37B.
-; 2026-01-16 CLFEY Renamed E37A => E37. Moved E37B => E37-ZERO to here. File header name fixed (was incorrect "201.lsp").
+; 2026-01-16 CLFEY Renamed E37A => E37. Moved E37B => E37B to here. File header name fixed (was incorrect "201.lsp").
 ;
 ;=========================================================================================================================
 
@@ -46,7 +46,7 @@
 
 
 
-(defun E37 ( /	blockName description x y )
+(defun E37A ( /	blockName description x y )
 	;
 	; +---------+
 	; |         |
@@ -56,7 +56,7 @@
 	; +----.----+ 
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SYSTEMOVERGANG-NIVAA-TO"
+		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E37A-SYSTEMOVERGANG-NIVAA-2"
 		description "SKILT ERTMS SYSTEMOVERGANG TIL NIVÅ 2"
 		x 4.0
 		y 4.0
@@ -73,7 +73,7 @@
 
 
 
-(defun E37-ZERO ( /	blockName description x y )
+(defun E37B ( /	blockName description x y )
 	;
 	; +-------+
 	; |  LT   |
@@ -82,7 +82,7 @@
 	; +---.---+ 
 	;
 	(setq	
-		blockName "NO-BN-2D-JBTSA_MSS-SKILT-ERTMS-SYSTEMOVERGANG-NIVAA-NULL"
+		blockName "NO-BN-2D-JBTSA_MSS-SKILT-KJOERENDE-SIGNAL-E37B-SYSTEMOVERGANG-NIVAA-0"
 		description "SKILT ERTMS SYSTEMOVERGANG TIL NIVÅ 0"
 		x 4.0
 		y 4.0

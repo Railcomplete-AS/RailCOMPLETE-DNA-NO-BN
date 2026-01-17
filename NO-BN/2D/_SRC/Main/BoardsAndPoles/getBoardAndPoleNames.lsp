@@ -7,7 +7,7 @@
 ;
 ; Change log:
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
-; 2026-01-16 CLFEY Renamed boards E37A => E37 and E37B => E37-ZERO.
+; 2026-01-16 CLFEY Renamed boards E200 to actual Bane NOR numbers.
 ;
 ;=========================================================================================================================
 
@@ -39,7 +39,7 @@
 			"72A" "72B" "73A"
 			"74-1" "74-2"
 			"75A-1" "75A-2" "75A-3" "75B" "75C-1" "75C-2" "75D-1" "75D-2" "75E_1" "75E_2"
-			"E37" "E37-ZERO"
+			"E37A" "E37B"
 			"E68A" "E68B"
 			; "-ANNOTATION-CHAINBREAK" 2020-07-26 CLFEY: Moved to "Annotation Chainbreak.lsp" since annotations shall scale with CAD zoom level, not with drawing size.
 	
