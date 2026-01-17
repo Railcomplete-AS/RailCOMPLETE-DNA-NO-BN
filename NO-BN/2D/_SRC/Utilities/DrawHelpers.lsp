@@ -88,6 +88,7 @@
 	;
 	(list 0 (- (/ y 2.0) (* row (/ y (+ numberOfRows 1.0)))))
 )
+
 (defun Point11 ( y / ) (PosNR 1 1 y)) ; 1 row, middle = _origin_
 
 (defun Point21 ( y / ) (PosNR 2 1 y)) ; 2 rows, top
@@ -138,7 +139,7 @@
 
 
 
-(defun DrawArc (layDef pointA PointB posC / )
+(defun DrawArc (layDef pointA PointB PointC / )
 	; An arc from A through B to C 
 	;
 	;    __B__
@@ -146,7 +147,7 @@
 	;  A       C
 	;
 	(SetLayer layDef)
-	(command _ARC_ pointA PointB posC)
+	(command _ARC_ pointA PointB PointC)
 	'DrawArc
 )
 

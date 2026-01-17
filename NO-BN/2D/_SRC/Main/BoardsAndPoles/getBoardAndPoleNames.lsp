@@ -7,6 +7,7 @@
 ;
 ; Change log:
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
+; 2026-01-16 CLFEY Renamed boards E37A => E37 and E37B => E37-ZERO.
 ;
 ;=========================================================================================================================
 
@@ -28,6 +29,7 @@
 			"62A"
 			"63A" "63B" 
 			"64A" "64B" "64C" "64D" "64E" "64F" 
+			"64H"
 			"65A" "65B" "65C" "65D" "65E" "65F" "65G-1" "65G-2" "65G-3" "E65H" "E65J" "E65K" "E65L" "E65M" "E65N"
 			"66A"
 			"67A" "67B" "67C" "67D" "67E" "68A"
@@ -37,13 +39,8 @@
 			"72A" "72B" "73A"
 			"74-1" "74-2"
 			"75A-1" "75A-2" "75A-3" "75B" "75C-1" "75C-2" "75D-1" "75D-2" "75E_1" "75E_2"
-			"E37B"
-			"E37A"
-			"E200"
-			"E201"
-			"E202"
-			"E203"
-			"E204"
+			"E37" "E37-ZERO"
+			"E68A" "E68B"
 			; "-ANNOTATION-CHAINBREAK" 2020-07-26 CLFEY: Moved to "Annotation Chainbreak.lsp" since annotations shall scale with CAD zoom level, not with drawing size.
 	
 			; Skilt uten signalnummer:

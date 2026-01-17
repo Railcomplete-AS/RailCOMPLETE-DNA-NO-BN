@@ -9,13 +9,13 @@
 ; 2020-09-02 CLFEY Removed E34 and E35 markerboards. Added E35 to the .LSP file for Combined Signals.
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
 ; 2024-04-16 SVNOE Added E37B. Clarified E106 vs E107 and E108, todo: update symbol graphics accordingly.
-;
-; TODO list:
-; 2020-09-13 CLFEY Clarify which ERTMS 2D-symbols should be present - and create those.
-;
+; 2026-01-16 CLFEY Fjernet skilt ERTMS-LEVEL-TRANSITION og ERTMS-LEVEL-ZERO. Disse fanges opp som "E37" og
+;                  "E37-ZERO" av rutine (GetBoardAndPoleNames) som kalles fra 21_BoardsAndPoles.lsp.
+
 ;=========================================================================================================================
 
 ; ERTMS marker boards and operational state boards
+
 
 (defun NOBN-ERTMS-SKILT ( / )
 	;
@@ -50,22 +50,7 @@
 	(TraceLevel2 "ERTMS-INTERLOCKED-AREA")
 	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" nil)
 	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" "PORTAL")
-
-	; E37A Systemovergang
-	(TraceLevel2 "ERTMS-LEVEL-TRANSITION")
-	(NOBN-ERTMS-LEVEL-TRANSITION)
-	
-	; E37B Systemovergang
-	(TraceLevel2 "ERTMS-LEVEL-ZERO")
-	(NOBN-ERTMS-LEVEL-ZERO)
 )
-
-
-
-;=======================
-; ERTMS signals
-;=======================
-; 2020-09-02 CLFEY Note: This function is deprecated. See Combined Signals LISP file.
 
 
 
