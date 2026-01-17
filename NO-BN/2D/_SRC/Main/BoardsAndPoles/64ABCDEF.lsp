@@ -1,12 +1,13 @@
 ;=========================================================================================================================
 ;
-; 64.lsp
+; 64ABCDEF.lsp
 ;
 ; Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
 ; Change log:
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
+; 2026-01-16 CLFEY Renamed file from 64.lsp to 64ABCDEF.lsp since 64G.lsp and 64H.lsp will be added separately.
 ;
 ;=========================================================================================================================
 ; See https://trv.banenor.no/wiki/Skilt/Plassering_av_skilt_langs_sporet
@@ -14,7 +15,7 @@
 ; Poles
 
 ; For debugging:
-; (63A) (63B)
+; (64A) (64B) (64C) (64D) (64E) (64F)
 
 (defun 64A ( / blockName description TL TR BL BR )
 	; Shunting area border pole -  "Grense/Innkoblingsstolpe"
