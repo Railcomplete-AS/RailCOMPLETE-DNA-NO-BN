@@ -136,7 +136,7 @@
 
 
 (defun DrawForkedUprightTrackSignal ( portalMounted sidewaysSeparation / r lowerPole upperPole lat )
-	; Drawn lying, then rotated CCW (upright) or CW (yoke mounting).
+	; Drawn lying, then rotated CCW (upright) or CW (portal mounting).
 	(setq 
 		r (NOBN-GetSmallLanternRadius)					; Size relative to main signal lanterns
 		lowerPole 2.5

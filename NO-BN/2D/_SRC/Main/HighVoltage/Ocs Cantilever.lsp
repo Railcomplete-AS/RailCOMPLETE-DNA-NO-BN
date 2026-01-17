@@ -29,31 +29,35 @@
 	; S=strekk (pull-off = the contact wire sideways force strecthes the cantilever)
 	; T=trykk (push-off = the contact wire sideways force compresses the cantilever)
 	;S20A and S20AR
-	(TraceLevel3 "NOBN-CANTILEVER-20A-PUSH")	(NOBN-CANTILEVER-20-25-35 "20A" "push")
-	(TraceLevel3 "NOBN-CANTILEVER-20A-PULL")	(NOBN-CANTILEVER-20-25-35 "20A" "pull") 
+	(TraceLevel3 "NOBN-CANTILEVER-20A-PUSH")	(NOBN-CANTILEVER-20-25-35-54 "20A" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-20A-PULL")	(NOBN-CANTILEVER-20-25-35-54 "20A" "pull") 
 	
 	;S20B and S20BR
-	(TraceLevel3 "NOBN-CANTILEVER-20B-PUSH")	(NOBN-CANTILEVER-20-25-35 "20B" "push")
-	(TraceLevel3 "NOBN-CANTILEVER-20B-PULL")	(NOBN-CANTILEVER-20-25-35 "20B" "pull")
+	(TraceLevel3 "NOBN-CANTILEVER-20B-PUSH")	(NOBN-CANTILEVER-20-25-35-54 "20B" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-20B-PULL")	(NOBN-CANTILEVER-20-25-35-54 "20B" "pull")
 	
 	;S20C1 and S20C2
-	(TraceLevel3 "NOBN-CANTILEVER-20C-PUSH")	(NOBN-CANTILEVER-20-25-35 "20C" "push")
-	(TraceLevel3 "NOBN-CANTILEVER-20C-PULL")	(NOBN-CANTILEVER-20-25-35 "20C" "pull")
+	(TraceLevel3 "NOBN-CANTILEVER-20C-PUSH")	(NOBN-CANTILEVER-20-25-35-54 "20C" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-20C-PULL")	(NOBN-CANTILEVER-20-25-35-54 "20C" "pull")
 	
 	;S25
-	(TraceLevel3 "NOBN-CANTILEVER-25-PUSH")		(NOBN-CANTILEVER-20-25-35 "25" "push")
-	(TraceLevel3 "NOBN-CANTILEVER-25-PULL")		(NOBN-CANTILEVER-20-25-35 "25" "pull")
+	(TraceLevel3 "NOBN-CANTILEVER-25-PUSH")		(NOBN-CANTILEVER-20-25-35-54 "25" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-25-PULL")		(NOBN-CANTILEVER-20-25-35-54 "25" "pull")
 	
 	;S35 and S35MS
-	(TraceLevel3 "NOBN-CANTILEVER-35-PUSH")		(NOBN-CANTILEVER-20-25-35 "35" "push")
-	(TraceLevel3 "NOBN-CANTILEVER-35-PULL")		(NOBN-CANTILEVER-20-25-35 "35" "pull")
+	(TraceLevel3 "NOBN-CANTILEVER-35-PUSH")		(NOBN-CANTILEVER-20-25-35-54 "35" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-35-PULL")		(NOBN-CANTILEVER-20-25-35-54 "35" "pull")
 	
 	; Cariboni for regular tunnels
 	(TraceLevel3 "NOBN-CANTILEVER-CARIBONI")	(NOBN-CANTILEVER-CARIBONI)
 	
 	; TET08 (Thor Egil Thoresen...) for narrow / low tunnels
-	(TraceLevel3 "NOBN-CANTILEVER-TET08")	(NOBN-CANTILEVER-TET08)
+	(TraceLevel3 "NOBN-CANTILEVER-TET08")		(NOBN-CANTILEVER-TET08)
 
+	;Tabell 54
+	(TraceLevel3 "NOBN-CANTILEVER-54-PUSH")		(NOBN-CANTILEVER-20-25-35-54 "54" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-54-PULL")		(NOBN-CANTILEVER-20-25-35-54 "54" "pull")
+	
 	(setq
 		; Remove temporary globals:
 		minLen nil
@@ -65,12 +69,12 @@
 
 
 (defun BRACKET-FOR-MULTIPLE-CANTILEVERS ( / blockName description p1 p2 )
-	; Console for fitting of two cantievers or more to the same catenary support mast.
+	; Console for fitting of two cantievers or more to the same catenary support mast. Made from UPE 50 beams.
 	;
 	;              (*)               <-- The OCS pole (*)
-	;  1-----5   7--.--8   6-----4   <-- The insertion point '.' shall snap to outside of OCS pole
-	;  2-------------------------3   <-- Outside of console becomes the new mounting surface for the cantilevers
-	;     C1                  C2     <-- The cantilevers (C1,C2) shall move out by the console's width
+	;  1-----5   7--.--8   6-----4   <-- The insertion point '.' shall snap to the track side of the OCS pole.
+	;  2-------------------------3   <-- Track side of console becomes the new mounting surface for the cantilevers.
+	;     C1                  C2     <-- The cantilevers (C1,C2) shall move out by the console's depth.
 	;
 	(setq blockName	(strcat _OCS_ "UTK-" "KONSOLL-FOR-SEKSJONSUTLIGGER"		))
 	(setq description	(strcat "KONSOLL FOR SEKSJONSUTLIGGER"				))
@@ -118,7 +122,7 @@
 
 
 
-(defun NOBN-CANTILEVER-20-25-35 ( variation pushPull / blockName description len cantileverName lenM lenString pp )
+(defun NOBN-CANTILEVER-20-25-35-54 ( variation pushPull / blockName description len cantileverName lenM lenString pp )
 	;
 	;  .            .   
 	;  |            |

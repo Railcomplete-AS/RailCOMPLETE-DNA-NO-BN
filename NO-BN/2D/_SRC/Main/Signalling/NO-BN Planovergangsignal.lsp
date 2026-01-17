@@ -16,8 +16,8 @@
 
 (defun NOBN-PLANOVERGANGSSIGNAL ( / variation portalMounted )
 	(foreach variation '("VS1" "VS2")			; 'VS1'= single mast, 'VS2' = forked mast (double signal)
-		(foreach portalMounted '(nil T)			; 'nil' = upright mast, T = yoke mounting
-			; Single or double road signal (for level crossing), free-standing mast or yoke mounted:
+		(foreach portalMounted '(nil T)			; 'nil' = upright mast, T = portal mounting
+			; Single or double road signal (for level crossing), free-standing mast or portal mounted:
 			(TraceLevel3 (strcat "NOBN-VEISIGNAL-" variation (if portalMounted (strcat "-AAK" ) _emptyString_ ))) (NOBN-VEISIGNAL variation portalMounted )
 		)
 	)
@@ -80,7 +80,7 @@
 		lowerPole	4.0
 		upperPole	(cond ((= size "SMALL") 1.5) ((= size "LARGE") 2.0))
 		topOfPole	(+ lowerPole upperPole)
-		yokePole	2.0
+		portalPole	2.0
 		lat			(cond ; lateral displacement of arms from centre
 						((= size "LARGE") (if (= width "WIDE") 3.5 2.5))
 						((= size "SMALL") (if (= width "WIDE") 2.5 1.85))
@@ -102,8 +102,8 @@
 			(if portalMounted
 				(progn
 					(command _MOVE_ _selectAll_ _ENTER_ _origin_ (list 0 (* -2 r)))	; shift down by one lantern
-					(NOBN_DrawVerticalPole yokePole)								; add yoke pole
-					(command _MOVE_ _selectAll_ _ENTER_ _origin_ (list 0 (- yokePole)))	; shift down by one yoke pole
+					(NOBN_DrawVerticalPole portalPole)								; add portal pole
+					(command _MOVE_ _selectAll_ _ENTER_ _origin_ (list 0 (- portalPole)))	; shift down by one portal pole
 				)
 			;else - upright mast
 				(progn
@@ -133,8 +133,8 @@
 			(if portalMounted
 				(progn
 					(command _MIRROR_ _selectAll_ _ENTER_ _origin_ _xAxis_ _eraseMirrorSource_)		; flip down around x=0
-					(NOBN_DrawVerticalPole yokePole)								; add yoke pole
-					(command _MOVE_ _selectAll_ _ENTER_ (list 0 yokePole) _origin_)	; shift down by one yoke pole
+					(NOBN_DrawVerticalPole portalPole)								; add portal pole
+					(command _MOVE_ _selectAll_ _ENTER_ (list 0 portalPole) _origin_)	; shift down by one portal pole
 				)
 			;else - upright mast
 				(progn

@@ -81,7 +81,7 @@
 
 
 (defun BELYSNING ( variation / blockName description r p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 )
-	; Single- or multi-point light fixture, posibly with own mast (upright mast or upright/suspended mast mounted on OCS yoke)
+	; Single- or multi-point light fixture, posibly with own mast (upright mast or upright/suspended mast mounted on OCS portal)
 	;     
 	;  	 (X)  '0' - Single point without mast (open  circle with St Andrew's cross inside the circle, at origin)
 	;     

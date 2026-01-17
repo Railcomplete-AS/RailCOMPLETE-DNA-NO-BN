@@ -10,14 +10,14 @@
 ;
 ;=========================================================================================================================
 
-; Suspension mast - from yoke, under bridge or from tunnel ceiling
+; Suspension mast - from portal, under bridge or from tunnel ceiling
 
 (defun OCS-SUSPENSION-POLE ( / )
 	; Implemented for all administrations:
 
 	; Specific to this administration:
 	(TraceLevel3 "NOBN-OCS-SUSPENSION-POLE-UNDER-BRIDGE-OR-TUNNEL-CEILING")	(NOBN-OCS-SUSPENSION-POLE-UNDER-BRIDGE-OR-TUNNEL-CEILING)
-	(TraceLevel3 "NOBN-OCS-SUSPENSION-POLE-UNDER-YOKE")						(NOBN-OCS-SUSPENSION-POLE-UNDER-YOKE)
+	(TraceLevel3 "NOBN-OCS-SUSPENSION-POLE-UNDER-PORTAL")						(NOBN-OCS-SUSPENSION-POLE-UNDER-PORTAL)
 	(TraceLevel3 "NOBN-OCS-SUSPENSION-POLE-TYPE-CARIBONI")					(NOBN-OCS-SUSPENSION-POLE-TYPE-CARIBONI)
 )
 
@@ -75,7 +75,7 @@
 
 
 
-(defun NOBN-OCS-SUSPENSION-POLE-UNDER-YOKE ( / blockName description r )
+(defun NOBN-OCS-SUSPENSION-POLE-UNDER-PORTAL ( / blockName description r )
 	;
 	;  (*)		Hatched disc
 	;

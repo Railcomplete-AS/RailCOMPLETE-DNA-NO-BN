@@ -879,7 +879,7 @@
 
 (defun CreateMetricBlockFromCurrentGraphics ( blockName /  ) 
 	; Create a non-annotative but real-size block from the present graphics in model space.
-	; Typical use: Yokes / cantilevers / switches
+	; Typical use: Portals / cantilevers / switches
 	; Assume that all AttDefs have been declared as non-annotative already.
 	(setq blockName (strcat blockName _metric_))
 	(if (tblsearch "BLOCK" blockName) 
@@ -901,7 +901,7 @@
 	; Create an annotative block based on a scaled version of a schematic symbol retrieved from the BLOCK table as an INSERT.
 	;
 	; Signalling symbols are first programmed in LISP to their 'schematic plan' scale. However, some schematic symbols are quite big (the 
-	; 'S-lås' symbol for instance) and may be scaled down before use in a geo drawing (annotative symbol). with , some must are 1:1 (yokes,
+	; 'S-lås' symbol for instance) and may be scaled down before use in a geo drawing (annotative symbol). with , some must are 1:1 (portals,
 	; switches). Each scalable block is first stored as a schematic version, then re-inserted and possibly scaled, before it is stored as
 	; an annotative symbol for use in geo drawings. 
 	;
