@@ -21,15 +21,15 @@
 	; Specific to this administration:
 	; See Elkraftportalen, EH.705338 Avskjerming (beskyttelsesskjerm) for åk (0.900m bredde, 1.400m høyde (utvendige mål), Ø32 rør-ramme)
 	; EH.705338, two 900x1400 screens mounted with the "ears" facing away from track as seen in "both" direction from the track
-	; EH.705339, Various waus I..VI to mount the two 900x1400 screens on an OCS mast or yoke suspension mast.
+	; EH.705339, Various waus I..VI to mount the two 900x1400 screens on an OCS mast or portal suspension mast.
 	; See EH.704042, beskyttelsesskjerm for åk (2.000m bredde, 0.775m høyde (utvendige mål), Ø32 rør-ramme)
 	(NOBN-AVSKJERMING "1") 	; 190mm c-c between closest ears (tunnel mast suspension, Ø190-Ø200 mast is ideal)
 	(NOBN-AVSKJERMING "2") 	; 170mm c-c between closest ears (B-mast etc).
-	(NOBN-AVSKJERMING "3") 	; 350mm c-c between closest ears (100x150 yoke suspension mast, narrow side towards tack).
-	(NOBN-AVSKJERMING "45") ; EH.704042, one 2000x775 screen (type I+II=one bug or two smaller wowen steel nets), meant for yoke
+	(NOBN-AVSKJERMING "3") 	; 350mm c-c between closest ears (100x150 portal suspension mast, narrow side towards tack).
+	(NOBN-AVSKJERMING "45") ; EH.704042, one 2000x775 screen (type I+II=one bug or two smaller wowen steel nets), meant for portal
 							; mounting, insert in direction "both" ("ears" on the rear side)
-	(NOBN-AVSKJERMING "6") 	; 350mm c-c between closest ears (100x150 yoke suspension mast, narrow side towards track).
-	(NOBN-AVSKJERMING "704042") ; 2000 x 775 screen, two panes, for yoke mounting on two  vertical bars suspended from the yoke.
+	(NOBN-AVSKJERMING "6") 	; 350mm c-c between closest ears (100x150 portal suspension mast, narrow side towards track).
+	(NOBN-AVSKJERMING "704042") ; 2000 x 775 screen, two panes, for portal mounting on two  vertical bars suspended from the portal.
 )
 
 
@@ -134,12 +134,12 @@
 			)
 			((= variation "6")
 				; As shown in EH.705339 "Utf.VI"
-				; Offset 170/2 mm (0.85m) sideways and (150/2+35)mm (0.110m), touching the side of a suspended 100x150 mast (from yoke), i.e.narrow mast side towards track
+				; Offset 170/2 mm (0.85m) sideways and (150/2+35)mm (0.110m), touching the side of a suspended 100x150 mast (from portal), i.e.narrow mast side towards track
 				; We chose to mount it with the 'ears' facing away from the track, i.e. a reversed version of Utf.VI as shown in EH.705339.
 				(progn 
 					(NOBN_DrawRightSideScreen)
 					(command 
-						_MOVE_ _selectAll_ _ENTER_ _origin_ "0.175,0.110"  ; 100x150 yoke mast/2 + half mounting L-bar = 0.075+0.035=0.110
+						_MOVE_ _selectAll_ _ENTER_ _origin_ "0.175,0.110"  ; 100x150 portal mast/2 + half mounting L-bar = 0.075+0.035=0.110
 						_MIRROR_ _selectAll_ _ENTER_ _origin_ _yAxis_ _keepMirrorSource_ ; Add left side screen
 						_RECTANGLE_ "-0.420,0.075" "0.420,0.135"  ; Long 840mm x L60 bar to be mounted on rear of 100w x 150d suspension mast (away from track)
 						_RECTANGLE_ "-0.420,0.075" "0.420,0.081"  ; ...L60-shaped
@@ -157,7 +157,7 @@
 			((= variation "704042")
 				; (EH-704042):
 				;(setq
-				;	oldX 2.000 ; Old type, for yoke mounting (also with Ø32 tubing as the frame)
+				;	oldX 2.000 ; Old type, for portal mounting (also with Ø32 tubing as the frame)
 				;	oldEarThickness 0.010  ; Flattstål 50x125x10 mm med Ø17 hull, senter plassert 27mm fra bakkant flattstål. To og to i høyden på baksiden.
 				;	oldEarDepth 0.125
 				;	earX 0.200 ; From center of frame to outer edge of ear

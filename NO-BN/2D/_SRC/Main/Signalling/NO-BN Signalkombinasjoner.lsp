@@ -135,7 +135,7 @@
 				);FKS
 			);FS
 		);HS
-	);yoke or mast
+	);portal or mast
 	
 	; ERTMS combinations:
 	(setq mb nil hs 0 fs 0 tvs 0 zs 0 avs 0 bps 0 mks 0 fks 0 ls 0 lhs 0 ds 0)
@@ -149,25 +149,25 @@
 	(setq mb _right_ ds 1 mks 0 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 	(setq mb _right_ ds 1 mks 1 portalMounted nil)   (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _left_  ds 0 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _left_  ds 1 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _left_  ds 0 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _left_  ds 1 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 0 mks 0 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 1 mks 0 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 0 mks 1 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _left_  ds 1 mks 1 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _right_ ds 0 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _right_ ds 1 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _right_ ds 0 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _right_ ds 1 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 0 mks 0 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 1 mks 0 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 0 mks 1 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _right_ ds 1 mks 1 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 
-	(setq mb _down_  ds 0 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _down_  ds 1 mks 0 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _down_  ds 0 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
-	(setq mb _down_  ds 1 mks 1 portalMounted "YOKE") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 0 mks 0 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 1 mks 0 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 0 mks 1 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
+	(setq mb _down_  ds 1 mks 1 portalMounted "PORTAL") (NOBN-COMPLEX-SIGNAL mb hs fs tvs zs avs bps mks fks ls lhs ds portalMounted)
 )
 
 
 
-(defun NOBN-COMPLEX-SIGNAL ( MB HS FS TVS ZS AVS BPS MKS FKS LS LHS DS portalMounted / config blockName yokePole basePole minMastWithoutDs )
+(defun NOBN-COMPLEX-SIGNAL ( MB HS FS TVS ZS AVS BPS MKS FKS LS LHS DS portalMounted / config blockName portalPole basePole minMastWithoutDs )
 	;	MB - ERTMS markerboard, stop sign (blue/yellow). Incompatible with HS and FS. One of [ nil | _left_ | _right_ | _down_ ]
 	;	HS - Number of lanterner i Hovedsignal [0..3]
 	;	FS - Number of Forsignaler [0..1]
@@ -181,7 +181,7 @@
 	;	LHS - Number of Lysende hastighetssignal (signal 68), avvikende hastighet i sporveksel (annen enn 40 km/h) [0..1]
 	;	DS -  Antall Dvergsignal [0..1]
 	;
-	;	portalMounted - Mouting method [nil = upright mast | "AAK" = yoke mounting]
+	;	portalMounted - Mouting method [nil = upright mast | "AAK" = portal mounting]
 	
 	;==================================================================================================================
 	; A few TEST CASES for debugging - copy into VLIDE and step through LISP program:
@@ -192,7 +192,7 @@
 	;(setq MB nil HS 0  FS 0  TVS 0  ZS 0  AVS 0  BPS 0  MKS 0  FKS 0  LS 0  LHS 0  DS 1 portalMounted nil) ; Ds
 
 	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMountednil )   ; Hs3+Fs+Ds+Zs  ;Everything, upright mast
-	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMounted"AAK" ) ; Hs3+Fs+Ds+Zs  ;Everything, yoke mounted
+	;(setq MB nil HS 3  FS 1  TVS 1  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMounted"AAK" ) ; Hs3+Fs+Ds+Zs  ;Everything, portal mounted
 
 	;(if _DEBUG_ <paste test case here and remove semicolon, then set _DEBUG_ to true with (setq _DEBUG_ T)>)
 	;(if _DEBUG_ (setq MB nil HS 3  FS 1  TVS 0  ZS 1  AVS 1  BPS 1  MKS 1  FKS 1  LS 1  LHS 1  DS 1 portalMounted nil ))
@@ -215,7 +215,7 @@
 			" LS:"  (itoa ls)
 			" LHS:" (itoa lhs)
 			" DS:" (itoa ds)
-			" - " (if (= portalMounted nil) "(mast)" "(yoke)")
+			" - " (if (= portalMounted nil) "(mast)" "(portal)")
 		)
 	)
 
@@ -224,7 +224,7 @@
 		config _emptyString_
 		blockName (strcat _SIG_ "SIG-" "SIGNAL")
 		description "SIGNAL"
-		yokePole 2.0			; above lanterns if suspended from yoke.
+		portalPole 2.0			; above lanterns if suspended from portal.
 		basePole 3.0			; a short pole stub below the lowest signal item down to the signal mast base, if upright mast.
 		minMastWithoutDs 9.0	; minimum from base to lowest Hs lantern / top element, when no Ds is present.
 	)
@@ -369,11 +369,11 @@
 	
 	(setq description (strcat description " " (substr config 2 ))); Skip first '-' character in 'config'
 
-	; Add yoke pole / add rest of main pole with Hs base
+	; Add portal pole / add rest of main pole with Hs base
 	(if portalMounted
 		(progn
-			(ShiftSignalItemsUp (- (+ yokePole totalHeight))) ; shift *down*
-			(NOBN_DrawVerticalPole (- yokePole))
+			(ShiftSignalItemsUp (- (+ portalPole totalHeight))) ; shift *down*
+			(NOBN_DrawVerticalPole (- portalPole))
 		)
 	;else
 		(progn

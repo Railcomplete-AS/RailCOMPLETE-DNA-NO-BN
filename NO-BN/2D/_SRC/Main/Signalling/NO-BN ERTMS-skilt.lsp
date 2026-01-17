@@ -30,26 +30,26 @@
 	; E36 Veisikringsanlegg - Level Crossing
 	(TraceLevel2 "ERTMS-LEVEL-CROSSING")
 	(NOBN-ERTMS-LEVEL-CROSSING "ANNOUNCE" nil)
-	(NOBN-ERTMS-LEVEL-CROSSING "ANNOUNCE" "YOKE")
+	(NOBN-ERTMS-LEVEL-CROSSING "ANNOUNCE" "PORTAL")
 	(NOBN-ERTMS-LEVEL-CROSSING nil nil)
-	(NOBN-ERTMS-LEVEL-CROSSING nil "YOKE")
+	(NOBN-ERTMS-LEVEL-CROSSING nil "PORTAL")
 
 	; ERTMS boards
 	; E106A
 	; ( there is no "BEGIN" here)
 	(TraceLevel2 "ERTMS-SHUNTING-AREA")
 	(NOBN-ERTMS-SHUNTING-AREA "END" nil)
-	(NOBN-ERTMS-SHUNTING-AREA "END" "YOKE")
+	(NOBN-ERTMS-SHUNTING-AREA "END" "PORTAL")
 
 	; E107
 	(TraceLevel2 "ERTMS-INTERLOCKED-AREA")
 	(NOBN-ERTMS-INTERLOCKED-AREA "END" nil)
-	(NOBN-ERTMS-INTERLOCKED-AREA "END" "YOKE")
+	(NOBN-ERTMS-INTERLOCKED-AREA "END" "PORTAL")
 
 	; E108
 	(TraceLevel2 "ERTMS-INTERLOCKED-AREA")
 	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" nil)
-	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" "YOKE")
+	(NOBN-ERTMS-INTERLOCKED-AREA "BEGIN" "PORTAL")
 
 	; E37A Systemovergang
 	(TraceLevel2 "ERTMS-LEVEL-TRANSITION")
@@ -69,11 +69,11 @@
 
 
 
-(defun NOBN-ERTMS-LEVEL-CROSSING ( distantSignal mounting / blockName pole yokePole x y )
+(defun NOBN-ERTMS-LEVEL-CROSSING ( distantSignal mounting / blockName pole portalPole x y )
 	(setq
 		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "LEVEL-CROSSING")
 		pole 6.0
-		yokePole 2.0
+		portalPole 2.0
 		x 6.0 ; surrounding box
 		y x
 	)
@@ -96,8 +96,8 @@
 		_MIRROR_ _lastSelection_ _ENTER_ (list 0 (* 0.25 y)) (list 1 (* 0.25 y)) _keepMirrorSource_	; mirror to make arm2
 	)
 
-	; Add captions below yoke mount / above mast mount;
-	(if (= mounting "YOKE")
+	; Add captions below portal mount / above mast mount;
+	(if (= mounting "PORTAL")
 		(if (= distantSignal "ANNOUNCE")
 			(AddTextAtPointWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO-Fs" _topCenter_) ; below surrounding box
 			(AddTextAtPointWithJustification layDef_Zero _th100_ (list 0 (* -0.55 y)) "PLO" _topCenter_) ; below surrounding box
@@ -110,11 +110,11 @@
 	)
 
 	; Epilogue:
-	(if (= mounting "YOKE")
+	(if (= mounting "PORTAL")
 		(progn
 			(command
-				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origin_ ; move down by half of surrounding box plus short pole
-				_LINE_ _origin_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
+				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) portalPole)) _origin_ ; move down by half of surrounding box plus short pole
+				_LINE_ _origin_ (list 0 (- portalPole)) _ENTER_ ; add suspension pole from portal
 			)
 		)
 		(progn
@@ -131,11 +131,11 @@
 
 
 
-(defun NOBN-ERTMS-SHUNTING-AREA ( beginOrEnd mounting / blockName pole yokePole x y txtHeight )
+(defun NOBN-ERTMS-SHUNTING-AREA ( beginOrEnd mounting / blockName pole portalPole x y txtHeight )
 	(setq
 		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "SHUNTING-AREA-" beginOrEnd)
 		pole 6.0
-		yokePole 2.0
+		portalPole 2.0
 		x 6.0 ; surrounding box
 		y x
 		txtHeight (* pole 0.60)
@@ -160,11 +160,11 @@
 	)
 
 	; Epilogue:
-	(if (= mounting "YOKE")
+	(if (= mounting "PORTAL")
 		(progn
 			(command
-				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origin_ ; move down by half of surrounding box plus short pole
-				_LINE_ _origin_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
+				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) portalPole)) _origin_ ; move down by half of surrounding box plus short pole
+				_LINE_ _origin_ (list 0 (- portalPole)) _ENTER_ ; add suspension pole from portal
 			)
 		)
 		(progn
@@ -181,11 +181,11 @@
 
 
 
-(defun NOBN-ERTMS-INTERLOCKED-AREA ( beginOrEnd mounting / blockName pole yokePole x y yoffs ptul ptll ptlr ptlm ptbm )
+(defun NOBN-ERTMS-INTERLOCKED-AREA ( beginOrEnd mounting / blockName pole portalPole x y yoffs ptul ptll ptlr ptlm ptbm )
 	(setq
 		blockName (strcat _SIG_ "MSS-" "SKILT-ERTMS-" "INTERLOCKED-AREA-" beginOrEnd)
 		pole 6.0
-		yokePole 2.0
+		portalPole 2.0
 		x 6.0 ; surrounding box
 		y x
 	)
@@ -223,11 +223,11 @@
 	)
 
 	; Epilogue:
-	(if (= mounting "YOKE")
+	(if (= mounting "PORTAL")
 		(progn
 			(command
-				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) yokePole)) _origin_ ; move down by half of surrounding box plus short pole
-				_LINE_ _origin_ (list 0 (- yokePole)) _ENTER_ ; add suspension pole from yoke
+				_MOVE_ _selectAll_ _ENTER_ (list 0 (+ (/ y 2) portalPole)) _origin_ ; move down by half of surrounding box plus short pole
+				_LINE_ _origin_ (list 0 (- portalPole)) _ENTER_ ; add suspension pole from portal
 			)
 		)
 		(progn

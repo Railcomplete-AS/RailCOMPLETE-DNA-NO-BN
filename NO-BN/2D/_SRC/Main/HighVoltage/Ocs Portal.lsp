@@ -10,7 +10,7 @@
 ;
 ;=========================================================================================================================
 
-; Overhead Catenary System (OCS) Portals (yoke and gantry)
+; Overhead Catenary System (OCS) Portals (portal and gantry)
 
 (defun OCS-PORTAL-AND-GANTRY ( / counter )
 	(setq counter 10)
@@ -31,12 +31,12 @@
 	; Schematic symbol
 	; Adapt to schematic plan with _schematicTrackSpacing_ units between center tracks (instead of standard ~4.7 in shunting yards
 	(DrawLine layDef_Zero _origin_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
-	(AddDescriptionBelowOrigin description -1.0) ; A little *above* yoke
+	(AddDescriptionBelowOrigin description -1.0) ; A little *above* portal
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	; Just annotative text, no graphics
-	(AddDescriptionBelowOrigin description -1.0) ; A little *above* yoke
+	(AddDescriptionBelowOrigin description -1.0) ; A little *above* portal
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
@@ -53,12 +53,12 @@
 	; Schematic symbol
 	; Adapt to schematic plan with _schematicTrackSpacing_ units between center tracks (instead of standard ~4.7 in shunting yards
 	(DrawLine layDef_Zero _origin_ (list 0 (atoi (rtos (* (/ _schematicTrackSpacing_ _geographicTrackSpacing_) (- (+ 1 len))) _decimal_ 0)))) ; scaled, floored to int
-	(AddDescriptionBelowOrigin description -1.0) ; A little *above* yoke
+	(AddDescriptionBelowOrigin description -1.0) ; A little *above* portal
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 
 	; Annotative symbol
 	; Just annotative text, no graphics
-	(AddDescriptionBelowOrigin description -1.0) ; A little *above* yoke
+	(AddDescriptionBelowOrigin description -1.0) ; A little *above* portal
 	(CreateAnnotativeBlockFromCurrentGraphics blockName)
 
 	; Metric symbol
