@@ -8,6 +8,7 @@
 ; Change log:
 ; 2022-06-02 KNHEL new sign
 ; 2024-04-16 SVNOE renamed
+; 2026-01-16 CLFEY File to be removed - not in use with Bane NOR. "E203" was a temporary name, to be erased.
 ;
 ;=========================================================================================================================
 

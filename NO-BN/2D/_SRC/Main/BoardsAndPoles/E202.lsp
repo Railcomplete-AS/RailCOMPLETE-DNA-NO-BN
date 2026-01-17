@@ -8,6 +8,7 @@
 ; Change log:
 ; 2022-06-02 KNHEL new sign
 ; 2024-04-16 SVNOE renamed
+; 2026-01-16 CLFEY File to be replaced by E68.lsp (speed restriction 20 + end of restriction).
 ;
 ;=========================================================================================================================
 

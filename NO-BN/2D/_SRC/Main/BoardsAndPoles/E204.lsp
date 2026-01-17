@@ -7,6 +7,7 @@
 ;
 ; Change log:
 ; 2022-06-02 KNHEL new sign
+; 2026-01-16 CLFEY To be replaced by 64H.lsp (more accurately drawn, correct Bane NOR name).
 ;
 ;=========================================================================================================================
 
