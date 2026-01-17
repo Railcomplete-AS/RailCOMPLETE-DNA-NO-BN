@@ -65,7 +65,7 @@
 
 
 
-(defun E68A ( /	blockName description r )
+(defun E68B ( /	blockName description r )
 ; ERTMS board - End of speed restriction
 	;      _____
 	;     /  ///\    
