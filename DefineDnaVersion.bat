@@ -1,5 +1,4 @@
 echo off
-rem Copyright (c) 2015-2024 Railcomplete AS, Norway, NO916118503
 echo     ENTER DefineDnaVersion.bat
 
 rem Set LOG to no or yes to decide if logging to file is needed or not.
@@ -8,11 +7,11 @@ rem Set TUTORIALS to no or yes to decide if copying the tutorials files is neede
 rem Set CLEAN to no or yes to decide if existing files in target folders shall be deleted.
 
 set       ADM=NO-BN
-set   RELEASE=2025.1
+set   RELEASE=2026.1
 set       LOG=no
 set    COPY3D=yes
 set TUTORIALS=yes
-set     CLEAN=no
+set     CLEAN=yes
 
 echo %ADM%>__adm.txt
 echo %RELEASE%>__release.txt
