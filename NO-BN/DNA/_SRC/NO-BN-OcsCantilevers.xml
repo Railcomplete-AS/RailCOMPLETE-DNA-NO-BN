@@ -403,7 +403,7 @@ positive feeder in AT system				positiv leder i AT-system
 					["S20C2"]    = {cwh=5.30, sh=0.75, shmin=0.75, shmax=1.60, lco=-0.95, wco=-0.65,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
 					["S35"]      = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
 					["S35MS"]    = {cwh=5.60, sh=1.60, shmin=1.20, shmax=1.60, lco=-1.80, wco=-1.50,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
-					["Tabell 54"]= {cwh=5.60, sh=1.85, shmin=1.00, shmax=2.50, lco=-0.00, wco=-0.00,  drMat="TODO"         swMat="TODO"      },
+					["Tabell 54"]= {cwh=5.60, sh=1.85, shmin=1.00, shmax=2.50, lco=-0.00, wco=-0.00,  drMat="TODO",        swMat="TODO"      },
 					["Cariboni"] = {cwh=5.05, sh=0.60, shmin=0.25, shmax=0.60, lco= 0.00, wco=-0.70,  drMat="Bz II 10/49", swMat="Bz II 25/7"},
 					["TET08"]    = {cwh=5.05, sh=0.25, shmin=0.10, shmax=0.30, lco= 0.00, wco=-0.075, drMat="Bz II 10/49", swMat="Bz II 25/7"}
 				} 
@@ -654,7 +654,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="code"><Formula>_JBTEH_UTL_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_code()" 
 			ReturnType="String"
-			Description="Obtains the 'code' for this OCS cantilever, consisting of the pole's code, a slash '/', and the contact wire's literal name. Missing info is shown as '?'.
+			Description="Returns the 'code' for this OCS cantilever, consisting of the pole's code, a slash '/', and the contact wire's literal name. Missing info is shown as '?'.
 						\n
 						\nExample:
 						\nPole code	Wire name 	Cantilever code
@@ -873,7 +873,7 @@ positive feeder in AT system				positiv leder i AT-system
 					local crossProduct = getVectorCrossProduct(toPrev, toNext)
 				
 					--Find contact wire lateral force:
-					local contactWireTension = NOBN_ocs_getWireTensioningDataTable(Variant).cwtf * 1000 --Table contains kN values
+					local contactWireTension = NOBN_ocs_getWireTensioningTable(Variant).cwtf * 1000 --Table contains kN values
 					local toPrevForceVector =  getVectorScalarProduct(contactWireTension, getVectorNormalized(toPrev))
 					local toNextForceVector = getVectorScalarProduct(contactWireTension, getVectorNormalized(toNext))
 					local lateralForceVector = getVectorSum(toPrevForceVector, toNextForceVector)
@@ -882,10 +882,14 @@ positive feeder in AT system				positiv leder i AT-system
 					local forceDirection = (RightSided and crossProduct.Z &gt; 0 or LeftSided and crossProduct.Z &lt; 0) and "Push" or "Pull"
 					--if true then return p2s(toPrevForceVector),p2s(toNextForceVector),p2s(lateralForceVector),lateralForce, directionChangeDD end
 				
-					local msg = string.format("'%s' with lateral force %.01f Newton and direction change %.03f decimal degrees"
-						.." was deduced from previous cantilever/WTB '%s', this cantilever '%s'"
-						.." and next cantilever/WTB '%s'.",
-						forceDirection, lateralForce, directionChangeDD, RC__identify(prev),RC__identify(this),RC__identify(nxt))
+					--TODO 2026-01-26 CLFEY: Verify force calculation numeric value before including it in _info():
+					--local msg = string.format("'%s' with lateral force %.01f Newton and direction change %.03f decimal degrees"..
+					--	" was deduced from previous cantilever/WTB '%s', this cantilever '%s' and next cantilever/WTB '%s'.",
+					--	forceDirection, lateralForce, directionChangeDD, RC__identify(prev),RC__identify(this),RC__identify(nxt))
+
+					local msg = string.format("'%s' with direction change %.03f decimal degrees"..
+						" was deduced from previous cantilever/WTB '%s', this cantilever '%s' and next cantilever/WTB '%s'.",
+						forceDirection,               directionChangeDD, RC__identify(prev),RC__identify(this),RC__identify(nxt))
 				
 					return forceDirection, _info(msg)
 				end
@@ -1174,7 +1178,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</CustomProperty>
 		<LuaExpression Name="DropperWireMaterial"><Formula>_JBTEH_UTL_DropperWireMaterial()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_DropperWireMaterial()" ReturnType="String"
-			Description="Obtains the standard stitch wire material according to OCS system.">
+			Description="Returns the standard stitch wire material according to OCS system.">
 			<Signature>String _JBTEH_UTL_DropperWireMaterial()</Signature>
 			<Formula>
 				function _JBTEH_UTL_DropperWireMaterial()
@@ -1194,7 +1198,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</CustomProperty>
 		<LuaExpression Name="StitchWireMaterial"><Formula>_JBTEH_UTL_StitchWireMaterial()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_StitchWireMaterial()" ReturnType="String"
-			Description="Obtains the standard stitch wire material according to OCS system.">
+			Description="Returns the standard stitch wire material according to OCS system.">
 			<Signature>String _JBTEH_UTL_StitchWireMaterial()</Signature>
 			<Formula>
 				function _JBTEH_UTL_StitchWireMaterial()
@@ -1643,7 +1647,7 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="Alignment"><Formula>_JBTEH_KLK_Alignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KLK_Alignment()" 
 			ReturnType="String"
-			Description="Obtains the 'Alignment' property for this OCS contact wire clamp, deduced via its cantilever.">
+			Description="Returns the 'Alignment' property for this OCS contact wire clamp, deduced via its cantilever.">
 			<Signature>String _JBTEH_KLK_Alignment()</Signature>
 			<Formula>
 				function _JBTEH_KLK_Alignment()
