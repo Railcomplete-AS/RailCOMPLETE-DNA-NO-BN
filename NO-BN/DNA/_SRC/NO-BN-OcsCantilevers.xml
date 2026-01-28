@@ -581,12 +581,10 @@ positive feeder in AT system				positiv leder i AT-system
 			</Variant>
 			<Variant Name="TET08"
 				Description="TET-08: 200 km/h (1 strømavtager) / 160 km/h (2 strømavtagere). Tunnel.">
-				<SetValue Key="PushDirection" Value="PULL"/>
+				<SetValue Key="PushDirection" Value="Pull"/>
 			</Variant>
 		</Variants>
 		
-		<SetValue Key="PushDirection" Value="PULL"/>
-
 		<!-- Generic attributes -->
 		<!-- Linear address attributes -->
 		<LuaExpression Name="ReferenceMileage"><Formula>_JBTEH_UTL_ReferenceMileage()</Formula></LuaExpression>
@@ -709,9 +707,12 @@ positive feeder in AT system				positiv leder i AT-system
 		<LuaExpression Name="VerticalOffset"><Formula>ContactWireHeight - NOBN_ocs_getCantileverStandardValues(Variant)["wco"]</Formula></LuaExpression>
 
 
-		<!-- Primary custom attributes (generally input by hand or script) -->
+		<!-- =============================================================================================== -->
+		<!-- Primary custom attributes (generally input by user or by script) -->
+		<!-- =============================================================================================== -->
         <CustomProperty DataType="Double" Name="Stagger" DisplayName="Sikk-sakk" DefaultValue="0.000"
 			Description="Stagger [m] (zigzag) denotes the distance from contact wire clamp to centre track, measured co-linearly with the top-of-rail plane. A positive stagger means pushing away from pole, negative means pulling towards pole."/>
+		<LuaExpression Name="Stagger"><Formula>RC__round(getPropertyValue("Stagger"), 3)</Formula></LuaExpression>
 		
 		<CustomProperty DataType="Double" Name="ContactWireHeight" DisplayName="Kontakttrådhøyde" DefaultValue="5.00" 
 			Description="The contact wire height (cwh) [m] denotes the orthogonal distance from the rolling plane formed by the top-of-rails to the contact wire clamp."/>
@@ -724,70 +725,80 @@ positive feeder in AT system				positiv leder i AT-system
 		<CustomProperty DataType="Double" Name="StitchWireLength" DisplayName="Y-line lengde" DefaultValue="0.00" 
 			Description="The stitch wire length (swl) [m] denotes the length, measured as a difference in mileage, from start to end (where it attaches to the catenary wire). Zero length means 'no stitch wire'."/>
 
+		<CustomProperty DataType="Double" Name="AddVisual2dAngularOffset" DisplayName="2D vinkeltillegg" DefaultValue="0" 
+			Description="The 'AddVisual2dAngularOffset' [Double] adds 16.7 decimal degrees to the 2D symbol's angle. Cantilevers mounted in a portal or gantry will not be visible unless the 2D symbol is given an extra angle."/>
+		<LuaExpression Name="AddVisual2dAngularOffset"><Formula>_JBTEH_UTL_AddVisual2dAngularOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_UTL_AddVisual2dAngularOffset()" 
+			ReturnType="Double"
+			Description="Adds 17 Decimal Degrees rotation to the cantilever's angle in 2D whenever it is located in a portal or in a gantry, to make it visible in 2D drawings. AngularOffset and 3D rendering are not affected">
+			<Signature>Double _JBTEH_UTL_AddVisual2dAngularOffset()</Signature>
+			<Formula>
+				function _JBTEH_UTL_AddVisual2dAngularOffset()
+					local s = rel_Cantilever_BelongsTo_OcsPole
+					local r, n = getRelatedObjects(s)
+					if n == 0 then
+						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal drop arm or tunnel / bridge drop arm.")
+					else 
+						--Cantilever mounted under portal?
+						--Make cantilever "rod" visible if located under a portal, by visually adding 17 degrees:
+						local pol = r[0]
+						local _r1, n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
+						if n1 == 0 then 
+							return 0, _info("No visual angular offset added since cantilever is not mounted on a drop arm (hidden by a portal).")
+						else
+							-- TODO: Detect if cantilever is located on the other side of one of the portal's support poles - and not under the next portal, if another portal continues...
+							return 17, _info("Visual angular offset added since cantilever might otherwise be visually hidden under a portal.")
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
 
+		<!-- =============================================================================================== -->
 		<!-- Secondary custom attributes (generally derived from other attributes through suitable formulas) -->
+		<!-- =============================================================================================== -->
 		<CustomProperty DataType="Enumeration" Name="PushDirection" DisplayName="Kraftretning" DefaultValue="Pull"
-			Description=
-			"The cantilever push direction (cpd) [Push | Pull] is denoted 'Pull' if the cantilever pulls the contact wire towards the cantilever console(s), and 'Push' if it pushes it away.">
+			ReadOnly="true"
+			Description="The cantilever push direction (cpd) [Push | Pull] is denoted 'Pull' if the cantilever pulls the contact wire towards the cantilever console(s), and 'Push' if it pushes it away.">
 			<Values Variant="S20A">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S20AR">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S20B">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S20BR">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S20C1">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S20C2">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S25">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S35">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="S35MS">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="Tabell 54">
 				<Value DisplayName="Strekk" Description="Utliggeren strekkes (trekker ledningen til seg)">Pull</Value>
 				<Value DisplayName="Trykk" Description="Utliggeren sammentrykkes (skyver ledningen fra seg)">Push</Value>
-				<!-- <Value DisplayName="Pull" Description="The cantilever is stretched (pulling the wire towards the pole)">Pull</Value> -->
-				<!-- <Value DisplayName="Push" Description="The cantilever is compressed (pushing the wire away from the pole)">Push</Value> -->
 			</Values>
 			<Values Variant="Cariboni">
 				<Value DisplayName="Strekk" Description="Cariboni-utliggeren har horisontalt justeringsmonn og skal alltid være montert i strekk">Pull</Value>
@@ -896,7 +907,8 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="Double" Name="CantileverLength" DisplayName="Utliggerlengde" DefaultValue="4.0"
+		<CustomProperty DataType="Double" Name="CantileverLength" DisplayName="Trådklemme offset" DefaultValue="4.0"
+			ReadOnly="true"
 			Description="The cantilever length [m] is the sum of the cantilever's lateral offset and its stagger. This represents the length from its insertion point to the apparent wire clamp position (as if there is no cant), as seen from above in 2D modelspace and assuming that the cantilever is perpendicular to its associated track (its alignment). The Cariboni variant has a constant length of 1200 mm.">
 		</CustomProperty>
 		<LuaExpression Name="CantileverLength"><Formula>_JBTEH_UTL_CantileverLength()</Formula></LuaExpression>
@@ -916,7 +928,8 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="Int32" Name="Cantilever2DSymbolLength" DisplayName="Utliggerlengde visning" DefaultValue="4000"
+		<CustomProperty DataType="Int32" Name="Cantilever2DSymbolLength" DisplayName="Utligger 2D-visningslengde" DefaultValue="4000"
+			ReadOnly="true"
 			Description="The cantilever's 2D symbol's length [mm] [1000..6000], rounded to the closest multiple of 10 mm. The resulting number is used by RailCOMPLETE to fetch a corresponding 2D symbol from the DNA's 2D symbol library file.">
 		</CustomProperty>
 		<LuaExpression Name="Cantilever2DSymbolLength"><Formula>_JBTEH_UTL_Cantilever2DSymbolLength(CantileverLength)</Formula></LuaExpression>
@@ -948,6 +961,7 @@ positive feeder in AT system				positiv leder i AT-system
 
 <!-- TODO Start of WIP - suggested function as an alternative to spanlengths held as a collection in an OCS pole -->
 		<CustomProperty DataType="Double" Name="CantileverSpanlength" DisplayName="Utligger spennlengde" DefaultValue="0.0" 
+			ReadOnly="true"
 			Description="The cantilever span length (sl) [m] denotes the 2D straight line distance (projected onto the XY plane) from this cantilever's contact wire clamp to the next, related using '&quot;..rel_CantileverOrWtb_HasNext_CantileverOrWtb..&quot;'/'&quot;..rel_CantileverOrWtb_HasPrevious_CantileverOrWtb..&quot;'."/>
 		<LuaExpression Name="CantileverSpanlength"><Formula>_JBTEH_UTL_Spanlength()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_Spanlength()" ReturnType="Double" 
@@ -1093,6 +1107,7 @@ positive feeder in AT system				positiv leder i AT-system
 <!-- End of  WIP - suggested function as an alternative to spanlengths held as a collection in an OCS pole -->
 
 		<CustomProperty DataType="Double" Name="WireClampLateralOffset" DisplayName="Kontakttråd sideavsett" DefaultValue="0.00" 
+			ReadOnly="true"
 			Description="The contact wire clamp's lateral offset (wclo) [m] denotes the horizontal distance from the track's gradient curve (XYZ before cant effects) to the contact wire clamp (center of contact wire). It depends on contact wire height, stagger (zigzag) and track cant."/>
 		<LuaExpression Name="WireClampLateralOffset"><Formula>_JBTEH_UTL_WireClampLateralOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_WireClampLateralOffset()" 
@@ -1117,6 +1132,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomProperty DataType="Double" Name="WireClampVerticalOffset" DisplayName="Kontakttråd høydeavsett" DefaultValue="0.00" 
+			ReadOnly="true"
 			Description="The contact wire clamp's vertical offset (wcvo) [m] denotes the vertical distance from the track's gradient curve (XYZ before cant effects) to the contact wire clamp (center of contact wire). It depends on contact wire height, stagger (zigzag), cant and the cantilever being LeftSided or RightSided."/>
 		<LuaExpression Name="WireClampVerticalOffset"><Formula>_JBTEH_UTL_WireClampVerticalOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_WireClampVerticalOffset()" 
@@ -1141,6 +1157,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomProperty DataType="Double" Name="CatenaryClampLateralOffset" DisplayName="Bæreline sideavsett" DefaultValue="0.00" 
+			ReadOnly="true"
 			Description="The catenary clamp's lateral offset (cclo) [m] denotes the horizontal distance from the track's gradient curve (XYZ before cant effects) to the catenary clamp (center of catenary wire). We assume that it is situated at the system height, straight above the contact wire clamp."/>
 		<LuaExpression Name="CatenaryClampLateralOffset"><Formula>_JBTEH_UTL_CatenaryClampLateralOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_CatenaryClampLateralOffset()" 
@@ -1155,6 +1172,7 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomProperty DataType="Double" Name="CatenaryClampVerticalOffset" DisplayName="Bæreline høydeavsett" DefaultValue="0.00" 
+			ReadOnly="true"
 			Description="The catenary clamp's vertical offset (ccvo) [m] denotes denotes the vertical distance from the track's gradient curve (XYZ before cant effects) to the catenary wire clamp (center of catenary wire). We assume that it is situated at the system height, straight above the contact wire clamp."/>
 		<LuaExpression Name="CatenaryClampVerticalOffset"><Formula>_JBTEH_UTL_CatenaryClampVerticalOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_CatenaryClampVerticalOffset()" 
@@ -1169,8 +1187,8 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomProperty DataType="Enumeration" Name="DropperWireMaterial" DisplayName="Hengetråd materiale" DefaultValue=""
-			Description="The overhead catenary system (OCS) dropper wire material." 
-		>
+			ReadOnly="true"
+			Description="The overhead catenary system (OCS) dropper wire material.">
 			<Values>
 				<Value>None</Value>
 				<Value>Bz II 10/49</Value>
@@ -1188,8 +1206,8 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 		<CustomProperty DataType="Enumeration" Name="StitchWireMaterial" DisplayName="Y-line materiale" DefaultValue=""
-			Description="The overhead catenary system (OCS) stitch wire material." 
-		>
+			ReadOnly="true"
+			Description="The overhead catenary system (OCS) stitch wire material.">
 			<Values>
 				<Value>None</Value>
 				<Value>Bz II 25/7</Value>
@@ -1207,97 +1225,74 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="Double" Name="AddVisual2dAngularOffset" DisplayName="2D vinkeltillegg" DefaultValue="0" 
-			Description="The 'AddVisual2dAngularOffset' [Double] adds 16.7 decimal degrees to the 2D symbol's angle. Cantilevers mounted in a portal or gantry will not be visible unless the 2D symbol is given an extra angle."/>
-		<LuaExpression Name="AddVisual2dAngularOffset"><Formula>_JBTEH_UTL_AddVisual2dAngularOffset()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_UTL_AddVisual2dAngularOffset()" 
-			ReturnType="Double"
-			Description="Adds 17 Decimal Degrees rotation to the cantilever's angle in 2D whenever it is located in a portal or in a gantry, to make it visible in 2D drawings. AngularOffset and 3D rendering are not affected">
-			<Signature>Double _JBTEH_UTL_AddVisual2dAngularOffset()</Signature>
-			<Formula>
-				function _JBTEH_UTL_AddVisual2dAngularOffset()
-					local s = rel_Cantilever_BelongsTo_OcsPole
-					local r, n = getRelatedObjects(s)
-					if n == 0 then
-						return 0, _info("UNFINISHED - Relate cantilever to an OCS pole, portal drop arm or tunnel / bridge drop arm.")
-					else 
-						--Cantilever mounted under portal?
-						--Make cantilever "rod" visible if located under a portal, by visually adding 17 degrees:
-						local pol = r[0]
-						local _r1, n1 = pol:getRelatedObjects(rel_OcsPole_IsSupportFor_OcsPortal)
-						if n1 == 0 then 
-							return 0, _info("No visual angular offset added since cantilever is not mounted on a drop arm (hidden by a portal).")
-						else
-							-- TODO: Detect if cantilever is located on the other side of one of the portal's support poles - and not under the next portal, if another portal continues...
-							return 17, _info("Visual angular offset added since cantilever might otherwise be visually hidden under a portal.")
-						end
-					end
-				end
-			</Formula>
-		</LuaFunction>
+		<CustomProperty DataType="Int32" Name="Cantilever2DSymbolLength" DisplayName="Utligger 2D-symbol lengde" DefaultValue="4000" 
+			ReadOnly="true"
+			Description="The cantilever 2D symbol's length [mm] [1000..6000], rounded to closest multiple of 100 mm. Cariboni is always 1200 mm long."/>
 
+		<!-- =============================================================================================== -->
 		<!-- 3D rendering -->
-		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_UTL_Geometry3DName(CantileverLengthDisplay)</Formula></LuaExpression>
+		<!-- =============================================================================================== -->
+		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_UTL_Geometry3DName(Cantilever2DSymbolLength)</Formula></LuaExpression>
 		<!-- Note: The argument "0" to ..._trk_getYawFromDir(0) forces RC to use 0 angular offset instead of something else for cantilevers in portals -->
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir(AngularOffset)</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_UTL_Geometry3DName()" 
 			ReturnType="String"
 			Description="Returns cantilever's 3D geometry name, based on its OCS pole's type, push/pull setting and cantilever's length [mm].">
-			<Signature>String _JBTEH_UTL_Geometry3DName(int CantileverLengthDisplay)</Signature>
+			<Signature>String _JBTEH_UTL_Geometry3DName(int Cantilever2DSymbolLength)</Signature>
 			<Formula>
-				function _JBTEH_UTL_Geometry3DName(CantileverLengthDisplay)
-				CantileverLengthDisplay = CantileverLengthDisplay or 4000 --Default is 4m from insertion point to CW wire clamp
+				function _JBTEH_UTL_Geometry3DName(Cantilever2DSymbolLength)
+				Cantilever2DSymbolLength = Cantilever2DSymbolLength or 4000 --Default is 4m from insertion point to CW wire clamp
 				--[[
 					--TODO: Lage flere 3D-modeller for alle utligger-varianter.
 					--TODO: ...men siden 20, 25 og 35 er veldig like, så bruker vi S20 som 3D-modell for alle sammen inntil videre.
 					if (Variant == "S20A") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					if (Variant == "S20AR") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == "S20B") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == "S20BR") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == "S20C1") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == "S20C2") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-20-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == "S25") then 
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-25-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-25-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-25-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-25-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == 'S35') then
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == 'S35MS') then
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-SYSTEM-35-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == 'Tabell 54') then
-						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-TABELL-54-STREKK-"..CantileverLengthDisplay
-						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-TABELL-54-TRYKK-"..CantileverLengthDisplay
+						if (PushDirection == "Pull") then return "NO-BN-3D-EH-UTL-UTLIGGER-TABELL-54-STREKK-"..Cantilever2DSymbolLength
+						elseif (PushDirection == "Push") then return "NO-BN-3D-EH-UTL-UTLIGGER-TABELL-54-TRYKK-"..Cantilever2DSymbolLength
 						else return "Ukjent Kraftretning ["..PushDirection.."]",_warning
 						end
 					elseif (Variant == "Cariboni") then
@@ -1330,7 +1325,9 @@ positive feeder in AT system				positiv leder i AT-system
 		</LuaFunction>
 
 
+		<!-- =============================================================================================== -->
 		<!-- Model checks -->
+		<!-- =============================================================================================== -->
 		<CustomProperty DataType="String" Name="mc_OcsSystemHeight" DisplayName="Systemhøyde" 
 			ReadOnly="true" Category="Model check" 
 			Description="Check that cantilever system height (sh) [m] conforms to Technical Regulations for the chosen Variant / SubVariant."
@@ -1418,8 +1415,11 @@ positive feeder in AT system				positiv leder i AT-system
 			</Formula>
 		</LuaFunction>
 
+
+		<!-- =============================================================================================== -->
 		<!-- Extra functions, for use when the wire clamps have been provided based on survey data. -->
 		<!-- Use these functions to compute contact wire height and stagger "backwards". -->
+		<!-- =============================================================================================== -->
 		<LuaFunction Name="_JBTEH_UTL_getContactWireHeightFromRelatedContactWireClamp()" 
 			ReturnType="String"
 			Description="Returns the Contact Wire Height (measured perpendicularly above the rolling plane), computed from a surveyed contact wire clamp related with '&quot;..rel_Cantilever_Has_OcsWireClamp..&quot;'.">
@@ -1470,6 +1470,7 @@ positive feeder in AT system				positiv leder i AT-system
 				end
 			</Formula>
 		</LuaFunction>
+
 
 		<InsertPointObject Name="S25" DisplayName="System 25" DisplayBlockName="NO-BN-2D-JBTEH_UTL-UTLIGGER-25-S-4000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
@@ -1534,7 +1535,6 @@ positive feeder in AT system				positiv leder i AT-system
 			<SetValue Key="CantileverLength" Value="4.0"/>
 		</InsertPointObject>
 		
-		<!-- TODO: 2026-01-14 CLFEY Definer LISP-symbol for Tabell 54 utligger -->
 		<InsertPointObject Name="Tabell 54" DisplayName="Tabell 54" DisplayBlockName="NO-BN-2D-JBTEH_UTL-UTLIGGER-54-S-4000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -1569,16 +1569,16 @@ positive feeder in AT system				positiv leder i AT-system
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_UTL-UTLIGGER
-				{% if Variant == 'S20A' %}20A{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S20AR' %}20A{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S20B' %}20B{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S20BR' %}20B{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S20C1' %}20C{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S20C2' %}20C{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S25' %}25{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S35' %}35{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S35MS' %}35{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
-				{% elsif Variant == 'S54' %}54{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{CantileverLengthDisplay}}
+				{% if Variant == 'S20A' %}20A{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S20AR' %}20A{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S20B' %}20B{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S20BR' %}20B{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S20C1' %}20C{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S20C2' %}20C{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S25' %}25{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S35' %}35{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'S35MS' %}35{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
+				{% elsif Variant == 'Tabell 54' %}54{% if PushDirection == 'Pull' %}-S{% else %}-T{% endif %}-{{Cantilever2DSymbolLength}}
 				{% elsif Variant == 'Cariboni' %}CARIBONI
 				{% elsif Variant == 'TET08' %}TET08
 				{% else %}BAD_Variant_{{Variant}}
