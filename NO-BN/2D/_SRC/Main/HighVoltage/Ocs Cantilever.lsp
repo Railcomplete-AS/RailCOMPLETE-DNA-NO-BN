@@ -48,16 +48,16 @@
 	(TraceLevel3 "NOBN-CANTILEVER-35-PUSH")		(NOBN-CANTILEVER-20-25-35-54 "35" "push")
 	(TraceLevel3 "NOBN-CANTILEVER-35-PULL")		(NOBN-CANTILEVER-20-25-35-54 "35" "pull")
 	
+	;Tabell 54
+	(TraceLevel3 "NOBN-CANTILEVER-54-PUSH")		(NOBN-CANTILEVER-20-25-35-54 "54" "push")
+	(TraceLevel3 "NOBN-CANTILEVER-54-PULL")		(NOBN-CANTILEVER-20-25-35-54 "54" "pull")
+	
 	; Cariboni for regular tunnels
 	(TraceLevel3 "NOBN-CANTILEVER-CARIBONI")	(NOBN-CANTILEVER-CARIBONI)
 	
 	; TET08 (Thor Egil Thoresen...) for narrow / low tunnels
 	(TraceLevel3 "NOBN-CANTILEVER-TET08")		(NOBN-CANTILEVER-TET08)
 
-	;Tabell 54
-	(TraceLevel3 "NOBN-CANTILEVER-54-PUSH")		(NOBN-CANTILEVER-20-25-35-54 "54" "push")
-	(TraceLevel3 "NOBN-CANTILEVER-54-PULL")		(NOBN-CANTILEVER-20-25-35-54 "54" "pull")
-	
 	(setq
 		; Remove temporary globals:
 		minLen nil

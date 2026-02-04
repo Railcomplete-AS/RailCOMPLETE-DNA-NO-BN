@@ -23,6 +23,7 @@
 	(TraceLevel3 "NOBN-OCS-LATTICE-MAST-H")		(NOBN-OCS-LATTICE-MAST-H)
 	(TraceLevel3 "NOBN-OCS-CONCRETE-POLE")		(NOBN-OCS-CONCRETE-POLE)
 	(TraceLevel3 "NOBN-OCS-WOODEN-POLE")		(NOBN-OCS-WOODEN-POLE)
+	(TraceLevel3 "NOBN-OCS-HOLLOW-STEEL-POLE")	(NOBN-OCS-HOLLOW-STEEL-POLE)
 )                                           
 
 
@@ -204,6 +205,29 @@
 	)
 	(DrawCircle layDef_Zero r _noWipeout_)
 	(AddDescriptionBelowOrigin description r)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+)
+
+
+
+(defun NOBN-OCS-HOLLOW-STEEL-POLE ( / blockName description r )
+	;
+	;      //===\\ 
+	;     //     \\
+	;    ((   .   ))
+	;     \\     //  
+	;      \\===//
+	;      
+	(setq blockName (strcat _OCS_ "MAS-" "ROERMAST"			))
+	(setq description (strcat "KL-MAST, R" _uOSLASH_ "RMAST"))
+	(setq 
+		r1	1.5
+		r2	1.4
+	)
+	(DrawCircle layDef_Zero r1 _noWipeout_)
+	(DrawCircle layDef_Zero r2 _noWipeout_)
+	(AddDescriptionBelowOrigin description r1)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
 )

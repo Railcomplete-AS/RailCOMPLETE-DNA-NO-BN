@@ -26,7 +26,7 @@
 	<!-- Note: Functions which are called from 'JBTEH_MAS KL-mast' and 'JBTEH_MAS Hengemast for bru og tunnel' and 'JBTEH_MAS Hengemast i åk': -->
 
 	<LuaFunction Name="JBTEH_MAS_nonPortalPole_code()" ReturnType="String"
-		Description="Obtains the code for the OCS pole, as a concatenation of the pole's reference mileage km-value and the current 'Seq' local variable.">
+		Description="Returns the code for the OCS pole, as a concatenation of the pole's reference mileage km-value and the current 'Seq' local variable.">
 		<Signature>String JBTEH_MAS_nonPortalPole_code()</Signature>
 		<Formula>
 			function JBTEH_MAS_nonPortalPole_code()
@@ -383,17 +383,11 @@
 				<!-- <SetValue Key="OcsPoleHeight" Value="7500"/> -->
 			</Variant>
 			<Variant Name="Betongmast">
-				<!-- Assuming that poles always extend 2m under ground -->
 				<!-- See EH.800065 (EK.800065), concrete poles & load computations -->
-				<!-- TODO 2021-03-14 Produce all concrete poles. At present, only the "13" and the "13S" series exist in 3D. -->
-				<!-- <SetValue Key="OcsPoleCrossSection" Value="13"/>   -->
-				<!-- <SetValue Key="OcsPoleDepth" Value="2000"/> -->
-				<!-- <SetValue Key="OcsPoleHeight" Value="8000"/> -->
 			</Variant>
 			<Variant Name="Tremast">
-				<!-- <SetValue Key="OcsPoleCrossSection" Value="Ø260"/> -->
-				<!-- <SetValue Key="OcsPoleDepth" Value="1600"/> -->
-				<!-- <SetValue Key="OcsPoleHeight" Value="7500"/> -->
+			</Variant>
+			<Variant Name="Rørmast">
 			</Variant>
 		</Variants>
 		
@@ -408,7 +402,7 @@
 
 		<!-- Available mast heights: HEB200:6,0-9,5 HEB220:6,0-11,0 HEB240:6,0-12,0 HEB260:6,0-13,0 HEB280:6,0-13,0 HEM260:8,0-13,0 -->
 		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Masteprofil"
-			Description="The overhead catenary system (OCS) pole profile (omp) [HEB200..280 | HEM260 | H3..H6 | B2..B6 | 240x240 | Ø260].">
+			Description="The overhead catenary system (OCS) pole profile (omp) [HEB200..280 | HEM260 | H3..H6 | B2..B6 | 240x240 | Ø260 | Ø324].">
 			<Values Variant="Bjelkemast" DefaultValueOverride="HEB240">
 				<Value>HEB200</Value>
 				<Value>HEB220</Value>
@@ -441,6 +435,7 @@
 				<Value>B6</Value>
 			</Values>
 			<Values Variant="Betongmast" DefaultValueOverride="13">
+				<!-- TODO 2021-03-14 Produce all concrete poles. At present, only the "13" and the "13S" series exist in 3D. -->
 				<!-- Se EK.800025 -->
 				<!-- Kvadratiske har navn "13", "14" etc. -->
 				<!-- Type 13 er 192x192 i toppen, bunnmål sidekanter ved 2+6m=263, 2+7m=274, 2+8m=285, 2+9m=296, 2+10m=308, 2+11m=320, 2+12m=333, 2+13m=346 -->
@@ -474,6 +469,9 @@
 			</Values>
 			<Values Variant="Tremast" DefaultValueOverride="Ø260">
 				<Value>Ø260</Value>
+			</Values>
+			<Values Variant="Rørmast" DefaultValueOverride="Ø324">
+				<Value>Ø324</Value>
 			</Values>
 		</CustomProperty>
 		
@@ -590,6 +588,22 @@
 				<Value>11500</Value>
 				<Value>12000</Value>
 			</Values>
+			<Values Variant="Rørmast" DefaultValueOverride="8000">
+				<!-- Rørmast er egentlig Ø323,9 x 16, modellert av Norconsult for bruk med bl.a. signalgalger på Alnabru godsterminal.-->
+				<Value>6000</Value>
+				<Value>6500</Value>
+				<Value>7000</Value>
+				<Value>7500</Value>
+				<Value>8000</Value>
+				<Value>8500</Value>
+				<Value>9000</Value>
+				<Value>9500</Value>
+				<Value>10000</Value>
+				<Value>10500</Value>
+				<Value>11000</Value>
+				<Value>11500</Value>
+				<Value>12000</Value>
+			</Values>
 		</CustomProperty>
 		<LuaExpression Name="OcsPoleHeight"><Formula>_JBTEH_MAS_OcsPoleHeight()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_OcsPoleHeight()" ReturnType="Double"
@@ -650,6 +664,9 @@
 				<Value>1600</Value> <!-- Kun nedstikk 1600 er modellert i 3D -->
 				<Value>1800</Value>
 				<Value>2000</Value>
+			</Values>
+			<Values Variant="Rørmast">
+				<Value>0</Value>
 			</Values>
 		</CustomProperty>
 		
@@ -731,7 +748,7 @@
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_MAS_ocsPole_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_ocsPole_Geometry3DName()" 
 			ReturnType="String"
-			Description="Obtains the 3D geometry's 'Name' for this KL pole."
+			Description="Returns the 3D geometry's 'Name' for this KL pole."
 			>
 			<Signature>Double _JBTEH_MAS_ocsPole_Geometry3DName()</Signature>
 			<Formula>
@@ -811,6 +828,13 @@
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
 		
+		<InsertPointObject Name="Rørmast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-ROERMAST-{{SymbolMode}}" 
+				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
+			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
+		</InsertPointObject>
+		
 		<SymbolDefinition AllowSymbolMove="true">
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
 														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
@@ -829,6 +853,7 @@
 				{% elsif Variant == 'H-mast' %}GITTERMAST-H
 				{% elsif Variant == 'Betongmast' %}BETONGMAST
 				{% elsif Variant == 'Tremast' %}TREMAST
+				{% elsif Variant == 'Rørmast' %}ROERMAST
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -1047,7 +1072,7 @@
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()" 
 			ReturnType="String"
-			Description="Obtains the 3D geometry's 'Name' for this OCS drop arm.">
+			Description="Returns the 3D geometry's 'Name' for this OCS drop arm.">
 			<Signature>String _JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()
@@ -1239,7 +1264,7 @@
 		<LuaExpression Name="code"><Formula>_JBTEH_MAS_DropArmUnderPortal_code()</Formula></LuaExpression>
 			<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_code()" 
 				ReturnType="String"
-				Description="Obtains the code for this OCS drop arm.">
+				Description="Returns the code for this OCS drop arm.">
 				<Signature>String _JBTEH_MAS_DropArmUnderPortal_code()</Signature>
 				<Formula>
 				function _JBTEH_MAS_DropArmUnderPortal_code()
@@ -1426,7 +1451,7 @@
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_MAS_DropArmUnderPortal_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_Geometry3DName()" 
 			ReturnType="String"
-			Description="Obtains the 3D geometry's 'Name' for this OCS drop arm.">
+			Description="Returns the 3D geometry's 'Name' for this OCS drop arm.">
 			<Signature>String _JBTEH_MAS_DropArmUnderPortal_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTEH_MAS_DropArmUnderPortal_Geometry3DName()
