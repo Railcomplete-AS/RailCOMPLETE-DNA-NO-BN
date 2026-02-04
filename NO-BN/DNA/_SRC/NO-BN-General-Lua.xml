@@ -253,12 +253,18 @@
 
 
     <LuaFunction Name="RC__flipAcsTuple()"
-		Description="Flips an ACS tuple laterally if the object is LeftSided, flips longitudinally if the object's 'dir' is 'down'.">
+		Description="Flips the sign of the lateral offset (AcsX) if the calling point object is centered or leftsided, flips the longitudinal offset (AcsY) if the object's 'dir' is 'down'. For switch objects, a combination of  the 'SwitchGeometry' and the 'dir' properties are consulted instead of using the 'RightSided' property to deduce lateral offset flipping.">
         <Signature>Double, Double RC__flipAcsTuple(Double lateralOffset, Double longitudinalOffset, Reference obj = this)</Signature>
         <Formula>
             function RC__flipAcsTuple(lateralOffset, longitudinalOffset, obj)
 				obj = obj or this
-                return (obj.RightSided and 1 or -1)*lateralOffset, (obj.dir == "up" and 1 or -1)*longitudinalOffset
+				if RcType == rctype_Switch then
+					return (((obj.SwitchGeometry == "right" and dir == "up") or (obj.SwitchGeometry == "left" and dir == "down")) and 1 or -1)*lateralOffset,
+							(obj.dir == "up" and 1 or -1)*longitudinalOffset
+				else
+					return (obj.RightSided and 1 or -1)*lateralOffset, (obj.dir == "up" and 1 or -1)*longitudinalOffset
+				end
+				
             end
         </Formula>
     </LuaFunction>
