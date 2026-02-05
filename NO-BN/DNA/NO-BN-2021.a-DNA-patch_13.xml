@@ -32975,6 +32975,24 @@ return s</Data>
 			end
 		</Formula>
   </LuaFunction>
+  
+      <LuaFunction Name="RC__flipAcsTuple()"
+		Description="Flips the sign of the lateral offset (AcsX) if the calling point object is centered or leftsided, flips the longitudinal offset (AcsY) if the object's 'dir' is 'down'. For switch objects, a combination of  the 'SwitchGeometry' and the 'dir' properties are consulted instead of using the 'RightSided' property to deduce lateral offset flipping.">
+        <Signature>Double, Double RC__flipAcsTuple(Double lateralOffset, Double longitudinalOffset, Reference obj = this)</Signature>
+        <Formula>
+            function RC__flipAcsTuple(lateralOffset, longitudinalOffset, obj)
+				obj = obj or this
+				if RcType == rctype_Switch then
+					return ((obj.SwitchGeometry == "right" and dir == "up") or (obj.SwitchGeometry == "left" and dir == "down")) and 1 or -1)*lateralOffset,
+							(obj.dir == "up" and 1 or -1)*longitudinalOffset
+				else
+					return (obj.RightSided and 1 or -1)*lateralOffset, (obj.dir == "up" and 1 or -1)*longitudinalOffset
+				end
+            end
+        </Formula>
+    </LuaFunction>
+
+  
   <LuaFunction Name="RC__toint()" Description="Returns a collection of objects connected through the specified relation, and the number of related objects found. Source object and visibility are optional arguments." ReturnType="Collection, Int" HideFromUser="false">
     <Signature>int RC__toint(double x)</Signature>
     <Formula>function RC__toint(x) return string.format("%.0f",x) end</Formula>
@@ -35545,7 +35563,7 @@ end
 					local endX = closest.geoCoord.X + closest.SymbolOffset.X
 					local endY = closest.geoCoord.Y + closest.SymbolOffset.Y
 	
-	return { SymbolOffset.X + (endX - startX)/2 + worldOffsetX, SymbolOffset.Y + (endY - startY)/2 + worldOffsetY }
+					return { SymbolOffset.X + (endX - startX)/2 + worldOffsetX, SymbolOffset.Y + (endY - startY)/2 + worldOffsetY }
 				end
 			end
 		</Formula>
