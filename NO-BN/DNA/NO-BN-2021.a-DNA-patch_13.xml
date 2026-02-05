@@ -11452,7 +11452,7 @@ return s</Data>
 		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Content"><Formula>code</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_OBJEKTID.Content"><Formula>Tag</Formula></LuaExpression>
 		<LuaExpression Name="Tag"><Formula>NOBN_com_BaneNORBaneDataID()</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTBESKRIVELSE.Content"><Formula>description or BaneNORBeskrivelse or ""</Formula></LuaExpression>
+		<LuaExpression Name="TextAttribute_OBJEKTBESKRIVELSE.Content"><Formula>description</Formula></LuaExpression>
 
 		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(3, 7)</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>RC__flipAcsTuple(11, 7)</Formula></LuaExpression>
@@ -18140,7 +18140,7 @@ return s</Data>
 						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 						local t = getAlignmentInfo(prev.Alignment.id, p1).Tangent
 						local tg = math.atan(t.Y, t.X)
-						local U = getPoint3D(RC__getWcsVectorFromAcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
+						local U = getPoint3D(RC__acsVector2wcsVector(prev.WireClampLateralOffset - prev.DistanceToAlignment, 0, tg))
 						wc1 = getVectorSum(p1, U)
 					end
 				
@@ -18149,7 +18149,7 @@ return s</Data>
 					--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 					local t = getAlignmentInfo(this.Alignment.id, p2).Tangent
 					local tg = math.atan(t.Y, t.X)
-					local V = getPoint3D(RC__getWcsVectorFromAcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
+					local V = getPoint3D(RC__acsVector2wcsVector(this.WireClampLateralOffset - this.DistanceToAlignment, 0, tg))
 					local wc2 = getVectorSum(p2, V)
 				
 					--Next:
@@ -18170,7 +18170,7 @@ return s</Data>
 						--Add vector from insertion point to contact wire clamp, in WCS coordinates:
 						t = getAlignmentInfo(nxt.Alignment.id, p3).Tangent --local track tangent vector t.XYZ
 						tg = math.atan(t.Y, t.X)
-						W = getPoint3D(RC__getWcsVectorFromAcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
+						W = getPoint3D(RC__acsVector2wcsVector(nxt.WireClampLateralOffset - nxt.DistanceToAlignment, 0, tg))
 						wc3 = getVectorSum(p3, W)
 					end
 				
@@ -33027,7 +33027,7 @@ return s</Data>
         <Formula>
             function RC__flipAcsTuple(lateralOffset, longitudinalOffset, obj)
 				obj = obj or this
-				if RcType == rctype_Switch then
+				if RcType == "JBTKO_SPV Sporveksel" then
 					return ((obj.SwitchGeometry == "right" and dir == "up") or (obj.SwitchGeometry == "left" and dir == "down")) and 1 or -1)*lateralOffset,
 							(obj.dir == "up" and 1 or -1)*longitudinalOffset
 				else
@@ -33203,32 +33203,6 @@ return s</Data>
 		</Formula>
   </LuaFunction>
   
-	<LuaFunction Name="RC__getWcsVectorFromAcsVector()" ReturnType="String"
-		Description="Converts an Alignment Coordinate System (ACS) 2D vector {acsX, acsY} = {LateralOffset, LongitudinalOffset} into a World Coordinate System (WCS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
-		<Signature>{Double, Double} RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
-		<Formula>
-			function RC__getWcsVectorFromAcsVector(acsX, acsY, AlongAxisWcsAngleInRadians)
-				--WCS = World Coordinate System, the CAD system's underlying absolute Cartesian coordinate system (XY-plane).
-				--ACS = "Alignment Coordinate System", a basic RailCOMPLETE concept:
-				--	Argument acsX = Lateral offset to the right, perpendicular to the object's alignment axis.
-				--	Argument acsY = Along offset in the direction of increasing distAlong, along the object's alignment axis.
-				--	Optional argument AlongAxisWcsAngleInRadians = angle in Decimal Degrees between WCS East (X-axis) and the alignment's tangent direction.
-				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
-				return  acsX*math.sin(angle) + acsY*math.cos(angle), -acsX*math.cos(angle) + acsY*math.sin(angle)
-			end
-		</Formula>
-	</LuaFunction>
-
-	<LuaFunction Name="RC__getAcsVectorFromWcsVector()" ReturnType="String"
-		Description="Converts a World Coordinate System (WCS) 2D vector {wcsX, wcsY} into an Alignment Coordinate System (ACS) 2D vector. An angle in radians can be given instead of using the default, the object's own alignment's tangent direction.">
-		<Signature>{Double, Double} RC__getAcsVectorFromWcsVector(wcsX, wcsY, AlongAxisWcsAngleInRadians = this.AlignmentTangent)</Signature>
-		<Formula>
-			function RC__getAcsVectorFromWcsVector(wcsX,wcsY,AlongAxisWcsAngleInRadians)
-				local angle = AlongAxisWcsAngleInRadians or AlignmentTangent
-				return -wcsY * math.cos(angle) + wcsX * math.sin(angle), wcsY * math.sin(angle) + wcsX * math.cos(angle)
-			end
-		</Formula>
-	</LuaFunction>
   <LuaFunction Name="RC__acsVector2wcsVector()" Description="Converts an Alignment Coordinate System (ACS) 2D vector into a World Coordinate System (WCS) 2D vector. Usage: wx, wy = RC__acsVector2wcsVector(lateralOffset, alongOffset) or wx, wy = RC__acsVector2wcsVector(lateralOffset, alongOffset, alongAxisWcsAngleInRadians)." ReturnType="String" HideFromUser="false">
     <Signature>Double, Double RC__acsVector2wcsVector(lateralOffset, alongOffset [,alongAxisWcsAngleInRadians = this.AlignmentTangent])</Signature>
     <Formula>
