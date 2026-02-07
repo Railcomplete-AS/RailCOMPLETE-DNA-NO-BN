@@ -13,7 +13,8 @@ lib2 = includeLuaFile("Lua\\Functions\\lib2.lua") --Scripting-only Lua functions
 local _HEADER_ = "Adjust object at XY(Z) coordinates from Excel"
 local _VERSION_ = "1.1"
 
-local _ADJUST_OBJECTS_ = "Adjust objects"
+local _ADJUST_OBJECTS_XY_ = "Adjust objects' XY values"
+local _ADJUST_OBJECTS_XYZ_ = "Adjust objects' XYZ values"
 local _TERMINATE_ = "Terminate"
 local _HELP_ = "Help"
 
@@ -34,20 +35,18 @@ Input:
 Usage:
 -	Select Excel coordinate file, select an existing RC object (to get its RcType), input the radius around
 	the coordinates to search for objects, start the insertion.
--	Any DNA-formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlingment or LateralOffset will be
+-	Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlingment or LateralOffset will be
 	replaced by the coordinate data.
--	Any DNA-formula on VerticalOffset property will be replaced by the difference in elevation between the
-	closest relevant alignment (railway tracks for most objects, contact wire for CW insulators etc) and then
-	Z elevation from the Excel file (if Z is provided).
--	If no 'Z' column exists in Excel, then default formulas and values apply for the VerticalOffset property.
+-	Any formula on VerticalOffset property will be replaced by the value corresponding to the new elevation
+	Z read from Excel file.
+-	If adjustment without Z coordinate is selected, then existing formulas and values on the object's vertical
+	offset will not be modified.
 
 Output:
--	For each valid row in the coordinate file the closest RC object of the same RcType as the selected object
-	and is within the tolerance in 2D distance is adjusted to the coordinates.
+-	For each valid row in the coordinate file the closest RC object of the same RcType and variant as the selected
+	template object and being within the tolerance in 2D distance is adjusted to the target XY or XYZ coordinates.
 
 Note:
--	Be aware that formulas that affect linear placement will be removed, otherwise the objects would snap back
-	to their original position.
 -	Only point objects that posess a linear position (i.e., has a non-nil 'Alignment' property) can be adjusted.
 ]]
 
@@ -57,15 +56,19 @@ lib2.show(usageMsg, _HEADER_)
 
 local option
 repeat
-	option = askForKeyword("Select action:", {_ADJUST_OBJECTS_, _HELP_, _TERMINATE_}, _HEADER_)
+	option = askForKeyword("Select action:", {_ADJUST_OBJECTS_XY_, _ADJUST_OBJECTS_XYZ_, _HELP_, _TERMINATE_}, _HEADER_)
 
 	if option == _HELP_ then
 		lib2.show(helpMsg, _HEADER_)
 		
-	elseif option == _ADJUST_OBJECTS_ then
+	elseif option == _ADJUST_OBJECTS_XY_ or option == _ADJUST_OBJECTS_XYZ_ then
 		--Open Excel file:
-		lib2.show("Select Excel file where the first worksheet has column captions 'X' and 'Y' (and potentially also a 'Z' column).", _HEADER_)
-		local filename =  askForFileName("Select Excel file with XY coordinates columns with captions 'X', 'Y' (and optionally 'Z')")
+		if option == _ADJUST_OBJECTS_XY_ then
+			lib2.show("Select Excel file where the first worksheet has column captions 'X' and 'Y' (a 'Z' column will be ignored).", _HEADER_)
+		else
+			lib2.show("Select Excel file where the first worksheet has column captions 'X' and 'Y' and 'Z'.", _HEADER_)
+		end
+		local filename =  askForFileName("Select Excel file")
 		local file = getContentsFromFile(FileType.Excel,"", filename)
 		local sheets = getExpandoObjectPropertyNames(file)
 		local sheetName = sheets[0]
@@ -80,8 +83,8 @@ repeat
 		lib2.show("Select an existing object. Its RcType and Variant will be used as a template for selecting similar existing objects to adjust.", _HEADER_)
 		local templateObject = askForObject("Select template object")
 		
-		lib2.show("The adjustment process will read rows with X and Y (and potentially Z) coordinates from the Excel file and then look for objects within a certain radius of each XY survey point.", _HEADER_)
 		local tolerance = askForDouble("Enter radius for how far around each survey point objects shall be searched for")
+
 		lib2.show(
 			"Template object:\n"..
 			"\nIdentification = "..RC__identify(templateObject)..
@@ -91,6 +94,8 @@ repeat
 			"\nSearch radius = "..tostring(tolerance),
 			_HEADER_)
 		
+		lib2.show("The adjustment process will read rows with X and Y (and Z) coordinates from the Excel file and then adjust all objects similar to the template object found within the given 2D radius of each such XY survey point.", _HEADER_)
+
 		local xCaption = "X"
 		local yCaption = "Y"
 		local zCaption = "Z"
@@ -102,56 +107,61 @@ repeat
 			local x = item[xCaption]
 			local y = item[yCaption]
 			local z = item[zCaption]
-		
-		    if type(x) == "number" and type(y) == "number" and (type(z) == "number" or type(z) == "nil") then --Trip on strings instead of a number (or no z value at all)
-		
-				local newPosition = getPoint3D(x, y, z)
-		
-				local nearbyObjects, numberOfObjects = getNearbyPointObjects2D(templateObject.RcType, newPosition, tolerance)
-				if numberOfObjects > 0 then
-					local obj = nearbyObjects[0]
-					
-					local initialPosition = getPoint3D(obj)
+
+		    if (option == _ADJUST_OBJECTS_XY_) and (type(x) ~= "number" or type(y) ~= "number") then
+				write(string.format("%04d Skipping row: %s='%s' or %s='%s' is not a number.\n", i+1, xCaption, tostring(x), yCaption, tostring(y)), _error)
+
+		    elseif (option == _ADJUST_OBJECTS_XYZ_) and (type(x) ~= "number" or type(y) ~= "number" or type(z) ~= "number") then
+				write(string.format("%04d Skipping row: %s='%s' or %s='%s' or %s='%s' is not a number.\n", i+1, xCaption, tostring(x), yCaption, tostring(y), zCaption, tostring(z)), _error)
+			
+			else
+				local targetPosition = getPoint3D(x, y)
+				local nearbyObjects, nNearbyObjects = getNearbyPointObjects2D(templateObject.RcType, targetPosition, tolerance)
+				if nNearbyObjects > 0 then
+					obj = nearbyObjects[0] --Assume all objects have a non-nil Alignment.
+					local initialPosition = getPoint3D(obj) --Has always X Y and Z values, possibly with formulas
+					local newPosition
+					if option == _ADJUST_OBJECTS_XY_ then
+						newPosition = getPoint3D(x, y, initialPosition.Z)
+					else
+						--Include the Z coordinate
+						newPosition = getPoint3D(x, y, z)
+					end
 					local newLinearAddress = getLinearAddress(newPosition, obj.Alignment)
 					
-					--Delete any formulas that may stop us from moving the object
+					--Delete possible formulas that may stop us from moving the object
 					obj.Mileage = "="
 					obj.ReferenceMileage = "="
 					obj.DistanceAlong = "="
 					obj.DistanceToAlignment = "="
 					obj.LateralOffset = "="
 					
-					--Place object at new linear address
+					--Move object in the XY plane object at new linear address
 					obj.DistanceAlong = newLinearAddress.DistanceAlong
 					obj.LateralOffset = newLinearAddress.LateralOffset
 					obj.LongitudinalOffset = newLinearAddress.LongitudinalOffset
 		
-					--Adjust z if needed:
-					if z then
-						obj.VerticalOffset = "=" --Delete formula, if existing
+					if option == _ADJUST_OBJECTS_XY_ then
+						--Don't touch it Z coordinate value or possible formula on VerticalOffset
+					else
+						obj.VerticalOffset = "="
 						obj.VerticalOffset = newLinearAddress.VerticalOffset
 					end
 		
 					table.insert(objTable, obj)
-					write(string.format("%04d Object %20s (%s) moved from %s to %s\n",
+					write(string.format("%04d %20s (%s) %s ==> %s\n",
 						tostring(i+1), obj.name or obj.code or "", obj.id, lib1.p2s(initialPosition), lib1.p2s(newPosition)))
 					nObjectsAdjusted = nObjectsAdjusted + 1
 					
 				else
-					write(string.format("Skipping row number %04d: No point object of type %s and variant %s found within %f m from %s\n",
-						tostring(i+1), templateObject.RcType, templateObject.Variant and templateObject.Variant or "", tostring(tolerance), lib1.p2s(newPosition)), _warning)
-				end
-		   
-			else
-				if z then
-					write(string.format("Skipping row number %d: %s='%s' or %s='%s' or %s='%s' is not a number.\n", i+1, xCaption, tostring(x), yCaption, tostring(y), zCaption, tostring(z)), _error)
-				else
-					write(string.format("Skipping row number %d: %s='%s' or %s='%s' is not a number.\n", i+1, xCaption, tostring(x), yCaption, tostring(y)), _error)
+					--No nearby objects (but ok XY or XYZ target coordinates)
+					write(string.format("%04d No relevant objects found within %f m from target point (%.03f, %.03f)\n",
+						tostring(i+1), tostring(tolerance), targetPosition.X, targetPosition.Y), _warning)
 				end
 			end
 		end
 		endUndoBufferItem()
-		lib2.show("\n"..nObjectsAdjusted.." objects were adjusted.", _HEADER)
+		lib2.show("\n"..nObjectsAdjusted.." objects were adjusted.", _HEADER_)
 		setSelectionSet(objTable)
 
 	elseif option == _TERMINATE_ then
