@@ -5,6 +5,7 @@ show([[
 	Insert object at XY(Z) coordinates from Excel
 	=============================================
 	2024-12-05_000 CLFEY Created (from similar script inserting just a circle at XY).
+	2025-01-17_001 KNHEL Changed elevation to use elevation above mean sea level rather than relative to track
 	
 	Input:
 	-	Script is run insed a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
@@ -101,8 +102,8 @@ else
 			    if obj then
 			    	--Adjust z if needed:
 		    		if z then
-			    		obj.VerticalOffset = "=" --remove formula, if existing
-		    			obj.VerticalOffset = z
+		    			obj.VerticalOffset = "=" --remove formula, if existing
+		    			obj.VerticalOffset = z - obj.geoCoord.Z
 		    		end
 	    			table.insert(objTable, obj)
 					writeln(tostring(i+1)..": ("..x..", "..y..(z and ", "..z or "")..")")
