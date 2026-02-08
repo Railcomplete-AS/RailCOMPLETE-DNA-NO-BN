@@ -92,8 +92,7 @@ repeat
 		
 	else
 		--Provoke error and stop
-		lib2.show("Bad option ["..option.."] - contact support@railcomplete.com.", _HEADER_)
-		lib2.stop()
+		lib2.stop("Bad option ["..option.."].")
 	end
 until option == _TERMINATE_
 lib2.show("Terminated.", _HEADER_)
