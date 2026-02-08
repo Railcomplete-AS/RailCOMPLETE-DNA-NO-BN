@@ -27,21 +27,21 @@ _DNA_COUNTRY_ = DocumentData.DnaIri:match("^(%w%w)%-%w%w.+$")
 
 --FUNCTIONS--
 --Writes a message to the log window and appends a newline. Call as lib2.writeln(msg, symbol = nil). The optional symbol is one of {nil | _ok | _warning | _error}. Symbols affect the color of the message which is echoed to the log window.
-function writeln(t, symbol)
-	return t and write(t.."\n", symbol or _noSymbol) or write("\n", symbol or _noSymbol)
+function writeln(msg, symbol)
+	return tmsg and write(msg.."\n", symbol or _noSymbol) or write("\n", symbol or _noSymbol)
 end
 
 --Creates a popup-window showing a message and an 'OK' menu choice. Call as lib2.show(msg, header = nil, symbol = nil). The optional header replaces 'Keyword' in the window's header. The optional symbol is one of {nil | _ok | _warning | _error}. Symbols affect the color of the message which is echoed to the log window.
-function show(t, header, symbol)
-	writeln(t, symbol)
-	askForKeyword(t, {"OK"}, header) --Window caption becomes "Keyword" if header is nil.
+function show(msg, header, symbol)
+	writeln(msg, symbol)
+	askForKeyword(msg, {"OK"}, header) --Window caption becomes "Keyword" if header is nil.
 end
 
 --Provokes an error. Call as stop(msg). A popup-window alerts the user before the script stops. The corresponding Lua source code line number is found in the scripting or debugger log window.
-function stop(t)
+function stop(msg)
 	--DNA country-dependent error message header.
 	local _ERROR_ = (_DNA_COUNTRY_ == "NO" and "ERROR: ") or (_DNA_COUNTRY_ == "FR" and "ERREUR : ") or (_DNA_COUNTRY_ == "DE" and "FEHLER: ")
-	show(_ERROR_..t.."\n\nContact support@railcomplete.com.", _ERROR_) local x = ""..nil
+	show(_ERROR_..msg.."\n\nContact support@railcomplete.com.", _ERROR_) local x = ""..nil
 end
 
 --Selects everything on visible layers in modelspace. Call as lib2.selectAll(). Note: Sets PICKADD to 2 without returning it to its to previous value.
