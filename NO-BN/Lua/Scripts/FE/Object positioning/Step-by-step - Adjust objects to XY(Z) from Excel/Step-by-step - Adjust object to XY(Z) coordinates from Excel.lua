@@ -130,12 +130,14 @@ repeat
 					local newLinearAddress = getLinearAddress(newPosition, obj.Alignment)
 					
 					--Delete possible formulas that may stop us from moving the object
+					
 					obj.Mileage = "="
 					obj.ReferenceMileage = "="
+					obj.LateralOffset = "="
 					obj.DistanceAlong = "="
 					obj.DistanceToAlignment = "="
-					obj.LateralOffset = "="
-					
+					obj.LongitudinalOffset = "="
+
 					--Move object in the XY plane object at new linear address
 					obj.DistanceAlong = newLinearAddress.DistanceAlong
 					obj.LateralOffset = newLinearAddress.LateralOffset
