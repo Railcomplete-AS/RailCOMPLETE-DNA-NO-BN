@@ -161,15 +161,16 @@ repeat
 			end
 		end
 		endUndoBufferItem()
-		lib2.show("\n"..nObjectsAdjusted.." objects were adjusted.", _HEADER_)
+		lib2.zoomExtents()
 		setSelectionSet(objTable)
+		lib2.show("\n"..nObjectsAdjusted.." objects were adjusted.", _HEADER_)
 
 	elseif option == _TERMINATE_ then
 		lib2.show("Terminated.", _HEADER_)
 
 	else
-		--Should not happen...
-		lib2.show("ERROR - contact support@railcomplete.com for advice.", _HEADER_)
+		--Provoke error and stop
+		lib2.stop("Bad option ["..option.."].")
 	end
 	
 until option == _TERMINATE_ or option == nil
