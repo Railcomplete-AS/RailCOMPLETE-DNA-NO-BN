@@ -37,7 +37,7 @@ function show(t, header, symbol)
 	askForKeyword(t, {"OK"}, header) --Window caption becomes "Keyword" if header is nil.
 end
 
---Provokes an error. Call as stop(msg). The corresponding Lua source code line number is found in the scripting or debugger log window.
+--Provokes an error. Call as stop(msg). A popup-window alerts the user before the script stops. The corresponding Lua source code line number is found in the scripting or debugger log window.
 function stop(t)
 	--DNA country-dependent error message header.
 	local _ERROR_ = (_DNA_COUNTRY_ == "NO" and "ERROR: ") or (_DNA_COUNTRY_ == "FR" and "ERREUR : ") or (_DNA_COUNTRY_ == "DE" and "FEHLER: ")
@@ -90,7 +90,7 @@ function setDefaultCadSettings()
     runCommand("_NAVVCUBE _OFF ")
     runCommand("_NAVVCUBE _ON ") -- Enable the navigation cube at the top right.
 	runCommand("_DYNMODE 3 ") -- Display text input and suggested commands next to the cursor while typing.
-runCommand("_SELECTIONCYCLING 2 ") -- If you click on multiple objects at the same time, a window will appear allowing you to choose the one you want.
+	runCommand("_SELECTIONCYCLING 2 ") -- If you click on multiple objects at the same time, a window will appear allowing you to choose the one you want.
 	runCommand("_-UNITS 2 3 1 3 0 _NO ") -- Use measurements with an accuracy of 3 decimal places. East is on the right, angles in decimal degrees are measured counterclockwise.
 	runCommand("_-OSNAP _END,_MID,_CEN,_GCE,_NOD,_QUA,_INT,_EXT,_INS,_PER,_TAN,_NEA,_APP,_PAR ") -- Enable all OSNAPs.
 	runCommand("_-COLOR _BYLAYER ") -- Set the default color.
@@ -104,4 +104,9 @@ end
 --Shows polyline grips including midpoint grips (2) (0=hide grips / 1=display grips / 2=display additional midpoint grips on polyline). Call as gripsOn().
 function gripsOn()
 	runCommand("_GRIPS 2 ")
+end
+
+--Zooms modelspace to extents of everything that is visible. Call as zoomExtents().
+function zoomExtents()
+	runCommand('(command "._ZOOM" "_EXTENTS") ')
 end
