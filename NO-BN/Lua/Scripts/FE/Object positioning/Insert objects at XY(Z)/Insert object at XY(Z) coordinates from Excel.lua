@@ -1,7 +1,7 @@
 --[[
 	2024-12-05 v1.0 CLFEY Created (from similar script inserting just a circle at XY).
 	2025-01-17 v2.0 KNHEL Changed elevation to use elevation above mean sea level rather than relative to track
-	2026-02-08 v2.1 CLFEY Added windows and usage msg etc, using lib1 and lib2 functions.
+	2026-02-09 v2.1 CLFEY Added windows and usage msg etc, using lib1 and lib2 functions.
 ]]
 
 --FUNCTIONS--
@@ -10,26 +10,56 @@ lib2 = includeLuaFile("Lua\\Functions\\lib2.lua") --Scripting-only Lua functions
 
 
 --CONSTANTS--
-local _HEADER_ = "Insert object at XY(Z) coordinates from Excel"
 local _VERSION_ = "2.1"
+local _HEADER_ = lib2.language(
+	{EN="Insert objects at XY(Z) coordinates from Excel",
+	NO="Sett inn objekter på XY(Z)-koordinater gitt fra Excel-fil",
+	FR="Insérer des objets aux coordonnées XY(Z) fournis par le fichier Excel",
+	DE="Einfügen von Objekten an XY(Z)-Koordinaten aus Excel-Datei"})
 
-local _INSERT_OBJECTS_XY_ = "Insert objects at XY values (locked to its alignment's local elevation)"
-local _INSERT_OBJECTS_XYZ_ = "Insert objects' XYZ values (removing possible DNA formula on the VerticalOffset property)"
-local _TERMINATE_ = "Terminate"
-local _HELP_ = "Help"
-local _SELECT_ACTION_ = "Select action:\n\nClose the Excel file before continuing.\nOpen your scripting log window before running this script to keep track of progress."
+--Commands
+local _INSERT_OBJECTS_XY_ = lib2.language(
+	{EN="Insert objects at XY coordinates (locked to its alignment's local elevation)",
+	NO="Sett inn objekter ved XY-koordinater (låst til den lokale høyden i egen linje)",
+	FR="Insérer des objets aux coordonnées XY (verrouillés à l'élévation locale de leur axe)",
+	DE="Objekte an XY-Koordinaten einfügen (an die lokale Höhe der Achse gebunden)"})
+local _INSERT_OBJECTS_XYZ_ = lib2.language(
+	{EN="Insert objects' at XYZ coordinates (removing possible DNA formula on the VerticalOffset property)",
+	NO="Sett inn objekter på XYZ-koordinater (fjerner eventuell DNA-formel på VerticalOffset-egenskapen)",
+	FR="Insérer des objets aux coordonnées XYZ (en supprimant la formule ADN éventuelle dans la propriété VerticalOffset)",
+	DE="Objekte an den XYZ-Koordinaten einfügen (mögliche DNA-Formel in der Eigenschaft „VerticalOffset” wird entfernt)"})
+local _HELP_ = lib2.language({EN="Help", NO="Hjelp", FR="Aide", DE="Hilfe"})
+local _TERMINATE_ = lib2.language({EN="Terminate", NO="Avslutt", FR="Terminer", DE="Abbrechen"})
 
-local xCaption = "X"
-local yCaption = "Y"
-local zCaption = "Z"
-local rctypeCaption = "RcType"
-local variantCaption = "Variant"
+--Dialogs
+local _SELECT_ACTION_MSG_ = lib2.language(
+	{EN="Select action:\n\nClose the Excel file and open your scripting log window before running this script to keep track of progress.",
+	NO="Velg handling:\n\nLukk Excel-filen og åpne skriptloggvinduet før du kjører dette skriptet for å følge med på fremdriften.",
+	FR="Sélectionnez l'action :\n\nFermez le fichier Excel et ouvrez la fenêtre du journal des scripts avant d'exécuter ce script afin de suivre sa progression.",
+	DE="Aktion auswählen:\n\nSchließen Sie die Excel-Datei und öffnen Sie Ihr Skriptprotokollfenster, bevor Sie dieses Skript ausführen, um den Fortschritt zu verfolgen."})
 
+local _ASK_FOR_XY_EXCEL_FILE_MSG_ = lib2.language(
+	{EN="Select Excel file where the first worksheet has column captions 'X' and 'Y' (a 'Z' column will be ignored)",
+	NO="Velg Excel-fil der det første regnearket har kolonneoverskriftene «X» og «Y» (en «Z»-kolonne vil bli ignorert).",
+	FR="Sélectionnez le fichier Excel dont la première feuille de calcul comporte les en-têtes de colonne « X » et « Y » (la colonne « Z » sera ignorée).",
+	DE="Wählen Sie eine Excel-Datei aus, in der das erste Arbeitsblatt die Spaltenüberschriften „X“ und „Y“ enthält (eine Spalte „Z“ wird ignoriert)."})
 
-local usageMsg = [[
-Insert object at XY(Z) coordinates from Excel.
+local _ASK_FOR_XYZ_EXCEL_FILE_MSG_ = lib2.language(
+	{EN="Select Excel file where the first worksheet has column captions 'X' and 'Y' and 'Z'",
+	NO="Velg Excel-fil der det første regnearket har kolonneoverskriftene «X», «Y» og «Z».",
+	FR="Sélectionnez le fichier Excel dont la première feuille de calcul comporte les en-têtes de colonnes « X », « Y » et « Z ».",
+	DE="Wählen Sie eine Excel-Datei aus, in der das erste Arbeitsblatt die Spaltenüberschriften „X“, „Y“ und „Z“ enthält."})
 
-Version ]].._VERSION_
+local _SELECT_TEMPLATE_OBJECT_MSG_ = lib2.language(
+	{EN="Select an existing object as template.\n\nIts RcType and Variant will be used as a template for inserting similar objects if no RcType and Variant is stated in the Excel file",
+	NO="Velg et eksisterende objekt som mal.\n\nDets RcType og Variant vil bli brukt som mal for å sette inn lignende objekter hvis ingen RcType og Variant er angitt i Excel-filen.",
+	FR="Sélectionnez un objet existant comme modèle. Son RcType et son Variant seront utilisés comme modèle pour insérer des objets similaires si aucun RcType et Variant n'est spécifié dans le fichier Excel",
+	DE="Wählen Sie ein vorhandenes Objekt als Vorlage aus. Sein RcType und Variant werden als Vorlage für das Einfügen ähnlicher Objekte verwendet, wenn in der Excel-Datei kein RcType und Variant angegeben ist"})
+
+local _BAD_SELECTION_MSG_ = lib2.language({EN="Invalid menu selection", NO="Ugyldig menyvalg", FR="Sélection de menu non valide", DE="Ungültige Menüauswahl"})
+local _TERMINATED_MSG_ = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})
+
+local greetingMsg = _HEADER_.."\n\n".."Version ".._VERSION_
 
 local helpMsg = [[
 Input:
@@ -53,22 +83,31 @@ Output:
 
 
 --SCRIPT--
-lib2.show(usageMsg, _HEADER_)
+lib2.show(greetingMsg, _HEADER_)
 
 local option
 repeat
-	option = askForKeyword(_SELECT_ACTION_, {_INSERT_OBJECTS_XY_, _INSERT_OBJECTS_XYZ_, _HELP_, _TERMINATE_}, _HEADER_)
+	option = askForKeyword(_SELECT_ACTION_MSG_, {_INSERT_OBJECTS_XY_, _INSERT_OBJECTS_XYZ_, _HELP_, _TERMINATE_}, _HEADER_)
 
 	if option == _HELP_ then
 		lib2.show(helpMsg, _HEADER_)
 		
+	elseif option == _TERMINATE_ then
+		lib2.show("Terminated.", _HEADER_)
+
 	elseif option == _INSERT_OBJECTS_XY_ or option == _INSERT_OBJECTS_XYZ_ then
+		local xCaption = "X"
+		local yCaption = "Y"
+		local zCaption = "Z"
+		local rctypeCaption = "RcType"
+		local variantCaption = "Variant"
+
 		--Open Excel file:
 		if option == _INSERT_OBJECTS_XY_ then
-			lib2.show("Select Excel file where the first worksheet has column captions 'X' and 'Y' (a 'Z' column will be ignored).", _HEADER_)
+			lib2.show(_ASK_FOR_XY_EXCEL_FILE_MSG_, _HEADER_)
 		else
 			--_INSERT_OBJECTS_XYZ_
-			lib2.show("Select Excel file where the first worksheet has column captions 'X' and 'Y' and 'Z'.", _HEADER_)
+			lib2.show(_ASK_FOR_XYZ_EXCEL_FILE_MSG_, _HEADER_)
 		end
 		local filename =  askForFileName("Select Excel file")
 		local file = getContentsFromFile(FileType.Excel,"", filename)
@@ -82,8 +121,8 @@ repeat
 		local objTable = {}
 
 		--Select object type:
-		lib2.show("Select an existing object as template.\n\nIts RcType and Variant will be used as a template for inserting similar objects if no RcType and Variant is stated in the Excel file.", _HEADER_)
-		local templateObject = askForObject("Select template object")
+		lib2.show(_SELECT_TEMPLATE_OBJECT_MSG_, _HEADER_)
+		local templateObject = askForObject(_SELECT_TEMPLATE_OBJECT_MSG_)
 		
 		if templateObject.Alignment then
 			lib2.show(
@@ -166,12 +205,9 @@ repeat
 			lib2.show("Template object '"..RC__identify(templateObject).."' has no valid Alignment property - select another as template.", _HEADER_, _error)
 		end
 
-	elseif option == _TERMINATE_ then
-		lib2.show("Terminated.", _HEADER_)
-
 	else
 		--Provoke error and stop
-		lib2.stop("Bad option ["..option.."].")
+		lib2.stop(_BAD_SELECTION_MSG_.." ["..option.."].")
 	end
-	
-until option == _TERMINATE_ or option == nil
+until option == _TERMINATE_
+lib2.show(_TERMINATED_MSG_, _HEADER_)
