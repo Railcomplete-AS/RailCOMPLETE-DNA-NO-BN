@@ -1,28 +1,43 @@
 --[[
 	2025-12-15 v1.0 WIWIJ Created.
-	2026-02-08 v1.1 CLFEY Added windows and usage msg etc, using lib1 and lib2 functions.
+	2026-02-09 v1.1 CLFEY Added windows and usage msg etc, using lib1 and lib2 functions.
 --]]
 
 --FUNCTIONS--
 lib1 = includeLuaFile("Lua\\Functions\\lib1.lua") --Common Lua functions
 lib2 = includeLuaFile("Lua\\Functions\\lib2.lua") --Scripting-only Lua functions
 
-local language = lib2._DNA_COUNTRY_
 
 --CONSTANTS--
-local _HEADER_ = "DWG Normalization"
 local _VERSION_ = "1.1"
+local _HEADER_ = lib2.language(
+	{EN="Normalize 3D geometry files",
+	NO="Normaliser 3D DWG-filer",
+	FR="Normaliser les fichiers géométriques 3D",
+	DE="3D-Geometriedateien normalisieren"})
 
-local _NORMALIZE_ = "Normalize 3D geometry files"
-local _HELP_ = "Help"
-local _TERMINATE_ = "Terminate"
+--Commands
+local _NORMALIZE_ = _HEADER_
+local _HELP_ = lib2.language({EN="Help", NO="Hjelp", FR="Aide", DE="Hilfe"})
+local _TERMINATE_ = lib2.language({EN="Terminate", NO="Avslutt", FR="Terminer", DE="Abbrechen"})
 
-local usageMsg = [[
-This script normalizes an AutoCAD DWG file to a consistent drafting and unit configuration for use with RailCOMPLETE 3D libraries.
+--Dialogs
+local _SELECT_ACTION_MSG_ = lib2.language(
+	{EN="Select action:\n\nOpen your scripting log window before running this script to keep track of progress.",
+	NO="Velg handling:\n\nÅpne skriptloggvinduet før du kjører dette skriptet for å følge med på fremdriften.",
+	FR="Sélectionnez l'action :\n\nOuvrez la fenêtre du journal des scripts avant d'exécuter ce script afin de suivre sa progression.",
+	DE="Aktion auswählen:\n\nÖffnen Sie vor dem Ausführen dieses Skripts das Skriptprotokollfenster, um den Fortschritt zu verfolgen."})
 
-Open your scripting log window before running this script to keep track of progress.
+local _ASK_FOR_3D_GEOMETRY_FOLDER_MSG_ = lib2.language(
+	{EN="Choose the folder containing the 3D geometries",
+	NO="Velg katalog som inneholder 3D-geometrifiler",
+	FR="Sélectionnez le dossier contenant les géométries 3D",
+	DE="Wählen Sie den Ordner aus, der die 3D-Geometrien enthält"})
 
-Version ]].._VERSION_
+local _BAD_SELECTION_MSG_ = lib2.language({EN="Invalid menu selection", NO="Ugyldig menyvalg", FR="Sélection de menu non valide", DE="Ungültige Menüauswahl"})
+local _TERMINATED_MSG = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})
+
+local usageMsg = _HEADER_.."\n\n".."Version ".._VERSION_
 
 local helpMsg = [[
 - Disables object snaps and snap mode.
@@ -38,12 +53,12 @@ local helpMsg = [[
 Actual script contents:
 
 runCommand('(vla-activate (vla-open (vla-get-documents (vlax-get-acad-object)) "'..file..'" :vlax-false)) ')
-runCommand('(command "._SNAP" 1.0 "._OSNAP" "OFF" "._OSNAPCOORD" 1 "._SNAPMODE" 0 "._GRID" "OFF") ')
+runCommand('(command "._SNAP" 1.0 "._OSNAP" "_OFF" "._OSNAPCOORD" 1 "._SNAPMODE" 0 "._GRID" "_OFF") ')
 runCommand('(command "._UNITS" 2 3 1 3 0 "_NO" "._LUNITS" 2 "._LUPREC" 3 "._AUNITS" 0 "._AUPREC" 3 "._INSUNITS" 6 "._LIGHTINGUNITS" 2 ) ')
 runCommand('(command "._DIMZIN" 8 "._OSMODE" 0 "._COORDS" 1 "._PICKBOX" 5 "._DYNPICOORDS" 1 "._DYNPIFORMAT" 1 "._ORTHOMODE" 0 "._PICKFIRST" 1 "._PICKADD" 0 "._ATTREQ" 0 "._ATTDIA" 0 "._FILEDIA" 1 ) ')
 runCommand('(command "._ZOOM" "_EXTENTS") ')
 runCommand('(command "._PLINE" "0,0" "_WIDTH" 0 0 "") ')
-runCommand('(command "._PURGE" "ALL" "" "NO") ')
+runCommand('(command "._PURGE" "_ALL" "" "_NO") ')
 ]]
 
 
@@ -52,14 +67,19 @@ lib2.show(usageMsg, _HEADER_)
 
 local option
 repeat
-	option = askForKeyword("Select action:", {_NORMALIZE_, _HELP_, _TERMINATE_}, _HEADER_)
+	option = askForKeyword(_SELECT_ACTION_MSG_, {_NORMALIZE_, _HELP_, _TERMINATE_}, _HEADER_)
 
 	if option == _HELP_ then
 		lib2.show(helpMsg, _HEADER_)
 		
+	elseif option == _TERMINATE_ then
+		--Fall through
+		
 	elseif option == _NORMALIZE_ then
-		lib2.show("Choose the folder containing the 3D geometries", _HEADER_)
-		local folderName = askForFolderName("Choose the folder containing the 3D geometries")
+		lib2.show(_ASK_FOR_3D_GEOMETRY_FOLDER_MSG_, _HEADER_)
+
+		local folderName = askForFolderName(_ASK_FOR_3D_GEOMETRY_FOLDER_MSG_)
+		
 		local fileNames = table.where(getFilesInFolder(folderName, "*.dwg"), function (x) return x end)
 		local t
 		for _, f in pairs(fileNames) do
@@ -75,24 +95,21 @@ repeat
 			
 			runCommand('(vla-activate (vla-open (vla-get-documents (vlax-get-acad-object)) "'..fileName..'" :vlax-false)) ')
 			
-			runCommand('(command "._SNAP" 1.0 "._OSNAP" "OFF" "._OSNAPCOORD" 1 "._SNAPMODE" 0 "._GRID" "OFF") ')
+			runCommand('(command "._SNAP" 1.0 "._OSNAP" "_OFF" "._OSNAPCOORD" 1 "._SNAPMODE" 0 "._GRID" "_OFF") ')
 			runCommand('(command "._UNITS" 2 3 1 3 0 "_NO" "._LUNITS" 2 "._LUPREC" 3 "._AUNITS" 0 "._AUPREC" 3 "._INSUNITS" 6 "._LIGHTINGUNITS" 2 ) ')
 			runCommand('(command "._DIMZIN" 8 "._OSMODE" 0 "._COORDS" 1 "._PICKBOX" 5 "._DYNPICOORDS" 1 "._DYNPIFORMAT" 1 "._ORTHOMODE" 0 "._PICKFIRST" 1 "._PICKADD" 0 "._ATTREQ" 0 "._ATTDIA" 0 "._FILEDIA" 1 ) ')
 			runCommand('(command "._ZOOM" "_EXTENTS") ')
 			runCommand('(command "._PLINE" "0,0" "_WIDTH" 0 0 "") ')
-			runCommand('(command "._PURGE" "ALL" "" "NO") ')
-			runCommand("qsave ")
-			runCommand("close ")
+			runCommand('(command "._PURGE" "_ALL" "" "_NO") ')
+			runCommand("_QSAVE ")
+			runCommand("_CLOSE ")
 			write("Done\n")
 		end
 		lib2.show(nNormalized.." files normalized.", _HEADER_)
 		
-	elseif option == _TERMINATE_ then
-		--Fall through
-		
 	else
 		--Provoke error and stop
-		lib2.stop("Bad option ["..option.."].")
+		lib2.stop(_BAD_SELECTION_MSG_.." ["..option.."].")
 	end
 until option == _TERMINATE_
-lib2.show("Terminated.", _HEADER_)
+lib2.show(_TERMINATED_MSG, _HEADER_)
