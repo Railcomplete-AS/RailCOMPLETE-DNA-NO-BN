@@ -14,10 +14,10 @@ lib2 = includeLuaFile("Lua\\Functions\\lib2.lua") --Scripting-only Lua functions
 --CONSTANTS--
 local _VERSION_ = "1.3"
 local _HEADER_ = lib2.language(
-	{EN="Insert circles at 2D points given from Excel file",
-	NO="Sett inn sirkler på 2D-punkter gitt fra Excel-fil",
-	FR="Insérer des cercles aux points 2D fournis par le fichier Excel",
-	DE="Einfügen von Kreisen an 2D-Punkten aus Excel-Datei"})
+	{EN="Insert circles at XY(Z) coordinates given from Excel file",
+	NO="Sett inn sirkler på XY(Z)-koordinater gitt fra Excel-fil",
+	FR="Insérer des cercles aux coordomnnées XY(Z) fournis par le fichier Excel",
+	DE="Einfügen von Kreisen an XY(Z)-Koordinaten aus Excel-Datei"})
 
 --Commands
 local _CIRCLES_ = _HEADER_
@@ -37,10 +37,10 @@ local _ASK_FOR_EXCEL_FILE_MSG_ = lib2.language(
 	FR="Sélectionnez le fichier Excel contenant les colonnes de coordonnées XY intitulées « X » et « Y ».",
 	DE="Wählen Sie eine Excel-Datei mit XY-Koordinatenspalten mit den Beschriftungen „X“ und „Y“ aus."})
 
-local _BAD_SELECTION_MSG_ = lib2.language({EN="Invalid menu selection", NO="Ugyldig menyvalg", FR="Sélection de menu non valide", DE="Ungültige Menüauswahl"})
-local _TERMINATED_MSG = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})
+local _BAD_SELECTION_MSG__ = lib2.language({EN="Invalid menu selection", NO="Ugyldig menyvalg", FR="Sélection de menu non valide", DE="Ungültige Menüauswahl"})
+local _TERMINATED_MSG_ = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})
 
-local usageMsg = _HEADER_.."\n\n".."Version ".._VERSION_
+local greetingMsg = _HEADER_.."\n\n".."Version ".._VERSION_
 
 local helpMsg = [[
 	Input:
@@ -57,7 +57,7 @@ local helpMsg = [[
 
 
 --SCRIPT--
-lib2.show(usageMsg, _HEADER_)
+lib2.show(greetingMsg, _HEADER_)
 
 local option
 repeat
@@ -65,6 +65,9 @@ repeat
 
 	if option == _HELP_ then
 		lib2.show(helpMsg, _HEADER_)
+		
+	elseif option == _TERMINATE_ then
+		--Fall through
 		
 	elseif option == _CIRCLES_ then
 		local xCaption = "X"
@@ -95,19 +98,16 @@ repeat
 		    	cadInterface.addEntitiesToModelSpace({circle}) --Add graphics to drawing
 				write(string.format("%04d Inserted circle at (%.03f, %.03f)\n", i, x, y))
 			else
-				write(string.format("%04d Skipping row since %s=%s or %s=%s is not a number\n", i,  xCaption, x, yCaption, y))
+				write(string.format("%04d Skipping row since %s=%s or %s=%s is not a number\n", i,  xCaption, x, yCaption, y), _error)
 			end
 		end
 		endUndoBufferItem()
 		lib2.show(nTreated.." circles were inserted.", _HEADER_)
 		lib2.zoomExtents()
 		
-	elseif option == _TERMINATE_ then
-		--Fall through
-		
 	else
 		--Provoke error and stop
 		lib2.stop(_BAD_SELECTION_MSG_.." ["..option.."].")
 	end
 until option == _TERMINATE_
-lib2.show(_TERMINATED_MSG, _HEADER_)
+lib2.show(_TERMINATED_MSG_, _HEADER_)

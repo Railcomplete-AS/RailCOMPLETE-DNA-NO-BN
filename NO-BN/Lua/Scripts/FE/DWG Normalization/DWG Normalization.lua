@@ -35,9 +35,9 @@ local _ASK_FOR_3D_GEOMETRY_FOLDER_MSG_ = lib2.language(
 	DE="Wählen Sie den Ordner aus, der die 3D-Geometrien enthält"})
 
 local _BAD_SELECTION_MSG_ = lib2.language({EN="Invalid menu selection", NO="Ugyldig menyvalg", FR="Sélection de menu non valide", DE="Ungültige Menüauswahl"})
-local _TERMINATED_MSG = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})
+local _TERMINATED_MSG_ = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})
 
-local usageMsg = _HEADER_.."\n\n".."Version ".._VERSION_
+local greetingMsg = _HEADER_.."\n\n".."Version ".._VERSION_
 
 local helpMsg = [[
 - Disables object snaps and snap mode.
@@ -63,7 +63,7 @@ runCommand('(command "._PURGE" "_ALL" "" "_NO") ')
 
 
 --SCRIPT--
-lib2.show(usageMsg, _HEADER_)
+lib2.show(greetingMsg, _HEADER_)
 
 local option
 repeat
@@ -77,9 +77,7 @@ repeat
 		
 	elseif option == _NORMALIZE_ then
 		lib2.show(_ASK_FOR_3D_GEOMETRY_FOLDER_MSG_, _HEADER_)
-
 		local folderName = askForFolderName(_ASK_FOR_3D_GEOMETRY_FOLDER_MSG_)
-		
 		local fileNames = table.where(getFilesInFolder(folderName, "*.dwg"), function (x) return x end)
 		local t
 		for _, f in pairs(fileNames) do
@@ -112,4 +110,4 @@ repeat
 		lib2.stop(_BAD_SELECTION_MSG_.." ["..option.."].")
 	end
 until option == _TERMINATE_
-lib2.show(_TERMINATED_MSG, _HEADER_)
+lib2.show(_TERMINATED_MSG_, _HEADER_)
