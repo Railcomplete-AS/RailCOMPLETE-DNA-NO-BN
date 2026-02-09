@@ -13,7 +13,7 @@
 	return lib1.p2s(getPoint3D()) --Pretty-print X Y Z coordinates to  3 decimal places.
 
 	2026-01-30 v1.0 CLFEY Created.
-	2026-02-08 v1.1 CLFEY Updated stop() function to use show() before stopping. Added language support.
+	2026-02-09 v1.1 CLFEY Updated stop() function to use show() before stopping. Added language support.
 --]]
 
 
@@ -28,7 +28,7 @@ _DNA_COUNTRY_ = DocumentData.DnaIri:match("^(%w%w)%-%w%w.+$")
 --FUNCTIONS--
 --Writes a message to the log window and appends a newline. Call as lib2.writeln(msg, symbol = nil). The optional symbol is one of {nil | _ok | _warning | _error}. Symbols affect the color of the message which is echoed to the log window.
 function writeln(msg, symbol)
-	return tmsg and write(msg.."\n", symbol or _noSymbol) or write("\n", symbol or _noSymbol)
+	return msg and write(msg.."\n", symbol or _noSymbol) or write("\n", symbol or _noSymbol)
 end
 
 --Creates a popup-window showing a message and an 'OK' menu choice. Call as lib2.show(msg, header = nil, symbol = nil). The optional header replaces 'Keyword' in the window's header. The optional symbol is one of {nil | _ok | _warning | _error}. Symbols affect the color of the message which is echoed to the log window.
@@ -96,12 +96,12 @@ function setDefaultCadSettings()
 	runCommand("_-COLOR _BYLAYER ") -- Set the default color.
 end
 
---Hides polyline grips (0=hide grips / 1=display grips / 2=display additional midpoint grips on polyline segments (default)). Call as gripsOff().
+--Hides (setting 0) polyline grips (0=hide grips / 1=display grips / 2=display additional midpoint grips on polyline segments (default)). Call as gripsOff().
 function gripsOff()
 	runCommand("_GRIPS 0 ")
 end
 
---Shows polyline grips including midpoint grips (2) (0=hide grips / 1=display grips / 2=display additional midpoint grips on polyline). Call as gripsOn().
+--Shows (setting 2) polyline grips including midpoint grips (0=hide grips / 1=display grips / 2=display additional midpoint grips on polyline). Call as gripsOn().
 function gripsOn()
 	runCommand("_GRIPS 2 ")
 end
@@ -109,4 +109,9 @@ end
 --Zooms modelspace to extents of everything that is visible. Call as zoomExtents().
 function zoomExtents()
 	runCommand('(command "._ZOOM" "_EXTENTS") ')
+end
+
+--Return a language-dependent string from the input argument dictionary of strings. Call as lib2.language({EN="this", NO="dette", FR="ceci", DE="dieses"}). The returned string is selected on the basis of the ISO 3166-2 two-letter country abbreviation that is part of the active document's DNA signature (your current railway administration).
+function language(tableOfIso3166_2IndexedStrings)
+	return tableOfIso3166_2IndexedStrings[_DNA_COUNTRY_]
 end
