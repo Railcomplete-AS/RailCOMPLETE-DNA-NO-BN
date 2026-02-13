@@ -14532,6 +14532,41 @@ return s</Data>
       <Formula>0</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
+
+	<!-- 2026-02-13 CLFEY Added after support call with customer. Adapted from DNA 2026.1 WIP. -->
+	<LuaFunction Name="_JBTEH_BAR_Offset3DZ()"
+		Description="Returns the Z coordinate for a guyw wire, on condition that it has a relation to its footplate ('forankring') at one end and to its anchoring-to-pole (kraftoverføringskonsoll) at the catenary mast end. Guy wires are supposed to be drawn from mast to anchoring footplate."
+		>
+		<Formula>
+			function _JBTEH_BAR_Offset3DZ()
+				--2025-10-08 CLFEY Ny kode, som takler at bardunen kan være tegnet fra ankeret til masten (ønske fra kunde)
+				local rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole = "Har kraftoverføringskonsoll"
+				local rel_GuyWire_IsAnchoredBy_GuywireFootplate = "Har forankring" --(Bytter navn til "Har fotplate" i kommende DNA)
+				local atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole)[0]
+				local gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
+				local L = RcAlignment.HorizontalGeometry.Length
+				local z0, z1, dZ
+				local d = RC__getDistance2D(getPoint3D(gwf), RcAlignment.HorizontalGeometry.StartPoint)
+				if d &lt; 1.0 then 
+					--The guywire has probably been drawn from guywire-footplate to force relaying console on OCS pole
+					z0 = gwf.geoCoord.Z
+					z1 = atp.GeoCoord.Z
+				else
+					--The guywire has probably been drawn from force relaying console on pole to guywire-footplate
+					z0 = atp.GeoCoord.Z
+					z1 = gwf.geoCoord.Z
+				end
+				dZ = z1 - z0
+				return z0 + _position.Pos * (dZ/L)
+			end
+		</Formula>
+	</LuaFunction>
+    <LuaExpression Name="Rotation3D.Z" IsModelCheck="false">
+      <Formula>_JBTEH_BAR_Offset3DZ()
+	  </Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
+	
     <LuaExpression Name="Model3DSeparation" IsModelCheck="false">
       <Formula>RC__getNearest3DStep(1.0)</Formula>
       <Symbol>_noSymbol</Symbol>
