@@ -33,3 +33,10 @@ function splitString(s, splitChar)
 	end
 	return splitTable
 end
+
+--Returns a straight horizontal profile segment for subsequent use in createHorizontalGeometry() or similar functions. Call as createHorizontalGeometryStraightSegment(a, b) where a and b are 2-tuples {Double X, Double Y}.
+function createHorizontalGeometryStraightSegment(a, b)
+	local pointA = createExternalLibraryObject("System.Windows.Point", {a.X, a.Y})
+	local pointB = createExternalLibraryObject("System.Windows.Point", {b.X, b.Y})
+	return createExternalLibraryObject("RailCOMPLETE.Model.GeometryModels.HorizontalGeometryModel+Line", {pointA, pointB})
+end
