@@ -8,164 +8,19 @@
 ; Change log:
 ; 2022-10-07 CLFEY New distribution of LISP source to DNA repositories.
 ; 2022-09-08 CLFEY Updated symbols.
+; 2026-02-19 CLFEY Updated and added symbols. File fissioned from Ocs Wire Tensioning Console.lsp
 ;
 ;=========================================================================================================================
 
-; Force uptake (guywires and spanners)
+; Footplate for anchoring of guywire(s) or spanner
 
-(defun OCS-WIRE-TENSIONING-ANCHOR ( / )
-	; Implemented for all administrations:
-
-	; Specific to this administration:
-	(TraceLevel3 "NOBN-BARDUN-FOTPLATE-ENKEL")							(NOBN-BARDUN-FOTPLATE-ENKEL)							; Bracket which is screwed onto a foundation for a single OCS wire guywire (e.g., bardunfundament boret 2500mm)
-	(TraceLevel3 "NOBN-BARDUN-FOTPLATE-DOBBEL")							(NOBN-BARDUN-FOTPLATE-DOBBEL)							; Bracket which is screwed onto a foundation for two OCS wire guywires (going to the same OCS mast) (e.g., bardunfundament boret 2500mm)
-	(TraceLevel3 "NOBN-STREVER-FOTPLATE")								(NOBN-STREVER-FOTPLATE)									; Bracket which is screwed onto a foundation for a OCS wire spanners (e.g., bardunfundament boret 2500mm)
-	(TraceLevel3 "NOBN-STREVER-FOTPLATE-TUNNEL-120")					(NOBN-STREVER-FOTPLATE-TUNNEL-120)						; Bracket which is fastened to tunnel roof / under bridge which clamps with two arms to an Ø120 bridge / tunnel mast
-	(TraceLevel3 "ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE")		(ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE)			; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for WTB and guywire
-	(TraceLevel3 "ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE")	(ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE)		; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for WTB with no guywire (may have spanner)
-	(TraceLevel3 "ANCHORING-TO-POLE-FOR-GUYWIRE")				(ANCHORING-TO-POLE-FOR-GUYWIRE)					; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for guywire or spanner
-	(TraceLevel3 "ANCHORING-TO-POLE-FOR-SPANNER")				(ANCHORING-TO-POLE-FOR-SPANNER)					; Bracket mounted on OCS pole / portal suspension pole / ceiling suspension pole, for guywire or spanner
-	(TraceLevel3 "NOBN-TUNNELFESTE")									(NOBN-TUNNELFESTE)										; Bolts to tunnel wall, holding a bracket which holds a cantilever, or a rod terminated in a ring where the OCS wire guywire is to be fastened. See EH-702679.
+(defun OCS-WIRE-TENSIONING-FOOTPLATE ( / )
+	(TraceLevel3 "NOBN-TUNNELFESTE")						(NOBN-TUNNELFESTE)					; Bolts to tunnel wall, holding a bracket which holds a cantilever, or a rod terminated in a ring where the OCS wire guywire is to be fastened. See EH-702679.
+	(TraceLevel3 "NOBN-BARDUN-FOTPLATE-ENKEL")				(NOBN-BARDUN-FOTPLATE-ENKEL)		; Bracket which is screwed onto a foundation for a single guywire
+	(TraceLevel3 "NOBN-BARDUN-FOTPLATE-DOBBEL")				(NOBN-BARDUN-FOTPLATE-DOBBEL)		; Bracket which is screwed onto a foundation for two guywires
+	(TraceLevel3 "NOBN-STREVER-FOTPLATE")					(NOBN-STREVER-FOTPLATE)				; Bracket which is screwed onto a foundation for a spanner
+	(TraceLevel3 "NOBN-STREVER-FOTPLATE-TUNNEL-120")		(NOBN-STREVER-FOTPLATE-TUNNEL-120)	; Bracket which is fastened to tunnel ceiling / under bridge
 )
-
-
-
-(defun ANCHORING-TO-POLE-FOR-WTB-AND-GUYWIRE ( / blockName description x y r1 p1 p2 p3 p4 )
-	; Anchoring device on OCS pole.
-	; Connects a WTB (and potential guywire) to an OCS mast.
-	; This symbol has no equivalent in the Bane NOR symbol library.
-	; If the OCS pole features a spanner, than another anchoring device needs to be inserted, due to their different Z coordinates on the OCS pole.
-	;
-	;     +-------------+
-	;     |    /   \    | 
-	;     |   |  1  |   |		; The circle accomodates one or more Wire Tension Balancers (WTB) (or one or more fixed tensioners).
-	;     |    \___/    |
-	;     |      .      | 	
-	;     |   3-----4   | 
-	;     |    \   /    |		; The triangle accomodates one or more guywires.
-	;     |     \ /     |
-	;     +------2------+		; The symbol shall be rotated by RC in runtime such that the circle is on the WTB side.
-	;
-	(setq
-		blockName (strcat _OCS_ "FPM-" "FORANKRING-PAA-MAST-FOR-AVSPENNING-MED-BARDUN")
-		description "KL KRAFTAVLASTING, FORANKRING PAA MAST FOR AVSPENNING MED BARDUN"
-		x	1.500
-		y	1.500
-		r1	0.250
-		p1  '( 0.000  0.500)
-		p2	'( 0.000 -0.750)
-		p3	'(-0.500 -0.205)
-		p4	'( 0.500 -0.205)
-	)
-	(DrawBox layDef_Zero x y _noWipeout_)
-	(DrawCircleAtPoint layDef_Zero p1 r1 _noWipeout_)
-	(Drawline layDef_Zero p2 p3)
-	(Drawline layDef_Zero p3 p4)
-	(Drawline layDef_Zero p4 p2)
-	(AddDescriptionBelowOrigin description (HalfOf y))
-	(CreateSchematicBlockFromCurrentGraphics blockName)
-	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-)		
-
-
-
-(defun ANCHORING-TO-POLE-FOR-GUYWIRE ( / blockName description x y p2 p3 p4 )
-	; Anchoring device on OCS pole.
-	; Connects a WTB to an OCS mast, no guywire at the same anchoring device. There may be a spanner, but it shall have its own anchoring device 
-	; due to different Z coordinate on the OCS pole.
-	; This symbol has no equivalent in the Bane NOR symbol library.
-	; If the OCS pole features a spanner, than another anchoring device needs to be inserted, due to their different Z coordinates on the OCS pole.
-	;
-	;     +-------------+
-	;     |             |
-	;     |             | 
-	;     |      .      | 	
-	;     |   3-----4   | 
-	;     |    \   /    |		; The triangle accomodates one or more guywires.
-	;     |     \ /     |
-	;     +------2------+		; The symbol shall be rotated by RC in runtime such that the triangle is one the guywire side.
-	;
-	(setq
-		blockName (strcat _OCS_ "FPM-" "FORANKRING-PAA-MAST-FOR-KURVEBARDUN")
-		description "KL KRAFTAVLASTING, FORANKRING PAA MAST FOR KURVEBARDUN"
-		x	1.500
-		y	1.500
-		p2	'( 0.000 -0.750)
-		p3	'(-0.500 -0.205)
-		p4	'( 0.500 -0.205)
-	)
-	(DrawBox layDef_Zero x y _noWipeout_)
-	(Drawline layDef_Zero p2 p3)
-	(Drawline layDef_Zero p3 p4)
-	(Drawline layDef_Zero p4 p2)
-	(AddDescriptionBelowOrigin description (HalfOf y))
-	(CreateSchematicBlockFromCurrentGraphics blockName)
-	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-)		
-
-
-
-(defun ANCHORING-TO-POLE-FOR-WTB-WITHOUT-GUYWIRE ( / blockName description x y r5 p5 )
-	; Anchoring device on OCS pole.
-	; Connects one guywire (or more) to an OCS mast, to counteract large lateral forces due to track curvature etc.
-	; This symbol has no equivalent in the Bane NOR symbol library.
-	;
-	;     +-------------+
-	;     |             |
-	;     |             | 
-	;     |     _._     | 	
-	;     |    /   \    | 
-	;     |   |  5  |   |		; The circle accomodates one ore more Wire Tension Balancers, or one or more fixed tensioners.
-	;     |    \___/    |
-	;     +-------------+		; The symbol shall be rotated by RC in runtime such that the circle is on the WTB side.
-	;
-	(setq
-		blockName (strcat _OCS_ "FPM-" "FORANKRING-PAA-MAST-FOR-AVSPENNING-UTEN-BARDUN")
-		description "KL KRAFTAVLASTING, FORANKRING PAA MAST FOR AVSPENNING UTEN BARDUN"
-		x	1.500
-		y	1.500
-		r5	0.250
-		p5  '(0.000 -0.500)
-	)
-	(DrawBox layDef_Zero x y _noWipeout_)
-	(DrawCircleAtPoint layDef_Zero p5 r5 _noWipeout_)
-	(AddDescriptionBelowOrigin description (HalfOf y))
-	(CreateSchematicBlockFromCurrentGraphics blockName)
-	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-)		
-
-
-
-(defun ANCHORING-TO-POLE-FOR-SPANNER ( / blockName description x y p6 p7 p8 )
-	; Anchoring device on OCS pole.
-	; Connects one spanner to an OCS mast, to counteract large lateral forces, typically when terminating a CW in a narrow yard.
-	; This symbol has no equivalent in the Bane NOR symbol library.
-	;
-	;     +-------------+
-	;     |             |
-	;     |             | 
-	;     |      .      | 	
-	;     |      6      | 
-	;     |     / \     |		; The triangle accomodates a spanner.
-	;     |    /   \    |
-	;     +---7-----8---+		; The symbol shall be rotated by RC in runtime such that the triangle is one the spanner side.
-	;
-	(setq
-		blockName (strcat _OCS_ "FPM-" "FORANKRING-PAA-MAST-FOR-STREVER")
-		description "KL KRAFTAVLASTING, FORANKRING PAA MAST FOR STREVER"
-		x	1.500
-		y	1.500
-		p6  '( 0.000 -0.205)
-		p7  '(-0.500 -0.750)
-		p8  '( 0.500 -0.750)
-	)
-	(DrawBox layDef_Zero x y _noWipeout_)
-	(DrawLine layDef_Zero p6 p7)
-	(DrawLine layDef_Zero p6 p8)
-	(AddDescriptionBelowOrigin description (HalfOf y))
-	(CreateSchematicBlockFromCurrentGraphics blockName)
-	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
-)		
 
 
 
