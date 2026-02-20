@@ -885,6 +885,71 @@
 			</Formula>
 		</LuaFunction>
 
+		<LuaExpression Name="Color"><Formula>_JBTEH_KTL_getContactWireOrderedVertices()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_getContactWireOrderedVertices()" ReturnType="String"
+			Description="Returns an ordered table containing the vertices for a contact wire's 3D geometry.">
+			<Signature>Table of {Double X, Double Y} _JBTEH_KTL_getContactWireOrderedVertices(ObjectReference contactWire)</Signature>
+			<Formula>
+				function _JBTEH_KTL_getContactWireOrderedVertices(cow)
+					cow = cow or this
+				
+					function getVertex(obj) return obj.RcType == rctype_Cantilever and NOBN_ocs_getWireClampPoint3D(obj) or getPoint3D(obj) end
+					
+					local consolesOnOcsPole = table.select(cow:getRelatedObjects(rel_ContactWireOrMidpointAnchoringLineOrHvConductor_IsTensionedBy_Wtb), function (x) return table.firstOrNil(x:getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)) end)
+					local cantilevers = table.select(cow:getRelatedObjects(rel_ContactWire_IsHeldBy_Cantilever))
+					local objectsAtVertices = table.select(getUnionOfCollections({consolesOnOcsPole, cantilevers}))
+					
+					--Make table of vertices {Double X, Double Y}
+					local vertices = {}
+					for _, v in pairs(objectsAtVertices) do table.insert(vertices, getVertex(v)) end
+					
+					--Find center of gravity of all vertices
+					local g = getPoint3D(0,0)
+					for _, v in pairs(vertices) do g = getVectorSum(g, v) end
+					g = getVectorScalarProduct(1/#vertices, g)
+					
+					--Find the vertex f which is the most distant from the center of gravity (largest squared 2D distance)
+					local maxDist = -1
+					local f
+					for _, v in pairs(vertices) do
+						local d = (v.X - g.X)^2 + (v.Y - g.Y)^2
+						if d &gt; maxDist then maxDist = d f = v end
+					end
+					
+					--Let gf be the 2D vector from g to f, to be used as a yardstick to order all vertices
+					gf = getPoint3D(f.X - g.X, f.Y - g.Y)
+					
+					--Sort vertices a, b according to XY plane dot products ga.gf vs gb.gf - the vertices should be more or less on a fairly straight line
+					table.sort(vertices, function (a, b)
+						ga = getPoint3D(a.X - g.X, a.Y - g.Y)
+						gb = getPoint3D(b.X - g.X, b.Y - g.Y)
+						local gagf = getVectorDotProduct(ga, gf)
+						local gbgf = getVectorDotProduct(gb, gf)
+						return gagf &gt; gbgf
+					end)
+					return vertices
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="RcAlignment.HorizontalGeometry.Segments"><Formula>_JBTEH_KTL_getContactWireHorizontalGeometrySegments(this)</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KTL_getContactWireHorizontalGeometrySegments()" ReturnType="String"
+			Description="Returns an ordered sequence of horizontal segments for use in the contact wire's RcAlignment.HorizontalGeometry.Segments property.">
+			<Signature>HorizontalSegments _JBTEH_KTL_getContactWireHorizontalGeometrySegments(ObjectReference contactWire)</Signature>
+			<Formula>
+				function _JBTEH_KTL_getContactWireHorizontalGeometrySegments(cow)
+					cow = cow or this
+					local lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
+					local vertices = _JBTEH_KTL_getContactWireOrderedVertices(cow)
+					local segments = {}
+					for i = 2, #vertices do 
+						table.insert(segments, lib1.createHorizontalGeometryStraightSegment(vertices[i-1], vertices[i]))
+					end
+					return segments
+				end
+			</Formula>
+		</LuaFunction>
+
 		<!-- Colors according to Bane NOR TRV, Contact wire symbols: -->
 		<LuaExpression Name="Color"><Formula>_JBTEH_KTL_Color()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_KTL_Color()" ReturnType="String"
@@ -1181,11 +1246,11 @@
 					else
 						local anp = rAnp[0]
 
-						if anp.Variant == "Konsoll på mast for avspenning med bardun" then
+						if anp.Variant == "Konsoll på mast for avspenning og bardun" then
 							--guywire to counteract the WTB's forces on OCS pole:
 							t = "-B"
 
-						elseif anp.Variant == "Konsoll på mast for kurvebardun" then
+						elseif anp.Variant == "Konsoll på mast for bardun" then
 							--One or two guywires to compensate for large lateral forces on OCS pole, e.g., due to track curvature, AT wires changing side-of-track, or other issue:
 							local rBar, nBar = getRelatedObjects(rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb, anp)
 							if nBar == 1 then
@@ -1204,7 +1269,7 @@
 						elseif anp.Variant == "Konsoll på mast for strever" then
 							return _error,"ERROR - Guywire is not compatible with force relaying console for spanner."
 						
-						elseif anp.Variant == "Konsoll på mast for avspenning med bardun" then
+						elseif anp.Variant == "Konsoll på mast for avspenning og bardun" then
 							return _error,"ERROR - Guywire is not compatible with force relaying console for WTB without guywire."
 
 						else
@@ -1974,15 +2039,13 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 		
-		<Variants DefaultValue="Konsoll på mast for avspenning med bardun">
-			<Variant Name="Konsoll på mast for avspenning med bardun">
-			</Variant>
-			<Variant Name="Konsoll på mast for avspenning uten bardun">
-			</Variant>
-			<Variant Name="Konsoll på mast for kurvebardun">
-			</Variant>
-			<Variant Name="Konsoll på mast for strever">
-			</Variant>
+		<Variants DefaultValue="Konsoll på mast for avspenning og bardun">
+			<Variant Name="Konsoll på mast for avspenning og bardun"/>
+			<Variant Name="Konsoll på mast for avspenning og strever"/>
+			<Variant Name="Konsoll på mast for avspenning og avspenning"/>
+			<Variant Name="Konsoll på mast for bardun"/>
+			<Variant Name="Konsoll på mast for strever"/>
+			<Variant Name="Konsoll på mast for avspenning"/>
 		</Variants>
 
         <LuaExpression Name="Mileage"><Formula>_JBTEH_KPM_mileage()</Formula></LuaExpression>
@@ -2146,7 +2209,7 @@
 					local defaultSpannerHeight = 4.80 --TODO: Check value
 				
 					local r, _ = getRelatedObjects(rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb)
-					if Variant == "Konsoll på mast for avspenning med bardun" or Variant == "Konsoll på mast for avspenning uten bardun" then
+					if Variant == "Konsoll på mast for avspenning og bardun" or Variant == "Konsoll på mast for avspenning uten bardun" then
 						local rWtb = r:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
 						local nWtb = getCollectionLength(rWtb)
 						if nWtb == 0 then
@@ -2216,7 +2279,7 @@
 							return 0, _warning,"WARNING - The related WTB tensions a high voltage conductor - delete this formula and define the anchoring device's height manually."
 						end
 				
-					elseif Variant == "Konsoll på mast for kurvebardun" then
+					elseif Variant == "Konsoll på mast for bardun" then
 						return defaultGuywireHeight, _warning, _info("WARNING - Using default guywire height on OCS pole. Delete this formula and adjust manually.")
 					elseif Variant == "Konsoll på mast for strever" then
 						return defaultSpannerHeight, _warning, _info("WARNING - Using default spanner height on OCS pole. Delete this formula and adjust manually.")
@@ -2242,14 +2305,14 @@
 					else
 						a = r[0].OcsPoleCrossSection:match("HE[ABM](%d%d%d)") --'HEA220', 'HEB220',  etc: Capture the three digits.
 						a = a or "240" --Default size if not a HEA, HEB or MEB pole...
-						if Variant == "Konsoll på mast for avspenning med bardun" then
+						if Variant == "Konsoll på mast for avspenning og bardun" then
 							--TODO: Make model depend on OCS pole type and WTB type
-							return "NO-BN-3D-EH-FPM-FORANKRING-PÅ-MAST-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
-						elseif Variant == "Konsoll på mast for kurvebardun" then
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
+						elseif Variant == "Konsoll på mast for bardun" then
 							--TODO: Make model depend on OCS pole type
-							return "NO-BN-3D-EH-FPM-FORANKRING-PÅ-MAST-FOR-KURVEBARDUN"
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-KURVEBARDUN"
 						elseif Variant == "Konsoll på mast for strever" then 
-							return "NO-BN-3D-EH-FPM-FORANKRING-PÅ-MAST-FOR-STREVER-400x300-FOR-HEB"..a
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-STREVER-400x300-FOR-HEB"..a
 						else
 							return "Unknown Variant ["..Variant.."]."
 						end
@@ -2281,7 +2344,7 @@
 					end
 
 					--Anchoring to OCS pole for WTB and guywire:
-					if Variant == "Konsoll på mast for avspenning med bardun" then
+					if Variant == "Konsoll på mast for avspenning og bardun" then
 						if nWtb == 1 and nGwi == 1 and nSpn == 0 then
 							return _ok,"OK - Anchoring device on OCS pole is related to one WTB and one guywire, no spanner."
 						else
@@ -2300,7 +2363,7 @@
 						end
 
 					--Anchoring to OCS pole for curve guywire (or more guywires):
-					elseif Variant == "Konsoll på mast for kurvebardun" then
+					elseif Variant == "Konsoll på mast for bardun" then
 						if nWtb == 0 and nGwi &gt; 0 and nSpn == 0 then
 							return _ok,"OK - Anchoring device on OCS pole is related to one or more guywires, no WTB or spanner."
 						else
@@ -2326,22 +2389,32 @@
 			</Formula>
 		</LuaFunction> 
 
-		<InsertPointObject Name="Konsoll på mast for avspenning med bardun" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-AVSPENNING-MED-BARDUN-{{SymbolMode}}"
+		<InsertPointObject Name="Konsoll på mast for avspenning og bardun" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-OG-BARDUN-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Konsoll på mast for avspenning uten bardun" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-AVSPENNING-UTEN-BARDUN-{{SymbolMode}}"
+		<InsertPointObject Name="Konsoll på mast for avspenning og strever" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-OG-STREVER-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Konsoll på mast for kurvebardun" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-KURVEBARDUN-{{SymbolMode}}"
+		<InsertPointObject Name="Konsoll på mast for avspenning og avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-OG-AVSPENNING-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+
+		<InsertPointObject Name="Konsoll på mast for bardun" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-BARDUN-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Konsoll på mast for strever" DisplayBlockName="NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR-STREVER-{{SymbolMode}}"
+		<InsertPointObject Name="Konsoll på mast for strever" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-STREVER-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+
+		<InsertPointObject Name="Konsoll på mast for avspenning" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -2356,11 +2429,13 @@
 														{% else %}45.0
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTEH_FPM-FORANKRING-PAA-MAST-FOR
-				{% if Variant == 'Konsoll på mast for avspenning med bardun' %}AVSPENNING-MED-BARDUN
-				{% elsif Variant == 'Konsoll på mast for avspenning uten bardun' %}AVSPENNING-UTEN-BARDUN
-				{% elsif Variant == 'Konsoll på mast for kurvebardun' %}KURVEBARDUN
+				NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR
+				{% if Variant == 'Konsoll på mast for avspenning og bardun' %}AVSPENNING-OG-BARDUN
+				{% elseif Variant == 'Konsoll på mast for avspenning og strever' %}AVSPENNING-OG-STREVER
+				{% elsif Variant == 'Konsoll på mast for avspenning og avspenning' %}AVSPENNING-OG-AVSPENNING
+				{% elsif Variant == 'Konsoll på mast for bardun' %}BARDUN
 				{% elsif Variant == 'Konsoll på mast for strever' %}STREVER
+				{% elsif Variant == 'Konsoll på mast for avspenning' %}AVSPENNING
 				{% else %}BAD_VARIANT
 				{% endif %}
 				{{SymbolMode}}
