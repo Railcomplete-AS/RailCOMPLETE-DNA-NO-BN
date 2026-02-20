@@ -51,7 +51,7 @@
 					-	For each next object, store next object's contact wire name and the 
 						straight-line 2D distance in the XY plane from CW wireclamp/wtb to CW wireclamp/wtb.
 					Return value: 	A collection of collections, each containing the 'name' of a contact wire and the
-									straight-line 2D distance to next item.
+									straight-line 2D distance to next sl.
 				--]]
 				local tol = 1.0 --[m] Tolerance when searching for wire tension balancers at an OCS pole
 				local result = {}
@@ -59,13 +59,13 @@
 				--Find all cantilevers and WTBs at this OCS pole, but skip WTBs serving midpoint anchor lines or AT conductors, earthing wires etc:
 				local rCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
 				local rWtb = getNearbyPointObjects2D(tol, rctype_WireTensioningBalancer)
-								:filter(function (x) return x.Alignment == rctype_ContactWire end)
+								:filter(function (x) return x.Alignment.RcType == rctype_ContactWire end)
 				local items = getUnionOfCollections({rCnt, rWtb})
 				local nItems = getCollectionLength(items)
 			
 				if nItems == 0 then
 					--Poles for supporting OCS portals will exist, with neither wtbs nor cantilevers at the pole.
-					return {}, _info("No spanlengths")
+					return {}, _info("No spanlengthItems")
 				else
 					for i = 0, nItems-1 do
 						local thisItem = items[i]
@@ -77,7 +77,13 @@
 						else
 							--thisItem.RcType == rctype_Cantilever:
 							p1 = thisItem:NOBN_ocs_getWireClampPoint3D()
-							cowName = thisItem:getRelatedObjects(rel_Cantilever_Holds_ContactWire)[0].name
+							cow, nCow = thisItem:getRelatedObjects(rel_Cantilever_Holds_ContactWire)
+							if nCow == 0 then
+								--Cantilever has no relation to its contact wire yet:
+								cowName = "L?"
+							else
+								cowName = cow[0].name
+							end
 						end
 						local nextItems, nNextItems = thisItem:getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)
 						--A WTB might be the terminal for a contact wire (at a buffer stop etc). Treat only those who possess a successor:
@@ -100,65 +106,7 @@
 		</Formula>
 	</LuaFunction>
 
-<!-- ======== << Start of WIP ======================================== -->
-	<LuaFunction Name="_JBTEH_UTL_SpanlengthDisplay2()" ReturnType="String"
-			HideFromUser="false"
-			Description="Returns a text string containing the ContactWireName and Spanlength for this cantilever, from its wire clamp position to its next cantilever wire clamp or wire tension balancer's, measured as a straight-line 2D length. Example: A 2D spanlength of 57.8 meters for contact wire 'L27-478' will read as '- L27-478:57.8 -'. Modify the cantilever's lateral (ACS.X) and longitudinal (ACS.Y) spanlength text offset properties to place your text without overlapping other items in your drawing." >
-		<Signature>String _JBTEH_UTL_SpanlengthDisplay2()</Signature>
-		<Formula>
-			function _JBTEH_UTL_SpanlengthDisplay2()
-				--Identify the applicable contact wire:
-				local cow, nCow, cw, cwName
-				if RcType == rctype_WireTensioningBalancer then
-					if Alignment == nil then
-						return "", _info("Wire tensioning balancer has no Own Alignment - cannot compute spanlength.")
-					else
-						p1 = getPoint3D()
-						cw = Alignment
-					end
-				else
-					--RcType == rctype_Cantilever:
-					cow, nCow = getRelatedObjects(rel_Cantilever_Holds_ContactWire)
-					if nCow == 0 then
-						return "", _info("Cantilever is missing relation '"..rel_Cantilever_Holds_ContactWire.."' - cannot compute spanlength.")
-					else
-						p1 = NOBN_ocs_getWireClampPoint3D()
-						cw = cow[0]
-					end
-				end
 
-				--Search for subsequent cantilever or wire tensioning balancer:
-				--TODO: Locate next item based on their DistanceAlong values in their common contact wire,
-				--      then replace relation "Next cantilever or WTB" by a suitable function.
-				local nextItems, nNextItems = getRelatedObjects(rel_CantileverOrWtb_HasNext_CantileverOrWtb)
-				if nNextItems == 0 then
-					if RcType == rctype_WireTensioningBalancer then
-						return "", _info("Wire tensioning balancer has no next cantilever (or wire tension balancer) - cannot compute spanlength.")
-					else
-						--RcType == rctype_Cantilever:
-						return "", _info("Cantilever has no next cantilever or wire tension balancer - cannot compute spanlength.")
-					end
-				else
-					local nextItem = nextItems[0]
-					local p2
-					if nextItem.RcType == rctype_WireTensioningBalancer then
-						p2 = nextItem:getPoint3D()
-					else
-						--nextItem.RcType == rctype_Cantilever:
-						p2 = nextItem:NOBN_ocs_getWireClampPoint3D()
-					end
-					local spanlength2D = RC__getDistance2D(p1, p2)
-					local t = string.format("%s:%.01f", cwName, spanlength2D)
-					return t, _info("Spanlength from "..RC__identify(this).." to "..RC__identify(nextItem).." is "..RC__round(spanlength2D,1).." meters.")
-				end
-			end
-		</Formula>
-	</LuaFunction>
-
-<!-- ========End of WIP >>======================================== -->
-
-
-	
 	<LuaFunction Name="_JBTEH_MAS_SpanlengthDisplay()" ReturnType="String"
 			HideFromUser="false"
 			Description="Returns a text string containing the ContactWireName and Spanlength for each cantilever located on this OCS pole, from each associated wire clamp position to the next cantilever's wire clamp position (measured as a straight-line 2D length).">
@@ -167,7 +115,7 @@
 			function _JBTEH_MAS_SpanlengthDisplay()
 				--[[
 					Prerequisites:
-					a) A text attribute that displays multiple spanlengths must have IsMTextAttribute == true to treat '\\P' as 'newline'.
+					a) A text attribute that displays multiple spanlengthItems must have IsMTextAttribute == true to treat '\\P' as 'newline'.
 					b) The Spanlength property holds a collection of dictionaries, each of which holds a
 					contact wire's name [String] and its corresponding spanlength [Double].
 			
@@ -179,25 +127,18 @@
 					"- L30-536:52.6 -\n...\n- L30-537:37.8 -"	...a collection of several such dictionaries.
 				--]]
 			
-				local Spanlengths = getCollectionFromTable(_JBTEH_MAS_getSpanlengths())
-				local nSpanlengths = getCollectionLength(Spanlengths)
-				local s
-				if nSpanlengths == 0 then
-					return "", _info("No spanlength(s) - expected format is {{Spanlength = [double], Wirename = [string]}+}")
-				elseif nSpanlengths == 1 then
-					local sl = Spanlengths[0]
-					return sl.Spanlength == 0 and "" or string.format("- %s:%.01f -", sl.Wirename, sl.Spanlength)
+				local spanlengthItems = _JBTEH_MAS_getSpanlengths()
+				local t
+				if #spanlengthItems == 0 then
+					return "", _info("No spanlength(s) - expected format is {Spanlength = [double], Wirename = [string]}+}")
 				else
-					for i = 0, nSpanlengths-1 do
-						local sl = Spanlengths[i]
-						if i == 0 then
-							s = string.format("- %s:%.01f -",sl.Wirename, sl.Spanlength)
-						else
-							s = s..string.format("\\P- %s:%.01f -",sl.Wirename, sl.Spanlength)
-						end
+					local s
+					for _, sl in pairs(spanlengthItems) do
+						s = sl.Spanlength == 0 and "" or string.format("- %s:%.01f -", sl.Wirename, sl.Spanlength)
+						t = t and (s == "" and t or t.."\\P"..s) or (s == "" and nil or s) --Append non-empty line s to t, with paragraph (newline) between non-empty lines
 					end
 				end
-				return s
+				return t
 			end
 		</Formula>
 	</LuaFunction>
@@ -219,14 +160,15 @@
 				else
 					local target = r[0]
 					--Find WCS offset from object's insertion point to the midpoint between the WCS displaypoints for the poles that are involved:
+					--Note: As of RC 2026.1, symbol offsets are still WCS coordinates
 					local startX = obj.geoCoord.X + obj.SymbolOffset.X
 					local startY = obj.geoCoord.Y + obj.SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
-					local wcsX = obj.SymbolOffset.X + (endX - startX)/2 + LongitudinalOffset
-					local wcsY = obj.SymbolOffset.Y + (endY - startY)/2 - LateralOffset
-					local acsX, acsY = -wcsY, wcsX --Flip WCS into ACS
-					return RC__round(acsX, 3), RC__round(acsY, 3)
+					local wcsOffsetX = (endX + startX)/2 - startX
+					local wcsOffsetY = (endY + startY)/2 - startY
+					acsX, acsY = RC__WcsToAcs(wcsOffsetX, wcsOffsetY)
+					return RC__round(acsX + LateralOffset, 3), RC__round(acsY + LongitudinalOffset, 3)
 				end
 			end
 		</Formula>
@@ -237,20 +179,20 @@
 			Description="Returns the text attribute's rotation [DD] for the shortest span length custom text rotation attribute, to place the text nicely between its two poles' display points.">
 		<Signature>Double _JBTEH_MAS_SpanlengthTextRotation()</Signature>
 		<Formula>
-			function _JBTEH_MAS_SpanlengthTextRotation()
+			function _JBTEH_MAS_SpanlengthTextRotation(obj)
+				obj = obj or this
 				local r, n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
 				if n == 0 then 
 					return AlignmentTangent
 				else 
 					local target = r[0]
-	
-					--WCS angle between the displaypoints for the poles that are involved:
-					local startX = geoCoord.X + SymbolOffset.X
-					local startY = geoCoord.Y + SymbolOffset.Y
+					--Find WCS angle between the displaypoints for the poles that are involved:
+					local startX = obj.geoCoord.X + obj.SymbolOffset.X
+					local startY = obj.geoCoord.Y + obj.SymbolOffset.Y
 					local endX = target.geoCoord.X + target.SymbolOffset.X
 					local endY = target.geoCoord.Y + target.SymbolOffset.Y
 					--(Note: Lateral / longitudinal offsets shall not affect the rotation of the text)
-					return math.deg(math.atan(endY - startY, endX - startX)) + (MileageIncreasesTowardsLeft and 180 or 0)
+					return math.deg(math.atan(endY - startY, endX - startX) - obj.AlignmentTangent) + (obj.MileageIncreasesTowardsLeft and 180 or 0)
 				end
 			end
 		</Formula>
@@ -316,7 +258,7 @@
 <!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
 <xpp:define name="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH">
 	<xpp:bloc>
-		<CustomProperty DataType="Collection" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0" 
+		<CustomProperty DataType="Collection" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0"
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'."/>
 		<LuaExpression Name="Spanlength"><Formula>_JBTEH_MAS_getSpanlengths()</Formula></LuaExpression>
 
@@ -326,7 +268,9 @@
 			Description="The span length(s) text longitudinal offset [m] denotes the distance, along the pole's local track direction, to offset the spanlength text."/>
 
         <TextAttribute Annotative="true" Style="RC-ARIAL" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
-			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" ScalePosition="false"/>
+			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" ScalePosition="false"
+			IsMText="true"
+			Description="Spanlengths [m] are calculated as the 2D distance from one cantilever (or wire tension balancer) to the next along the contact wire that spans from one to the other."/>
 		<LuaExpression Name="TextAttribute_SPENNLENGDE.Content"><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_SPENNLENGDE.ScalePosition"><Formula>false</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_SPENNLENGDE.Position">
