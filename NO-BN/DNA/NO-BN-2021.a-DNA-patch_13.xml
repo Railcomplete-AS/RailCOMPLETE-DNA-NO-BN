@@ -17311,17 +17311,15 @@ return s</Data>
       <Signature>Double _JBTEH_MAS_suspension_mast_height()</Signature>
       <Formula>
 		function _JBTEH_MAS_suspension_mast_height()
-			local yokeRel = "Er hengemast festet i åk"
-			local yokes, nYokes = RC__getCollectionOfRelatedObjects(yokeRel)
-			if nYokes == 0 then
-				return getPropertyValue("OcsMastHeight"), _info("UNFINISHED - Relate with '"..yokeRel.."' to its OCS yoke.")
+			local relPortal = Relations["Er hengemast festet i åk"][0]
+			local relCantilever = Relations["Er kl-mast for utligger"][0]
+			if getCollectionLength(Relations["Er kl-mast for utligger"]) == 2 and
+			   Relations["Er kl-mast for utligger"][1].VerticalOffset < relCantilever.VerticalOffset then
+				relCantilever = Relations["Er kl-mast for utligger"][1]
 			end
-			local cantileverRel = "Er kl-mast for utligger"
-			local cantilevers, nCantilevers = RC__getCollectionOfRelatedObjects(cantileverRel)
-			local cantilever = cantilevers[0]
-			if nCantilevers == 0 then
-				return getPropertyValue("OcsMastHeight"), _info("UNFINISHED - Relate with '"..cantileverRel.."' to a cantilever mast.")
-			end
+			local cantileverLco = _JBTEH_UTL_StandardValues(relCantilever.Variant)["lco"]
+			local h = (VerticalOffset - relCantilever.VerticalOffset - cantileverLco + 0.15) * 1000
+			return h
 		end
 	  </Formula>	
     </LuaFunction>
