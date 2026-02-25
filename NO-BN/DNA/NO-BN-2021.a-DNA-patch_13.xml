@@ -16316,11 +16316,28 @@ return s</Data>
       <Signature>Double _JBTEH_MAS_OcsMastHeight()</Signature>
       <Formula>
 				function _JBTEH_MAS_OcsMastHeight()
-					r, n = RC__getCollectionOfRelatedObjects("Er åk-mast for åk")
-					if n &gt; 0 then
-						return string.format("%.0f", 500 * ((r[0].RelativeElevation + 1.0) // 0.5)) --[mm]
+					local r, n = getRelatedObjects("Er åk-mast for åk")
+					if n > 0 then
+						local PortalHeight, AdditionalHeight
+						if r[0].Variant:match("12") then
+							PortalHeight = 0.8 --Height of Type 12 portal frames
+						elseif r[0].Variant:match("14") then
+							PortalHeight = 1.2 --Height of Type 14 portal frames
+						elseif r[0].Variant:match("40") then
+							PortalHeight = 0.4  --Height of Type 40 portal frames
+						else
+							PortalHeight = 9.999  --Clearly an error
+						end
+						if r[0].Strengthened then
+							AdditionalHeight = PortalHeight --Portal frame has full height at both ends
+						else
+							AdditionalHeight = 0 --Legacy portals are "flat" at both ends
+						end
+						local MinimumExtraHeight = 0.75
+						return string.format("%.0f", 500 * ((r[0].VerticalOffset + AdditionalHeight + MinimumExtraHeight) // 0.5)) --[mm]
 					else
-						return 8000 --default value, assuming yoke has default RelativeElevation of 7.9
+						--Assume that the 3D library uses steps of 500 mm, assume using tall poles (for AT):
+						return tostring(9500 - 500*math.floor((250 + 1000*VerticalOffset)//500)) --[mm]
 					end
 				end
 			</Formula>
