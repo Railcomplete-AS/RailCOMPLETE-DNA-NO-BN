@@ -17311,16 +17311,25 @@ return s</Data>
       <Signature>Double _JBTEH_MAS_suspension_mast_OcsMastHeight()</Signature>
       <Formula>
 		function _JBTEH_MAS_suspension_mast_OcsMastHeight()
-			local relPortal = Relations["Er hengemast festet i åk"][0]
-			local relCantilever = Relations["Er kl-mast for utligger"][0]
-			if getCollectionLength(Relations["Er kl-mast for utligger"]) == 2 and
-			   Relations["Er kl-mast for utligger"][1].VerticalOffset &lt; relCantilever.VerticalOffset then
-				relCantilever = Relations["Er kl-mast for utligger"][1]
+			obj = obj or this
+			por, nPor = obj:getRelatedObjects("Er hengemast festet i åk")
+			cnt, nCnt = obj:getRelatedObjects("Er kl-mast for utligger")
+			if nPor == 0 then
+				return obj:getPropertyValue("OcsMastHeight"), _info("ERROR - Relate OCS droparm to its portal.", _error)
+			else
+				if nCnt == 0 then
+					return obj:getPropertyValue("OcsMastHeight"), _info("UNFINISHED - Relate OCS droparm to at least one cantilever.", _unfinished)
+				elseif nCnt == 1 then
+					local cntLco = _JBTEH_UTL_StandardValues(cnt[0].Variant)["lco"]
+					cntOverheadClearance = cnt[0].VerticalOffset + cntLco
+				else
+					local cntLco0 = _JBTEH_UTL_StandardValues(cnt[0].Variant)["lco"]
+					local cntLco1 = _JBTEH_UTL_StandardValues(cnt[1].Variant)["lco"]
+					cntOverheadClearance = math.min(cnt[0].VerticalOffset + cntLco0, cnt[1].VerticalOffset + cntLco1)
+				end
 			end
-			local cantileverLco = _JBTEH_UTL_StandardValues(relCantilever.Variant)["lco"]
-			local h = (VerticalOffset - relCantilever.VerticalOffset - cantileverLco + 0.15) * 1000
-			local hRounded = math.ceil(h/ 100 + 0.5) * 100
-			return hRounded
+			local h = (VerticalOffset - cntOverheadClearance + 0.15) * 1000
+			return math.ceil(h/100 + 0.5) * 100
 		end
 	  </Formula>	
     </LuaFunction>
