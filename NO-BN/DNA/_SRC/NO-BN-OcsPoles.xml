@@ -1,18 +1,17 @@
 <!--========================================================================================================
 
     NO-BN-OcsPoles.xml
-	
+
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
 	Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
-	
+
 =========================================================================================================-->
 <xpp:bloc>
 
 <!--========================================================================================================
 	Line(ca)	Contents:
 	  30		CONTACT WIRE AND CATENARY SUPPORT POLES
-	 850		CATENARY POLES (DROPARMS) UNDER BRIDGE OR TUNNEL CEILING
 	1215		CATENARY POLES (DROPARMS) SUSPENDED FROM PORTAL (OR FROM GANTRY)
 	1730		OVERHEAD CATENARY SYSTEM PORTAL AND GANTRY
 	2215		End Of File
@@ -23,7 +22,7 @@
 	HIGH VOLTAGE
 	CONTACT WIRE AND CATENARY SUPPORT POLES
 =========================================================================================================-->
-	<!-- Note: Functions which are called from 'JBTEH_MAS KL-mast' and 'JBTEH_MAS Hengemast for bru og tunnel' and 'JBTEH_MAS Hengemast i åk': -->
+	<!-- Note: Functions which are called from 'JBTEH_MAS OCS Pole' and 'JBTEH_MAS Drop Arm under Portal': -->
 
 	<LuaFunction Name="JBTEH_MAS_nonPortalPole_code()" ReturnType="String"
 		Description="Returns the code for the OCS pole, as a concatenation of the pole's reference mileage km-value and the current 'Seq' local variable.">
@@ -36,33 +35,33 @@
 		</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_getSpanlengths()" ReturnType="Double" 
+	<LuaFunction Name="_JBTEH_MAS_getSpanlengths()" ReturnType="Double"
 			HideFromUser="false"
 			Description="Returns a collection of dictionaries {Spanlength = [String], Wirename = [String]}, one such dictionary for each cantilever / WTB present on this catenary pole. The spanlengths are measured as 2D straight-line distances along the contact wire from WTB / wire clamp position to the subsequent one.">
 		<Signature>Double _JBTEH_MAS_getSpanlengths()</Signature>
 		<Formula>
 			function _JBTEH_MAS_getSpanlengths()
 				--[[
-					This function assumes that wtb and cnt are chained with a common previous/next relation. Also handles 
+					This function assumes that wtb and cnt are chained with a common previous/next relation. Also handles
 					wtb mounted on a tunnel wall baseplate.
 					-	Start at OCS pole and find its cantilevers and wtb's, or start at tunnel wall baseplate
 						and find its wtb.
 					-	Iterate over all such objects found, locate the next cantilever or wtb in sequence
-					-	For each next object, store next object's contact wire name and the 
+					-	For each next object, store next object's contact wire name and the
 						straight-line 2D distance in the XY plane from CW wireclamp/wtb to CW wireclamp/wtb.
 					Return value: 	A collection of collections, each containing the 'name' of a contact wire and the
 									straight-line 2D distance to next sl.
 				--]]
 				local tol = 1.0 --[m] Tolerance when searching for wire tension balancers at an OCS pole
 				local result = {}
-			
+
 				--Find all cantilevers and WTBs at this OCS pole, but skip WTBs serving midpoint anchor lines or AT conductors, earthing wires etc:
 				local rCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
 				local rWtb = getNearbyPointObjects2D(tol, rctype_WireTensioningBalancer)
 								:filter(function (x) return x.Alignment.RcType == rctype_ContactWire end)
 				local items = getUnionOfCollections({rCnt, rWtb})
 				local nItems = getCollectionLength(items)
-			
+
 				if nItems == 0 then
 					--Poles for supporting OCS portals will exist, with neither wtbs nor cantilevers at the pole.
 					return {}, _info("No spanlengthItems")
@@ -118,15 +117,15 @@
 					a) A text attribute that displays multiple spanlengthItems must have IsMTextAttribute == true to treat '\\P' as 'newline'.
 					b) The Spanlength property holds a collection of dictionaries, each of which holds a
 					contact wire's name [String] and its corresponding spanlength [Double].
-			
+
 					The return value has format:
-			
+
 					Show this:									...if property Spanlength is:
 					=================================			=========================================================
 					"- L27-478:57.8 -"							...a collection of just one dictionary {Spanlength = [double], Wirename = [string]}
 					"- L30-536:52.6 -\n...\n- L30-537:37.8 -"	...a collection of several such dictionaries.
 				--]]
-			
+
 				local spanlengthItems = _JBTEH_MAS_getSpanlengths()
 				local t
 				if #spanlengthItems == 0 then
@@ -145,8 +144,8 @@
 
 
 
-	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Tuple" 
-			HideFromUser="false" 
+	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextPosition()" ReturnType="Tuple"
+			HideFromUser="false"
 			Description="Returns an Alignment Coordinate System (ACS) tuple for the span length's text position attribute, halfway between the OCS pole's display point and the next OCS pole's display point. Optionally, specify additional ACS offsets as [LateralOffset = 0, LongitudinalOffset = 0]. The spanlength text attribute's 'ScalePosition' must be set to False, otherwise the spanlength text will move closer to its OCS pole as you reduce the drawing's scale.">
 		<Signature>Double, Double _JBTEH_MAS_SpanlengthTextPosition(Double LongitudinalOffset = 0, Double LongitudinalOffset = 0, Reference obj = this)</Signature>
 		<Formula>
@@ -174,17 +173,17 @@
 		</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextRotation()" ReturnType="Double" 
-			HideFromUser="false" 
+	<LuaFunction Name="_JBTEH_MAS_SpanlengthTextRotation()" ReturnType="Double"
+			HideFromUser="false"
 			Description="Returns the text attribute's rotation [DD] for the shortest span length custom text rotation attribute, to place the text nicely between its two poles' display points.">
 		<Signature>Double _JBTEH_MAS_SpanlengthTextRotation()</Signature>
 		<Formula>
 			function _JBTEH_MAS_SpanlengthTextRotation(obj)
 				obj = obj or this
 				local r, n = getRelatedObjects(rel_OcsPole_HasNext_OcsPole)
-				if n == 0 then 
+				if n == 0 then
 					return AlignmentTangent
-				else 
+				else
 					local target = r[0]
 					--Find WCS angle between the displaypoints for the poles that are involved:
 					local startX = obj.geoCoord.X + obj.SymbolOffset.X
@@ -221,7 +220,7 @@
 					txt = first and "{"..RC__identify(rPortal[j]) or txt..","..RC__identify(rPortal[j])
 					first = false
 					local rSupportingPole, nSupportingPole = rPortal[j]:getRelatedObjects(sSupportingPole)
-					for i = 0, nSupportingPole-1 do 
+					for i = 0, nSupportingPole-1 do
 						if rSupportingPole[i].id ~= this.id then
 							table.insert(t, rSupportingPole[i])
 							txt = txt..","..RC__identify(rSupportingPole[i])
@@ -240,34 +239,34 @@
 				return 0,{}, _info(first and "{}" or txt)
 			end
 		</Formula>
-	</LuaFunction> 
+	</LuaFunction>
 
-<!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
+<!-- Macro for use in JBTEH_MAS (ordinary pole and drop arm from portal): -->
 <xpp:define name="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING">
 	<xpp:bloc>
-		<CustomProperty DataType="Enumeration" Name="NewOrExisting" DisplayName="Ny eller eksisterende" DefaultValue="Ny"
+		<CustomProperty DataType="Enumeration" Name="NewOrExisting" DisplayName="New or Existing" DefaultValue="Ny"
 			Description="The overhead catenary system (OCS) pole's age [Ny | Eksisterende].">
 			<Values>
-				<Value>Ny</Value>
-				<Value>Eksisterende</Value>	
-			</Values>			
+				<Value DisplayName="Yes">Ny</Value>
+				<Value DisplayName="No">Eksisterende</Value>
+			</Values>
 		</CustomProperty>
 	</xpp:bloc>
 </xpp:define>
 
-<!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
+<!-- Macro for use in JBTEH_MAS (ordinary pole and drop arm from portal): -->
 <xpp:define name="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH">
 	<xpp:bloc>
-		<CustomProperty DataType="Collection" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0"
+		<CustomProperty DataType="Collection" Name="Spanlength" DisplayName="Span Length" DefaultValue="0.0"
 			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'."/>
 		<LuaExpression Name="Spanlength"><Formula>_JBTEH_MAS_getSpanlengths()</Formula></LuaExpression>
 
-		<CustomProperty DataType="Double" Name="SpanlengthTextLateralOffset" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
-			Description="The span length(s) text lateral offset [m] denotes the distance, transversal to the pole's local track direction, to offset the spanlength text."/>      
-		<CustomProperty DataType="Double" Name="SpanlengthTextLongitudinalOffset" DisplayName="Langsmed spennlengdetekst offset" DefaultValue="0"
+		<CustomProperty DataType="Double" Name="SpanlengthTextLateralOffset" DisplayName="Lateral Span Text Offset" DefaultValue="0"
+			Description="The span length(s) text lateral offset [m] denotes the distance, transversal to the pole's local track direction, to offset the spanlength text."/>
+		<CustomProperty DataType="Double" Name="SpanlengthTextLongitudinalOffset" DisplayName="Longitudinal Span Text Offset" DefaultValue="0"
 			Description="The span length(s) text longitudinal offset [m] denotes the distance, along the pole's local track direction, to offset the spanlength text."/>
 
-        <TextAttribute Annotative="true" Style="RC-ARIAL" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
+        <TextAttribute Annotative="true" Style="RC-ARIAL" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5"
 			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" ScalePosition="false"
 			IsMText="true"
 			Description="Spanlengths [m] are calculated as the 2D distance from one cantilever (or wire tension balancer) to the next along the contact wire that spans from one to the other."/>
@@ -281,9 +280,9 @@
 
 
 
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsPole" Name="JBTEH_MAS KL-mast" 
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsPole" Name="JBTEH_MAS OCS Pole"
 				Layer="JBTEH_MAS" Color="ByLayer"
-				Group="Kontaktledning/Master"
+				Group="OCS/Poles"
 				AttMirrorX="{% if MileageIncreasesTowardsLeft %}true{% else %}false{% endif %}"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
@@ -291,7 +290,7 @@
 
 		<RelationSpace>kl-mast</RelationSpace>
 		<AttachmentCategory Name="kl-mast"/>
-		
+
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
@@ -304,125 +303,37 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 
-		<Variants DefaultValue="Bjelkemast">
-			<Variant Name="Bjelkemast">
+		<Variants DefaultValue="Beam Pole">
+			<Variant Name="Beam Pole">
 				<!-- <SetValue Key="OcsPoleCrossSection" Value="HEB240"/> -->
 				<!-- <SetValue Key="OcsPoleHeight" Value="10000"/> -->
-			</Variant>
-			<Variant Name="Bjelkemast, forsterket">
-				<!-- <SetValue Key="OcsPoleCrossSection" Value="HEM260"/> -->
-				<!-- <SetValue Key="OcsPoleHeight" Value="10000"/> -->
-			</Variant>
-			<!-- TODO: Få ekte data for GMB-mastene -->
-			<Variant Name="GMB-mast">
-				<!-- <SetValue Key="OcsPoleCrossSection" Value="HEB240"/> -->
-				<!-- <SetValue Key="OcsPoleHeight" Value="7500"/> -->
-			</Variant>
-			<Variant Name="H-mast">
-				<!-- <SetValue Key="OcsPoleCrossSection" Value="H3"/> -->
-				<!-- <SetValue Key="OcsPoleHeight" Value="7500"/> -->
-			</Variant>
-			<Variant Name="B-mast">
-				<!-- <SetValue Key="OcsPoleCrossSection" Value="B3"/> -->
-				<!-- <SetValue Key="OcsPoleHeight" Value="7500"/> -->
-			</Variant>
-			<Variant Name="Betongmast">
-				<!-- See EH.800065 (EK.800065), concrete poles & load computations -->
-			</Variant>
-			<Variant Name="Tremast">
-			</Variant>
-			<Variant Name="Rørmast">
 			</Variant>
 		</Variants>
-		
+
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING"/>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Andre objekter som modelsjekkes" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked"
+			DisplayName="Other Objects for Model Check"
 			Description="If this OCS pole supports a portal, then the portal with more poles / drop arms are modelchecked as well."
 		 />
 		<!-- See global definition of function JBTEH_MAS_getOtherObjectsToModelcheck() elsewhere. -->
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true"><Formula>JBTEH_MAS_getOtherObjectsToModelcheck()</Formula></LuaExpression>
 
-		<!-- Available mast heights: HEB200:6,0-9,5 HEB220:6,0-11,0 HEB240:6,0-12,0 HEB260:6,0-13,0 HEB280:6,0-13,0 HEM260:8,0-13,0 -->
-		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Masteprofil"
+		<!-- Available pole heights: HEB200:6,0-9,5 HEB220:6,0-11,0 HEB240:6,0-12,0 HEB260:6,0-13,0 HEB280:6,0-13,0 HEM260:8,0-13,0 -->
+		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Pole Profile"
 			Description="The overhead catenary system (OCS) pole profile (omp) [HEB200..280 | HEM260 | H3..H6 | B2..B6 | 240x240 | Ø260 | Ø324].">
-			<Values Variant="Bjelkemast" DefaultValueOverride="HEB240">
+			<Values Variant="Beam Pole" DefaultValueOverride="HEB240">
 				<Value>HEB200</Value>
 				<Value>HEB220</Value>
 				<Value>HEB240</Value>
 				<Value>HEB260</Value>
 				<Value>HEB280</Value>
-			</Values>
-			<Values Variant="Bjelkemast, forsterket" DefaultValueOverride="HEM260">
-				<Value>HEM260</Value>
-			</Values>
-			<!-- TODO: Få ekte data for GMB-mastene -->
-			<Values Variant="GMB-mast" DefaultValueOverride="HEB240">
-				<Value>HEB200</Value>
-				<Value>HEB220</Value>
-				<Value>HEB240</Value>
-				<Value>HEB260</Value>
-				<Value>HEB280</Value>
-			</Values>
-			<Values Variant="H-mast" DefaultValueOverride="H3">
-				<Value>H3</Value>
-				<Value>H5</Value>
-				<Value>H6</Value>
-			</Values>
-			<Values Variant="B-mast" DefaultValueOverride="B3">
-				<!-- Note: B2:UNP120 - B3:UNP140 - B4:UNP160 - B5: UNP180 - B6:UNP200 -->
-				<Value>B2</Value>
-				<Value>B3</Value>
-				<Value>B4</Value>
-				<Value>B5</Value>
-				<Value>B6</Value>
-			</Values>
-			<Values Variant="Betongmast" DefaultValueOverride="13">
-				<!-- TODO 2021-03-14 Produce all concrete poles. At present, only the "13" and the "13S" series exist in 3D. -->
-				<!-- Se EK.800025 -->
-				<!-- Kvadratiske har navn "13", "14" etc. -->
-				<!-- Type 13 er 192x192 i toppen, bunnmål sidekanter ved 2+6m=263, 2+7m=274, 2+8m=285, 2+9m=296, 2+10m=308, 2+11m=320, 2+12m=333, 2+13m=346 -->
-				<!-- Type 14 sidelem er 200x200, type 15 er 208x208 i topp etc.-->
-				<!-- Rektangulære "smal-master" har navn "13S", "14S" etc.  -->
-				<!-- Smalmast 13S har toppmål 130/239, Bunnmål 2+4m=152/296, 2+5m=158/308, 2+6m=154/320, 2+7m=171/333, 2+8m=178/346, 2+9m=185/360, 2+10m=192/374. -->
-				<!-- Smalmast 14S har toppmål 130x253, 15S=130/274, 16S=130/285, 17S=130/296, 18S=130/320, 19S=130/346 -->
-				<!-- Bredside smalmast type 13S er altså som type 18 mast, bredside 14S som 20-mast, 15S som 22-mast, 16S som 23-mast, 17S som 24-mast, 18S som 26, 19S som "28". (litt uten system...)-->
-				<Value>13</Value> 	<!-- TODO: 2020-09-26 Dimensjon 13 (2+6m..2+13m) er modellert i 3D -->
-				<Value>14</Value>
-				<Value>15</Value>
-				<Value>16</Value>
-				<Value>17</Value>
-				<Value>18</Value>
-				<Value>19</Value>
-				<Value>20</Value>
-				<Value>21</Value>
-				<Value>22</Value>
-				<Value>23</Value>
-				<Value>24</Value>
-				<Value>25</Value>
-				<Value>26</Value>
-				<Value>27</Value>
-				<Value>13S</Value> 	<!-- TODO: 2020-09-26 Smal dimensjon type 13S (2+6m..2+10m) er modellert i 3D -->
-				<Value>14S</Value>
-				<Value>15S</Value>
-				<Value>16S</Value>
-				<Value>17S</Value>
-				<Value>18S</Value>
-				<Value>19S</Value>
-			</Values>
-			<Values Variant="Tremast" DefaultValueOverride="Ø260">
-				<Value>Ø260</Value>
-			</Values>
-			<Values Variant="Rørmast" DefaultValueOverride="Ø324">
-				<Value>Ø324</Value>
 			</Values>
 		</CustomProperty>
-		
-		<!-- Det finnes tegninger for B3-master (EK.800092) - de er beregnet på plass-støpt fundament (EK.800091, EK.800150 og EK.800151) med boltegruppe 191x374 og ble produsert i lengder på 7,5-9,5 meter i steg på 0,5 meter. Disse passer så vidt vi kan forstå også på borede fundamenter, som har fire bolter plassert i et rektangel som måler  191x374 mm. Det finnes tegninger (EK.707492-001, EK.707492-002 og EK.707492-003) for ELDRE TYPE  B3-master med 8-hulls fotplate beregnet på borede fundamenter med 8 bolter plassert i ring. Disse mastene finnes i høyder 6,0 til 9,5 meter i steg på 0,5 meter, men siste revisjon (003) sier at disse mastene blir erstattet av de med fire ordinære hull - og der finnes det ikke lengder 6,0 og 6,5 meter lenger." -->
-		<CustomProperty DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Mastehøyde" DefaultValue="7000"
+
+		<CustomProperty DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Pole Height" DefaultValue="7000"
 			Description="The overhead catenary system (OCS) pole height [mm]. The total pole length is the sum of its height and its depth.">
-			<Values Variant="Bjelkemast" DefaultValueOverride="10000">
+			<Values Variant="Beam Pole" DefaultValueOverride="10000">
 				<Value>6000</Value>
 				<Value>6500</Value>
 				<Value>7000</Value>
@@ -438,115 +349,6 @@
 				<Value>12000</Value>
 				<Value>12500</Value>
 				<Value>13000</Value>
-			</Values>
-			<Values Variant="Bjelkemast, forsterket" DefaultValueOverride="10000">
-				<Value>8000</Value>
-				<Value>8500</Value>
-				<Value>9000</Value>
-				<Value>9500</Value>
-				<Value>10000</Value>
-				<Value>10500</Value>
-				<Value>11000</Value>
-				<Value>11500</Value>
-				<Value>12000</Value>
-				<Value>12500</Value>
-				<Value>13000</Value>
-			</Values>
-			<Values Variant="GMB-mast" DefaultValueOverride="7500">
-				<!-- TODO: Få ekte data for GMB-mastene -->
-				<Value>6000</Value>
-				<Value>6500</Value>
-				<Value>7000</Value>
-				<Value>7500</Value>
-				<Value>8000</Value>
-				<Value>8500</Value>
-				<Value>9000</Value>
-				<Value>9500</Value>
-				<Value>10000</Value>
-				<Value>10500</Value>
-				<Value>11000</Value>
-				<Value>11500</Value>
-				<Value>12000</Value>
-				<Value>12500</Value>
-				<Value>13000</Value>
-			</Values>
-			<Values Variant="H-mast" DefaultValueOverride="7500">
-				<Value>6000</Value>
-				<Value>6500</Value>
-				<Value>7000</Value>
-				<Value>7500</Value>
-				<Value>8000</Value>
-				<Value>8500</Value>
-				<Value>9000</Value>
-				<Value>9500</Value>
-				<Value>10000</Value>
-				<Value>10500</Value>
-				<Value>11000</Value>
-				<Value>11500</Value>
-				<Value>12000</Value>
-				<Value>12500</Value>
-				<Value>13000</Value>
-			</Values>
-			<Values Variant="B-mast" DefaultValueOverride="7500">
-				<Value Description="6, 6,5 og 7 meter mastehøyder gjelder kun utgåtte mastetyper med 8-hulls bunnplate, se EK.707492-001">6000</Value>
-				<Value Description="6, 6,5 og 7 meter mastehøyder gjelder kun utgåtte mastetyper med 8-hulls bunnplate, se EK.707492-001">6500</Value>
-				<Value Description="6, 6,5 og 7 meter mastehøyder gjelder kun utgåtte mastetyper med 8-hulls bunnplate, se EK.707492-001">7000</Value>
-				<Value>7500</Value>
-				<Value>8000</Value>
-				<Value>8500</Value>
-				<Value>9000</Value>
-				<Value>9500</Value>
-				<Value>10000</Value>
-				<Value>10500</Value>
-				<Value>11000</Value>
-				<Value>11500</Value>
-				<Value>12000</Value>
-				<Value>12500</Value>
-				<Value>13000</Value>
-			</Values>
-			<Values Variant="Betongmast" DefaultValueOverride="8000">
-				<!-- Betongmast. Se tegning 'EK.800265-000_000_001 Betongmaster - mål og beregninger'. -->
-				<!-- Mangler data her - EK.800025 sier ikke noe om hvor dypt masta må stikke -->
-				<Value>6000</Value>
-				<Value>7000</Value>
-				<Value>8000</Value>
-				<Value>9000</Value>
-				<Value>10000</Value>
-				<Value>11000</Value>
-				<Value>12000</Value>
-				<Value>13000</Value>
-			</Values>
-			<Values Variant="Tremast" DefaultValueOverride="7500">
-				<!-- Tremast er kun modellert som Ø260. Se tegning 'EH-701770-000_005_001 Tremast oppsetting og bardun fotplate'-->
-				<Value>6000</Value>
-				<Value>6500</Value>
-				<Value>7000</Value>
-				<Value>7500</Value>
-				<Value>8000</Value>
-				<Value>8500</Value>
-				<Value>9000</Value>
-				<Value>9500</Value>
-				<Value>10000</Value>
-				<Value>10500</Value>
-				<Value>11000</Value>
-				<Value>11500</Value>
-				<Value>12000</Value>
-			</Values>
-			<Values Variant="Rørmast" DefaultValueOverride="8000">
-				<!-- Rørmast er egentlig Ø323,9 x 16, modellert av Norconsult for bruk med bl.a. signalgalger på Alnabru godsterminal.-->
-				<Value>6000</Value>
-				<Value>6500</Value>
-				<Value>7000</Value>
-				<Value>7500</Value>
-				<Value>8000</Value>
-				<Value>8500</Value>
-				<Value>9000</Value>
-				<Value>9500</Value>
-				<Value>10000</Value>
-				<Value>10500</Value>
-				<Value>11000</Value>
-				<Value>11500</Value>
-				<Value>12000</Value>
 			</Values>
 		</CustomProperty>
 		<LuaExpression Name="OcsPoleHeight"><Formula>_JBTEH_MAS_OcsPoleHeight()</Formula></LuaExpression>
@@ -582,38 +384,14 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
-		<CustomProperty DataType="Enumeration" Name="OcsPoleDepth" DisplayName="Mastedybde" DefaultValue="0"
+
+		<CustomProperty DataType="Enumeration" Name="OcsPoleDepth" DisplayName="Pole Depth" DefaultValue="0"
 			Description="Only applicable to wooden and concrete poles. The overhead catenary system (OCS) pole depth below ground reference level (omd) [mm].">
-			<Values Variant="Bjelkemast">
-				<Value>0</Value>
-			</Values>
-			<Values Variant="Bjelkemast, forsterket">
-				<Value>0</Value>
-			</Values>
-			<Values Variant="GMB-mast">
-				<Value>0</Value>
-			</Values>
-			<Values Variant="H-mast">
-				<Value>0</Value>
-			</Values>
-			<Values Variant="B-mast">
-				<Value>0</Value>
-			</Values>
-			<Values Variant="Betongmast">
-				<Value>2000</Value>
-			</Values>
-			<!-- TODO: Få ekte data for tremastene -->
-			<Values Variant="Tremast" DefaultValueOverride="1600">
-				<Value>1600</Value> <!-- Kun nedstikk 1600 er modellert i 3D -->
-				<Value>1800</Value>
-				<Value>2000</Value>
-			</Values>
-			<Values Variant="Rørmast">
+			<Values Variant="Beam Pole">
 				<Value>0</Value>
 			</Values>
 		</CustomProperty>
-		
+
 		<!-- Span length -->
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH"/>
 
@@ -647,27 +425,27 @@
 					local pr, pn = getRelatedObjects(pRelationName)
 					if pn == 0 then
 						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually or relate with '"..pRelationName.."' to a portal (which has second support pole).")
-				
+
 					else
 						local portal = pr[0]
 						local s = rel_OcsPortal_IsSupportedBy_OcsPole
 						local r, n = getRelatedObjects(s, portal)
-				
+
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
 								_info("ERROR OCS pole has bad connection to gantry '"..RC__identify(portal).."'.")
-				
+
 						elseif n == 1 then
 							--Gantry:
 							return getPropertyValue("AngularOffset"),
 								_info("OCS pole is connected to a gantry '"..RC__identify(portal)..
 								"' - adjust pole's angular offset manually or change gantry into portal (which has one more portal support poles).")
-						
+
 						elseif n == 2 then
 							--Assume that the first two related poles are located at the portal's extremities:
 							local m1 = r[0]
 							local m2 = r[1]
-							local x1 = m1.geoCoord.X		
+							local x1 = m1.geoCoord.X
 							local y1 = m1.geoCoord.Y
 							local x2 = m2.geoCoord.X
 							local y2 = m2.geoCoord.Y
@@ -676,9 +454,9 @@
 							local trackDir = math.deg(math.atan(tg.Y, tg.X))
 							local info = "Angular Offset deduced using portal support poles '"..RC__identify(m1).."' and '"..RC__identify(m2).."'."
 							return (360.0 + RC__round(90 - (trackDir - portalDir),3)) % 360.0, _info(info)
-				
+
 						else
-							--TODO: Locate the two support poles at each end of portal, use this to find angular offset, then turn yourself if you 
+							--TODO: Locate the two support poles at each end of portal, use this to find angular offset, then turn yourself if you
 							--are a support pole at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
 								_info("OCS pole is connected to a portal '"..RC__identify(portal).." with total 3 or more supporting poles"..
@@ -688,34 +466,17 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_MAS_ocsPole_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_ocsPole_Geometry3DName()" 
+		<LuaFunction Name="_JBTEH_MAS_ocsPole_Geometry3DName()"
 			ReturnType="String"
-			Description="Returns the 3D geometry's 'Name' for this KL pole."
+			Description="Returns the 3D geometry's 'Name' for this OCS pole."
 			>
 			<Signature>Double _JBTEH_MAS_ocsPole_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTEH_MAS_ocsPole_Geometry3DName()
-					if Variant == "Bjelkemast" then
+					if Variant == "Beam Pole" then
 						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsPoleCrossSection .."-191x374xM36-"..OcsPoleHeight
-					elseif Variant == "Bjelkemast, forsterket" then
-						return "NO-BN-3D-EH-MAS-BJELKEMAST-" ..OcsPoleCrossSection .."-191x374xM36-"..OcsPoleHeight
-					elseif Variant == "GMB-mast" then
-						--TODO: Få ekte data for GMB-mastene, Lage 3D GMB-master
-						return "NO-BN-3D-EH-MAS-GMBMAST-" ..OcsPoleCrossSection .."-" ..OcsPoleHeight
-					elseif Variant == "H-mast" then
-						--Assume the 191x374 modern type:
-						return "NO-BN-3D-EH-MAS-GITTERMAST-" ..OcsPoleCrossSection .."-191x374xM36-"..OcsPoleHeight
-					elseif Variant == "B-mast" then
-						--Assume the 191x374 modern type:
-						return "NO-BN-3D-EH-MAS-GITTERMAST-" ..OcsPoleCrossSection .."-191x374xM36-"..OcsPoleHeight
-					elseif Variant == "Betongmast" then
-						return "NO-BN-3D-EH-MAS-BETONGMAST-" ..OcsPoleCrossSection .."-"..OcsPoleDepth.."-"..OcsPoleHeight
-					elseif Variant == "Tremast" then
-						return "NO-BN-3D-EH-MAS-TREMAST-" ..OcsPoleCrossSection .."-"..OcsPoleDepth.."-"..OcsPoleHeight
-					elseif Variant == "Rørmast" then
-						return "NO-BN-3D-EH-MAS-RØRMAST-" ..OcsPoleCrossSection .."-"..OcsPoleDepth.."-"..OcsPoleHeight
 					else
 						return "Ukjent Variant ["..Variant.."]",_warning
 					end
@@ -723,87 +484,31 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject Name="Bjelkemast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-BJELKEMAST-{{SymbolMode}}" 
+		<InsertPointObject Name="Beam Pole" DisplayBlockName="NO-BN-2D-JBTEH_MAS-BJELKEMAST-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
-		
-		<InsertPointObject Name="Bjelkemast, forsterket" DisplayBlockName="NO-BN-2D-JBTEH_MAS-BJELKEMAST-FORSTERKET-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="GMB-mast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-GMBMAST-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="H-mast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-GITTERMAST-H-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="B-mast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-GITTERMAST-B-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="Betongmast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-BETONGMAST-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="Tremast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-TREMAST-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="Rørmast" DisplayBlockName="NO-BN-2D-JBTEH_MAS-ROERMAST-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4" SubGroup="Ordinære master">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-		</InsertPointObject>
-		
+
 		<SymbolDefinition AllowSymbolMove="true">
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}"/>	
+													{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+													{% else %}45.0
+													{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_MAS
-				{% if    Variant == 'Bjelkemast' %}BJELKEMAST
-				{% elsif Variant == 'Bjelkemast, forsterket' %}BJELKEMAST-FORSTERKET
-				{% elsif Variant == 'GMB-mast' %}GMBMAST
-				{% elsif Variant == 'B-mast' %}GITTERMAST-B
-				{% elsif Variant == 'H-mast' %}GITTERMAST-H
-				{% elsif Variant == 'Betongmast' %}BETONGMAST
-				{% elsif Variant == 'Tremast' %}TREMAST
-				{% elsif Variant == 'Rørmast' %}ROERMAST
+				{% if    Variant == 'Beam Pole' %}BJELKEMAST
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
 			</BlockNameFormat>
 		</SymbolDefinition>
-		
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
 
 		<DockPointDefinitions>
@@ -831,281 +536,14 @@
 
 <!--========================================================================================================
 	HIGH VOLTAGE
-	CATENARY DROP ARM UNDER BRIDGE OR TUNNEL CEILING
-=========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsDropArmForBridgeOrTunnel" Name="JBTEH_MAS Hengemast for bru og tunnel"
-				Layer="JBTEH_MAS_HGM_TUNNEL" Color="ByLayer"
-				Group="Kontaktledning/Master"
-				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
-				>
-				
-		<RelationSpace>kl-mast</RelationSpace>
-
-		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_LARGE"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
-		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_RIGHT_SIDE"/>
-		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
-		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
-		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
-		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
- 		
-		<Variants DefaultValue="Hengemast for bru og tunnel">
-			<Variant Name="Hengemast for bru og tunnel">
-				<SetValue Key="OcsPoleCrossSection" Value="Sirkulær, Ø120"/>
-				<SetValue Key="OcsPoleHeight" Value="3100"/>
-			</Variant>
-			<Variant Name="Hengemast Cariboni">
-				<SetValue Key="OcsPoleCrossSection" Value="Rektangulær, 100x150"/>
-				<SetValue Key="OcsPoleHeight" Value="3100"/>
-			</Variant>
-		</Variants>
-		
-		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING"/>
-
-		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(20, 0)</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>RC__flipAcsTuple(22, 0)</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>RC__flipAcsTuple(24, 0)</Formula></LuaExpression>
-		<LuaExpression Name="TextAttribute_OBJEKTINFO.IsMTextAttribute"><Formula>true</Formula></LuaExpression>
-
-		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Masteprofil" DefaultValue="Sirkulær, Ø120"
-			Description="The overhead catenary system (OCS) drop arm profile (smp) [ Sirkulær, Ø120 | Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ].">
-			<Values Variant="Hengemast for bru og tunnel">
-				<Value>Sirkulær, Ø120</Value>
-				<Value>Kvadratisk, 100x100</Value>
-				<Value>Rektangulær, 100x150</Value>
-				<Value>Rektangulær, 100x200</Value>				
-			</Values>
-			<Values Variant="Hengemast Cariboni">
-				<!-- <Value>Kvadratisk, 100x100</Value> -->
-				<Value>Rektangulær, 100x150</Value>
-			</Values>
-		</CustomProperty>
-		
-		<CustomProperty DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Høyde" DefaultValue="3600" 
-			Description="The overhead catenary system (OCS) drop arm height [mm], given in predefined lengths 0.5m - 5.0m in 250 millimeter steps.">
-			<Values Variant="Hengemast for bru og tunnel">	
-				<Value>500</Value>
-				<Value>600</Value>
-				<Value>700</Value>
-				<Value>800</Value>
-				<Value>900</Value>
-				<Value>1000</Value>
-				<Value>1100</Value>
-				<Value>1200</Value>
-				<Value>1300</Value>
-				<Value>1400</Value>
-				<Value>1500</Value>
-				<Value>1600</Value>
-				<Value>1700</Value>
-				<Value>1800</Value>
-				<Value>1900</Value>
-				<Value>2000</Value>
-				<Value>2100</Value>
-				<Value>2200</Value>
-				<Value>2300</Value>
-				<Value>2400</Value>
-				<Value>2500</Value>
-				<Value>2600</Value>
-				<Value>2700</Value>
-				<Value>2800</Value>
-				<Value>2900</Value>
-				<Value>3000</Value>
-				<Value>3100</Value>
-				<Value>3200</Value>
-				<Value>3300</Value>
-				<Value>3400</Value>
-				<Value>3500</Value>
-				<Value>3600</Value>
-				<Value>3700</Value>
-				<Value>3800</Value>
-				<Value>3900</Value>
-				<Value>4000</Value>
-				<Value>4100</Value>
-				<Value>4200</Value>
-				<Value>4300</Value>
-				<Value>4400</Value>
-				<Value>4500</Value>
-				<Value>4600</Value>
-				<Value>4700</Value>
-				<Value>4800</Value>
-				<Value>4900</Value>
-				<Value>5000</Value>
-			</Values>
-			<Values Variant="Hengemast Cariboni">
-				<Value>500</Value>
-				<Value>600</Value>
-				<Value>700</Value>
-				<Value>800</Value>
-				<Value>900</Value>
-				<Value>1000</Value>
-				<Value>1100</Value>
-				<Value>1200</Value>
-				<Value>1300</Value>
-				<Value>1400</Value>
-				<Value>1500</Value>
-				<Value>1600</Value>
-				<Value>1700</Value>
-				<Value>1800</Value>
-				<Value>1900</Value>
-				<Value>2000</Value>
-				<Value>2100</Value>
-				<Value>2200</Value>
-				<Value>2300</Value>
-				<Value>2400</Value>
-				<Value>2500</Value>
-				<Value>2600</Value>
-				<Value>2700</Value>
-				<Value>2800</Value>
-				<Value>2900</Value>
-				<Value>3000</Value>
-				<Value>3100</Value>
-				<Value>3200</Value>
-				<Value>3300</Value>
-				<Value>3400</Value>
-				<Value>3500</Value>
-				<Value>3600</Value>
-				<Value>3700</Value>
-				<Value>3800</Value>
-				<Value>3900</Value>
-				<Value>4000</Value>
-				<Value>4100</Value>
-				<Value>4200</Value>
-				<Value>4300</Value>
-				<Value>4400</Value>
-				<Value>4500</Value>
-				<Value>4600</Value>
-				<Value>4700</Value>
-				<Value>4800</Value>
-				<Value>4900</Value>
-				<Value>5000</Value>
-			</Values>
-        </CustomProperty>
-
-		<!-- Span length -->
-		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH"/>
-
-		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
-		<LuaExpression Name="code"><Formula>JBTEH_MAS_nonPortalPole_code()</Formula></LuaExpression>
-		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
-
-		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_MAS_DropArmUnderBridgeOrTunnel_VerticalOffset()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderBridgeOrTunnel_VerticalOffset()" ReturnType="Double"
-				HideFromUser="false"
-				Description="Returns the relative elevation for a OCS pole suspended from a portal, based on the portal's type and relative elevation.">
-			<Signature>Double _JBTEH_MAS_DropArmUnderBridgeOrTunnel_VerticalOffset()</Signature>
-			<Formula>
-				function _JBTEH_MAS_DropArmUnderBridgeOrTunnel_VerticalOffset()
-					local s = rel_OcsPoleOrAnchoringFootplate_Has_OcsFoundation
-					local r, n = getRelatedObjects(s)
-					if n == 0 then
-						-- Belongs to a bridge underside (with no bolt group/foundation object), or has not (yet) received its bolt group relation:
-						return 7.0, _info(
-						"UNFINISHED - Relate pole with '"..rel_OcsPoleOrAnchoringFootplate_Has_OcsFoundation.."' to OCS ceiling bolt group, or delete formula and replace by actual relative height if bolt group is irrelevant.")
-					else
-						-- Has bolt group:
-						return r[0].VerticalOffset, _info("Value obtained from foundation '"..RC__identify(r[0]).."'.")
-					end
-				end
-			</Formula>
-		</LuaFunction>
-
-		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()" 
-			ReturnType="String"
-			Description="Returns the 3D geometry's 'Name' for this OCS drop arm.">
-			<Signature>String _JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()</Signature>
-			<Formula>
-				function _JBTEH_MAS_DropArmForBridgeOrTunnel_Geometry3DName()
-					local h = (math.floor((100/2 + OcsPoleHeight) / 100)) * 100 -- Assume 3D geometries in steps of 100 mm
-					if Variant == "Hengemast for bru og tunnel" then
-						if (OcsPoleCrossSection == "Sirkulær, Ø120") then
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-Ø120-"..h
-						elseif (OcsPoleCrossSection == "Kvadratisk, 100x100") then 
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x100-"..h
-						elseif (OcsPoleCrossSection == "Rektangulær, 100x150") then 
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x150-"..h
-						elseif (OcsPoleCrossSection == "Rektangulær, 100x200") then
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x200-"..h
-						end
-					elseif Variant:match("Hengemast Cariboni") then
-						if (OcsPoleCrossSection == "Rektangulær, 100x150") then 
-							return "NO-BN-3D-EH-MAS-HENGEMAST-FOR-BRU-OG-TUNNEL-350x350xM24-HUP-100x150-"..h
-						end
-					else 
-						return "Bad OCS drop arm Variant ["..Variant.."].",_warning
-					end
-				end
-			</Formula>
-		</LuaFunction>
-		
-		<InsertPointObject Name="Hengemast for bru og tunnel" DisplayBlockName="NO-BN-2D-JBTEH_MAS-HENGEMAST-FOR-TUNNEL-OG-BRU-{{SymbolMode}}"
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast for bru og tunnel">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="Hengemast Cariboni" DisplayBlockName="NO-BN-2D-JBTEH_MAS-HENGEMAST-CARIBONI-{{SymbolMode}}" 
-				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1.2" SubGroup="Hengemast for bru og tunnel">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<SymbolDefinition AllowSymbolMove="true">
-			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}"/>	
-			<BlockNameFormat JoinBy="-">
-				NO-BN-2D-JBTEH_MAS
-				HENGEMAST
-				{% if Variant == 'Hengemast for bru og tunnel' %}FOR-TUNNEL-OG-BRU
-				{% elsif Variant == 'Hengemast Cariboni' %}CARIBONI
-				{% else %}BAD_Variant_{{Variant}}
-				{% endif %}
-				{{SymbolMode}}
-			</BlockNameFormat>
-		</SymbolDefinition>
-		
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
-
-		<DockPointDefinitions>
-			<SnapPoints>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="skilt"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="utligger"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-fundament"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="avskjerming"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="konsoll_på_mast"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="avspenning"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kontaktledning"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bardun"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever"/> 
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="fixline"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="ledning"/>
-			</SnapPoints>
-		</DockPointDefinitions>
-
-	</ObjectType>
-
- 
-
-<!--========================================================================================================
-	HIGH VOLTAGE
 	CATENARY DROP ARM FROM PORTAL (OR FROM GANTRY)
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsDropArmUnderPortal" Name="JBTEH_MAS Hengemast i åk"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsDropArmUnderPortal" Name="JBTEH_MAS Drop Arm under Portal"
 				Layer="JBTEH_MAS_HGM_ÅK" Color="ByLayer"
-				Group="Kontaktledning/Master"
+				Group="OCS/Poles"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-				
+
 		<RelationSpace>kl-mast</RelationSpace>
 
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
@@ -1118,21 +556,21 @@
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
- 		
-		<Variants DefaultValue="Hengemast i åk">
-			<Variant Name="Hengemast i åk">
+
+		<Variants DefaultValue="Drop Arm under Portal">
+			<Variant Name="Drop Arm under Portal">
 				<SetValue Key="OcsPoleCrossSection" Value="Rektangulær, 100x150"/>
 				<SetValue Key="OcsPoleHeight" Value="3100"/>
 			</Variant>
 		</Variants>
-		
+
 		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(10, 0)</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_OBJEKTID.Position"><Formula>RC__flipAcsTuple(22, 0)</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_OBJEKTINFO.Position"><Formula>RC__flipAcsTuple(24, 0)</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_OBJEKTINFO.IsMTextAttribute"><Formula>true</Formula></LuaExpression>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Andre objekter som modelsjekkes" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked"
+			DisplayName="Other Objects for Model Check"
 			Description="When this OCS drop arm is refreshed, then its portal with other OCS poles are modelchecked as well."
 		 />
 		<!-- See global definition of function JBTEH_MAS_getOtherObjectsToModelcheck() elsewhere. -->
@@ -1140,16 +578,16 @@
 
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___NEW_OR_EXISTING"/>
 
-		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Masteprofil" DefaultValue="Rektangulær, 100x150"
+		<CustomProperty DataType="Enumeration" Name="OcsPoleCrossSection" DisplayName="Pole Profile" DefaultValue="Rektangulær, 100x150"
 			Description="The overhead catenary system (OCS) drop arm profile (smp) [ Kvadratisk, 100x100 | Rektangulær, 100x150 | Rektangulær, 100x200 ].">
 			<Values >
 				<Value>Kvadratisk, 100x100</Value>
 				<Value>Rektangulær, 100x150</Value>
-				<Value>Rektangulær, 100x200</Value>				
+				<Value>Rektangulær, 100x200</Value>
 			</Values>
 		</CustomProperty>
-		
-		<CustomProperty DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Høyde" DefaultValue="3100"
+
+		<CustomProperty DataType="Enumeration" Name="OcsPoleHeight" DisplayName="Pole Height" DefaultValue="3100"
 			Description="The overhead catenary system (OCS) drop arm height, given in predefined lengths 1.0 - 5.0 m in 100 millimeter steps.">
 			<Values >
 				<Value>1000</Value>
@@ -1195,18 +633,18 @@
 				<Value>5000</Value>
 			</Values>
         </CustomProperty>
-		
+
 		<CustomProperty DataType="Double" Name="DropArmAlongOffset" DisplayName="Hengemast offset langs egen akse" DefaultValue="0"
 			Description="The drop arm's offset from center of portal, colinear to the drop arm's own alignments' tangent direction.">
 		</CustomProperty>
-		
+
 		<!-- Span length -->
 		<xpp:expand select="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH"/>
 
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
-	
+
 		<LuaExpression Name="code"><Formula>_JBTEH_MAS_DropArmUnderPortal_code()</Formula></LuaExpression>
-			<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_code()" 
+			<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_code()"
 				ReturnType="String"
 				Description="Returns the code for this OCS drop arm.">
 				<Signature>String _JBTEH_MAS_DropArmUnderPortal_code()</Signature>
@@ -1221,13 +659,13 @@
 									.." - remove unintended relations '"..portalRelation.."' or adjust the active stage using layer names."
 					else
 						--One portal:
-						local rSupportPoles, nSupportPoles = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole, portals[0]) 
-						if nSupportPoles == 0 then 
+						local rSupportPoles, nSupportPoles = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole, portals[0])
+						if nSupportPoles == 0 then
 							return "UNFINISHED - Cannot deduce suspended OCS pole name since portal '"..RC__identify(portals[0]).."' has no support pole yet."
 						else
 							--Find the reference support pole - being closest to the portal's own insertion point (there may be many portal support poles):
 							local shortestDist = math.huge
-							local referenceSupportPole = nil 
+							local referenceSupportPole = nil
 							for i = 0, nSupportPoles-1 do
 								local newDist = RC__getDistance2D(portals[0].geoCoord, rSupportPoles[i].geoCoord)
 								if newDist &lt; shortestDist then
@@ -1235,11 +673,11 @@
 									referenceSupportPole = i
 								end
 							end
-					
+
 							--Start suspended pole's code with support pole's code,
 							--assign sequence number to this suspended OCS pole (counted from the support pole closest to portal's insertion point):
 							local rDropArms, nDropArms = getRelatedObjects(rel_OcsPortal_IsDropArmSupportFor_OcsPole, portals[0])
-					
+
 							local sequenceNumber = 0
 							for i = 0, nDropArms-1 do
 								if rDropArms[i].id == this.id then
@@ -1267,11 +705,11 @@
 					local pr, pn = getRelatedObjects(ps)
 					if pn == 0 then
 						return getPropertyValue("Mileage"), _info("UNFINISHED - Relate to portal/gantry with '"..ps.."' to set mileage automatically.")
-				
+
 					elseif pn &gt; 1 then
 						return _error, getPropertyValue("Mileage"),
 							_info("ERROR - Drop arm is related to more than one portal ("..RC__identify(pr[0])..", "..RC__identify(pr[1])..").")
-						
+
 					else
 						--pn == 1
 						local portal = pr[0]
@@ -1280,29 +718,29 @@
 						if n == 0 then
 							return offset + portal.Mileage,
 								_info("Mileage was deduced from a portal/gantry lacking support pole(s) '"..RC__identify(portal).."'.")
-					
-						elseif n == 1 then 
+
+						elseif n == 1 then
 							--Gantry:
 							return offset + RC__getMileageFromRelatedObject(s, portal), _info("Mileage deduced from support pole '"..RC__identify(portal).."'.")
-							
+
 						elseif n &gt;= 2 then
 							--Our drop arm is suspended from a portal being supported by two OCS poles:
 							local p1 = r[0]
 							local p2 = r[1]
-							local x1 = p1.geoCoord.X		
+							local x1 = p1.geoCoord.X
 							local y1 = p1.geoCoord.Y
 							local dx = p2.geoCoord.X - x1
 							local dy = p2.geoCoord.Y - y1
-							
+
 							--Find point Q on the straight line betweeen p1 and p2 with the portal drop arm's specified DistanceToAlignment:
-							local function err(t) 
-								local Qx = x1 + t*dx  
-								local Qy = y1 + t*dy  
+							local function err(t)
+								local Qx = x1 + t*dx
+								local Qy = y1 + t*dy
 								return getAlignmentInfo(Alignment.id, Qx, Qy).DistanceToAlignment - this.DistanceToAlignment
 							end
 							local tq = getZeros(err,{tolerance = 1e-4, interval = {0,1}, timeLimit = 3})[0]
-							local Qx = x1 + tq*dx  
-							local Qy = y1 + tq*dy  
+							local Qx = x1 + tq*dx
+							local Qy = y1 + tq*dy
 							return offset + getAlignmentInfo(Alignment.id, Qx, Qy).Mileage
 						end
 					end
@@ -1312,7 +750,7 @@
 
 		<!-- Crude formula - mounted with a few cm above top of its portal: -->
 		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_MAS_DropArmUnderPortal_VerticalOffset()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_VerticalOffset()" 
+		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_VerticalOffset()"
 				ReturnType="Double"
 				HideFromUser="false"
 				Description="Returns the relative elevation for a drop arm under a portal, based on the portal's type and relative elevation.">
@@ -1323,8 +761,8 @@
 					local s = rel_OcsPole_IsDropArmUnder_OcsPortal
 					local r, n = getRelatedObjects(s)
 					if n == 0 then
-						return 0.0, _info("UNFINISHED - Relate with '"..s.."' to its OCS portal.") 
-					else 
+						return 0.0, _info("UNFINISHED - Relate with '"..s.."' to its OCS portal.")
+					else
 						local e = (r[0].geoCoord.Z - getAlignmentInfo().Elevation) --Portal's elevation above this drop arm's own alignment
 						local v = r[0].Variant
 						if v == "Type 12" then return e + 0.8 + extensionAboveTopOfPortal
@@ -1350,27 +788,27 @@
 					local pr, pn = getRelatedObjects(ps)
 					if pn == 0 then
 						return getPropertyValue("AngularOffset"), _info("UNFINISHED - relate drop arm to portal with '"..ps.."'.")
-				
+
 					else
 						local portal = pr[0]
 						local s = rel_OcsPortal_IsSupportedBy_OcsPole
 						local r, n = getRelatedObjects(s, portal)
-				
+
 						if n == 0 then
 							return getPropertyValue("AngularOffset"),_error,
 								_info("ERROR Drop arm has bad connection to gantry '"..RC__identify(portal).."'.")
-				
+
 						elseif n == 1 then
 							--Gantry:
 							return getPropertyValue("AngularOffset"),
 								_info("DropArm is connected to a gantry '"..RC__identify(portal)..
 								"' - adjust drop arm's angular offset manually or change gantry into portal (which has one more portal support pole).")
-						
+
 						elseif n == 2 then
 							--Assume that the first two related poles are located at the portal's extremities:
 							local p1 = r[0]
 							local p2 = r[1]
-							local x1 = p1.geoCoord.X		
+							local x1 = p1.geoCoord.X
 							local y1 = p1.geoCoord.Y
 							local x2 = p2.geoCoord.X
 							local y2 = p2.geoCoord.Y
@@ -1379,9 +817,9 @@
 							local trackDir = math.deg(math.atan(tg.Y, tg.X))
 							local info = "Angular Offset deduced using portal support poles '"..RC__identify(p1).."' and '"..RC__identify(p2).."'."
 							return (360.0 + RC__round(90 - (trackDir - portalDir),3)) % 360.0, _info(info)
-				
+
 						else
-							--TODO: Locate the two support poles at each end of portal, uses this to find angular offset, then turn yourself if you 
+							--TODO: Locate the two support poles at each end of portal, uses this to find angular offset, then turn yourself if you
 							--are a support pole at one or the other end, or just adapt if you are in between ends.
 							return getPropertyValue("AngularOffset"),
 								_info("DropArm is connected to a portal '"..RC__identify(portal).." with total 3 or more supporting poles"..
@@ -1393,7 +831,7 @@
 		</LuaFunction>
 
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_MAS_DropArmUnderPortal_Geometry3DName()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_Geometry3DName()" 
+		<LuaFunction Name="_JBTEH_MAS_DropArmUnderPortal_Geometry3DName()"
 			ReturnType="String"
 			Description="Returns the 3D geometry's 'Name' for this OCS drop arm.">
 			<Signature>String _JBTEH_MAS_DropArmUnderPortal_Geometry3DName()</Signature>
@@ -1404,23 +842,23 @@
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject Name="Hengemast i åk" DisplayBlockName="NO-BN-2D-JBTEH_MAS-HENGEMAST-I-ÅK-{{SymbolMode}}" 
+		<InsertPointObject Name="Drop Arm under Portal" DisplayBlockName="NO-BN-2D-JBTEH_MAS-HENGEMAST-I-ÅK-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="2.65" SubGroup="Hengemast i åk">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/> 
+			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
 		</InsertPointObject>
-		
+
 		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="NO-BN-2D-JBTEH_MAS-HENGEMAST-I-ÅK-{{SymbolMode}}">
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}"/>	
+													{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+													{% else %}45.0
+													{% endif %}"/>
 		</SymbolDefinition>
-		
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
 
 		<DockPointDefinitions>
@@ -1445,12 +883,12 @@
 	HIGH VOLTAGE
 	OVERHEAD CATENARY SYSTEM PORTAL AND GANTRY
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsPortal" Name="JBTEH_AAK Åk"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_OcsPortal" Name="JBTEH_AAK OCS Portal"
 				Layer="JBTEH_AAK" Color="ByLayer"
-				Group="Kontaktledning/Åk"
+				Group="OCS/Portal"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-				
+
 		<RelationSpace>åk</RelationSpace>
 		<AttachmentCategory Name="åk"/>
 
@@ -1460,12 +898,12 @@
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_LARGE"/>
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___HORIZONTAL_AND_MEDIUM_FAR"/>
-		
+
 		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
-		
+
 		<Variants DefaultValue="Type 12">
 			<Variant Name="Type 12">
 				<SetValue Key="Length" Value="11m"/>
@@ -1473,16 +911,10 @@
 			<Variant Name="Type 14">
 				<SetValue Key="Length" Value="28m"/>
 			</Variant>
-			<Variant Name="Type 40">
-				<SetValue Key="Length" Value="10m"/>
-			</Variant>
-			<Variant Name="OCS gantry">
-				<SetValue Key="code" Value="OCS gantry"/>
-			</Variant>
 		</Variants>
-		
+
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
-		
+
 		<CustomProperty DataType="Enumeration" Name="Length" DisplayName="Lengde" DefaultValue="11m"
 			Description="The overhead catenary system (OCS) portal length (oyl), given in predefined lengths in 1 meter steps. Each may be composed of subparts, where the joints may hinder drop arm mounting.">
 			<Values Variant="Type 12">
@@ -1528,22 +960,10 @@
 				<Value Description="Type 14 XV">42m</Value>
 				<Value Description="Type 14 XVI">43m</Value>
 			</Values>
-			<Values Variant="Type 40">
-				<Value Description="Type 40 I">10m</Value>
-				<Value Description="Type 40 II">11m</Value>
-				<Value Description="Type 40 III">12m</Value>
-				<Value Description="Type 40 IV">13m</Value>
-				<Value Description="Type 40 V">14m</Value>
-				<Value Description="Type 40 VI">15m</Value>
-				<Value Description="Type 40 VII">16m</Value>
-			</Values>
-			<Values Variant="OCS gantry">
-				<Value>6m</Value>
-			</Values>
 		</CustomProperty>
 
 		<CustomProperty DataType="Boolean" Name="Strengthened" DefaultValue="True"
-			DisplayName="Forsterket" 
+			DisplayName="Forsterket"
 			Description="Strengthened catenary portal design [Boolean]: True=Strengthened design, False=Legacy design"
 		 />
 
@@ -1555,10 +975,10 @@
 				function _JBTEH_AAK_getOtherObjectsToModelcheck()
 				end
 			</Formula>
-		</LuaFunction> 
+		</LuaFunction>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Andre objekter som modelsjekkes" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked"
+			DisplayName="Other Objects for Model Check"
 			Description="The number of other items to modelcheck, and a table with references to them."
 		 />
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true"><Formula>_JBTEH_AAK_getOtherObjectsToModelcheck()</Formula></LuaExpression>
@@ -1572,7 +992,7 @@
 					local t = {} --Collection of other objects to check
 					local first = true
 					local txt = ""
-					for i = 0, nPole-1 do 
+					for i = 0, nPole-1 do
 						table.insert(t, rPole[i])
 						txt = first and "{"..RC__identify(rPole[i]) or txt..","..RC__identify(rPole[i])
 						first = false
@@ -1592,7 +1012,7 @@
 					end
 				end
 			</Formula>
-		</LuaFunction> 
+		</LuaFunction>
 
 		<LuaExpression Name="code"><Formula>_JBTEH_AAK_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_code()" ReturnType="String"
@@ -1608,7 +1028,7 @@
 					end
 				end
 			</Formula>
-		</LuaFunction> 
+		</LuaFunction>
 
 		<LuaExpression Name="name"><Formula>"KL-åk "..code.." ("..Variant..", "..Length..")"</Formula></LuaExpression>
 
@@ -1620,10 +1040,10 @@
 			<Signature>Double _JBTEH_AAK_LateralOffset()</Signature>
 			<Formula>
 				function _JBTEH_AAK_LateralOffset()
-					-- Ref Bane NOR, lærebok "Bygging av kontaktledningsanlegg" Del 2:2, Kap. 14
-				
+					-- Ref Bane NOR, reference book "Bygging av kontaktledningsanlegg" Part 2:2, Ch. 14
+
 					function _JBTEH_AAK_get_supportPoleLateralOffset(pole)
-						if pole.Alignment == nil then 
+						if pole.Alignment == nil then
 							return RightSided and 1e-3 or -1e-3, _warning, _info("Closest OCS support pole is not connected to a track (own alignment).")
 						else
 							local mv = pole.Variant
@@ -1638,18 +1058,18 @@
 							elseif mv:match("H%-mast") then
 								d = (pole.OcsPoleHeight - VerticalOffset) * math.tan(1/50000)
 							elseif mv:lower():match("hengemast") then
-								if (mp == 'Sirkulær, Ø120') then 
+								if (mp == 'Sirkulær, Ø120') then
 									d = 0.06
-								elseif (mp == 'Kvadratisk, 100x100') then 
+								elseif (mp == 'Kvadratisk, 100x100') then
 									d = 0.05
 								elseif (mp == 'Rektangulær, 100x150') then
 									d = 0.075
-								elseif (mp == 'Rektangulær, 100x200') then 
+								elseif (mp == 'Rektangulær, 100x200') then
 									d = 0.1
 								else
 									return 0, _warning, _info("Bad OCS pole profile ["..mp.."].")
 								end
-							else 
+							else
 								return 0, _warning, _info("Bad OCS pole variant ["..mv.."].")
 							end
 							-- OCS pole and portal may belong to different tracks (when OCS pole is located between tracks):
@@ -1661,36 +1081,36 @@
 							end
 						end
 					end --function
-				
+
 					local s = rel_OcsPortal_IsSupportedBy_OcsPole
 					local r, n = getRelatedObjects(s)
 
 					if n == 0 then
 						if Variant == "OCS gantry" then
-							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12.
+							-- Note: Gantry uses a 6m intermediate frame for Portal type 12.
 							return getPropertyValue("LateralOffset"),_warning, _info("UNFINISHED: Relate gantry to an OCS pole with relation '"..s.."'.")
 						else
 							return getPropertyValue("LateralOffset"),_warning, _info(
 								"UNFINISHED: Relate portal to OCS pole(s) with relation '"..s.."', or change Variant to gantry.")
 						end
-				
+
 					elseif n == 1 then
-						if Variant == "OCS gantry" then 
-							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12.
+						if Variant == "OCS gantry" then
+							-- Note: Gantry uses a 6m intermediate frame for Portal type 12.
 							return _JBTEH_AAK_get_supportPoleLateralOffset(r[0]), _info("Gantry portal (Utliggeråk) extending from pole '"..RC__identify(r[0]).."'.")
 						else
 							return getPropertyValue("LateralOffset"),_warning, _info(
 								"UNFINISHED: Relate portal to one more OCS pole with relation '"..rel_OcsPortal_IsSupportedBy_OcsPole.."', or change Variant to gantry.")
 						end
-				
-					elseif n &gt;= 2 then 
+
+					elseif n &gt;= 2 then
 						local m1 = r[0]
 						local m2 = r[1]
-						if RC__getDistance2D(this, m1) &gt; RC__getDistance2D(this, m2) then m1, m2 = m2, m1 end 
+						if RC__getDistance2D(this, m1) &gt; RC__getDistance2D(this, m2) then m1, m2 = m2, m1 end
 						local d1 = RC__getDistance2D(m1, m2)
 						local L = math.floor(1.500 + d1) --Assume min 0.5 and max 1.5 meter total portal length overshoot
 						local d2 = 0.5 * (L - d1) --Share overshoot between poles
-						local x1 = m1.geoCoord.X		
+						local x1 = m1.geoCoord.X
 						local y1 = m1.geoCoord.Y
 						local x2 = m2.geoCoord.X
 						local y2 = m2.geoCoord.Y
@@ -1703,7 +1123,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<!-- Ref lærebok del 2:2 side 86 punkt 14.8 - utregning av standard høyde underkant åk over høyeste spors SOK -->
+		<!-- Ref reference book part 2:2 page 86 point 14.8 - calculation of standard height for bottom of portal above highest track rail top -->
 
 		<LuaExpression Name="Geometry3D_0.Rotation.Z"><Formula>NOBN_trk_getYawFromDir()</Formula></LuaExpression>
 
@@ -1713,13 +1133,13 @@
 			<Signature>Enum _JBTEH_AAK_Length()</Signature>
 			<Formula>
 				function _JBTEH_AAK_Length()
-					-- Ref Bane NOR, lærebok "Bygging av kontaktledningsanlegg" Del 2:2, Kap. 14
+					-- Ref Bane NOR, reference book "Bygging av kontaktledningsanlegg" Part 2:2, Ch. 14
 					local RelationName = rel_OcsPortal_IsSupportedBy_OcsPole
 					local r, n = getRelatedObjects(RelationName)
 					local L
 					if n == 0 then
-						if Variant == "OCS gantry" then 
-							--Merk: Utliggeråk benytter en 6m mellomramme for Åk type 12. Se sammenstillingstegning E-7507 = EH-707507, samt mellomramme 6m type 12 = EH-707448.
+						if Variant == "OCS gantry" then
+							-- Note: Gantry uses a 6m intermediate frame for Portal type 12. See assembly drawing E-7507 = EH-707507, and intermediate frame 6m type 12 = EH-707448.
 							L = "6m"
 							return L, _warning, _info("UNFINISHED: Relate gantry to an OCS pole with relation '"..RelationName.."'.")
 						else
@@ -1730,10 +1150,10 @@
 							return L, _warning, _info(
 								"UNFINISHED: Relate portal to OCS pole(s) with relation '"..RelationName.."', or change Variant to gantry (Utliggeråk).")
 						end
-				
+
 					elseif n == 1 then
 						local m1 = r[0]
-						if Variant == "OCS gantry" then 
+						if Variant == "OCS gantry" then
 							return "6m", _info("Gantry portal (Utliggeråk) extending from OCS pole "..m1.code..".")
 						else
 							if Variant == "Type 12" then L = "11m"
@@ -1743,8 +1163,8 @@
 							return L, _warning, _info(
 								"UNFINISHED: Relate portal to one more OCS poles with relation '"..RelationName.."', or change Variant to gantry (Utliggeråk).")
 						end
-				
-					elseif n &gt;= 2 then 
+
+					elseif n &gt;= 2 then
 						local m1 = r[0]
 						local m2 = r[1]
 						local p1 = m1.geoCoord
@@ -1771,7 +1191,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="AngularOffset"><Formula>_JBTEH_AAK_AngularOffset()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_AAK_AngularOffset()" ReturnType="Double"
 			HideFromUser="false"
@@ -1785,12 +1205,12 @@
 					if n == 0 then
 						return getPropertyValue("AngularOffset"), _info("No control input - adjust angular offset manually. Relate to one (gantry) or two (portal) poles using '"..RelationName.."' to set angular offset automatically.")
 
-					elseif n == 1 then 
+					elseif n == 1 then
 						-- Gantry "åk-unge", "utliggeråk"
 						-- Assume gantry belongs to same alignment as the supporting OCS pole
 						return r[0].AngularOffset, _info("AngularOffset for gantry deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
 
-					elseif n == 2 then 
+					elseif n == 2 then
 						--Assume that the first two related OCS poles are located at the portal's extremities:
 						local m1 = r[0]
 						local m2 = r[1]
@@ -1806,7 +1226,7 @@
 						return RC__round((2*360 + portalDir - trackDir) % 360, 3), _info(info)
 
 					else
-						--TODO: Locate the two support poles at each end of portal, uses thes to find angular offset, then turn yourself if you 
+						--TODO: Locate the two support poles at each end of portal, uses thes to find angular offset, then turn yourself if you
 						--are a support pole at one or the other end, or just adapt if you are in between ends.
 						return getPropertyValue("AngularOffset"),
 							_info("Mast is connected to a portal '"..RC__identify(portal).." with total 3 or more supporting poles"..
@@ -1827,19 +1247,19 @@
 					if n == 0 then
 						return getPropertyValue("Mileage"),
 							_info("No control input - adjust mileage manually. Relate portal to one or two poles using '"..s.."' to set mileage automatically.")
-				
-					elseif n == 1 then 
+
+					elseif n == 1 then
 						-- Move to related mast (assuming gantry (Utliggeråk))
 						return RC__getMileageFromRelatedObject(s), _info("Mileage deduced from support pole '"..RC__identify(r[0]).."'.")
-						
+
 					elseif n &gt;= 2 then
 						local m1 = r[0]
 						local m2 = r[1]
-						if RC__getDistance2D(this, m1) &gt; RC__getDistance2D(this, m2) then m1, m2 = m2, m1 end 
+						if RC__getDistance2D(this, m1) &gt; RC__getDistance2D(this, m2) then m1, m2 = m2, m1 end
 						local d1 = RC__getDistance2D(m1, m2)
 						local L = math.floor(1.500 + d1) --Assume min 0.5 and max 1.5 meter total portal length overshoot
 						local d2 = 0.5 * (L - d1) --Share overshoot between poles
-						local x1 = m1.geoCoord.X		
+						local x1 = m1.geoCoord.X
 						local y1 = m1.geoCoord.Y
 						local x2 = m2.geoCoord.X
 						local y2 = m2.geoCoord.Y
@@ -1858,11 +1278,11 @@
 			<Signature>String _JBTEH_AAK_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTEH_AAK_Geometry3DName()
-					if Variant == "Type 12" then 
+					if Variant == "Type 12" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-12-%d-%02d-%s", Strengthened and "2" or "1", Length:sub(1,-2)-10, Length))
-					elseif Variant == "Type 14" then 
+					elseif Variant == "Type 14" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-14-%d-%02d-%s", Strengthened and "2" or "1", Length:sub(1,-2)-27, Length))
-					elseif Variant == "Type 40" then 
+					elseif Variant == "Type 40" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-40-%02d-%s", Length:sub(1,-2)-9, Length))
 					elseif Variant == "OCS gantry" then
 						return "NO-BN-3D-EH-AAK-UTLIGGERÅK-6M"
@@ -1872,44 +1292,30 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<InsertPointObject Name="Type 12" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="VerticalOffset" Value="7.90"/>
 		</InsertPointObject>
-		
+
 		<InsertPointObject Name="Type 14" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-28000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="VerticalOffset" Value="7.90"/>
 		</InsertPointObject>
-		
-		<InsertPointObject Name="Type 40" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-10000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
-				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="VerticalOffset" Value="7.90"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="OCS gantry" DisplayName="Utliggeråk" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-UTLIGGERÅK-6000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
-				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true" RotateIfRightSideOfAlignment="true"/>
-			<SetValue Key="VerticalOffset" Value="7.90"/>
-		</InsertPointObject>
-		
+
 		<SymbolDefinition AllowSymbolMove="true">
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
-														{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
-														{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
-														{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
-														{% else %}45.0
-														{% endif %}"/>	
+													{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+													{% else %}45.0
+													{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_AAK
 				{% if Variant == 'OCS gantry' %}KONTAKTLEDNINGSÅK-UTLIGGERÅK-6000
@@ -1952,8 +1358,8 @@
 				{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}
 			</BlockNameFormat>
 		</SymbolDefinition>
-		
-		
+
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
 
 		<DockPointDefinitions>
@@ -1967,6 +1373,6 @@
 
 
 <!--========================================================================================================
-    End of file 
+    End of file
 =========================================================================================================-->
 </xpp:bloc>
