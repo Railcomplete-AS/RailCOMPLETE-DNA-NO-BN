@@ -166,6 +166,22 @@ AutoLISP source in `NO-BN\2D\_SRC\Main\`:
 
 Subdirectories contain the actual symbol-drawing LISP routines per discipline.
 
+## Commit Messages
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```
+<type>: <short summary>
+```
+
+Common types: `feat`, `fix`, `docs`, `refactor`, `chore`, `style`, `test`, `build`, `ci`.
+
+Examples:
+- `feat: add signal distance calculation script`
+- `fix: correct gradient lookup in ATC target distances`
+- `docs: update CLAUDE.md with commit conventions`
+- `refactor: simplify Lua function naming in signals XML`
+
 ## Branch Strategy
 - **develop**: Active development, may contain work-in-progress
 - **main**: Stable releases, triggers Azure CI/CD pipeline
