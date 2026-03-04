@@ -14532,6 +14532,41 @@ return s</Data>
       <Formula>0</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
+
+	<!-- 2026-02-13 CLFEY Added after support call with customer. Adapted from DNA 2026.1 WIP. -->
+	<LuaFunction Name="_JBTEH_BAR_Offset3DZ()"
+		Description="Returns the Z coordinate for a guyw wire, on condition that it has a relation to its footplate ('forankring') at one end and to its anchoring-to-pole (kraftoverføringskonsoll) at the catenary mast end. Guy wires are supposed to be drawn from mast to anchoring footplate."
+		>
+		<Formula>
+			function _JBTEH_BAR_Offset3DZ()
+				--2025-10-08 CLFEY Ny kode, som takler at bardunen kan være tegnet fra ankeret til masten (ønske fra kunde)
+				local rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole = "Har kraftoverføringskonsoll"
+				local rel_GuyWire_IsAnchoredBy_GuywireFootplate = "Har forankring" --(Bytter navn til "Har fotplate" i kommende DNA)
+				local atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole)[0]
+				local gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
+				local L = RcAlignment.HorizontalGeometry.Length
+				local z0, z1, dZ
+				local d = RC__getDistance2D(getPoint3D(gwf), RcAlignment.HorizontalGeometry.StartPoint)
+				if d &lt; 1.0 then 
+					--The guywire has probably been drawn from guywire-footplate to force relaying console on OCS pole
+					z0 = gwf.geoCoord.Z
+					z1 = atp.GeoCoord.Z
+				else
+					--The guywire has probably been drawn from force relaying console on pole to guywire-footplate
+					z0 = atp.GeoCoord.Z
+					z1 = gwf.geoCoord.Z
+				end
+				dZ = z1 - z0
+				return z0 + _position.Pos * (dZ/L)
+			end
+		</Formula>
+	</LuaFunction>
+    <LuaExpression Name="Offset3D.Z" IsModelCheck="false">
+      <Formula>_JBTEH_BAR_Offset3DZ()
+	  </Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
+	
     <LuaExpression Name="Model3DSeparation" IsModelCheck="false">
       <Formula>RC__getNearest3DStep(1.0)</Formula>
       <Symbol>_noSymbol</Symbol>
@@ -14719,6 +14754,7 @@ return s</Data>
   <LuaExpression Name="Name3D"><Formula>NOBN_com_Name3D()</Formula></LuaExpression>
 	<LuaExpression Name="Layer3D"><Formula>NOBN_com_Layer3D()</Formula></LuaExpression>
 	</ObjectType>
+  
   <ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" Name="JBTEH_BAF Bardunfeste" Layer="JBTEH_BAF" Color="ByLayer" DrawTail="false" DrawTailExtension="false" Group="Kontaktledning/Forankring" AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}">
     <Variants DefaultValue="Bardunfeste fotplate, enkel">
       <Variant Name="Bardunfeste fotplate, enkel" />
@@ -15058,7 +15094,7 @@ return s</Data>
 					if Variant:match("Streverfeste fotplate (uten streveren)") then
 						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-525x350-191x374xM36"
 						
-					elseif Variant:match("Streverfeste fotplate og strever, 2.08m fra sidekant KL-mast") then 
+					elseif Variant:match("Streverfeste fotplate og strever, 2.08m fra sidekant KL%-mast") then 
 						t = "NO-BN-3D-EH-STF-STREVERFESTE-FOTPLATE-MED-STREVER-FOR-BJELKEMAST-L7000-D2080-H6654"
 						
 					elseif Variant:match("Streverfeste fotplate og strever for Ø120 hengemast for bru og tunnel") then
@@ -36967,7 +37003,6 @@ end
     <Formula>
 function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	local tolerance = 6 --Tolerance in meters
-
 	--Preamble - called from a relevant object type?
 	if      RcType ~= "JBTSA_ERT ERTMS-signal"
 		and RcType ~= "JBTSA_SIG Signal"
@@ -36977,57 +37012,53 @@ function NOBN_sig_chkSafetyDistanceFromSignalToOcsMast()
 	then 
 		return "Bad signal type ["..RcType.."] (code='"..code.."'.",_warning
 	end
-
 	--Check if this test can be omitted (a low signal):
-	local omit = true
-	if Yokemounted then 
-		omit = false
+	local omit = false
 
-	elseif RcType == "JBTSA_ERT ERTMS-signal" then
+	if RcType == "JBTSA_ERT ERTMS-signal" then
 		if Yokemounted then
 			return "WARNING - Check manually that no OCS yoke is within safety distance from markerboard in yoke.",_warning
 		else
 			return "OK - Markerboard on the ground - Safety distance to OCS mast not relevant.",_ok
 		end
-
 	elseif RcType == "JBTSA_SIG Signal" then
-		if HighShuntingSignal == "-" and MainSignal == "-" then 
+		if HighShuntingSignal == "-" and MainSignal == "-" and DistantSignal == "-" then 
 			return "OK - Free-standing low signal - Safety distance to OCS mast not relevant.",_ok 
+		else
+			--Fall through
 		end
-
 	elseif RcType == "JBTSA_SIG Togsporsignal" then
 		return "OK - Track signal (togsporsignal) - Safety distance to OCS mast not relevant.",_ok 
 	end
 
-	if not omit then
-		local c1 = getNearbyPointObjects2D("JBTEH_MAS KL-mast", tolerance)
-		local c2 = getNearbyPointObjects2D("JBTEH_MAS Hengemast for bru og tunnel", tolerance)
-		local c3 = getNearbyPointObjects2D("JBTEH_MAS Hengemast i åk", tolerance)
-		local closeObjects = getUnionOfCollections( getCollectionFromTable({c1, c2, c3}) )
-		local count = getCollectionLength(closeObjects)
-		local UpdateObjects = {}
-		if count == 0 then 
-			return "OK - No catenary mast within tolerance "..tolerance.." meters.",_ok
-		else
-			local i = 0
-			local shortestDistance = math.huge
-			local s = ": WARNING - Catenary mast"
-			if (count &gt; 1) then s = s.."s" end
-			s = s.." ["
-			while i ~= count do
-				d = RC__getDistance2D(closeObjects[i]) 
-				if d &lt; shortestDistance then shortestDistance = d end
-				s = s..closeObjects[i].code
-				table.insert(UpdateObjects, closeObjects[i])
-				i = i+1
-				if i ~= count then s = s..", " end
-			end
-			s = s.."]"
-			return string.format("%.03f: %s located inside horizontal tolerance %.3f meters.",shortestDistance, s, tolerance),UpdateObjects, _warning
+	--Regular signal
+	local c1 = getNearbyPointObjects2D("JBTEH_MAS KL-mast", tolerance)
+	local c2 = getNearbyPointObjects2D("JBTEH_MAS Hengemast for bru og tunnel", tolerance)
+	local c3 = getNearbyPointObjects2D("JBTEH_MAS Hengemast i åk", tolerance)
+	local closeObjects = getUnionOfCollections( getCollectionFromTable({c1, c2, c3}) )
+	local count = getCollectionLength(closeObjects)
+	local UpdateObjects = {}
+	if count == 0 then 
+		return "OK - No catenary mast within tolerance "..tolerance.." meters.",_ok
+	else
+		local i = 0
+		local shortestDistance = math.huge
+		local s = ": WARNING - Catenary mast"
+		if (count &gt; 1) then s = s.."s" end
+		s = s.." ["
+		while i ~= count do
+			d = RC__getDistance2D(closeObjects[i]) 
+			if d &lt; shortestDistance then shortestDistance = d end
+			s = s..closeObjects[i].code
+			table.insert(UpdateObjects, closeObjects[i])
+			i = i+1
+			if i ~= count then s = s..", " end
 		end
+		s = s.."]"
+		return string.format("%.03f: %s located inside horizontal tolerance %.3f meters.",shortestDistance, s, tolerance),UpdateObjects, _warning
 	end
 end
-		</Formula>
+	</Formula>
   </LuaFunction>
   <LuaFunction Name="NOBN_sig_chkDistanceFromSignalToTrack()" Description="Checks lateral distance from signal insertion point to closest track on left side (in the direction of increasing mileages). Call with argument 'Right' or 'Left'." ReturnType="String" HideFromUser="false">
     <Signature>String NOBN_sig_chkDistanceFromSignalToTrack("Right" | "Left")</Signature>
