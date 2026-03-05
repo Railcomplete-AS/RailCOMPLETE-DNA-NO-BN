@@ -216,18 +216,8 @@ positive feeder in AT system				positiv leder i AT-system
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<Variants DefaultValue="Section Cantilever Bracket H-300">
-			<!-- The variant's number is the c-c spacing between M20 threaded irons. -->
 			<!-- Note: The 'Section Cantilever Bracket H-300' variant is also suitable for HEB/HEB poles up to HEB280/HEM260 -->
-			<Variant Name="Section Cantilever Bracket B-120"></Variant>
-			<Variant Name="Section Cantilever Bracket B-140"></Variant>
-			<Variant Name="Section Cantilever Bracket B-160"></Variant>
-			<Variant Name="Section Cantilever Bracket B-180"></Variant>
-			<Variant Name="Section Cantilever Bracket B-200"></Variant>
-			<Variant Name="Section Cantilever Bracket H-270"></Variant>
 			<Variant Name="Section Cantilever Bracket H-300"></Variant>
-			<Variant Name="Section Cantilever Bracket H-330"></Variant>
-			<Variant Name="Section Cantilever Bracket H-360"></Variant>
-			<Variant Name="Section Cantilever Bracket H-390"></Variant>
 		</Variants>
 
 		<LuaExpression Name="name"><Formula>Variant</Formula></LuaExpression>
@@ -1475,6 +1465,384 @@ positive feeder in AT system				positiv leder i AT-system
 		</SymbolDefinition>
 
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
+
+	</ObjectType>
+
+
+
+
+
+<!--========================================================================================================
+	HIGH VOLTAGE
+	BRACKET ON OCS POLE (force relaying bracket for guywires and tension balancers)
+=========================================================================================================-->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_AnchoringToOcsPole" Name="JBTEH_KPM Bracket on Pole"
+				Layer="JBTEH_KPM" Color="ByLayer"
+				Group="OCS/Cantilever Brackets"
+				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
+				>
+
+		<RelationSpace>konsoll_på_mast</RelationSpace>
+		<!-- <AttachmentCategory Name="kraftoverføring" PassAttachmentToTarget="true"/> -->
+		<!-- <AttachTo Category="kl-mast" DrawTail="false"/> -->
+
+		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_VERTICAL"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
+		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___VERTICAL_AND_VERY_FAR"/>
+		<xpp:expand select="NOBN_com_DISCIPLINE___OCS"/>
+		<!-- <xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/> -->
+		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
+		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
+
+		<Variants DefaultValue="Bracket on pole for tension balancer and guy wire">
+			<Variant Name="Bracket on pole for tension balancer and guy wire"/>
+			<Variant Name="Bracket on pole for tension balancer"/>
+		</Variants>
+
+		<LuaExpression Name="Mileage"><Formula>_JBTEH_KPM_mileage()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_mileage()"
+			ReturnType="String"
+			Description="Returns the mileage for this bracket, deduced from its related OCS pole.">
+			<Signature>String _JBTEH_KPM_mileage()</Signature>
+			<Formula>
+				function _JBTEH_KPM_mileage()
+					local s = rel_ConsoleOnOcsPole_IsInstalledOn_OcsPole
+					local r, n = getRelatedObjects(s)
+					if n == 0 then
+						return getPropertyValue("Mileage"),
+							_info("No related OCS pole, cannot adapt mileage.")
+					elseif n == 1 then
+						return r[0].Mileage
+					else
+						-- Two or more poles were found:
+						return r[0].Mileage,
+							_info("WARNING - Multiple OCS poles found, bracket uses closest pole's mileage.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="LateralOffset"><Formula>_JBTEH_KPM_LateralOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_LateralOffset()"
+			ReturnType="String"
+			Description="Returns the lateral offset for this bracket, deduced from its related OCS pole.">
+			<Signature>String _JBTEH_KPM_LateralOffset()</Signature>
+			<Formula>
+				function _JBTEH_KPM_LateralOffset()
+					local s = rel_ConsoleOnOcsPole_IsInstalledOn_OcsPole
+					local r, n = getRelatedObjects(s)
+					if n == 0 then
+						return getPropertyValue("LateralOffset"),
+							_info("No related OCS pole, cannot deduce LateralOffset.")
+					elseif n == 1 then
+						return r[0].LateralOffset
+					else
+						-- Two or more poles were found:
+						return r[0].LateralOffset,
+							_warning, _info("WARNING - Multiple OCS poles found, bracket uses closest pole's LateralOffset.")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="code"><Formula>_JBTEH_KPM_code()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_code()"
+			ReturnType="String"
+			Description="Returns the code for this bracket, deduced from its related OCS pole.">
+			<Signature>String _JBTEH_KPM_code()</Signature>
+			<Formula>
+				function _JBTEH_KPM_code()
+					local sPol = rel_ConsoleOnOcsPole_IsInstalledOn_OcsPole
+					local sObj = rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb
+					local rPol, nPol = getRelatedObjects(sPol)
+					local rObj, nObj = getRelatedObjects(sObj)
+
+					if nPol == 0 then
+						return _unfinished,"UNFINISHED - Relate bracket to its OCS pole with "..sPol.."."
+					else
+						if nObj == 0 then
+							return _unfinished,"UNFINISHED - No WTB or guywire - relate with '"..sObj.."'."
+						elseif nObj == 1 then
+							return "Bracket "..rPol[0].code.." : ["..rObj[0].name.."]"
+						else
+							return "Bracket "..rPol[0].code.." : ["..rObj[0].name.."] &lt;-&gt; ["..rObj[1].name.."]"
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="name"><Formula>_JBTEH_KPM_name()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_name()"
+			ReturnType="String"
+			Description="Returns the name for this bracket, deduced from its related OCS pole.">
+			<Signature>String _JBTEH_KPM_name()</Signature>
+			<Formula>
+				function _JBTEH_KPM_name()
+					return code
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="dir"><Formula>_JBTEH_KPM_dir()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_dir()"
+			ReturnType="LaxDirection"
+			Description="Returns the direction for this bracket, deduced from its related OCS pole.">
+			<Signature>String _JBTEH_KPM_dir()</Signature>
+			<Formula>
+				function _JBTEH_KPM_dir()
+					local s = rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb
+					local tmp, nTmp = getRelatedObjects(s)
+					local rWtb = tmp:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
+					local nWtb = getCollectionLength(rWtb)
+					if nTmp == 0 then
+						return _unfinished, getPropertyValue("dir"), _info("No related WTB or guywire - cannot deduce bracket direction.")
+					end
+
+					local alg
+					if nWtb == 1 then
+						alg = rWtb[0].Alignment
+					else
+						--no wtb, just guywire alignment as first item:
+						alg = tmp[0]
+					end
+					local wireDir = math.deg(math.atan(alg.RcAlignment.StartTangent.Y, alg.RcAlignment.StartTangent.X))
+					local trackDir = math.deg(math.atan(getAlignmentInfo().Tangent.Y, getAlignmentInfo().Tangent.X))
+					local angDiff
+					if RC__getDistance2D(alg.RcAlignment.StartPoint) &lt; RC__getDistance2D(alg.RcAlignment.EndPoint) then
+						angDiff = (360 + wireDir - trackDir) % 360
+					else
+						angDiff = (180 + 360 + wireDir - trackDir) % 360
+					end
+					if 315 &lt; angDiff or  angDiff &lt;= 045 then return "down" end
+					if 045 &lt; angDiff and angDiff &lt;= 135 then return "none" end
+					if 135 &lt; angDiff and angDiff &lt;= 225 then return "up"   end
+					if 225 &lt; angDiff and angDiff &lt;= 315 then return "both" end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomProperty DataType="Double" Name="ConsoleHeight" DisplayName="Bracket height above pole insertion point" DefaultValue="7.1"
+			Description="The bracket's height [m] above its OCS pole's insertion point.">
+		</CustomProperty>
+		<LuaExpression Name="ConsoleHeight"><Formula>_JBTEH_KPM_AnchoringHeight()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_AnchoringHeight()"
+			ReturnType="Double"
+			Description="Returns the bracket's height above its associated OCS pole's insertion point elevation, deduced from its related OCS pole and its elevation relative to TOR.">
+			<Signature>Double _JBTEH_KPM_AnchoringHeight()</Signature>
+			<Formula>
+				function _JBTEH_KPM_AnchoringHeight()
+					local s = rel_ConsoleOnOcsPole_IsInstalledOn_OcsPole
+					local r, n = getRelatedObjects(s)
+					if n == 0 then
+						return 0, _unfinished, _info("UNFINISHED - relate with '"..s.."'.")
+					elseif n == 1 then
+						local pol = r[0]
+						return this.VerticalOffset - pol.VerticalOffset,
+							_info("Bracket mounting height on OCS pole "..RC__identify(pol))
+					else
+						-- Two or more OCS poles were found:
+						return this.VerticalOffset - r[0].VerticalOffset, _warning,
+							_info("WARNING - Multiple OCS poles found (we are using just the first related OCS pole).")
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="VerticalOffset"><Formula>_JBTEH_KPM_VerticalOffset()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_VerticalOffset()"
+			ReturnType="Double"
+			Description="Returns the relative elevation for this bracket, deduced from its related OCS pole.">
+			<Signature>Double _JBTEH_KPM_VerticalOffset()</Signature>
+			<Formula>
+				function _JBTEH_KPM_VerticalOffset()
+					--Both variants have a WTB; derive height from the related wire's cantilever:
+					local r, _ = getRelatedObjects(rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb)
+					local rWtb = r:filter(function (x) return x.RcType == rctype_WireTensioningBalancer end)
+					local nWtb = getCollectionLength(rWtb)
+					if nWtb == 0 then
+						return 0, _warning, _info("WARNING - No related WTB")
+					end
+					local wtb = rWtb[0]
+					local rWir, nWir = wtb:getRelatedObjects(rel_Wtb_Tensions_ContactWireOrMidpointAnchoringLineOrHvConductor)
+					if nWir == 0 then
+						return 0, _warning, _info("WARNING - Related WTB has no related wire")
+					end
+					local wir = rWir[0]
+
+					if wir.RcType == rctype_ContactWire then
+						--Ref Bane NOR Elkraftportalen, EH-707469 (S20) or EH-707487 (S25).
+						--Standard for weighted WTB: 0.235m  = 0.150 + 0.085 (from bracket mounting on
+						--the OCS pole down to the center of the pulley wheel, minus 0.085 radius of small pulley wheel).
+						--Note: The standard pulley wheel has 3:1 gearing. Other gearing numbers are allowed at Bane NOR,
+						--but only subject to derogation acceptance.
+						local offset = 0.0
+						if wtb.Variant:match("Lodd") then
+							offset = 0.235
+						elseif wtb.Variant:match("Fjær") then
+							--TODO: To be verified, that spring WTB shall be mounted on the OCS pole at the same elevation as its tensioned wire:
+							offset = 0.0
+						elseif wtb.Variant:match("Fast") then
+							--Applies to single contact wire or messenger wire:
+							offset = 0.0
+						end
+
+						--Find associated neighbour cantilever:
+						local sCnt1 = rel_CantileverOrWtb_HasPrevious_CantileverOrWtb
+						local sCnt2 = rel_CantileverOrWtb_HasNext_CantileverOrWtb
+						local rCnt1, nCnt1 = getRelatedObjects(sCnt1, wtb)
+						local rCnt2, nCnt2 = getRelatedObjects(sCnt2, wtb)
+						if nCnt1 + nCnt2 == 0 then
+							return 0, _warning, _info("WARNING - WTB has no neighbour cantilever - cannot deduce bracket height.")
+						else
+							local cnt = getUnionOfCollections({rCnt1, rCnt2})[0] --must be one of them
+							local wcvo = cnt.WireClampVerticalOffset
+							return RC__round(wcvo + offset,2),
+								_info("Bracket height deduced from contact wire clamp's relative elevation "..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
+						end
+
+					elseif wir.RcType == rctype_MidpointAnchorLine then
+						--Locate the cantilever at the midpoint anchor:
+						local mal = rWir[0]
+						local sMap = rel_MidpointAnchoringLine_Anchors_MidpointAnchor
+						local rMap, nMap = getRelatedObjects(sMap, mal)
+						if nMap == 0 then
+							return 0, _warning, _info("WARNING - Related WTB tensions a midpoint anchor line which has no midpoint anchor (fixpoint)")
+						else
+							local map = rMap[0]
+							local sCnt = rel_Cantilever_IsLockedBy_MidpointAnchor
+							local rCnt, nCnt = getRelatedObjects(sCnt, map)
+							if nCnt == 0 then
+								return 0, _warning, _info("WARNING - Related WTB tensions a midpoint anchor line which at its midpoint anchor has no related cantilever")
+							else
+								local cnt = rCnt[0]
+								local wcvo = cnt.WireClampVerticalOffset
+								return RC__round(wcvo,2),
+									_info("Bracket height deduced from its midpoint's cantilever's contact wire clamp's relative elevation "
+									..RC__round(wcvo,2).." at cantilever "..cnt.code..".")
+							end
+						end
+
+					elseif wir.RcType == rctype_HighVoltageConductor then
+						return 0, _warning,"WARNING - The related WTB tensions a high voltage conductor - delete this formula and define the bracket height manually."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTEH_KPM_Geometry3DName()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_Geometry3DName()"
+			ReturnType="String"
+			Description="Returns the 3D model name for this bracket, deduced from its related OCS pole.">
+			<Signature>String _JBTEH_KPM_Geometry3DName()</Signature>
+			<Formula>
+				function _JBTEH_KPM_Geometry3DName()
+					--TODO: Model real bracket in various sizes depending on the type of pole it is mounted on:
+					--TODO: Include bracket for fastening to pole as well:
+					local s = rel_ConsoleOnOcsPole_IsInstalledOn_OcsPole
+					local r, n = getRelatedObjects(s)
+					if n == 0 then
+						return "UNFINISHED: No OCS pole found, cannot deduce bracket's 3D geometry name."
+					else
+						if Variant == "Bracket on pole for tension balancer and guy wire" then
+							--TODO: Make model depend on OCS pole type and WTB type
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
+						elseif Variant == "Bracket on pole for tension balancer" then
+							return "NO-BN-3D-EH-KPM-KONSOLL-PÅ-MAST-FOR-FAST-FJÆR-OG-LODDAVSPENNING-PÅ-STÅLMAST-E2103-I"
+						else
+							return "Unknown Variant ["..Variant.."]."
+						end
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relations"
+			Description="Checks complex requirements on the number of established relations between this object and other objects."/>
+		<LuaExpression Name="mc_Relations" IsModelCheck="true"><Formula>_JBTEH_KPM_chkRelations()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_KPM_chkRelations()" ReturnType="String"
+			Description = "A bracket on an OCS pole shall relate to a Wire Tension Balancer and optionally one guywire.">
+			<Signature>String _JBTEH_KPM_chkRelations()</Signature>
+			<Formula>
+				function _JBTEH_KPM_chkRelations()
+					local _rCow, nCow = getRelatedObjects(rel_ConsoleOnOcsPole_IsInstalledOn_OcsPole)
+
+					local tmp = getRelatedObjects(rel_ConsoleOnOcsPole_Anchors_GuyWireOrSpannerOrWtb)
+					local rWtb = tmp:filter(function (x) return x.RcType:match("JBTEH_AEH") end)
+					local nWtb = getCollectionLength(rWtb)
+					local rGwi = tmp:filter(function (x) return x.RcType:match("JBTEH_BAR") end)
+					local nGwi = getCollectionLength(rGwi)
+
+					if nCow == 0 then
+						return _unfinished,"UNFINISHED - Bracket on OCS pole must relate to its OCS pole or suspension pole."
+					end
+
+					--Bracket for WTB and guy wire:
+					if Variant == "Bracket on pole for tension balancer and guy wire" then
+						if nWtb == 1 and nGwi == 1 then
+							return _ok,"OK - Bracket on OCS pole is related to one WTB and one guywire."
+						else
+							if nWtb ~= 1 then return _unfinished,"UNFINISHED - Bracket on OCS pole shall be related to a WTB (and guywire)." end
+							if nGwi ~= 1 then return _unfinished,"UNFINISHED - Bracket on OCS pole shall be related to a guywire (and WTB)." end
+						end
+
+					--Bracket for WTB only:
+					elseif Variant == "Bracket on pole for tension balancer" then
+						if nWtb == 1 and nGwi == 0 then
+							return _ok,"OK - Bracket on OCS pole is related to one WTB, no guywire."
+						else
+							if nWtb ~= 1 then return _unfinished,"UNFINISHED - Bracket on OCS pole shall be related to a WTB." end
+							if nGwi ~= 0 then return _error,"ERROR - Bracket on OCS pole for tension balancer shall not be related to a guywire." end
+						end
+
+					else
+						return _error,"ERROR - Bad variant '"..Variant.."'."
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertPointObject Name="Bracket on pole for tension balancer and guy wire" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-OG-BARDUN-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+
+		<InsertPointObject Name="Bracket on pole for tension balancer" DisplayBlockName="NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR-AVSPENNING-{{SymbolMode}}"
+				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3" AskForAttachment="true">
+			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+		</InsertPointObject>
+
+		<SymbolDefinition AllowSymbolMove="true" DefaultBlockName="">
+			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="{% if dir == 'up' %}{{270.0|plus:AngularOffset}}
+													{% elsif dir == 'down' %}{{90.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and RightSided %}{{180.0|plus:AngularOffset}}
+													{% elsif dir == 'both' and LeftSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and RightSided %}{{0.0|plus:AngularOffset}}
+													{% elsif dir == 'none' and LeftSided %}{{180.0|plus:AngularOffset}}
+													{% else %}45.0
+													{% endif %}"/>
+			<BlockNameFormat JoinBy="-">
+				NO-BN-2D-JBTEH_KPM-KONSOLL-PAA-MAST-FOR
+				{% if Variant == 'Bracket on pole for tension balancer and guy wire' %}AVSPENNING-OG-BARDUN
+				{% elsif Variant == 'Bracket on pole for tension balancer' %}AVSPENNING
+				{% else %}BAD_VARIANT
+				{% endif %}
+				{{SymbolMode}}
+			</BlockNameFormat>
+		</SymbolDefinition>
+
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
+
+		<DockPointDefinitions>
+			<SnapPoints>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bardun"/>
+			</SnapPoints>
+		</DockPointDefinitions>
 
 	</ObjectType>
 
