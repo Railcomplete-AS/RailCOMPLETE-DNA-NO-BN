@@ -3,7 +3,7 @@
 # so that fine-grained Bash permission rules are not bypassed.
 
 input=$(cat)
-command=$(echo "$input" | sed -n 's/.*"command":"\([^"]*\)".*/\1/p')
+command=$(echo "$input" | jq -r '.tool_input.command // empty')
 
 # Strip single- and double-quoted strings to avoid false positives in message text
 unquoted=$(echo "$command" | sed "s/'[^']*'//g; s/\"[^\"]*\"//g")
