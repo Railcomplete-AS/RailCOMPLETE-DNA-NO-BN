@@ -22,20 +22,20 @@
         <Signature>String NOBN_sig_getCabinetName()</Signature>
         <Formula>
 			function NOBN_sig_getCabinetName()
-				if string.find(Variant, "apparat") then
+				if string.find(Variant, "signalling cabinet") then
 					return "As."..code
-				elseif string.find(Variant, "Nøkkel") then 
+				elseif string.find(Variant, "Key lock") then
 					local v = "Arbeidsområde"
 					local n, a
 					n, a = RC__getAreasOfVariant(v)
 					if n == 1 then
-						return "Nøk."..NOBN_com_getOcpCode().." "..a[0].code.."-"..Seq 
-					else 
-						return "*** Zero or multiple ("..n..") areas found of Variant '"..v.."' - cannot deduce a unique name for keylock cabinet." 
+						return "Klck."..NOBN_com_getOcpCode().." "..a[0].code.."-"..Seq
+					else
+						return "*** Zero or multiple ("..n..") areas found of Variant '"..v.."' - cannot deduce a unique name for keylock cabinet."
 					end
-				elseif string.find(Variant, "Sveiv") then
-					return "Ss."..code
-				elseif string.find(Variant, "Kabel") then
+				elseif string.find(Variant, "Crank") then
+					return "Cr."..code
+				elseif string.find(Variant, "Cable") then
 					return "Kabelboks "..code
 				else
 					return "Unknown variant",_warning
@@ -49,7 +49,7 @@
 <!--========================================================================================================
 	SIGNAL
 	CABLES
-	TODO: Modelleres ferdig, krever ny funksjonalitet
+	TODO: To be modelled, requires new functionality
  =========================================================================================================>
 	<ObjectType DataType="tElementWithAlignment" Class="RailwayAlignment" Name="JBTSA_KAB Signalkabel" 
 				Layer="JBTSA_KAB" Color="ByLayer" 
@@ -68,9 +68,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Variant>
 		</Variants>
 				
-		(...diverse makroer med standard-stæsj...)
+		(...standard macro expansions...)
 		
-		<CustomProperty DataType="Enumeration" Name="Wiring" DisplayName="Lederantall" DefaultValue="4A1,5">
+		<CustomProperty DataType="Enumeration" Name="Wiring" DisplayName="Number of conductors" DefaultValue="4A1,5">
 			<Values>
 				<Value>4A1,5</Value>
 				<Value>3</Value>
@@ -99,12 +99,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	SIGNAL
 	KEY LOCK
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_LockTypeS" Name="JBTSA_SAM S-lås"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_LockTypeS" Name="JBTSA_SAM Key lock"
 				Layer="JBTSA_SAM" Color="ByLayer"
-				Group="Signal/Diverse"
+				Group="Signal/Miscellaneous"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
-<!-- TODO: Add element: Description="Se også SA-FUN Stolpe for S-lås / https://trv.banenor.no/wiki/Signal/Prosjektering/Andre_anlegg#L.C3.A5sanlegg / https://trv.banenor.no/wiki/Signal/Vedlikehold/Annet_teknisk_utstyr#S-l.C3.A5s" -->
+<!-- TODO: Add element: Description="See also SA-FUN Pole for key lock / https://trv.banenor.no/wiki/Signal/Prosjektering/Andre_anlegg#L.C3.A5sanlegg / https://trv.banenor.no/wiki/Signal/Vedlikehold/Annet_teknisk_utstyr#S-l.C3.A5s" -->
 
 		<RelationSpace>s_lås</RelationSpace>
 		<AttachmentCategory Name="s_lås"/>
@@ -124,16 +124,16 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 
 		<Variants>
-			<Variant Name="S-lås">
+			<Variant Name="Key lock">
 				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-SAM-SAMLELÅS"/>
 				<SetValue Key="Geometry3D_0.Offset.Z" Value="1.25"/>
 			</Variant>
 			<!--<Variant Name="Overdragstrafo"/>-->
 		</Variants>
 
-		<LuaExpression Name="name"><Formula>"S-lås."..code</Formula></LuaExpression>
+		<LuaExpression Name="name"><Formula>"Key lock."..code</Formula></LuaExpression>
 		
-		<InsertPointObject Name="S-lås" DisplayBlockName="NO-BN-2D-JBTSA_SAM-SAMLELAAS-{{SymbolMode}}"
+		<InsertPointObject Name="Key lock" DisplayBlockName="NO-BN-2D-JBTSA_SAM-SAMLELAAS-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="false" RotateIfRightSideOfAlignment="true"/>
@@ -150,7 +150,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% else %}45.0
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
-				{% if Variant == 'S-lås' %}NO-BN-2D-JBTSA_SAM-SAMLELAAS
+				{% if Variant == 'Key lock' %}NO-BN-2D-JBTSA_SAM-SAMLELAAS
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -177,15 +177,15 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 <!--========================================================================================================
 	SIGNAL
 	POLES FOR ACTUATORS AND SMALL SIGNALS
-	JBTSA_FUN Stolpe med fot
-	UNP80 stolper for S-lås, lokalstiller og overdragstrafo på UNP80 medf L-jern fot (med ulike feste plater).
-	Ø76 rørmast med L-jern fot for togsporsignal, dvergsignal (2000), dvergsignal+togsporsignal (3000)og kryssvekselsignal (1600)
-	Ø127 rørmast for (hvilke?) lyssignaler og for frittstående signalskap og bokser.
-	For selve S-låsen, se over
+	JBTSA_FUN Short pole with steel base
+	UNP80 poles for key lock, local control panel and coupling transformer on UNP80 with L-iron base (with various mounting plates).
+	Ø76 pipe mast with L-iron base for track signal, dwarf signal (2000), dwarf signal+track signal (3000) and diamond crossing signal (1600)
+	Ø127 pipe mast for (which?) light signals and for freestanding signal cabinets and boxes.
+	For the key lock itself, see above
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_ShortPoleWithSteelbase" Name="JBTSA_FUN Stolpe med fot"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_ShortPoleWithSteelbase" Name="JBTSA_FUN Short pole with steel base"
 				Layer="JBTSA_FUN" Color="ByLayer"
-				Group="Signal/Stolpe med fot"
+				Group="Signal/Short pole with steel base"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -214,48 +214,48 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<CustomProperty DataType="String" Name="SupplierDrawingTitle" DisplayName="Supplier Drawing Title"/>
 
 		<Variants>
-			<Variant Name="Stolpe for enkel S-lås">
-				<SetValue Key="name" Value="Stolpe, S-lås"/>
+			<Variant Name="Pole for single key lock">
+				<SetValue Key="name" Value="Pole, key lock"/>
 			</Variant>
-			<Variant Name="Stolpe for dobbel S-lås">
-				<SetValue Key="name" Value="Stolpe, S-lås x2"/>
+			<Variant Name="Pole for double key lock">
+				<SetValue Key="name" Value="Pole, key lock x2"/>
 			</Variant>
-			<Variant Name="Stolpe for lokalstiller">
-				<SetValue Key="name" Value="Stolpe, Lok."/>
+			<Variant Name="Pole for local control panel">
+				<SetValue Key="name" Value="Pole, loc. ctrl."/>
 			</Variant>								
-			<Variant Name="Stolpe for overdragstrafo">
-				<SetValue Key="name" Value="Stolpe, Lok."/>
+			<Variant Name="Pole for coupling transformer">
+				<SetValue Key="name" Value="Pole, loc. ctrl."/>
 			</Variant>								
 
-			<!-- Ø76 rørmaster S.002347 med L-jern S.005382 -->
-			<Variant Name="Rørmast Ø76 for togsporsignal og dvergsignal, 2m">
-				<SetValue Key="name" Value="Stolpe Ø76, 2m"/>
-				<SetValue Key="SupplierModelName" Value="Rørmast for dverg- og togsporsignal, normal høyde med L-jern S.005382/S.030065"/>
+			<!-- Ø76 pipe masts S.002347 with L-iron S.005382 -->
+			<Variant Name="Pipe mast Ø76 for track signal and dwarf signal, 2m">
+				<SetValue Key="name" Value="Pipe mast Ø76, 2m"/>
+				<SetValue Key="SupplierModelName" Value="Pipe mast for dwarf and track signal, normal height with L-iron S.005382/S.030065"/>
 				<SetValue Key="SupplierPartName" Value="Pos.2,3,4"/>
 				<SetValue Key="SupplierDrawingNumber" Value="S.022896-014"/>
-				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Togsporsignal, sammenstilling"/>
+				<SetValue Key="SupplierDrawingTitle" Value="Interlocking, outdoor; Track signal, assembly"/>
 			</Variant>
-			<Variant Name="Rørmast Ø76 for togsporsignal og dvergsignal, 3m">
-				<SetValue Key="name" Value="Stolpe Ø76, 3m"/>
-				<SetValue Key="SupplierModelName" Value="Rørmast for dverg- og togsporsignal, høy med L-jern S.005382/S.030065"/>
+			<Variant Name="Pipe mast Ø76 for track signal and dwarf signal, 3m">
+				<SetValue Key="name" Value="Pipe mast Ø76, 3m"/>
+				<SetValue Key="SupplierModelName" Value="Pipe mast for dwarf and track signal, tall with L-iron S.005382/S.030065"/>
 				<SetValue Key="SupplierPartName" Value="Pos.2,3,4"/>
 				<SetValue Key="SupplierDrawingNumber" Value="S.022896-014"/>
-				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Togsporsignal, sammenstilling"/>
+				<SetValue Key="SupplierDrawingTitle" Value="Interlocking, outdoor; Track signal, assembly"/>
 			</Variant>	
-			<Variant Name="Rørmast Ø76 for kryssvekselsignal, 1.6m">
-				<SetValue Key="name" Value="Stolpe Ø76, 1.6m"/>
-				<SetValue Key="SupplierModelName" Value="Rørmast for kryssvekselsignal, med L-jern S.005382/S.030065"/>
+			<Variant Name="Pipe mast Ø76 for diamond crossing signal, 1.6m">
+				<SetValue Key="name" Value="Pipe mast Ø76, 1.6m"/>
+				<SetValue Key="SupplierModelName" Value="Pipe mast for diamond crossing signal, with L-iron S.005382/S.030065"/>
 				<SetValue Key="SupplierPartName" Value="Pos.4,5,6"/>
 				<SetValue Key="SupplierDrawingNumber" Value="S.004463-000"/>
-				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Kryssvekselsignal; Sammenstilling"/>
+				<SetValue Key="SupplierDrawingTitle" Value="Interlocking, outdoor; Diamond crossing signal; Assembly"/>
 			</Variant>
-			<!-- Ø127 rørmast S.013354 med L-jern S.005382 -->
-			<Variant Name="Rørmast Ø127 for jernbanesignal, 3.2m">
-				<SetValue Key="name" Value="Rørmast Ø127, 3.2m"/>
-				<SetValue Key="SupplierModelName" Value="Rørmast for jernbanesignal, lav med L-jern S.005382/S.030065"/>
+			<!-- Ø127 pipe mast S.013354 with L-iron S.005382 -->
+			<Variant Name="Pipe mast Ã127 for railway signal, 3.2m">
+				<SetValue Key="name" Value="Pipe mast Ø127, 3.2m"/>
+				<SetValue Key="SupplierModelName" Value="Pipe mast for railway signal, low with L-iron S.005382/S.030065"/>
 				<SetValue Key="SupplierPartName" Value=""/>
 				<SetValue Key="SupplierDrawingNumber" Value="S.013354-000"/>
-				<SetValue Key="SupplierDrawingTitle" Value="Sikringsanlegg, utvendig; Rørmast for jernbanesignal; Lavt, uten fundament; F.nr.708.215.540"/>
+				<SetValue Key="SupplierDrawingTitle" Value="Interlocking, outdoor; Pipe mast for railway signal; Low, without foundation; F.nr.708.215.540"/>
 			</Variant>
 		</Variants>
 		
@@ -267,21 +267,21 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Signature>String _JBTSA_FUN_ShortPoleWithSteelbase_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_FUN_ShortPoleWithSteelbase_Geometry3DName()
-					if Variant == "Stolpe for enkel S-lås" then
+					if Variant == "Pole for single key lock" then
 						return "NO-BN-3D-SA-FUN-NSI63-STOLPE-UNP80-MED-LJERN-FOR-ENKEL-SAMLELÅS"
-					elseif Variant == "Stolpe for dobbel S-lås"	then
+					elseif Variant == "Pole for double key lock"	then
 						return "NO-BN-3D-SA-FUN-NSI63-STOLPE-UNP80-MED-LJERN-FOR-DOBBEL-SAMLELÅS"
-					elseif Variant == "Stolpe for lokalstiller"	then
+					elseif Variant == "Pole for local control panel"	then
 						return "NO-BN-3D-SA-FUN-NSI63-STOLPE-UNP80-MED-LJERN-FOR-LOKALSTILLER"
-					elseif Variant == "Stolpe for overdragstrafo"	then
+					elseif Variant == "Pole for coupling transformer"	then
 						return "NO-BN-3D-SA-FUN-NSI63-STOLPE-UNP80-MED-LJERN-FOR-OVERDRAGSTRAFO"
-					elseif Variant == "Rørmast Ø76 for togsporsignal og dvergsignal, 2m"	then
+					elseif Variant == "Pipe mast Ø76 for track signal and dwarf signal, 2m"	then
 						return "NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-MED-LJERN-FOR-TSS-OG-DS-2000"
-					elseif Variant == "Rørmast Ø76 for togsporsignal og dvergsignal, 3m"	then
+					elseif Variant == "Pipe mast Ø76 for track signal and dwarf signal, 3m"	then
 						return "NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-MED-LJERN-FOT-FOR-HØYT-TSS-OG-DS-3000"
-					elseif Variant == "Rørmast Ø76 for kryssvekselsignal, 1.6m"	then
+					elseif Variant == "Pipe mast Ø76 for diamond crossing signal, 1.6m"	then
 						return "NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-MED-LJERN-FOT-FOR-KRYSSVEKSELSIGNAL-1600"
-					elseif Variant == "Rørmast Ø127 for jernbanesignal, 3.2m"	then
+					elseif Variant == "Pipe mast Ã127 for railway signal, 3.2m"	then
 						return "NO-BN-3D-SA-FUN-NSI63-RØRMAST-Ø76-MED-LJERN-FOT-FOR-SIGNAL-3200"
 					else
 						return "Could not find 3D geometry name for variant"
@@ -290,7 +290,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject Name="Stolpe for enkel S-lås"
+		<InsertPointObject Name="Pole for single key lock"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-STOLPE-MED-LJERN-FOR-ENKEL-SAMLELAAS-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -298,7 +298,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Stolpe for dobbel S-lås"
+		<InsertPointObject Name="Pole for double key lock"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-STOLPE-MED-LJERN-FOR-DOBBEL-SAMLELAAS-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -306,7 +306,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Stolpe for lokalstiller"
+		<InsertPointObject Name="Pole for local control panel"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-STOLPE-MED-LJERN-FOR-LOKALSTILLER-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -314,7 +314,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Stolpe for overdragstrafo"
+		<InsertPointObject Name="Pole for coupling transformer"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-STOLPE-MED-LJERN-FOR-OVERDRAGSTRAFO-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -322,7 +322,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Rørmast Ø76 for togsporsignal og dvergsignal, 2m"
+		<InsertPointObject Name="Pipe mast Ø76 for track signal and dwarf signal, 2m"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-RØRMAST-76-MED-LJERN-FOR-DS-OG-TSS-2000-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -330,7 +330,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Rørmast Ø76 for togsporsignal og dvergsignal, 3m"
+		<InsertPointObject Name="Pipe mast Ø76 for track signal and dwarf signal, 3m"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-RØRMAST-76-MED-LJERN-FOR-HOEY-DS-OG-TSS-3000-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -338,7 +338,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Rørmast Ø76 for kryssvekselsignal, 1.6m"
+		<InsertPointObject Name="Pipe mast Ø76 for diamond crossing signal, 1.6m"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-RØRMAST-76-MED-LJERN-FOR-KRYSSVEKSELSIGNAL-1600-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -346,7 +346,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Rørmast Ø127 for jernbanesignal, 3.2m"
+		<InsertPointObject Name="Pipe mast Ã127 for railway signal, 3.2m"
 				DisplayBlockName="NO-BN-2D-JBTSA_FUN-RØRMAST-127-MED-LJERN-FOR-SIGNAL-3200-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -365,14 +365,14 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_FUN
-				{% if Variant == 'Stolpe for enkel S-lås' %}STOLPE-MED-LJERN-FOR-ENKEL-SAMLELAAS
-				{% elsif Variant == 'Stolpe for dobbel S-lås' %}STOLPE-MED-LJERN-FOR-DOBBEL-SAMLELAAS
-				{% elsif Variant == 'Stolpe for lokalstiller' %}STOLPE-MED-LJERN-FOR-LOKALSTILLER
-				{% elsif Variant == 'Stolpe for overdragstrafo' %}STOLPE-MED-LJERN-FOR-OVERDRAGSTRAFO
-				{% elsif Variant == 'Rørmast Ø76 for togsporsignal og dvergsignal, 2m' %}RØRMAST-76-MED-LJERN-FOR-DS-OG-TSS-2000
-				{% elsif Variant == 'Rørmast Ø76 for togsporsignal og dvergsignal, 3m' %}RØRMAST-76-MED-LJERN-FOR-HOEY-DS-OG-TSS-3000
-				{% elsif Variant == 'Rørmast Ø76 for kryssvekselsignal, 1.6m' %}RØRMAST-76-MED-LJERN-FOR-KRYSSVEKSELSIGNAL-1600
-				{% elsif Variant == 'Rørmast Ø127 for jernbanesignal, 3.2m' %}RØRMAST-127-MED-LJERN-FOR-SIGNAL-3200
+				{% if Variant == 'Pole for single key lock' %}STOLPE-MED-LJERN-FOR-ENKEL-SAMLELAAS
+				{% elsif Variant == 'Pole for double key lock' %}STOLPE-MED-LJERN-FOR-DOBBEL-SAMLELAAS
+				{% elsif Variant == 'Pole for local control panel' %}STOLPE-MED-LJERN-FOR-LOKALSTILLER
+				{% elsif Variant == 'Pole for coupling transformer' %}STOLPE-MED-LJERN-FOR-OVERDRAGSTRAFO
+				{% elsif Variant == 'Pipe mast Ø76 for track signal and dwarf signal, 2m' %}RØRMAST-76-MED-LJERN-FOR-DS-OG-TSS-2000
+				{% elsif Variant == 'Pipe mast Ø76 for track signal and dwarf signal, 3m' %}RØRMAST-76-MED-LJERN-FOR-HOEY-DS-OG-TSS-3000
+				{% elsif Variant == 'Pipe mast Ø76 for diamond crossing signal, 1.6m' %}RØRMAST-76-MED-LJERN-FOR-KRYSSVEKSELSIGNAL-1600
+				{% elsif Variant == 'Pipe mast Ã127 for railway signal, 3.2m' %}RØRMAST-127-MED-LJERN-FOR-SIGNAL-3200
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -383,7 +383,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<DockPointDefinitions>
 			<SnapPoints>
-				<!-- TODO Hmmm det er så mange ulike objekttyper å tilby snapping for at vi lar det stå åpent for alle inntil videre -->
+				<!-- TODO There are so many different object types to offer snapping for that we leave it open for all for now -->
 				<SnapPoint X="0" Y="0"/>
 			</SnapPoints>
 		</DockPointDefinitions>
@@ -396,9 +396,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	DIVERSE
 	JBTSA_AVI Avsporingsindikator
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_DerailedAxleIndicator" Name="JBTSA_AVI Avsporingsindikator"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_DerailedAxleIndicator" Name="JBTSA_AVI Derailed axle indicator"
 				Layer="JBTSA_AVI" Color="ByLayer"
-				Group="Signal/Diverse"
+				Group="Signal/Miscellaneous"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 
@@ -419,13 +419,13 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="LateralOffset"><Formula>NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 1e-3 or -1e-3)</Formula></LuaExpression>
 		
 		<Variants>
-			<Variant Name="Avsporingsindikator">
+			<Variant Name="Derailed axle indicator">
 				<SetValue Key="name" Value="Ai."/>
 				<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-SA-AVI-AVSPORINGSINDIKATOR"/>
 			</Variant>
 		</Variants>
 		
-		<InsertPointObject Name="Avsporingsindikator" DisplayBlockName="NO-BN-2D-JBTSA_AVI-AVSPORINGSINDIKATOR-{{SymbolMode}}"
+		<InsertPointObject Name="Derailed axle indicator" DisplayBlockName="NO-BN-2D-JBTSA_AVI-AVSPORINGSINDIKATOR-{{SymbolMode}}"
                 DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" EnableDirectionSetting="true"/>
@@ -442,17 +442,17 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 <!--========================================================================================================
 	SIGNAL
-	SPORSPERRER
-	JBTSA_SSP Sporsperre
-	NB! SSP er et SA Signalobjekt! Ref epost Bjarne Green til CLFEY, 2016-12-15
-	TODO 2018-07-06: Uvisst hvor avsporingstunger skal høre hjemme, vi legger dem inntil videre også på SA-SSP.
+	DERAILERS
+	JBTSA_SSP Derailer
+	NOTE: SSP is a SA signalling object! Ref email Bjarne Green to CLFEY, 2016-12-15
+	TODO 2018-07-06: Uncertain where catch points should belong; for now also placing them under SA-SSP.
 =========================================================================================================-->
-	<!--SPORSPERRE-->
-	<!--TODO modellere enkel og dobbel avsporingstunge-->
-	<!--TODO Modellere normalstilling AVLAGT eller PÅLAGT, med tilhørende 2D-symbolfor avlagt stilling (ingen pil, men må vise likevel)-->
-	<ObjectType DataType="tDerailer" Class="RailwayPlacedObject" LuaName="rctype_Derailer" Name="JBTSA_SSP Sporsperre"
+	<!--DERAILER-->
+	<!--TODO: Model single and double catch points-->
+	<!--TODO Model normal position RELEASED or APPLIED, with corresponding 2D symbol for released position (no arrow, but must still show)-->
+	<ObjectType DataType="tDerailer" Class="RailwayPlacedObject" LuaName="rctype_Derailer" Name="JBTSA_SSP Derailer"
 				Layer="JBTSA_SSP" Color="ByLayer"
-				Group="Signal/Sporsperrer"
+				Group="Signal/Derailers"
 				>
 				
 		<ObjectTypeAttribute 
@@ -478,17 +478,17 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
-		<Variants DefaultValue="Enkel sporsperre">
-			<Variant Name="Enkel sporsperre" Description="Single-sided derailer">
+		<Variants DefaultValue="Single derailer">
+			<Variant Name="Single derailer" Description="Single-sided derailer">
 				<SetValue Key="kind" Value="blockDerail"/>
 			</Variant>
-			<Variant Name="Dobbel sporsperre" Description="Double-sided derailer">
+			<Variant Name="Double derailer" Description="Double-sided derailer">
 				<SetValue Key="kind" Value="blockDerail"/>
 			</Variant>
-			<Variant Name="Enkel avsporingstunge" Description="Single catch points">
+			<Variant Name="Single catch points" Description="Single catch points">
 				<SetValue Key="kind" Value="singleCatchPoints"/>
 			</Variant>
-			<Variant Name="Dobbel avsporingstunge" Description="Double catch points">
+			<Variant Name="Double catch points" Description="Double catch points">
 				<SetValue Key="kind" Value="doubleCatchPoints"/>
 			</Variant>
 		</Variants>
@@ -506,11 +506,11 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="Enumeration" Name="DerailerState" DisplayName="SporsperreStilling" DefaultValue="DERAILING" 
+		<CustomProperty DataType="Enumeration" Name="DerailerState" DisplayName="Derailer state" DefaultValue="DERAILING" 
 			Description="The 'DerailerState' custom attribute [Inaktiv (Inactive) | Avsporende (Derailing)] reflects the activation state of the derailer.">
 			<Values>
-				<Value DisplayName="Inaktiv">INACTIVE</Value>
-				<Value DisplayName="Avsporende">DERAILING</Value>
+				<Value DisplayName="Inactive">INACTIVE</Value>
+				<Value DisplayName="Derailing">DERAILING</Value>
 			</Values>
 		</CustomProperty>
 
@@ -535,8 +535,8 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 				function _JBTSA_SSP_Geometry3DName()
 					--Ignore the DerailerState property - always draw the derailer in its derailing state.
 					local t = "NO-BN-3D-SA-SSP-SPORSPERRE"
-					if Variant:lower():match("enkel") then t = t.."-ENKEL" 
-					elseif Variant:lower():match("dobbel") then t = t.."-DOBBEL" 
+					if Variant:lower():match("single") then t = t.."-ENKEL" 
+					elseif Variant:lower():match("double") then t = t.."-DOBBEL" 
 					else t = t.."-BAD_Variant"
 					end
 					if derailSide == 'left' then t = t.."-VSIDE"
@@ -548,29 +548,29 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject Name="Enkel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" 
+		<InsertPointObject Name="Single derailer" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
 			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}"/> -->
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Dobbel sporsperre" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOBBEL-AVSPORENDE-1-{{SymbolMode}}" 
+		<InsertPointObject Name="Double derailer" DisplayBlockName="NO-BN-2D-JBTSA_SSP-SPORSPERRE-DOBBEL-AVSPORENDE-1-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
 			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}"/> -->
 		</InsertPointObject>
 		
-		<!-- TODO Mangler 2D-symbol for avsporingstunger enkel og dobbel (EAT, DAT) -->
-		<InsertPointObject Name="Enkel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" 
+		<!-- TODO Missing 2D symbol for catch points single and double (EAT, DAT) -->
+		<InsertPointObject Name="Single catch points" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-ENKEL-AVSPORENDE-1-{{SymbolMode}}" 
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
 			<!-- <SetValue Key="derailSide" Value="{{insertionSide}}"/> -->
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Dobbel avsporingstunge" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-DOBBEL-INAKTIV-1-{{SymbolMode}}"
+		<InsertPointObject Name="Double catch points" DisplayBlockName="NO-BN-2D-JBTSA_SSP-AVSPORINGSTUNGE-DOBBEL-INAKTIV-1-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
@@ -581,10 +581,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="0"/>
 			<BlockNameFormat JoinBy="-">
 			NO-BN-2D-JBTSA_SSP
-			{% if Variant == 'Enkel sporsperre' %}SPORSPERRE-ENKEL
-			{% elsif Variant == 'Dobbel sporsperre' %}SPORSPERRE-DOBBEL
-			{% elsif Variant == 'Enkel avsporingstunge' %}AVSPORINGSTUNGE-ENKEL
-			{% elsif Variant == 'Dobbel avsporingstunge' %}AVSPORINGSTUNGE-DOBBEL
+			{% if Variant == 'Single derailer' %}SPORSPERRE-ENKEL
+			{% elsif Variant == 'Double derailer' %}SPORSPERRE-DOBBEL
+			{% elsif Variant == 'Single catch points' %}AVSPORINGSTUNGE-ENKEL
+			{% elsif Variant == 'Double catch points' %}AVSPORINGSTUNGE-DOBBEL
 			{% else %}BAD_Variant_{{Variant}}
 			{% endif %}
 			{% if DerailerState == 'INACTIVE' %}INAKTIV
@@ -619,10 +619,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	SIGNALLING
 	CABINET
 =========================================================================================================-->
-	<!-- Innvendig og utvendig sikringsanlegg (ikke bokser) -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_SignallingCabinet" Name="JBTSA_APS Apparatskap"
+	<!-- Indoor and outdoor interlocking equipment (not boxes) -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_SignallingCabinet" Name="JBTSA_APS Signalling cabinet"
 				Layer="JBTSA_APS" Color="ByLayer"
-				Group="Signal/Apparatskap"
+				Group="Signal/Signalling cabinet"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 
@@ -648,9 +648,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 
 		<Variants>
-			<Variant Name="Stort apparatskap, venstrehengslet"/>
-			<Variant Name="Stort apparatskap, høyrehengslet"/>
-			<Variant Name="Stort apparatskap, dobbeldør"/>
+			<Variant Name="Large signalling cabinet, left-hinged"/>
+			<Variant Name="Large signalling cabinet, right-hinged"/>
+			<Variant Name="Large signalling cabinet, double door"/>
 		</Variants>
 	
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>
@@ -665,11 +665,11 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Signature>String _JBTSA_APS_SignallingCabinet_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_APS_SignallingCabinet_Geometry3DName()
-					if Variant == "Stort apparatskap, venstrehengslet" then
+					if Variant == "Large signalling cabinet, left-hinged" then
 						return "NO-BN-3D-FE-DIV-UKJENT"
-					elseif Variant == "Stort apparatskap, høyrehengslet"	then
+					elseif Variant == "Large signalling cabinet, right-hinged"	then
 						return "NO-BN-3D-FE-DIV-UKJENT"
-					elseif Variant == "Stort apparatskap, dobbeldør"	then
+					elseif Variant == "Large signalling cabinet, double door"	then
 						return "NO-BN-3D-SA-APS-APPARATSKAP-STORT-1200x1200x400-MED-SOKKEL"
 					else
 						return "Could not find 3D geometry name for variant"
@@ -679,19 +679,19 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</LuaFunction>
 		
 
-		<InsertPointObject Name="Stort apparatskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-STORT-VHENGSLET-{{SymbolMode}}" 
+		<InsertPointObject Name="Large signalling cabinet, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-STORT-VHENGSLET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Stort apparatskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-STORT-HHENGSLET-{{SymbolMode}}" 
+		<InsertPointObject Name="Large signalling cabinet, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-STORT-HHENGSLET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Stort apparatskap, dobbeldør" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-STORT-DOBBEL-{{SymbolMode}}" 
+		<InsertPointObject Name="Large signalling cabinet, double door" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-STORT-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
@@ -708,9 +708,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_APS-APPARATSKAP
-				{% if Variant == 'Stort apparatskap, venstrehengslet' %}STORT-VHENGSLET
-				{% elsif Variant == 'Stort apparatskap, høyrehengslet' %}STORT-HHENGSLET
-				{% elsif Variant == 'Stort apparatskap, dobbeldør' %}STORT-DOBBEL
+				{% if Variant == 'Large signalling cabinet, left-hinged' %}STORT-VHENGSLET
+				{% elsif Variant == 'Large signalling cabinet, right-hinged' %}STORT-HHENGSLET
+				{% elsif Variant == 'Large signalling cabinet, double door' %}STORT-DOBBEL
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -738,10 +738,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	SIGNALLING
 	DISTRIBUTION CABINETS AND BOXES
 =========================================================================================================-->
-	<!-- Innvendig og utvendig sikringsanlegg (nøkkelskap, sveivskap, bokser på vegg eller stolpe) -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_SignallingCableDistributionBox" Name="JBTSA_APS Lite skap og boks"
+	<!-- Indoor and outdoor interlocking equipment (key lock cabinets, crank cabinets, boxes on wall or pole) -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_SignallingCableDistributionBox" Name="JBTSA_APS Small cabinet and box"
 				Layer="JBTSA_APS" Color="ByLayer"
-				Group="Signal/Skap og bokser"
+				Group="Signal/Cabinets and boxes"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 
@@ -763,24 +763,24 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 
 		<Variants>
-			<Variant Name="Nøkkelskap, venstrehengslet"/>
-			<Variant Name="Nøkkelskap, høyrehengslet"/>
-			<Variant Name="Sveivskap, venstrehengslet"/>
-			<Variant Name="Sveivskap, høyrehengslet"/>
-			<Variant Name="Lite apparatskap, venstrehengslet"/>
-			<Variant Name="Lite apparatskap, høyrehengslet"/>
-			<Variant Name="Kabelboks 280x190x100 på Ø76 rørmast, venstrehengslet"/>
-			<Variant Name="Kabelboks 280x190x100 på Ø76 rørmast, høyrehengslet"/>
-			<Variant Name="Kabelboks 280x190x100 på Ø127 rørmast, venstrehengslet"/>
-			<Variant Name="Kabelboks 280x190x100 på Ø127 rørmast, høyrehengslet"/>
-			<Variant Name="Kabelboks 280x190x165 på Ø76 rørmast, venstrehengslet"/>
-			<Variant Name="Kabelboks 280x190x165 på Ø76 rørmast, høyrehengslet"/>
-			<Variant Name="Kabelboks 280x190x165 på Ø127 rørmast, venstrehengslet"/>
-			<Variant Name="Kabelboks 280x190x165 på Ø127 rørmast, høyrehengslet"/>
-			<!--TODO: <Variant Name=Kabelboks for overdragstrafo"/>-->
+			<Variant Name="Key lock cabinet, left-hinged"/>
+			<Variant Name="Key lock cabinet, right-hinged"/>
+			<Variant Name="Crank cabinet, left-hinged"/>
+			<Variant Name="Crank cabinet, right-hinged"/>
+			<Variant Name="Small signalling cabinet, left-hinged"/>
+			<Variant Name="Small signalling cabinet, right-hinged"/>
+			<Variant Name="Cable box 280x190x100 on Ø76 pipe mast, left-hinged"/>
+			<Variant Name="Cable box 280x190x100 on Ø76 pipe mast, right-hinged"/>
+			<Variant Name="Cable box 280x190x100 on Ø127 pipe mast, left-hinged"/>
+			<Variant Name="Cable box 280x190x100 on Ø127 pipe mast, right-hinged"/>
+			<Variant Name="Cable box 280x190x165 on Ø76 pipe mast, left-hinged"/>
+			<Variant Name="Cable box 280x190x165 on Ø76 pipe mast, right-hinged"/>
+			<Variant Name="Cable box 280x190x165 on Ø127 pipe mast, left-hinged"/>
+			<Variant Name="Cable box 280x190x165 on Ø127 pipe mast, right-hinged"/>
+			<!--TODO: <Variant Name=Cable box for coupling transformer"/>-->
 		</Variants>
 
-		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>(Variant:lower():find("nøkkelskap") or Variant:lower():find("sveivskap")) and 1.50 or 1.20</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>(Variant:lower():find("key lock cabinet") or Variant:lower():find("crank cabinet")) and 1.50 or 1.20</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>"Vertical"</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTSA_APS_SignallingCableDistributionBox_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_APS_SignallingCableDistributionBox_Geometry3DName()" 
@@ -790,35 +790,35 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Signature>String _JBTSA_APS_SignallingCableDistributionBox_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_APS_SignallingCableDistributionBox_Geometry3DName()
-					if Variant == "Nøkkelskap, venstrehengslet" then
+					if Variant == "Key lock cabinet, left-hinged" then
 						return "NO-BN-3D-SA-NØK-NØKKELSKAP-250x350x230-Ø76"
-					elseif Variant == "Nøkkelskap, høyrehengslet"	then
+					elseif Variant == "Key lock cabinet, right-hinged"	then
 						return "NO-BN-3D-SA-NØK-NØKKELSKAP-250x350x230-Ø76"
-					elseif Variant == "Stort apparatskap, dobbeldør"	then
+					elseif Variant == "Large signalling cabinet, double door"	then
 						return "NO-BN-3D-SA-APS-APPARATSKAP-STORT-1200x1200x400-MED-SOKKEL"
-					elseif Variant == "Sveivskap, venstrehengslet"	then
+					elseif Variant == "Crank cabinet, left-hinged"	then
 						return "NO-BN-3D-SA-SVB-SVEIVSKAP-500x760x320-Ø76"
-					elseif Variant == "Sveivskap, høyrehengslet"	then
+					elseif Variant == "Crank cabinet, right-hinged"	then
 						return "NO-BN-3D-SA-SVB-SVEIVSKAP-500x760x320-Ø76"
-					elseif Variant == "Lite apparatskap, venstrehengslet"	then
+					elseif Variant == "Small signalling cabinet, left-hinged"	then
 						return "NO-BN-3D-FE-DIV-UKJENT"
-					elseif Variant == "Lite apparatskap, høyrehengslet"	then
+					elseif Variant == "Small signalling cabinet, right-hinged"	then
 						return "NO-BN-3D-FE-DIV-UKJENT"
-					elseif Variant == "Kabelboks 280x190x100 på Ø76 rørmast, venstrehengslet"	then
+					elseif Variant == "Cable box 280x190x100 on Ø76 pipe mast, left-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x100-Ø76"
-					elseif Variant == "Kabelboks 280x190x100 på Ø76 rørmast, høyrehengslet"	then
+					elseif Variant == "Cable box 280x190x100 on Ø76 pipe mast, right-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x100-Ø76"
-					elseif Variant == "Kabelboks 280x190x100 på Ø127 rørmast, venstrehengslet"	then
+					elseif Variant == "Cable box 280x190x100 on Ø127 pipe mast, left-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x100-Ø127"
-					elseif Variant == "Kabelboks 280x190x100 på Ø127 rørmast, høyrehengslet"	then
+					elseif Variant == "Cable box 280x190x100 on Ø127 pipe mast, right-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x100-Ø127"
-					elseif Variant == "Kabelboks 280x190x165 på Ø76 rørmast, venstrehengslet"	then
+					elseif Variant == "Cable box 280x190x165 on Ø76 pipe mast, left-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x165-Ø76"
-					elseif Variant == "Kabelboks 280x190x165 på Ø76 rørmast, høyrehengslet"	then
+					elseif Variant == "Cable box 280x190x165 on Ø76 pipe mast, right-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x165-Ø76"
-					elseif Variant == "Kabelboks 280x190x165 på Ø127 rørmast, venstrehengslet"	then
+					elseif Variant == "Cable box 280x190x165 on Ø127 pipe mast, left-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x165-Ø127"
-					elseif Variant == "Kabelboks 280x190x165 på Ø127 rørmast, høyrehengslet"	then
+					elseif Variant == "Cable box 280x190x165 on Ø127 pipe mast, right-hinged"	then
 						return "NO-BN-3D-SA-SIG-NSI63-KABELBOKS-190x280x165-Ø127"
 					else
 						return "Could not find 3D geometry name for variant"
@@ -832,94 +832,94 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<LuaExpression Name="Tag">
 			<Formula>
-				if Variant:lower():match("nøkkel") then return "SA-NØK-000000"
-				elseif Variant:lower():match("sveiv") then return "SA-SVB-000000"
-				elseif Variant:lower():match("apparat") then return "SA-APS-000000"
-				elseif Variant:lower():match("boks") then return "SA-APS-000000"
+				if Variant:lower():match("key lock") then return "SA-NØK-000000"
+				elseif Variant:lower():match("crank") then return "SA-SVB-000000"
+				elseif Variant:lower():match("signalling cabinet") then return "SA-APS-000000"
+				elseif Variant:lower():match("cable") then return "SA-APS-000000"
 				else return "UNFINISHED - Unrecognized variant ["..Variant.."] - cannot deduce Bane_NOR.BaneData_ID."
 				end
 			</Formula>
 		</LuaExpression>
 
-		<InsertPointObject Name="Nøkkelskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-NØKKELSKAP-VHENGSLET-{{SymbolMode}}" 
+		<InsertPointObject Name="Key lock cabinet, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-NØKKELSKAP-VHENGSLET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Nøkkelskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-NØKKELSKAP-HHENGSLET-{{SymbolMode}}" 
+		<InsertPointObject Name="Key lock cabinet, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-NØKKELSKAP-HHENGSLET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Sveivskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-SVEIVSKAP-VHENGSLET-{{SymbolMode}}"  
+		<InsertPointObject Name="Crank cabinet, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-SVEIVSKAP-VHENGSLET-{{SymbolMode}}"  
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Sveivskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-SVEIVSKAP-HHENGSLET-{{SymbolMode}}"  
+		<InsertPointObject Name="Crank cabinet, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-SVEIVSKAP-HHENGSLET-{{SymbolMode}}"  
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="4.0" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Lite apparatskap, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-LITE-VHENGSLET-{{SymbolMode}}" 
+		<InsertPointObject Name="Small signalling cabinet, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-LITE-VHENGSLET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Lite apparatskap, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-LITE-HHENGSLET-{{SymbolMode}}" 
+		<InsertPointObject Name="Small signalling cabinet, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-APPARATSKAP-LITE-HHENGSLET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x100 på Ø76 rørmast, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x100 on Ø76 pipe mast, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x100 på Ø76 rørmast, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x100 on Ø76 pipe mast, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x100 på Ø127 rørmast, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x100 on Ø127 pipe mast, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x100 på Ø127 rørmast, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x100 on Ø127 pipe mast, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x165 på Ø76 rørmast, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x165 on Ø76 pipe mast, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x165 på Ø76 rørmast, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x165 on Ø76 pipe mast, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x165 på Ø127 rørmast, venstrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x165 on Ø127 pipe mast, left-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-VHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Kabelboks 280x190x165 på Ø127 rørmast, høyrehengslet" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
+		<InsertPointObject Name="Cable box 280x190x165 on Ø127 pipe mast, right-hinged" DisplayBlockName="NO-BN-2D-JBTSA_APS-KABELBOKS-HHENGSLET-{{SymbolMode}}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="3.5" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true" AddAngle="0" EnableDirectionSetting="false"/>
@@ -936,20 +936,20 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_APS
-				{% if Variant == 'Nøkkelskap, venstrehengslet' %}NØKKELSKAP-VHENGSLET
-				{% elsif Variant == 'Nøkkelskap, høyrehengslet' %}NØKKELSKAP-HHENGSLET
-				{% elsif Variant == 'Sveivskap, venstrehengslet' %}SVEIVSKAP-VHENGSLET
-				{% elsif Variant == 'Sveivskap, høyrehengslet' %}SVEIVSKAP-HHENGSLET
-				{% elsif Variant == 'Lite apparatskap, venstrehengslet' %}APPARATSKAP-LITE-VHENGSLET
-				{% elsif Variant == 'Lite apparatskap, høyrehengslet' %}APPARATSKAP-LITE-HHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x100 på Ø76 rørmast, venstrehengslet' %}KABELBOKS-VHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x100 på Ø127 rørmast, venstrehengslet' %}KABELBOKS-VHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x165 på Ø76 rørmast, venstrehengslet' %}KABELBOKS-VHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x165 på Ø127 rørmast, venstrehengslet' %}KABELBOKS-VHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x100 på Ø76 rørmast, høyrehengslet' %}KABELBOKS-HHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x100 på Ø127 rørmast, høyrehengslet' %}KABELBOKS-HHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x165 på Ø76 rørmast, høyrehengslet' %}KABELBOKS-HHENGSLET
-				{% elsif Variant == 'Kabelboks 280x190x165 på Ø127 rørmast, høyrehengslet' %}KABELBOKS-HHENGSLET
+				{% if Variant == 'Key lock cabinet, left-hinged' %}NØKKELSKAP-VHENGSLET
+				{% elsif Variant == 'Key lock cabinet, right-hinged' %}NØKKELSKAP-HHENGSLET
+				{% elsif Variant == 'Crank cabinet, left-hinged' %}SVEIVSKAP-VHENGSLET
+				{% elsif Variant == 'Crank cabinet, right-hinged' %}SVEIVSKAP-HHENGSLET
+				{% elsif Variant == 'Small signalling cabinet, left-hinged' %}APPARATSKAP-LITE-VHENGSLET
+				{% elsif Variant == 'Small signalling cabinet, right-hinged' %}APPARATSKAP-LITE-HHENGSLET
+				{% elsif Variant == 'Cable box 280x190x100 on Ø76 pipe mast, left-hinged' %}KABELBOKS-VHENGSLET
+				{% elsif Variant == 'Cable box 280x190x100 on Ø127 pipe mast, left-hinged' %}KABELBOKS-VHENGSLET
+				{% elsif Variant == 'Cable box 280x190x165 on Ø76 pipe mast, left-hinged' %}KABELBOKS-VHENGSLET
+				{% elsif Variant == 'Cable box 280x190x165 on Ø127 pipe mast, left-hinged' %}KABELBOKS-VHENGSLET
+				{% elsif Variant == 'Cable box 280x190x100 on Ø76 pipe mast, right-hinged' %}KABELBOKS-HHENGSLET
+				{% elsif Variant == 'Cable box 280x190x100 on Ø127 pipe mast, right-hinged' %}KABELBOKS-HHENGSLET
+				{% elsif Variant == 'Cable box 280x190x165 on Ø76 pipe mast, right-hinged' %}KABELBOKS-HHENGSLET
+				{% elsif Variant == 'Cable box 280x190x165 on Ø127 pipe mast, right-hinged' %}KABELBOKS-HHENGSLET
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -977,10 +977,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	SIGNALLING
 	TECHNICAL BUILDING
 =========================================================================================================-->
-	<!-- Relerom, signalkiosk, container med signalanlegg med mer. -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_TechnicalBuilding" Name="JBTSA_TER Tekniske bygninger og rom"
+	<!-- Relay room, signal kiosk, container with signalling equipment and more. -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_TechnicalBuilding" Name="JBTSA_TER Technical buildings and rooms"
 				Layer="JBTSA_TER" Color="ByLayer"
-				Group="Signal/Tekniske Bygninger"
+				Group="Signal/Technical buildings"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -1000,43 +1000,43 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<!-- Connect earth to "jordspyd" typically: -->
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_OBJECT"/>
 
-		<SetValue Key="name" Value="Relerom"/>
+		<SetValue Key="name" Value="Relay room"/>
 		<SetValue Key="Geometry3D_0.Name" Value="NO-BN-3D-FE-DIV-UKJENT"/>
 
-		<SetValue Key="name" Value="Relerom uten betjeningsplass"/>
+		<SetValue Key="name" Value="Relay room without operator station"/>
 		<Variants>
-			<Variant Name="Relerom uten betjeningsplass"/>
-			<Variant Name="Relerom med betjeningsplass, pos 1"/>
-			<Variant Name="Relerom med betjeningsplass, pos 2"/>
-			<Variant Name="Relerom med betjeningsplass, pos 3"/>
-			<Variant Name="Relerom med betjeningsplass, pos 4"/>
+			<Variant Name="Relay room without operator station"/>
+			<Variant Name="Relay room with operator station, pos 1"/>
+			<Variant Name="Relay room with operator station, pos 2"/>
+			<Variant Name="Relay room with operator station, pos 3"/>
+			<Variant Name="Relay room with operator station, pos 4"/>
 		</Variants>
 		
-		<InsertPointObject Name="Relerom uten betjeningsplass" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-0-{{SymbolMode}}" 
+		<InsertPointObject Name="Relay room without operator station" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-0-{{SymbolMode}}" 
 				DefaultSnapMode="None" SnapToAlignment="true" SnapDistance="15">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfLeftSideOfAlignment="true"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Relerom med betjeningsplass, pos 1" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-1-{{SymbolMode}}" 
+		<InsertPointObject Name="Relay room with operator station, pos 1" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-1-{{SymbolMode}}" 
 				DefaultSnapMode="None" SnapToAlignment="true" SnapDistance="15">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfLeftSideOfAlignment="true"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Relerom med betjeningsplass, pos 2" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-2-{{SymbolMode}}" 
+		<InsertPointObject Name="Relay room with operator station, pos 2" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-2-{{SymbolMode}}" 
 				DefaultSnapMode="None" SnapToAlignment="true" SnapDistance="15">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfLeftSideOfAlignment="true"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Relerom med betjeningsplass, pos 3" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-3-{{SymbolMode}}" 
+		<InsertPointObject Name="Relay room with operator station, pos 3" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-3-{{SymbolMode}}" 
 				DefaultSnapMode="None" SnapToAlignment="true" SnapDistance="15">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfLeftSideOfAlignment="true"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Relerom med betjeningsplass, pos 4" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-4-{{SymbolMode}}" 
+		<InsertPointObject Name="Relay room with operator station, pos 4" DisplayBlockName="NO-BN-2D-JBTSA_TER-TEKNISK-BEBYGGELSE-RELEROM-4-{{SymbolMode}}" 
 				DefaultSnapMode="None" SnapToAlignment="true" SnapDistance="15">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfLeftSideOfAlignment="true"/>
@@ -1066,12 +1066,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNALLING
 	TRACK VACANCY DETECTION SECTION FOR AXLE COUNTER SYSTEM
 =========================================================================================================-->
-	<!-- TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for akseltellere = tellepunktavsnitt -->
-	<!-- Dette er et fiktivt objekt, ringen med avsnitt-nummeret i. Akseltellerne søker etter dem for å tilegne seg nr. -->
-	<!-- TODO: Avklare med Bane NOR om vi kan benytte SA-SPF (eller SA-TVD?) for "tellepunktavsnitt" som ny objekt-type for Banedata. -->
-	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterSection" Name="JBTSA_TEA Togdeteksjonsavsnitt for akseltellere"
+	<!-- TVD Section - Track vacancy detection section - Train detection section for axle counters = counting point section -->
+	<!-- This is a fictitious object - the circle containing the section number. Axle counters look for them to obtain their section number. -->
+	<!-- TODO: Clarify with Bane NOR whether SA-SPF (or SA-TVD?) can be used for "counting point section" as a new object type for BaneData. -->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterSection" Name="JBTSA_TEA Train detection section for axle counters"
 				Layer="JBTSA_TEA" Color="ByLayer"
-				Group="Signal/Togdeteksjon/Akseltellere"
+				Group="Signal/Train detection/Axle counters"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 	>
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -1088,7 +1088,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<Variants>
-			<Variant Name="Togdeteksjonsavsnitt for akseltellere">
+			<Variant Name="Train detection section for axle counters">
 			</Variant>
 		</Variants>
 
@@ -1100,7 +1100,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="name"><Formula>"Ta("..code..")"</Formula></LuaExpression>	
 
 		<!-- Snap-distance 1.6 means that the snap-function with argument '3' snaps it to dist 3 from track, snapping to the correct track. -->
-		<InsertPointObject Name="Togdeteksjonsavsnitt for akseltellere" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
+		<InsertPointObject Name="Train detection section for axle counters" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true"/>
@@ -1133,9 +1133,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 <!-- if (math.abs(math.abs(LateralOffset) - cantGauge/2) &gt; 5e-3) then -->
 <!-- 	return string.format("%.3f",LateralOffset)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
 <!-- end -->
-	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterSensor" Name="JBTSA_TEL Akselteller sensor"
+	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterSensor" Name="JBTSA_TEL Axle counter sensor"
 				Layer="JBTSA_TEL" Color="ByLayer"
-				Group="Signal/Togdeteksjon/Akseltellere"
+				Group="Signal/Train detection/Axle counters"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 		>
 				
@@ -1155,7 +1155,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<Variants>
-			<Variant Name="Tellepunkt">
+			<Variant Name="Axle counter sensor">
 				<SetValue Key="controllerRef" Value=""/>  <!--This refers to the id attribute of the associated <controller> element-->
 				<SetValue Key="detectionObject" Value="axle"/>  <!--wheel axle train endOfTrain obstacle other:anything--> 
 				<SetValue Key="medium" Value="magnetic"/>	<!--mechanical hydraulic pneumatic magnetic inductive optical radio other:anything-->
@@ -1229,7 +1229,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="posInTrack"><Formula>RightSided and "leftRail" or "rightRail"</Formula></LuaExpression>	
 
 		<!-- Model checks -->
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousAxleCounter" DisplayName="Avstand til forrige tellepunkt" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousAxleCounter" DisplayName="Distance to previous axle counter sensor" 
 				Description="Axle counters need at least 21 m between any two consecutive sensors, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
 		<LuaExpression Name="mc_DistanceToPreviousAxleCounter" IsModelCheck="true"><Formula>JBTSA_TEL_chkDistanceToPreviousAxleCounter()</Formula></LuaExpression>
 		<LuaFunction Name="JBTSA_TEL_chkDistanceToPreviousAxleCounter()" ReturnType="String"
@@ -1242,7 +1242,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextAxleCounter" DisplayName="Avstand til neste tellepunkt" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextAxleCounter" DisplayName="Distance to next axle counter sensor" 
 				Description="Axle counters need at least 21 m between any two consecutive sensors, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
 		<LuaExpression Name="mc_DistanceToNextAxleCounter" IsModelCheck="true"><Formula>_JBTSA_TEL_chkDistanceToNextAxleCounter()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_TEL_chkDistanceToNextAxleCounter()" ReturnType="String"
@@ -1258,11 +1258,11 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<!-- No need to trigger model checking in the associated tuning unit, this is automatic since they are connected with a relation (as long as relation refresh depth is 1 or more). -->
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherAxleCountersToBeModelchecked" 
-			DisplayName="Andre objekter som modelsjekkes" 
+			DisplayName="Other objects to be model-checked" 
 			Description="When this section object is refreshed, then the neighbouring limiting objects on either side are modelchecked as well."/>
 		<LuaExpression Name="mc_OtherAxleCountersToBeModelchecked" IsModelCheck="true"><Formula>NOBN_com_triggerNeighbourObjectModelchecks(rctype_AxleCounterSensor)</Formula></LuaExpression>
 
-		<InsertPointObject Name="Tellepunkt" DisplayBlockName="NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-{{SymbolMode}}" 
+		<InsertPointObject Name="Axle counter sensor" DisplayBlockName="NO-BN-2D-JBTSA_TEL-AKSELTELLER-SENSOR-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="0.75">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
@@ -1312,10 +1312,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNALLING
 	AXLE COUNTER TUNING UNIT
 =========================================================================================================-->
-	<!-- TODO: Avklare med Bane NOR om vi får innføre SA-TET for akselteller tuningenhet -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterTuningUnit" Name="JBTSA_TET Akselteller tuningenhet"
+	<!-- TODO: Clarify with Bane NOR whether SA-TET can be introduced for axle counter tuning unit -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_AxleCounterTuningUnit" Name="JBTSA_TET Axle counter tuning unit"
 				Layer="JBTSA_TET" Color="ByLayer"
-				Group="Signal/Togdeteksjon/Akseltellere"
+				Group="Signal/Train detection/Axle counters"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 		>
 				
@@ -1336,21 +1336,21 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 		
 		<Variants>
-			<Variant Name="Akselteller tuningenhet">
+			<Variant Name="Axle counter tuning unit">
 			</Variant>
 		</Variants>
 
-		<CustomProperty DataType="Enumeration" Name="Mounting" DisplayName="Montering" DefaultValue="UPRIGHT"
-			Description="The axle counter tuning unit may be mounted as [ Flatt (flat) | Stående (upright) | Vegg (wall) | Som nummer to (as number two) ]. The flat mounting (aka 'mushroom') means a flat-lying tuning unit mounted on top of a short pole, the pole's foot is meant for shallow burying in ballast. The 'Stående' (upright) method implies a slightly taller ballast foot with an upright tuning unit mounted to the side of this pole. The 'Vegg' (wall) method has no foot, just a bracket allowing fitting of an upright tuning unit to a wall, for instance in a tunnel under the hand rail.">
+		<CustomProperty DataType="Enumeration" Name="Mounting" DisplayName="Mounting" DefaultValue="UPRIGHT"
+			Description="The axle counter tuning unit may be mounted as [ Flat | Upright | Wall | As number two ]. The flat mounting (aka 'mushroom') means a flat-lying tuning unit mounted on top of a short pole, the pole's foot is meant for shallow burying in ballast. The upright method implies a slightly taller ballast foot with an upright tuning unit mounted to the side of this pole. The wall method has no foot, just a bracket allowing fitting of an upright tuning unit to a wall, for instance in a tunnel under the hand rail.">
 			<Values>
-				<Value DisplayName="Flatt" Description="Flat-lying tuning unit mounted on top of a short pole with a ballast-buried foot.">FLAT</Value>
-				<Value DisplayName="Oppreist" Description="Upright tuning unit mounted to the side of a medium tall pole with a ballast-buried foot.">UPRIGHT</Value>
-				<Value DisplayName="Vegg" Description="Upright tuning unit without pole or foot, for fitting to a wall.">WALL</Value>
-				<Value DisplayName="Som nummer to" Description="Upright tuning unit without pole or foot, for fitting to an existing other upright tuning.">SECOND</Value>
+				<Value DisplayName="Flat" Description="Flat-lying tuning unit mounted on top of a short pole with a ballast-buried foot.">FLAT</Value>
+				<Value DisplayName="Upright" Description="Upright tuning unit mounted to the side of a medium tall pole with a ballast-buried foot.">UPRIGHT</Value>
+				<Value DisplayName="Wall" Description="Upright tuning unit without pole or foot, for fitting to a wall.">WALL</Value>
+				<Value DisplayName="As number two" Description="Upright tuning unit without pole or foot, for fitting to an existing other upright tuning.">SECOND</Value>
 			</Values>
 		</CustomProperty>
 
-		<CustomProperty DataType="Enumeration" Name="CableLength" DisplayName="Kabellengde" DefaultValue="MEDIUM"
+		<CustomProperty DataType="Enumeration" Name="CableLength" DisplayName="Cable length" DefaultValue="MEDIUM"
 			Description="The axle counter tuning unit will usually benefit from a pre-fabricated standard coaxial cable with a low-pass filter. These cable come in a several standard lengths. The cable will be descend from the track-mounted sensor into the ballast, typically follow the ballast under the cable duct, turning left or right, then mounting along the foot of the axle counter tuning unit stand. Therefore, the required cable length is approcimately 0.3m + LateralOffset + AlongOffset + 0.7m = 1m + LateralOffset + AlongOffset. One supplier has standard coax cables of lengths 4, 5.5 or 8 meter. Another supplier has standard coax cable lengths up to 15m.">
 			<Values>
 				<Value DisplayName="15.0 m prefab" Description="Lateral offset plus along-offset should be around 6.0 to 14.0 meters">EXTRALONG</Value>
@@ -1361,7 +1361,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</CustomProperty>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromTuningUnitToAxleCounter" 
-			DisplayName="Kabelavstand fra tuningenhet til tellepunkt" 
+			DisplayName="Cable distance from tuning unit to axle counter sensor" 
 			Description="Axle counters send very weak signals to the nearby tuning unit, using impedance-matched coaxial cables of predefined lengths, typically 4, 5.5, 8 or 15 meters."/>
 		<LuaExpression Name="mc_CableDistanceFromTuningUnitToAxleCounter" IsModelCheck="true"><Formula>_JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_TET_chkCableDistanceFromTuningUnitToAxleCounter()" ReturnType="String"
@@ -1481,14 +1481,14 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="name"><Formula>"Tptu("..code..")"</Formula></LuaExpression>
 		<LuaExpression Name="Mileage"><Formula>RC__getMileageFromRelatedObject(rel_AxleCounterTuningUnit_FeedsAndReads_AxleCounter)</Formula></LuaExpression>
 
-		<InsertPointObject Name="Akselteller tuningenhet" DisplayBlockName="NO-BN-2D-JBTSA_TET-AKSELTELLER-TUNING-ENHET-{{SymbolMode}}" 
+		<InsertPointObject Name="Axle counter tuning unit" DisplayBlockName="NO-BN-2D-JBTSA_TET-AKSELTELLER-TUNING-ENHET-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="false">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true"/>
 		</InsertPointObject>
 
 		
-		<CustomProperty DataType="String" Name="NamePlateText" DisplayName="Tekst på 3D-modellens merkeskilt" DefaultValue=""
+		<CustomProperty DataType="String" Name="NamePlateText" DisplayName="Text on 3D model name plate" DefaultValue=""
 			ReadOnly="true"
 			Description="Holds the section numbers to be displayed on the 3D geometry's name plate. The numbers are arranged such that the detection section number at lower mileage is mentioned on the side of the board being closest to the low mileages. The text is parsed from the associated axle counter's code.">
 		</CustomProperty>
@@ -1550,9 +1550,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	TRACK VACANTY DETECTION
 	TRACK CIRCUIT SECTION FOR 95 Hz / 105 Hz
 =========================================================================================================-->
-	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" LuaName="rctype_TrackCircuitSection" Name="JBTSA_SPF Sporfelt"
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" LuaName="rctype_TrackCircuitSection" Name="JBTSA_SPF Track circuit"
 				Layer="JBTSA_SPF" Color="ByLayer"
-				Group="Signal/Togdeteksjon/Sporfelt"
+				Group="Signal/Train detection/Track circuits"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 	>
 				
@@ -1570,7 +1570,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 		
 		<Variants>
-			<Variant Name="Sporfelt">
+			<Variant Name="Track circuit">
 			</Variant>
 		</Variants>
 		
@@ -1605,7 +1605,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<InsertPointObject Name="Sporfelt" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
+		<InsertPointObject Name="Track circuit" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
@@ -1628,9 +1628,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNALLING / TRACK AND EMBANKMENT
 	ISOLATED RAIL JOINT
 =========================================================================================================-->
-	<!-- JBTKO_SKJ Skinneskjøt -->
-	<!-- Isolert skinneskjøt. Tilhører Overbygningsfaget, som har sporet. Brukes også i returstrømkretsen. -->
-	<!-- TODO: Vurder om den skal bytte Group i CreatePointObject innsettingsdialogen og i Object Manager. -->
+	<!-- JBTKO_SKJ Rail joint -->
+	<!-- Insulated rail joint. Belongs to the Track superstructure discipline, which owns the track. Also used in the return current circuit. -->
+	<!-- TODO: Consider whether it should change Group in the CreatePointObject insertion dialog and in Object Manager. -->
 
 <!--	
 	Principle for the object's construction:
@@ -1642,9 +1642,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			in 1-line geographic style drawings
 		c) ...showing a separate icon for each railisolation in a 2-line drawing (schematic or geographic).
 -->
-	<ObjectType DataType="tTrackCircuitBorder" Class="RailwayPlacedObject" LuaName="rctype_InsulatedRailJoint" Name="JBTKO_SKJ Skinneskjøt"
+	<ObjectType DataType="tTrackCircuitBorder" Class="RailwayPlacedObject" LuaName="rctype_InsulatedRailJoint" Name="JBTKO_SKJ Rail joint"
 				Layer="JBTKO_SKJ" Color="ByLayer"
-				Group="Signal/Togdeteksjon/Sporfelt"
+				Group="Signal/Train detection/Track circuits"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -1664,7 +1664,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<Variants>
-			<Variant Name="Skinneskjøt" Description="The object represents an isolated joint plus the isolation of left/right or both rails from here an onwards.">
+			<Variant Name="Rail joint" Description="The object represents an isolated joint plus the isolation of left/right or both rails from here an onwards.">
 				<!-- Set railML properties: -->
 				<!-- Force schematic plan's isolation symbol to appear when inserting object: -->
 				<SetValue Key="insulatedRail" Value="both"/>
@@ -1673,10 +1673,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<LuaExpression Name="LateralOffset"><Formula>0</Formula></LuaExpression>
 		
-		<CustomProperty DataType="Boolean" Name="UpSectionLeftRailDetection" DisplayName="Deteksjon venstreskinne i stigende kilometerretning" DefaultValue="false"/>
-		<CustomProperty DataType="Boolean" Name="UpSectionRightRailDetection" DisplayName="Deteksjon høyreskinne i stigende kilometerretning" DefaultValue="false"/>
-		<CustomProperty DataType="Boolean" Name="DownSectionLeftRailDetection" DisplayName="Deteksjon venstreskinne i synkende kilometerretning" DefaultValue="false"/>
-		<CustomProperty DataType="Boolean" Name="DownSectionRightRailDetection" DisplayName="Deteksjon høyreskinne i synkende kilometerretning" DefaultValue="false"/>
+		<CustomProperty DataType="Boolean" Name="UpSectionLeftRailDetection" DisplayName="Left rail detection in increasing mileage direction" DefaultValue="false"/>
+		<CustomProperty DataType="Boolean" Name="UpSectionRightRailDetection" DisplayName="Right rail detection in increasing mileage direction" DefaultValue="false"/>
+		<CustomProperty DataType="Boolean" Name="DownSectionLeftRailDetection" DisplayName="Left rail detection in decreasing mileage direction" DefaultValue="false"/>
+		<CustomProperty DataType="Boolean" Name="DownSectionRightRailDetection" DisplayName="Right rail detection in decreasing mileage direction" DefaultValue="false"/>
 
 		<LuaExpression Name="name"><Formula>"Iso("..code..")"</Formula></LuaExpression>
 
@@ -1720,7 +1720,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<!-- TODO: Lage 3D-modell for isolasjon med sporfelttilkoblinger -->
+		<!-- TODO: Create 3D model for isolation with track circuit connections -->
 		<!-- <SetValue Key="Geometry3D_0.Name" Value="" /> -->
 
 		<!-- Note: 'insulatedRail' is a property from the C# class, inherited from a railML class. -->
@@ -1745,7 +1745,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaExpression>
 			
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousIsolatedJoint" DisplayName="Avstand til forrige isolerte skinneskjøt" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousIsolatedJoint" DisplayName="Distance to previous insulated rail joint" 
 				Description="isolated joints need at least 21 m between any two joints, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
 		<LuaExpression Name="mc_DistanceToPreviousIsolatedJoint" IsModelCheck="true"><Formula>_JBTKO_SKJ_chkDistanceToPreviousIsolatedJoint()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SKJ_chkDistanceToPreviousIsolatedJoint()" ReturnType="String"
@@ -1758,7 +1758,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextIsolatedJoint" DisplayName="Avstand til neste isolerte skinneskjøt" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextIsolatedJoint" DisplayName="Distance to next insulated rail joint" 
 				Description="isolated joints need at least 21 m between any two joints, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
 		<LuaExpression Name="mc_DistanceToNextIsolatedJoint" IsModelCheck="true"><Formula>_JBTKO_SKJ_chkDistanceToNextIsolatedJoint()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SKJ_chkDistanceToNextIsolatedJoint()" ReturnType="String"
@@ -1772,12 +1772,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</LuaFunction>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Andre objekter som modelsjekkes" 
+			DisplayName="Other objects to be model-checked" 
 			Description="When this section object is refreshed, then the neighbouring limiting objects on either side are modelchecked as well."/>
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true"><Formula>NOBN_com_triggerNeighbourObjectModelchecks(rctype_InsulatedRailJoint)</Formula></LuaExpression>
 
 		<!-- NB! Point snapping works for some switches (for those where we had data on insulation joint placements (point on straight / deviating alignment axis). -->
-		<InsertPointObject Name="Skinneskjøt" DisplayBlockName="NO-BN-2D-JBTKO_SKJ-SKINNESKJOET-0-0-0-0-{{SymbolMode}}"
+		<InsertPointObject Name="Rail joint" DisplayBlockName="NO-BN-2D-JBTKO_SKJ-SKINNESKJOET-0-0-0-0-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="false"/>
@@ -1814,12 +1814,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNALLING
 	TRACK VACANCY DETECTION SECTION FOR FTGS AUDIO FREQUENCY TRACK CIRCUIT SYSTEM
 =========================================================================================================-->
-	<!-- TVD Section - Track vacancy detection section - Togdeteksjonsavsnitt for FTGS skjøteløst sporfelt -->
-	<!-- Dette er et fiktivt objekt, ringen med avsnitt-nummeret i. FTGS S_forbinderne søker etter dem for å tilegne seg nr. -->
-	<!-- TODO: Avklare med Bane NOR om vi kan benytte SA-SFA for "FTGS avsnitt" som ny objekt-type for Banedata. -->
-	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" LuaName="rctype_FtgsSection" Name="JBTSA_SFA Togdeteksjonsavsnitt for FTGS"
+	<!-- TVD Section - Track vacancy detection section - Train detection section for FTGS jointless track circuit system -->
+	<!-- This is a fictitious object - the circle containing the section number. FTGS connectors look for them to obtain their section number. -->
+	<!-- TODO: Clarify with Bane NOR whether SA-SFA can be used for "FTGS section" as a new object type for BaneData. -->
+	<ObjectType DataType="RailCOMPLETESection" Class="RailwayPlacedObject" LuaName="rctype_FtgsSection" Name="JBTSA_SFA Train detection section for FTGS"
 				Layer="JBTSA_SFA" Color="ByLayer"
-				Group="Signal/Togdeteksjon/FTGS"
+				Group="Signal/Train detection/FTGS"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 	>
 		<!-- <xpp:expand select="NOBN_xxx_DEPRECATED_MACRO___TO_BE_REMOVED"/> -->
@@ -1836,7 +1836,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<Variants>
-			<Variant Name="Togdeteksjonsavsnitt for FTGS">
+			<Variant Name="Train detection section for FTGS">
 			</Variant>
 		</Variants>
 
@@ -1845,7 +1845,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="name"><Formula>"Sf("..code..")"</Formula></LuaExpression>	
 
 		<!-- Snap-distance 1.6 means that the snap-function with argument '3' snaps it to dist 3 from track, snapping to the correct track. -->
-		<InsertPointObject Name="Togdeteksjonsavsnitt for FTGS" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
+		<InsertPointObject Name="Train detection section for FTGS" DisplayBlockName="NO-BN-2D-JBTRC_SEKSJON-INNSETTING-SYMBOL-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true"/>
@@ -1872,9 +1872,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 <!-- if (math.abs(math.abs(LateralOffset) - cantGauge/2) &gt; 5e-3) then -->
 <!-- 	return string.format("%.3f",LateralOffset)..": WARNING - Distance (2D) to own alignment should be about +/- half railseparation.",_warning -->
 <!-- end -->
-	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" LuaName="rctype_FtgsBond" Name="JBTSA_SFS FTGS forbinder"
+	<ObjectType DataType="tTrainDetector" Class="RailwayPlacedObject" LuaName="rctype_FtgsBond" Name="JBTSA_SFS FTGS connector"
 				Layer="JBTSA_SFS" Color="ByLayer"
-				Group="Signal/Togdeteksjon/FTGS"
+				Group="Signal/Train detection/FTGS"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 		>
 				
@@ -1894,12 +1894,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 		<Variants>
-			<Variant Name="Kort/kort S-forbinder"/>
-			<Variant Name="Kort/lang S-forbinder"/>
-			<Variant Name="Lang/kort S-forbinder"/>
-			<Variant Name="Lang/lang S-forbinder"/>
-			<Variant Name="FTGS endeforbinder"/>
-			<Variant Name="FTGS sporkryss forbinder"/>
+			<Variant Name="Short/short S-connector"/>
+			<Variant Name="Short/long S-connector"/>
+			<Variant Name="Long/short S-connector"/>
+			<Variant Name="Long/long S-connector"/>
+			<Variant Name="FTGS end connector"/>
+			<Variant Name="FTGS diamond crossing connector"/>
 		</Variants>
 
 		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
@@ -1948,7 +1948,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="dir"><Formula>"both"</Formula></LuaExpression>	
 		
 		<!-- Model checks -->
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousFtgsConnector" DisplayName="Avstand til forrige FTGS forbinder" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousFtgsConnector" DisplayName="Distance to previous FTGS connector" 
 				Description="FTGS connectors need at least 21 m between any two consecutive loops, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
 		<LuaExpression Name="mc_DistanceToPreviousFtgsConnector" IsModelCheck="true"><Formula>_JBTSA_SFS_chkDistanceToPreviousFtgsConnector()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_SFS_chkDistanceToPreviousFtgsConnector()" ReturnType="String"
@@ -1961,7 +1961,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextFtgsConnector" DisplayName="Avstand til neste FTGS forbinder" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextFtgsConnector" DisplayName="Distance to next FTGS connector" 
 				Description="FTGS connectors need at least 21 m between any two consecutive loops, preferably 23 m, such that the longest admissible wagon will not free the track occupation under the wagon."/>
 		<LuaExpression Name="mc_DistanceToNextFtgsConnector" IsModelCheck="true"><Formula>_JBTSA_SFS_chkDistanceToNextFtgsConnector()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_SFS_chkDistanceToNextFtgsConnector()" ReturnType="String"
@@ -1975,46 +1975,46 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</LuaFunction>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_OtherObjectsToBeModelchecked" 
-			DisplayName="Andre objekter som modelsjekkes" 
+			DisplayName="Other objects to be model-checked" 
 			Description="When this section object is refreshed, then the neighbouring limiting objects on either side are modelchecked as well."/>
 		<LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true"><Formula>NOBN_com_triggerNeighbourObjectModelchecks(rctype_FtgsBond)</Formula></LuaExpression>
 
-		<InsertPointObject Name="Kort/kort S-forbinder" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-KORT-KORT-{{SymbolMode}}" 
+		<InsertPointObject Name="Short/short S-connector" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-KORT-KORT-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Kort/lang S-forbinder" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-KORT-LANG-{{SymbolMode}}" 
+		<InsertPointObject Name="Short/long S-connector" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-KORT-LANG-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Lang/kort S-forbinder" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-LANG-KORT-{{SymbolMode}}" 
+		<InsertPointObject Name="Long/short S-connector" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-LANG-KORT-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Lang/lang S-forbinder" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-LANG-LANG-{{SymbolMode}}" 
+		<InsertPointObject Name="Long/long S-connector" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-LANG-LANG-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="FTGS endeforbinder" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-ENDE-{{SymbolMode}}" 
+		<InsertPointObject Name="FTGS end connector" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-ENDE-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
 
-		<InsertPointObject Name="FTGS sporkryss forbinder" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-SPORKRYSS-{{SymbolMode}}" 
+		<InsertPointObject Name="FTGS diamond crossing connector" DisplayBlockName="NO-BN-2D-JBTSA_SFS_FTGS-FORBINDER-SPORKRYSS-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="0" RotateIfRightSideOfAlignment="true"/>
@@ -2032,12 +2032,12 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 														{% endif %}"/>	
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_SFS-FTGS-FORBINDER
-				{% if Variant == "Kort/kort S-forbinder" %}KORT-KORT
-				{% elsif Variant == "Kort/lang S-forbinder" %}KORT-LANG
-				{% elsif Variant == "Lang/kort S-forbinder" %}LANG-KORT
-				{% elsif Variant == "Lang/lang S-forbinder" %}LANG-LANG
-				{% elsif Variant == "FTGS endeforbinder" %}ENDE
-				{% elsif Variant == "FTGS sporkryss forbinder" %}SPORKRYSS
+				{% if Variant == "Short/short S-connector" %}KORT-KORT
+				{% elsif Variant == "Short/long S-connector" %}KORT-LANG
+				{% elsif Variant == "Long/short S-connector" %}LANG-KORT
+				{% elsif Variant == "Long/long S-connector" %}LANG-LANG
+				{% elsif Variant == "FTGS end connector" %}ENDE
+				{% elsif Variant == "FTGS diamond crossing connector" %}SPORKRYSS
 				{% else %}BAD_VARIANT
 				{% endif %}
 				{{SymbolMode}}
@@ -2075,10 +2075,10 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNALLING
 	FTGS AUDIO FREQUENCY TRACK CIRCUIT SYSTEM - TUNING UNIT
 =========================================================================================================-->
-	<!-- TODO: Avklare med Bane NOR om vi får innføre SA-SFT for FTGS tuningenhet -->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_FtgsTuningUnit" Name="JBTSA_SFT FTGS tuningenhet"
+	<!-- TODO: Clarify with Bane NOR whether SA-SFT can be introduced for FTGS tuning unit -->
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_FtgsTuningUnit" Name="JBTSA_SFT FTGS tuning unit"
 				Layer="JBTSA_SFT" Color="ByLayer"
-				Group="Signal/Togdeteksjon/FTGS"
+				Group="Signal/Train detection/FTGS"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 		>
 				
@@ -2097,22 +2097,22 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 		
 		<Variants>
-			<Variant Name="Sender/Sender"/>
-			<Variant Name="Sender/Mottager"/>
-			<Variant Name="Mottager/Sender"/>
-			<Variant Name="Mottager/Mottager"/>
+			<Variant Name="Transmitter/Transmitter"/>
+			<Variant Name="Transmitter/Receiver"/>
+			<Variant Name="Receiver/Transmitter"/>
+			<Variant Name="Receiver/Receiver"/>
 		</Variants>
 
-		<CustomProperty DataType="Enumeration" Name="Mounting" DisplayName="Montering" DefaultValue="FLAT"
-			Description="The FTGS tuning unit may be mounted as [ Flatt (flatt/flat) | Oppreist (upright) | Vegg (wall) ]. The oppreist (aka 'Sopp' (mushroom)) mounting means a flat-lying tuning unit mounted on top of a short pole, the pole's foot is meant for shallow burying in ballast. The 'Stående' (upright) method implies a slightly taller ballast foot with an upright tuning unit mounted to the side of this pole. The 'Vegg' (wall) method has no foot, just a bracket allowing fitting of an upright tuning unit to a wall, for instance in a tunnel under the hand rail.">
+		<CustomProperty DataType="Enumeration" Name="Mounting" DisplayName="Mounting" DefaultValue="FLAT"
+			Description="The FTGS tuning unit may be mounted as [ Flat | Upright | Wall ]. The flat (aka 'mushroom') mounting means a flat-lying tuning unit mounted on top of a short pole, the pole's foot is meant for shallow burying in ballast. The upright method implies a slightly taller ballast foot with an upright tuning unit mounted to the side of this pole. The wall method has no foot, just a bracket allowing fitting of an upright tuning unit to a wall, for instance in a tunnel under the hand rail.">
 			<Values>
-				<Value DisplayName="Sopp" Description="Flat-lying tuning unit mounted on top of a short pole with a ballast-buried foot.">FLAT</Value>
-				<Value DisplayName="Stående" Description="Upright tuning unit mounted to the side of a medium tall pole with a ballast-buried foot.">UPRIGHT</Value>
-				<Value DisplayName="Vegg" Description="Upright tuning unit without pole or foot, for fitting to a wall.">WALL</Value>
+				<Value DisplayName="Mushroom" Description="Flat-lying tuning unit mounted on top of a short pole with a ballast-buried foot.">FLAT</Value>
+				<Value DisplayName="Upright" Description="Upright tuning unit mounted to the side of a medium tall pole with a ballast-buried foot.">UPRIGHT</Value>
+				<Value DisplayName="Wall" Description="Upright tuning unit without pole or foot, for fitting to a wall.">WALL</Value>
 			</Values>
 		</CustomProperty>
 
-		<CustomProperty DataType="Enumeration" Name="CableLength" DisplayName="Kabellengde" DefaultValue="MEDIUM"
+		<CustomProperty DataType="Enumeration" Name="CableLength" DisplayName="Cable length" DefaultValue="MEDIUM"
 			Description="The FTGS tuning unit will usually benefit from a pre-fabricated standard coaxial cable with a low-pass filter. These cable come in a several standard lengths. The cable will be descend from the track-mounted sensor into the ballast, typically follow the ballast under the cable duct, turning left or right, then mounting along the foot of the axle counter tuning unit stand. Therefore, the required cable length is approcimately 0.3m + LateralOffset + AlongOffset + 0.7m = 1m + LateralOffset + AlongOffset. One supplier has standard coax cables of lengths 4, 5.5 or 8 meter. Another supplier has standard coax cable lengths up to 15m.">
 			<Values>
 				<Value DisplayName="15.0 m prefab" Description="Lateral offset plus along-offset should be around 6.0 to 14.0 meters">EXTRALONG</Value>
@@ -2123,7 +2123,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		</CustomProperty>
 
 		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_CableDistanceFromTuningUnitToFtgsConnector" 
-			DisplayName="Kabelavstand fra tuningenhet til FTGS forbinder" 
+			DisplayName="Cable distance from tuning unit to FTGS connector" 
 			Description="FTGS connectors send very weak signals to the nearby tuning unit, using impedance-matched coaxial cables of predefined lengths, typically from 4 to 15 meters."/>
 		<LuaExpression Name="mc_CableDistanceFromTuningUnitToFtgsConnector" IsModelCheck="true"><Formula>_JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTSA_SFT_chkCableDistanceFromTuningUnitToFtgsConnector()" ReturnType="String"
@@ -2206,7 +2206,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<LuaExpression Name="name"><Formula>"Ftu("..code..")"</Formula></LuaExpression>
 		<LuaExpression Name="Mileage"><Formula>RC__getMileageFromRelatedObject(rel_FtgsSbond_IsFedAndReadBy_FtgsTuningUnit)</Formula></LuaExpression>
 
-		<InsertPointObject Name="FTGS tuningenhet" DisplayBlockName="NO-BN-2D-JBTSA_SFT-SPORFELT-TUNINGENHET-FTGS-FLATT-{{SymbolMode}}" 
+		<InsertPointObject Name="FTGS tuning unit" DisplayBlockName="NO-BN-2D-JBTSA_SFT-SPORFELT-TUNINGENHET-FTGS-FLATT-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="3.75" AskForAttachment="true">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateIfRightSideOfAlignment="true"/>
@@ -2242,9 +2242,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	POINT MACHINE
 	Point machine for turnouts, tongues and movable point frogs
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_PointMachine" Name="JBTSA_DRV Sporvekseldrivmaskin"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_PointMachine" Name="JBTSA_DRV Point machine"
 				Layer="JBTSA_DRV" Color="ByLayer"
-				Group="Signal/Drivmaskiner"
+				Group="Signal/Machines"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -2266,15 +2266,15 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Formula>NOBN_trk_getLateralOffsetFromCantAndTrackPlaneDistance(RightSided and 1.75 or -1.75)</Formula>
 		</LuaExpression>
 
-		<CustomProperty DataType="Boolean" Name="HasHeatingElement" DisplayName="Har varmeelement" DefaultValue="false">
+		<CustomProperty DataType="Boolean" Name="HasHeatingElement" DisplayName="Has heating element" DefaultValue="false">
 			<Values>
 				<Value>true</Value>
 				<Value>false</Value>
 			</Values>
 		</CustomProperty>
 		
-		<Variants DefaultValue="Uspesifisert">
-			<Variant Name="Uspesifisert">
+		<Variants DefaultValue="Unspecified">
+			<Variant Name="Unspecified">
 			</Variant>
 			<Variant Name="Alstom MET">
 			</Variant>
@@ -2342,7 +2342,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Formula>
 				function _JBTSA_DRV_Geometry3DName()
 					local t = ""
-					if Variant == "Uspesifisert" then
+					if Variant == "Unspecified" then
 						return "NO-BN-3D-FE-DIV-UKJENT"
 					elseif Variant == "Alstom MET" then 
 						t = "NO-BN-3D-SA-DRV-SPORVEKSELDRIVMASKIN-ALSTOM-MET-"
@@ -2364,7 +2364,7 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			</Formula>
 		</LuaFunction>
 		
-		<InsertPointObject Name="Uspesifisert" DisplayBlockName="NO-BN-2D-JBTSA_DRV-SPORVEKSELDRIVMASKIN-{{SymbolMode}}" 
+		<InsertPointObject Name="Unspecified" DisplayBlockName="NO-BN-2D-JBTSA_DRV-SPORVEKSELDRIVMASKIN-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1.75">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -2404,9 +2404,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
     SIGNAL
 	DERAILER MACHINE
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_DerailerMachine" Name="JBTSA_SPD Sporsperredrivmaskin"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_DerailerMachine" Name="JBTSA_SPD Derailer machine"
 				Layer="JBTSA_SPD" Color="ByLayer"
-				Group="Signal/Drivmaskiner"
+				Group="Signal/Machines"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -2489,9 +2489,9 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 	LOCAL CONTROL PANEL
 	Push-button device for single or coupled turnout / turnout-turnout / derailer / turnout-derailer
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_LocalControlPanel" Name="JBTSA_LOK Lokalstiller"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_LocalControlPanel" Name="JBTSA_LOK Local control panel"
 				Layer="JBTSA_LOK" Color="ByLayer"
-				Group="Signal/Lokalstillere"
+				Group="Signal/Local control panels"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -2512,18 +2512,18 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_RAIL"/>
 		
-		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>Variant:match("vegg") and 1.25 or 0</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>Variant:match("vegg") and "None" or "Vertical"</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.Offset.Z"><Formula>Variant:match("wall") and 1.25 or 0</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_0.PoleRouting"><Formula>Variant:match("wall") and "None" or "Vertical"</Formula></LuaExpression>
 	
-		<Variants DefaultValue="Lokalstiller, 1 knapp/enkel veksel, på stolpe">
-			<Variant Name="Lokalstiller, 1 knapp/enkel veksel, på stolpe"/>
-			<Variant Name="Lokalstiller, 1 knapp/enkel veksel, på vegg"/>
-			<Variant Name="Lokalstiller, 1 knapp/koblet veksel, på stolpe"/>
-			<Variant Name="Lokalstiller, 1 knapp/koblet veksel, på vegg"/>
-			<Variant Name="Lokalstiller, 2 knapper/enkel veksel, på stolpe"/>
-			<Variant Name="Lokalstiller, 2 knapper/enkel veksel, på vegg"/>
-			<Variant Name="Lokalstiller, 2 knapper/koblet veksel, på stolpe"/>
-			<Variant Name="Lokalstiller, 2 knapper/koblet veksel, på vegg"/>
+		<Variants DefaultValue="Local control panel, 1 button/single switch, on pole">
+			<Variant Name="Local control panel, 1 button/single switch, on pole"/>
+			<Variant Name="Local control panel, 1 button/single switch, on wall"/>
+			<Variant Name="Local control panel, 1 button/coupled switch, on pole"/>
+			<Variant Name="Local control panel, 1 button/coupled switch, on wall"/>
+			<Variant Name="Local control panel, 2 buttons/single switch, on pole"/>
+			<Variant Name="Local control panel, 2 buttons/single switch, on wall"/>
+			<Variant Name="Local control panel, 2 buttons/coupled switch, on pole"/>
+			<Variant Name="Local control panel, 2 buttons/coupled switch, on wall"/>
 		</Variants>
 
 		<LuaExpression Name="code"><Formula>_JBTSA_LOK_code()</Formula></LuaExpression>	
@@ -2588,21 +2588,21 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 			<Signature>String _JBTSA_LOK_LocalControlPanel_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTSA_LOK_LocalControlPanel_Geometry3DName()
-					if Variant == "Lokalstiller, 1 knapp/enkel veksel, på stolpe" then
+					if Variant == "Local control panel, 1 button/single switch, on pole" then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-ENKEL-VEKSEL-MED-STOLPE"
-					elseif Variant == "Lokalstiller, 1 knapp/enkel veksel, på vegg" 	then
+					elseif Variant == "Local control panel, 1 button/single switch, on wall" 	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-ENKEL-VEKSEL"
-					elseif Variant == "Lokalstiller, 1 knapp/koblet veksel, på stolpe"	then
+					elseif Variant == "Local control panel, 1 button/coupled switch, on pole"	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-KOBLET-VEKSEL-MED-STOLPE"
-					elseif Variant == "Lokalstiller, 1 knapp/koblet veksel, på vegg"	then
+					elseif Variant == "Local control panel, 1 button/coupled switch, on wall"	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-1-KNAPP-KOBLET-VEKSEL"
-					elseif Variant == "Lokalstiller, 2 knapper/enkel veksel, på stolpe"	then
+					elseif Variant == "Local control panel, 2 buttons/single switch, on pole"	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-ENKEL-VEKSEL-MED-STOLPE"
-					elseif Variant == "Lokalstiller, 2 knapper/enkel veksel, på vegg"	then
+					elseif Variant == "Local control panel, 2 buttons/single switch, on wall"	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-ENKEL-VEKSEL"
-					elseif Variant == "Lokalstiller, 2 knapper/koblet veksel, på stolpe"	then
+					elseif Variant == "Local control panel, 2 buttons/coupled switch, on pole"	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-KOBLET-VEKSEL-MED-STOLPE"
-					elseif Variant == "Lokalstiller, 2 knapper/koblet veksel, på vegg"	then
+					elseif Variant == "Local control panel, 2 buttons/coupled switch, on wall"	then
 						return "NO-BN-3D-SA-LOK-LOKALSTILLER-2-KNAPPER-KOBLET-VEKSEL"				
 					else
 						return "Could not find 3D geometry name for variant"
@@ -2613,49 +2613,49 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		
 		<!-- 2D symbol is circular symmetric, so no need to specify any rotation during insertion jig -->
-		<InsertPointObject Name="Lokalstiller, 1 knapp/enkel veksel, på stolpe"
+		<InsertPointObject Name="Local control panel, 1 button/single switch, on pole"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 1 knapp/enkel veksel, på vegg"
+		<InsertPointObject Name="Local control panel, 1 button/single switch, on wall"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 1 knapp/koblet veksel, på stolpe"
+		<InsertPointObject Name="Local control panel, 1 button/coupled switch, on pole"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 1 knapp/koblet veksel, på vegg"
+		<InsertPointObject Name="Local control panel, 1 button/coupled switch, on wall"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 2 knapper/enkel veksel, på stolpe"
+		<InsertPointObject Name="Local control panel, 2 buttons/single switch, on pole"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 2 knapper/enkel veksel, på vegg"
+		<InsertPointObject Name="Local control panel, 2 buttons/single switch, on wall"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 2 knapper/koblet veksel, på stolpe"
+		<InsertPointObject Name="Local control panel, 2 buttons/coupled switch, on pole"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="2.4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="dir" Value="both"/>
 		</InsertPointObject>
-		<InsertPointObject Name="Lokalstiller, 2 knapper/koblet veksel, på vegg"
+		<InsertPointObject Name="Local control panel, 2 buttons/coupled switch, on wall"
 				DisplayBlockName="NO-BN-2D-JBTSA_LOK-LOKALSTILLER-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4.0">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
@@ -2683,14 +2683,14 @@ TODO: Ref Issue #5708 fra 2019-07-09: Add element: Description="https://trv.bane
 
 		<DockPointDefinitions>
 			<SnapPoints>
-				<!-- Stolpe for montasje -->
+				<!-- Pole for mounting -->
 				<SnapPoint X="0" Y="0" TargetSpace="stolpe_med_fot"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 
 		<DisplayPointDefinitions>
 			<SnapPoints>
-				<!-- Visuell Lok relativt til dock point (0, +/-2.5) i sporveksel, skal vises litt før SS (og spv har fire kvadranter) -->
+				<!-- Visual Lok relative to dock point (0, +/-2.5) in switch, should appear slightly before SS (and the switch has four quadrants) -->
 				<SnapPoint X="-1.75" Y="0.75"/>
 				<SnapPoint X="-1.75" Y="-0.75"/>
 				<SnapPoint X="1.75" Y="0.75"/>

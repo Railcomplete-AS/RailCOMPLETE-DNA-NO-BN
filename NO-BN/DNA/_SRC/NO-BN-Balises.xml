@@ -322,7 +322,7 @@
 					local t = {}
 					for i = 0, nBalises-1 do table.insert(t,{id = balises[i].id, pos = balises[i].pos, mileage = balises[i].mileage }) end --Assume they are in same RSM track edge
 					table.sort(t, function (a, b) local sgn = (dir == 'up' and 1 or -1) return sgn*a.pos &lt; sgn*b.pos end)
-					return t[1].mileage, _info("Position erhalten von ETCS-Balise "..RC__identify(getObjectFromId(t[1].id)))
+					return t[1].mileage, _info("Position obtained from ETCS balise "..RC__identify(getObjectFromId(t[1].id)))
 				end
 			end
 		</Formula>
@@ -525,21 +525,21 @@
         <Formula>
 			function _JBTSA_ATC_code()
 				local a
-				if Variant == "Hastighetsbalisegruppe" then
+				if Variant == "Speed balise group" then
 					a = "-H"
-				elseif Variant == "Signalhøyningsbalisegruppe" then
+				elseif Variant == "Signal elevation balise group" then
 					a = "-S"
-				elseif Variant == "Grensebalisegruppe" then
+				elseif Variant == "Border balise group" then
 					a = "-G"
-				elseif Variant == "Lenkingsbalisegruppe" then
+				elseif Variant == "Linking balise group" then
 					a = "-L"
-				elseif Variant == "Sporvekselbalisegruppe" then
+				elseif Variant == "Switch balise group" then
 					a = "-V"
-				elseif Variant == "Hovedsignalbalisegruppe" then 
+				elseif Variant == "Main signal balise group" then 
 					a = "_"
-				elseif Variant == "Forsignalbalisegruppe" then
+				elseif Variant == "Distant signal balise group" then
 					a = "F"
-				elseif Variant == "Repeterbalisegruppe" then
+				elseif Variant == "Repeater balise group" then
 					local s = rel_NssBaliseGroup_AppliesTo_Object
 					local r, n = getRelatedObjects(s)
 					if n == 0 then
@@ -548,7 +548,7 @@
 					else
 						local sig = r[0] --should be a signal here, repeater groups don't repeat switches directly
 						local bg = getRelatedObjects(rel_Object_Has_NssBaliseGroup, sig)
-						bg = bg:filter(function (x) return x.Variant == "Repeterbalisegruppe" end)
+						bg = bg:filter(function (x) return x.Variant == "Repeater balise group" end)
 						local nbg = getCollectionLength(bg)
 
 						if nbg == 0 then
@@ -624,7 +624,7 @@
 					end
 				end
 				local ocpMsg = "Create an Operation / Control Point (OCP) area around your object and refresh it to replace '???' with the relevant OCP's codes."
-				if Variant == "Hastighetsbalisegruppe" then
+				if Variant == "Speed balise group" then
 					local r, n = getRelatedObjects(rel_NssBaliseGroup_HasBrakingCurveTargetIn_NssBaliseGroup)
 					local ocp
 					if n == 0 then
@@ -635,14 +635,14 @@
 						ocp = NOBN_com_getOcpCode(r[0])
 					end
 					return ocp..a..string.format("%02d",Seq)
-				elseif Variant == "Signalhøyningsbalisegruppe" or Variant == "Sporvekselbalisegruppe" then
+				elseif Variant == "Signal elevation balise group" or Variant == "Switch balise group" then
 					local ocp = NOBN_com_getOcpCode(this)
 					if Seq == 0 then
 						return ocp..a.."UNFINISHED - Set balise group's 'Seq' property to the required balise group number (01..99), use '100' for '0'."
 					else
 						return ocp..a..string.format("%02d",Seq%100)
 					end
-				elseif Variant =="Lenkingsbalisegruppe" or Variant == "Grensebalisegruppe" then
+				elseif Variant =="Linking balise group" or Variant == "Border balise group" then
 					local s = rel_NssBaliseGroup_LinksTo_NssBaliseGroup
 					local r, n = getRelatedObjects(s)
 					local ocp
@@ -780,11 +780,11 @@
 				else
 					local bg = r[0]
 					local t = code:sub(-1)
-					if bg.Variant == "Hastighetsbalisegruppe" then
+					if bg.Variant == "Speed balise group" then
 						if t == "A" then
 							return "H"
 						elseif t == "B" then
-							if Variant:lower():match("fylt") then
+							if Variant:lower():match("filled") then
 								return "H"
 							else
 								return ""
@@ -794,11 +794,11 @@
 						else
 							return "?",_warning, _info("WARNING - Cannot determine text above balise symbol (balise is neither A, B or C balise).")
 						end
-					elseif bg.Variant == "ET-balisegruppe" then
+					elseif bg.Variant == "ET balise group" then
 						if t == "A" then
 							return "EH"
 						elseif t == "B" then
-							if Variant:lower():match("fylt") then
+							if Variant:lower():match("filled") then
 								return "EH"
 							else
 								return ""
@@ -841,9 +841,9 @@
 	SIGNALLING
 	BALISE GROUP - ETCS
 =========================================================================================================-->
-	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" LuaName="rctype_EtcsBaliseGroup" Name="JBTSA_ETC ETCS balisegruppe" 
+	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" LuaName="rctype_EtcsBaliseGroup" Name="JBTSA_ETC ETCS balise group" 
 				Layer="JBTSA_ETC" Color="ByLayer"
-				Group="Signal/Hastighetskontroll/ETCS"
+				Group="Signal/Speed control/ETCS"
 				AttMirrorX="{% if dir == 'down' %}true{% else %}false{% endif %}"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
@@ -866,9 +866,9 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
 	
-		<Variants DefaultValue="ETCS L2 balisegruppe, enkel">
-			<Variant Name="ETCS L2 balisegruppe, enkel"/>
-			<Variant Name="ETCS L2 balisegruppe, dobbel"/>
+		<Variants DefaultValue="ETCS L2 balise group, single">
+			<Variant Name="ETCS L2 balise group, single"/>
+			<Variant Name="ETCS L2 balise group, double"/>
 		</Variants>
 		
 		<CustomProperty DataType="String" Name="BaliseGroupTypes" DisplayName="Balise group types" DefaultValue="BG type?"
@@ -903,9 +903,9 @@
 					if nBalises == 0 then
 						return getPropertyValue("Variant"),_info("UNFINISHED - Balise group has no balises")
 					elseif nBalises == 1 then
-						return "ETCS L2 balisegruppe, enkel"
+						return "ETCS L2 balise group, single"
 					elseif nBalises &gt;= 2 then
-						return "ETCS L2 balisegruppe, dobbel"
+						return "ETCS L2 balise group, double"
 					end
 				end
 			</Formula>
@@ -917,13 +917,13 @@
 		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Position"><Formula>RC__flipAcsTuple(5.25, 0)</Formula></LuaExpression>
 		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Rotation"><Formula>0</Formula></LuaExpression>
 
-		<InsertPointObject Name="ETCS L2 balisegruppe, enkel" DisplayBlockName="NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE-ENKEL-{{SymbolMode}}"
+		<InsertPointObject Name="ETCS L2 balise group, single" DisplayBlockName="NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE-ENKEL-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true"/> 
 		</InsertPointObject>
 
-		<InsertPointObject Name="ETCS L2 balisegruppe, dobbel" DisplayBlockName="NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE-DOBBEL-{{SymbolMode}}"
+		<InsertPointObject Name="ETCS L2 balise group, double" DisplayBlockName="NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE-DOBBEL-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true"/> 
@@ -933,8 +933,8 @@
 			<Rotation AddAngle="{% if dir == 'up' %}0{% elsif dir == 'down' %}180{% else %}45{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_ETC-ETCS-BALISEGRUPPE
-				{% if Variant contains "enkel" %}ENKEL
-				{% elsif Variant contains "dobbel" %}DOBBEL
+				{% if Variant contains "single" %}ENKEL
+				{% elsif Variant contains "double" %}DOBBEL
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -967,7 +967,7 @@
 =========================================================================================================-->
 	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" LuaName="rctype_EtcsBalise" Name="JBTSA_ETB ETCS balise"
 				Layer="JBTSA_ETB" Color="ByLayer"
-				Group="Signal/Hastighetskontroll/ETCS"
+				Group="Signal/Speed control/ETCS"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -986,10 +986,10 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 		
-		<Variants DefaultValue="ETCS-balise, fast">
-			<Variant Name="ETCS-balise, fast">
+		<Variants DefaultValue="ETCS balise, fixed">
+			<Variant Name="ETCS balise, fixed">
 			</Variant>
-			<Variant Name="ETCS-balise, styrt">
+			<Variant Name="ETCS balise, controlled">
 			</Variant>
 		</Variants>
 
@@ -999,11 +999,11 @@
 			</Values>
 		</CustomProperty>
 				   
-		<CustomProperty DataType="String" Name="TextAbove" DisplayName="Tekst over" DefaultValue="" 
+		<CustomProperty DataType="String" Name="TextAbove" DisplayName="Text above" DefaultValue="" 
 			Description="Text above balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC tables 7.1 and 7.2."/>
 		<LuaExpression Name="TextAbove"><Formula>_JBTSA_ETB_TextAbove()</Formula></LuaExpression>
 		
-		<CustomProperty DataType="String" Name="TextBelow" DisplayName="Tekst under" DefaultValue=""
+		<CustomProperty DataType="String" Name="TextBelow" DisplayName="Text below" DefaultValue=""
 			Description="Returns Text below  balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC table 7.11."/>
 		<LuaExpression Name="TextBelow"><Formula>_JBTSA_ETB_TextBelow()</Formula></LuaExpression>
 	
@@ -1017,8 +1017,8 @@
 					if BaliseType == "ETCS Eurobalise" then s = s.."-EUROBALISE"
 					else return "Unknown BaliseType ["..BaliseType.."].",_warning
 					end
-					if Variant:lower():match("fast") then s = s.."-FAST"
-					elseif Variant:lower():match("styrt") then s = s.."-STYRT"
+					if Variant:lower():match("fixed") then s = s.."-FAST"
+					elseif Variant:lower():match("controlled") then s = s.."-STYRT"
 					else return "Unknown Variant ["..Variant.."].",_warning
 					end
 					return s, _info(Variant.." "..BaliseType.." balise.")
@@ -1026,7 +1026,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextBalise" DisplayName="Avstand til neste balise" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextBalise" DisplayName="Distance to next balise" 
 			Description="
 			Below 2.35 m: ERROR - Balise magnetic fields may merge - increase distance\n
 			2.35-2.8 m: WARNING - Outside recommended tolerance - increase distance\n
@@ -1036,7 +1036,7 @@
 			10.5-11.8 m: WARNING - Outside recommended tolerance - Increase distance\n
 			Above 11.8 m: OK - The train will treat the balises as belonging to different groups"/>
 			
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousBalise" DisplayName="Avstand til forrige balise"
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousBalise" DisplayName="Distance to previous balise"
 			Description="
 			Below 2.35 m: ERROR - Balise magnetic fields may merge - increase distance\n
 			2.35-2.8 m: WARNING - Outside recommended tolerance - increase distance\n
@@ -1046,14 +1046,14 @@
 			10.5-11.8 m: WARNING - Outside recommended tolerance - Increase distance\n
 			Above 11.8 m: OK - The train will treat the balises as belonging to different groups"/>
 			
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackVertically" DisplayName="Avstand til spor i høyden"
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackVertically" DisplayName="Vertical distance to track"
 			Description="
 			&lt; 0.8 m: OK - Balise is close to a neighbouring track which we consider to be part of a switch or crossing\n
 			0.8-7.0 m: ERROR - Balise may be read by a train running in a track above/under us - increase vertical track separation or move balise\n
 			7.0-8.0 m: WARNING - Outside recommended tolerance - increase vertical track separation or move balise\n
 			&gt; 8.0m: OK - A Train in a track above/under us will pass without reading the balise"/>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackSideways" DisplayName="Avstand til nabospor"
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackSideways" DisplayName="Distance to neighbouring track"
 			Description="
 			Below 2 m: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
 			2-2.6 m: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 m from neighbouring track (large balise) resp. 2.3 m (minibalise) – increase distance\n
@@ -1069,12 +1069,12 @@
 		<LuaExpression Name="mc_DistanceToTrackVertically" IsModelCheck="true"><Formula>NOBN_sig_chkBaliseDistanceToTrackVertically()</Formula></LuaExpression>
 		<LuaExpression Name="mc_DistanceToTrackSideways" IsModelCheck="true"><Formula>NOBN_sig_chkBaliseDistanceToTrackSideways()</Formula></LuaExpression>
 			
-		<InsertPointObject Name="ETCS-balise, fast" DisplayBlockName="NO-BN-2D-JBTSA_ETB-ETCS-BALISE-FAST-{{SymbolMode}}" 
+		<InsertPointObject Name="ETCS balise, fixed" DisplayBlockName="NO-BN-2D-JBTSA_ETB-ETCS-BALISE-FAST-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="ETCS-balise, styrt" DisplayBlockName="NO-BN-2D-JBTSA_ETB-ETCS-BALISE-STYRT-{{SymbolMode}}" 
+		<InsertPointObject Name="ETCS balise, controlled" DisplayBlockName="NO-BN-2D-JBTSA_ETB-ETCS-BALISE-STYRT-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -1083,8 +1083,8 @@
 			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_ETB-ETCS-BALISE
-				{% if Variant contains 'fast' %}FAST
-				{% elsif Variant contains 'styrt' %}STYRT
+				{% if Variant contains 'fixed' %}FAST
+				{% elsif Variant contains 'controlled' %}STYRT
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				{{SymbolMode}}
@@ -1101,8 +1101,8 @@
 			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_ETB-ETCS-BALISE
-				{% if Variant contains 'fast' %}FAST
-				{% elsif Variant contains 'styrt' %}STYRT
+				{% if Variant contains 'fixed' %}FAST
+				{% elsif Variant contains 'controlled' %}STYRT
 				{% else %}BAD_Variant_{{Variant}}
 				{% endif %}
 				Metric
@@ -1133,14 +1133,14 @@
 	SIGNALLING
 	BALISE GROUP - LEGACY / NATIONAL SIGNALLING SYSTEM
 =========================================================================================================-->
-	<!-- Balisegruppen kan kobles til signal(er), sporveksel(ler), radioområder, RBC-områder, sikringsanleggområder,  -->
-	<!-- stasjonsområder osv o.a.  -->
-	<!-- Noen tilkobinger arver posisjon fra sin forelder (signal), andre ikke (sporveksel, annen balisegruppe). -->
-	<!-- Lenkingsgrupper: Kobles til annen balisegruppe. -->
-	<!-- Signaler og forsignaler, evt dvergsignaler, fiktive osv: Balisegruppen kobles til signalet. -->
-	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" LuaName="rctype_BaliseGroup" Name="JBTSA_ATC NSS balisegruppe" 
+	<!-- The balise group can be connected to signal(s), switch(es), radio areas, RBC areas, interlocking areas,  -->
+	<!-- station areas, etc.  -->
+	<!-- Some connections inherit position from their parent (signal), others do not (switch, another balise group). -->
+	<!-- Linking groups: Connected to another balise group. -->
+	<!-- Signals and distant signals, also dwarf signals, fictitious etc.: The balise group is connected to the signal. -->
+	<ObjectType DataType="tMarker" Class="RailwayPlacedObject" LuaName="rctype_BaliseGroup" Name="JBTSA_ATC NSS balise group" 
 				Layer="JBTSA_ATC" Color="ByLayer"
-				Group="Signal/Hastighetskontroll/NSS (ATC2)"
+				Group="Signal/Speed control/NSS (ATC2)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -1159,40 +1159,40 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___WAYSIDE_GENERAL_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
-		<!-- TODO: Inkluder alle disse properties for å kunne generere kodetabeller automatisk -->
+		<!-- TODO: Include all these properties to enable automatic code table generation -->
 		<!--	
-		<CustomProperty DataType="String" Name="Retning" DisplayName="Retning" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="Retning" DisplayName="Direction" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Sign_Type" DisplayName="Sign_Type" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="BaliseID" DisplayName="BaliseID" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Signalbilde_1H" DisplayName="Signal_1H" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Signalbilde_1F2H" DisplayName="Signalbilde_1F2H" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Signalbilde_2F" DisplayName="Signalbilde_2F" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="Kjørhastighet" DisplayName="Kjørhastighet" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="Venthastighet" DisplayName="Venthastighet" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="P-avstand" DisplayName="P-avstand" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="B-avstand" DisplayName="B-avstand" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="Fall" DisplayName="Fall" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="Frislipphastighet" DisplayName="Frislipphastighet" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="MotrettetType" DisplayName="MotrettetType" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="MotrettetHastighet" DisplayName="MotrettetHastighet" DefaultValue=""/>
-		<CustomProperty DataType="String" Name="Togveier" DisplayName="Togveier" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="Kjørhastighet" DisplayName="Running speed" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="Venthastighet" DisplayName="Expected speed" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="P-avstand" DisplayName="P-distance" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="B-avstand" DisplayName="B-distance" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="Fall" DisplayName="Gradient" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="Frislipphastighet" DisplayName="Release speed" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="MotrettetType" DisplayName="Opposing direction type" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="MotrettetHastighet" DisplayName="Opposing direction speed" DefaultValue=""/>
+		<CustomProperty DataType="String" Name="Togveier" DisplayName="Train routes" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Pxyz" DisplayName="Pxyz" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Axyz" DisplayName="Axyz" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Bxyz" DisplayName="Bxyz" DefaultValue=""/>
 		<CustomProperty DataType="String" Name="Cxyz" DisplayName="Cxyz" DefaultValue=""/>
 		-->
-		<Variants DefaultValue="Hovedsignalbalisegruppe">
-			<Variant Name="Hovedsignalbalisegruppe"/>
-			<Variant Name="Forsignalbalisegruppe"/>
-			<Variant Name="Repeterbalisegruppe"/>
-			<Variant Name="Sporvekselbalisegruppe"/>
-			<Variant Name="Hastighetsbalisegruppe"/>
-			<Variant Name="Lenkingsbalisegruppe"/>
-			<Variant Name="Signalhøyningsbalisegruppe"/>
-			<Variant Name="ET-balisegruppe"/>
-			<Variant Name="Grensebalisegruppe"/>
-			<Variant Name="Radioområdebalisegruppe"/>
-			<Variant Name="Diversebalisegruppe"/>
+		<Variants DefaultValue="Main signal balise group">
+			<Variant Name="Main signal balise group"/>
+			<Variant Name="Distant signal balise group"/>
+			<Variant Name="Repeater balise group"/>
+			<Variant Name="Switch balise group"/>
+			<Variant Name="Speed balise group"/>
+			<Variant Name="Linking balise group"/>
+			<Variant Name="Signal elevation balise group"/>
+			<Variant Name="ET balise group"/>
+			<Variant Name="Border balise group"/>
+			<Variant Name="Radio area balise group"/>
+			<Variant Name="Miscellaneous balise group"/>
 		</Variants>
 
 		<LuaExpression Name="code"><Formula>_JBTSA_ATC_code()</Formula></LuaExpression>
@@ -1203,57 +1203,57 @@
 		<LuaExpression Name="TextAttribute_OBJEKTNAVN.Rotation"><Formula>0</Formula></LuaExpression>
 
 		<!--Hovedsignal alene og kombinertsignal (Hs+Fs) balisegruppe-->
-		<InsertPointObject Name="Hovedsignalbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Main signal balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Forsignalbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Distant signal balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Repeterbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Repeater balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Sporvekselbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Switch balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Hastighetsbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Speed balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Lenkingsbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Linking balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Signalhøyningsbalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Signal elevation balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="ET-balisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="ET balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Grensebalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Border balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Radioområdebalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Radio area balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
 
-		<InsertPointObject Name="Diversebalisegruppe" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
+		<InsertPointObject Name="Miscellaneous balise group" DisplayBlockName="NO-BN-2D-JBTSA_ATC-NSS-BALISEGRUPPE-STANDARD-{{SymbolMode}}"
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="10">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 		</InsertPointObject>
@@ -1286,7 +1286,7 @@
 	<!-- or 255 (net 45*4 bits) telegrams for Portugal/Spain/Italy/Finland/Australia/Malaysia. -->
 	<ObjectType DataType="tBalise" Class="RailwayPlacedObject" LuaName="rctype_Balise" Name="JBTSA_ATB NSS balise"
 				Layer="JBTSA_ATB" Color="ByLayer"
-				Group="Signal/Hastighetskontroll/NSS (ATC2)"
+				Group="Signal/Speed control/NSS (ATC2)"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 				
@@ -1305,14 +1305,14 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 		
-		<Variants DefaultValue="Balise fylt/fast">
-			<Variant Name="Fylt/fast">
+		<Variants DefaultValue="Balise filled/fixed">
+			<Variant Name="Filled/fixed">
 			</Variant>
-			<Variant Name="Fylt/styrt">
+			<Variant Name="Filled/controlled">
 			</Variant>
-			<Variant Name="Tom/fast">
+			<Variant Name="Empty/fixed">
 			</Variant>
-			<Variant Name="Tom/styrt">
+			<Variant Name="Empty/controlled">
 			</Variant>
 		</Variants>
 
@@ -1324,29 +1324,29 @@
 			</Values>
 		</CustomProperty>
 				   
-		<CustomProperty DataType="String" Name="TextAbove" DisplayName="Tekst over" DefaultValue="" 
+		<CustomProperty DataType="String" Name="TextAbove" DisplayName="Text above" DefaultValue="" 
 			Description="Text above balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC tables 7.1 and 7.2."/>
 		
-		<CustomProperty DataType="String" Name="TextBelow" DisplayName="Tekst under" DefaultValue=""
+		<CustomProperty DataType="String" Name="TextBelow" DisplayName="Text below" DefaultValue=""
 			Description="Text below  balise symbol [string] according to Bane NOR TRV 550 ch. 10 ATC table 7.11."/>
 	
-		<!--Hos BN skal symbolet for første balise i gyldighetsretning være "fylt"-->
-		<CustomProperty DataType="Boolean" Name="FirstInGroup" DisplayName="Første i gruppe"
+		<!--At BN, the symbol for the first balise in the direction of validity shall be "filled"-->
+		<CustomProperty DataType="Boolean" Name="FirstInGroup" DisplayName="First in group"
 		DotLiquidExpression="
-         {% if Variant == 'Fylt/fast' %}True
-         {% elsif Variant == 'Fylt/styrt' %}True
-         {% elsif Variant == 'Tom/fast' %}False
-         {% elsif Variant == 'Tom/styrt' %}False
+         {% if Variant == 'Filled/fixed' %}True
+         {% elsif Variant == 'Filled/controlled' %}True
+         {% elsif Variant == 'Empty/fixed' %}False
+         {% elsif Variant == 'Empty/controlled' %}False
          {% endif %}"
 		 />    
 
-		<!--Styrte baliser skal ha kabel, og BN 2D-symbolet har en strek over seg. TODO Finnes "switchable" allerede i railML for baliseobjektet deres???-->
-		<CustomProperty DataType="Boolean" Name="Switchable" DisplayName="Styrt" 
+		<!--Controlled balises shall have a cable, and the BN 2D symbol has a line above it. TODO: Does "switchable" already exist in railML for their balise object???-->
+		<CustomProperty DataType="Boolean" Name="Switchable" DisplayName="Controlled" 
 			DotLiquidExpression="
-				{% if Variant == 'Fylt/fast' %}False
-				{% elsif Variant == 'Fylt/styrt' %}True
-				{% elsif Variant == 'Tom/fast' %}False
-				{% elsif Variant == 'Tom/styrt' %}True
+				{% if Variant == 'Filled/fixed' %}False
+				{% elsif Variant == 'Filled/controlled' %}True
+				{% elsif Variant == 'Empty/fixed' %}False
+				{% elsif Variant == 'Empty/controlled' %}True
 				{% endif %}"
 		 />
 
@@ -1362,8 +1362,8 @@
 					elseif BaliseType == "NSS seriebalise, mini" then s = s.."-MINIBALISE"
 					else return "Unknown BaliseType ["..BaliseType.."].",_warning
 					end
-					if Variant:lower():match("fast") then s = s.."-FAST"
-					elseif Variant:lower():match("styrt") then s = s.."-STYRT"
+					if Variant:lower():match("fixed") then s = s.."-FAST"
+					elseif Variant:lower():match("controlled") then s = s.."-STYRT"
 					else return "Unknown Variant ["..Variant.."].",_warning
 					end
 					return s, _info(Variant.." "..BaliseType.." balise.")
@@ -1371,7 +1371,7 @@
 			</Formula>
 		</LuaFunction>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextBalise" DisplayName="Avstand til neste balise" 
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToNextBalise" DisplayName="Distance to next balise" 
 			Description="
 			Below 2.35 m: ERROR - Balise magnetic fields may merge - increase distance\n
 			2.35-2.8 m: WARNING - Outside recommended tolerance - increase distance\n
@@ -1381,7 +1381,7 @@
 			10.5-11.8 m: WARNING - Outside recommended tolerance - Increase distance\n
 			Above 11.8 m: OK - The train will treat the balises as belonging to different groups"/>
 			
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousBalise" DisplayName="Avstand til forrige balise"
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToPreviousBalise" DisplayName="Distance to previous balise"
 			Description="
 			Below 2.35 m: ERROR - Balise magnetic fields may merge - increase distance\n
 			2.35-2.8 m: WARNING - Outside recommended tolerance - increase distance\n
@@ -1391,14 +1391,14 @@
 			10.5-11.8 m: WARNING - Outside recommended tolerance - Increase distance\n
 			Above 11.8 m: OK - The train will treat the balises as belonging to different groups"/>
 			
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackVertically" DisplayName="Avstand til spor i høyden"
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackVertically" DisplayName="Vertical distance to track"
 			Description="
 			&lt; 0.8 m: OK - Balise is close to a neighbouring track which we consider to be part of a switch or crossing\n
 			0.8-7.0 m: ERROR - Balise may be read by a train running in a track above/under us - increase vertical track separation or move balise\n
 			7.0-8.0 m: WARNING - Outside recommended tolerance - increase vertical track separation or move balise\n
 			&gt; 8.0m: OK - A Train in a track above/under us will pass without reading the balise"/>
 
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackSideways" DisplayName="Avstand til nabospor"
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_DistanceToTrackSideways" DisplayName="Distance to neighbouring track"
 			Description="
 			Below 2 m: ERROR – Balise may be read by a train in the neighbouring track – increase distance\n
 			2-2.6 m: WARNING – Allowed on condition that at least one of the group's A- and B-balise is above 2.6 m from neighbouring track (large balise) resp. 2.3 m (minibalise) – increase distance\n
@@ -1418,27 +1418,27 @@
 		<LuaExpression Name="mc_DistanceToTrackVertically" IsModelCheck="true"><Formula>NOBN_sig_chkBaliseDistanceToTrackVertically()</Formula></LuaExpression>
 		<LuaExpression Name="mc_DistanceToTrackSideways" IsModelCheck="true"><Formula>NOBN_sig_chkBaliseDistanceToTrackSideways()</Formula></LuaExpression>
 
-		<!--TODO Fjerne oppførsel med at balisespissen peker ned (i forhold til current UCS y-akse) ved innsetting, den skal ALLTID peke opp langs UCS-Y -->
+		<!--TODO: Remove behaviour where the balise tip points downward (relative to the current UCS y-axis) on insertion - it shall ALWAYS point upward along UCS-Y -->
 		<!--cosisnegative: true hvis kvadrant I eller IV (høyre side av enhetssirkelen)-->
-		<InsertPointObject Name="Fylt/fast" DisplayName="Balise fylt/fast" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-FYLT-FAST-{{SymbolMode}}" 
+		<InsertPointObject Name="Filled/fixed" DisplayName="Balise filled/fixed" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-FYLT-FAST-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateWithUcs="true"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Fylt/styrt" DisplayName="Balise fylt/styrt" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-FYLT-STYRT-{{SymbolMode}}" 
+		<InsertPointObject Name="Filled/controlled" DisplayName="Balise filled/controlled" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-FYLT-STYRT-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateWithUcs="true"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Tom/fast" DisplayName="Balise tom/fast" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-TOM-FAST-{{SymbolMode}}" 
+		<InsertPointObject Name="Empty/fixed" DisplayName="Balise empty/fixed" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-TOM-FAST-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateWithUcs="true"/>
 		</InsertPointObject>
 		
-		<InsertPointObject Name="Tom/styrt" DisplayName="Balise tom/styrt" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-TOM-STYRT-{{SymbolMode}}" 
+		<InsertPointObject Name="Empty/controlled" DisplayName="Balise empty/controlled" DisplayBlockName="NO-BN-2D-JBTSA_ATB-NSS-BALISE-TOM-STYRT-{{SymbolMode}}" 
 				DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance RotateWithUcs="true"/>
@@ -1448,10 +1448,10 @@
 			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_ATB-NSS-BALISE
-				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
+				{% if Variant == 'Filled/fixed'or Variant == 'Filled/controlled' %}FYLT
 				{% else %}TOM
 				{% endif %}
-				{% if Variant == 'Fylt/styrt' or Variant == 'Tom/styrt' %}STYRT
+				{% if Variant == 'Filled/controlled' or Variant == 'Empty/controlled' %}STYRT
 				{% else %}FAST
 				{% endif %}
 				{{SymbolMode}}
@@ -1470,10 +1470,10 @@
 			<Rotation AddAngle="{% if MileageIncreasesTowardsLeft %}180{% else %}0{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTSA_ATB-NSS-BALISE
-				{% if Variant == 'Fylt/fast'or Variant == 'Fylt/styrt' %}FYLT
+				{% if Variant == 'Filled/fixed'or Variant == 'Filled/controlled' %}FYLT
 				{% else %}TOM
 				{% endif %}
-				{% if Variant == 'Fylt/styrt' or Variant == 'Tom/styrt' %}STYRT
+				{% if Variant == 'Filled/controlled' or Variant == 'Empty/controlled' %}STYRT
 				{% else %}FAST
 				{% endif %}
 				Metric
