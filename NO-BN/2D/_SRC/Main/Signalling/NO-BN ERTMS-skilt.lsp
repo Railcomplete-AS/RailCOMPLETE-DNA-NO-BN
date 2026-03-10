@@ -11,6 +11,7 @@
 ; 2024-04-16 SVNOE Added E37B. Clarified E106 vs E107 and E108, todo: update symbol graphics accordingly.
 ; 2026-01-16 CLFEY Fjernet skilt ERTMS-LEVEL-TRANSITION og ERTMS-LEVEL-ZERO. Disse fanges opp som "E37" og
 ;                  "E37B" av rutine (GetBoardAndPoleNames) som kalles fra 21_BoardsAndPoles.lsp.
+; 2026-03-10 WIWIJ Added E38 (Avalanche area) and E39 (Frostport).
 
 ; TODO 2026-01-16 CLFEY rename alle ERTMS boards according to same conventsions as oprdinary signals. Use ORV numbers.
 
@@ -37,6 +38,12 @@
 	(NOBN-ERTMS-LEVEL-CROSSING nil "PORTAL")
 
 	; ERTMS boards
+	; E38 Skredomraade - Avalanche area
+	(TraceLevel2 "E38")						(E38)
+
+	; E39 Frostport
+	(TraceLevel2 "E39")						(E39)
+
 	; E106A - Stop for shunting, location
 	; E106B - Stop for shunting, announcement
 	(TraceLevel2 "E106A")					(E106 "LOCATION"		nil		)
@@ -65,12 +72,12 @@
 		x 6.0 ; surrounding box
 		y x
 	)
-	(if (= locationOrAnnouncement "LOCATION")
-		(setq description "SKILT ERTMS VEISIKRINGSANLEGG")
+	(if (= locationOrAnnouncement "ANNOUNCE")
 		(setq description "SKILT ERTMS VARSEL OM VEISIKRINGSANLEGG")
+		(setq description "SKILT ERTMS VEISIKRINGSANLEGG")
 	)
-	(if distantSignal
-		(setq blockName (strcat blockName "-" distantSignal))
+	(if locationOrAnnouncement
+		(setq blockName (strcat blockName "-" locationOrAnnouncement))
 	)
 	(if mounting
 		(setq blockName (strcat blockName "-" mounting))
@@ -119,6 +126,62 @@
 	)
 	(CreateSchematicBlockFromCurrentGraphics blockName)
 	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+)
+
+
+
+(defun E38 ( / blockName description x y r )
+	; Avalanche area (Skredomraade)
+	;
+	; TL-----TR
+	; |       |
+	; | ( R ) | ; Letter 'R' in a circle
+	; |       |
+	; BL--.--BR
+	;
+	(setq
+		blockName (strcat _SIG_ "MSS-SKILT-ERTMS-AVALANCHE-AREA")
+		description "SKILT E38 SKREDOMRAADE"
+		x 4.5
+		y 4.5
+		r 1.5
+	)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(AddTextAtPoint layDef_Zero (* 0.5 x) _origin_ "R") ; Letter size is 50% of side
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigin description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	description ; Used if table is created
+)
+
+
+
+(defun E39 ( / blockName description x y r )
+	; Frostport
+	;
+	; TL-----TR
+	; |       |
+	; | (FP)  | ; Letters 'FP' in a circle
+	; |       |
+	; BL--.--BR
+	;
+	(setq
+		blockName (strcat _SIG_ "MSS-SKILT-ERTMS-FROSTPORT")
+		description "SKILT E39 FROSTPORT"
+		x 4.5
+		y 4.5
+		r 1.5
+	)
+	(DrawBox layDef_Zero x y layDef_BoardOrPole_Wipeout)
+	(DrawCircle layDef_Zero r _noWipeout_)
+	(AddTextAtPoint layDef_Zero (* 0.4 x) _origin_ "FP") ; Slightly smaller height to fit two characters
+	(MoveUp (HalfOf y))
+	(AddDescriptionBelowOrigin description 0)
+	(CreateSchematicBlockFromCurrentGraphics blockName)
+	(CreateAnnotativeBlockFromScaledSchematicBlock blockName _one_)
+	description ; Used if table is created
 )
 
 
