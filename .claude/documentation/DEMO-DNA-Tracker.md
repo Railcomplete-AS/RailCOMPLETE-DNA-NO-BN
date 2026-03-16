@@ -228,7 +228,7 @@ Rules:
 
 | File | Status | Notes |
 |------|--------|-------|
-| `NO-BN-BoardsAndPoles.xml` | ⬜ Pending | |
+| `NO-BN-BoardsAndPoles.xml` | ✅ Done | Condensed + translated; 7 of 32 object types kept (commit `e47ed101`) |
 
 ---
 
@@ -298,6 +298,7 @@ Use this checklist when condensing a new file.
 
 | Date | Commit | Files | What changed |
 |------|--------|-------|-------------|
+| 2026-03-16 | `e47ed101` | `NO-BN-BoardsAndPoles.xml` | Condensed + translated Boards & Signs; 7 of 32 object types kept |
 | 2026-03-13 | `9ecdabc9` | `NO-BN-CivilWorks.xml`, `NO-BN-TrackAndWaysideObjects.xml`, `NO-BN-ShowLayers.xml`, `NO-BN-StyleDefinitions.xml`, `NO-BN-Tables.xml` | Condensed + translated Tracks & Substructure |
 | 2026-03-09 | `71e5a50c` | `NO-BN-Balises.xml`, `NO-BN-Interlocking.xml`, `NO-BN-SignalSighting.xml`, `NO-BN-SignallingObjects.xml`, `NO-BN-Signals.xml` | Translated Signalling files to English |
 | 2026-03-05 | `b4c55876` | `NO-BN-Earthing.xml`, `NO-BN-OcsWireSystem.xml` | Finished OCS condensing; removed all Earthing object types |
