@@ -75,7 +75,7 @@
 
 	<LuaFunction Name="RC__getAngleFromDir()" ReturnType="Double"
 		Description="Returns the angle in Decimal Degrees corresponding to the given direction [up | down | both | none | unknown]. 'Direction' and 'Rightsided' are optional arguments.">
-		<Signature>Double RC__getAngleFromDir([LaxDirection Direction = InheritedDirection [, Boolean RightSided = false]])</Signature>
+		<Signature>Double RC__getAngleFromDir(LaxDirection Direction = InheritedDirection, Boolean RightSided = false)</Signature>
 		<Formula>
 			function RC__getAngleFromDir(d, rs)
 				if d == nil then
@@ -97,23 +97,45 @@
 
 
 
-	<LuaFunction Name="RC__getMileageFromRelatedObject()" ReturnType="Double"
-		Description="Returns the mileage for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
-		<Signature>Double RC__getMileageFromRelatedObject(String RelationName, Reference SourceObject = this)</Signature>
+	<LuaFunction Name="RC__getDistanceAlongFromRelatedObject()" ReturnType="Double"
+		Description="Returns the distance along for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
+		<Signature>Double RC__getDistanceAlongFromRelatedObject(String RelationName, ObjectReference SourceObject = this)</Signature>
 		<Formula>
-			function RC__getMileageFromRelatedObject(RelationName, Source)
-				Source = Source or this
-				if RelationName == nil then 
-					return getPropertyValue("Mileage"),_warning, _info("Missing relation name in function call.")
+			function RC__getDistanceAlongFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return getPropertyValue("DistanceAlong"),_warning, _info("Missing relation name in function call.")
 				end
-				local r, n = getRelatedObjects(RelationName, Source)
+				local r, n = obj:getRelatedObjects(rel)
 				if n == 0 then 
-					return getPropertyValue("Mileage"), _info("Object has no visible relation of type '"..RelationName.."'.")
-				elseif n == 1 then 
-					return getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).Mileage,
-						_info("Mileage deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return getPropertyValue("DistanceAlong"), _info("Object has no visible relation of type '"..rel.."'.")
 				else
-					return getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).Mileage,	_info("Mileage deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."' (Note: more relations exist).")
+					local relatedObj = r[0]
+					return getLinearAddress(obj.Alignment, getPoint3D(relatedObj)).DistanceAlong,
+						_info("Distance along obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="RC__getLongitudinalOffsetFromRelatedObject()" ReturnType="Double"
+		Description="Returns the longitudinal offset for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
+		<Signature>Double RC__getLongitudinalOffsetFromRelatedObject(String RelationName, ObjectReference SourceObject = this)</Signature>
+		<Formula>
+			function RC__getLongitudinalOffsetFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return getPropertyValue("LongitudinalOffset"),_warning, _info("Missing relation name in function call.")
+				end
+				local r, n = obj:getRelatedObjects(rel)
+				if n == 0 then 
+					return getPropertyValue("LongitudinalOffset"), _info("Object has no visible relation of type '"..rel.."'.")
+				else
+					local relatedObj = r[0]
+					return getLinearAddress(obj.Alignment, getPoint3D(relatedObj)).LongitudinalOffset,
+						_info("Longitudinal offset obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
 				end
 			end
 		</Formula>
@@ -122,23 +144,21 @@
 
 
 	<LuaFunction Name="RC__getLateralOffsetFromRelatedObject()" ReturnType="Double"
-		Description="Returns the distance to alignment for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
+		Description="Returns the lateral offset for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
 		<Signature>Double RC__getLateralOffsetFromRelatedObject(String RelationName, Reference SourceObject = this)</Signature>
 		<Formula>
-			function RC__getLateralOffsetFromRelatedObject(RelationName, Source)
-				local r, n
-				Source = Source or this
-				if RelationName == nil then 
-					return getPropertyValue("LateralOffset"),_warning, _info("Missing relation name in function call.")
+			function RC__getLateralOffsetFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return obj:getPropertyValue("LateralOffset"),_warning, _info("Missing relation name in function call.")
 				end
-				r, n = getRelatedObjects(RelationName, Source)
+				local r, n = obj:getRelatedObjects(rel)
 				if n == 0 then 
-					return getPropertyValue("LateralOffset"), _info("Object has no visible relation of type '"..RelationName.."'.")
-				elseif n == 1 then 
-					return getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).DistanceToAlignment,
-						_info("LateralOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return obj:getPropertyValue("LateralOffset"), _info("Object has no visible relation of type '"..rel.."'.")
 				else
-					return getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).DistanceToAlignment, _info("LateralOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."' (Note: more relations exist).")
+					local relatedObj = r[0]
+					return getLinearAddress(obj.Alignment, getPoint3D(relatedObj)).LateralOffset,
+						_info("Lateral offset obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
 				end
 			end
 		</Formula>
@@ -147,23 +167,21 @@
 
 
 	<LuaFunction Name="RC__getVerticalOffsetFromRelatedObject()" ReturnType="Double"
-		Description="Returns the relative elevation above for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
+		Description="Returns the vertical offset for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
 		<Signature>Double RC__getVerticalOffsetFromRelatedObject(String RelationName, Reference SourceObject = this)</Signature>
 		<Formula>
-			function RC__getVerticalOffsetFromRelatedObject(RelationName, Source)
-				local r, n
-				Source = Source or this
-				if RelationName == nil then 
-					return getPropertyValue("VerticalOffset"),_warning, _info("Missing relation name in function call.")
+			function RC__getVerticalOffsetFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return obj:getPropertyValue("VerticalOffset"),_warning, _info("Missing relation name in function call.")
 				end
-				r, n = getRelatedObjects(RelationName, Source)
+				local r, n = obj:getRelatedObjects(rel)
 				if n == 0 then 
-					return getPropertyValue("VerticalOffset"), _info("Object has no visible relation of type '"..RelationName.."'.")
-				elseif n == 1 then 
-					return r[0].geoCoord.Z - getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).Elevation,
-						_info("VerticalOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return obj:getPropertyValue("VerticalOffset"), _info("Object has no visible relation of type '"..rel.."'.")
 				else
-					return r[0].geoCoord.Z - getAlignmentInfo(Source.Alignment.id, r[0].geocoord.X, r[0].geoCoord.Y).Elevation, _info("VerticalOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."' (Note: more relations exist).")
+					local relatedObj = r[0]
+					return getLinearAddress(obj.Alignment, getPoint3D(relatedObj)).VerticalOffset,
+						_info("Vertical offset obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
 				end
 			end
 		</Formula>
@@ -175,20 +193,18 @@
 		Description="Returns the angular offset for the projection of the related object onto the calling object's own alignment. Source object is an optional argument.">
 		<Signature>Double RC__getAngularOffsetFromRelatedObject(String RelationName, Reference SourceObject = this)</Signature>
 		<Formula>
-			function RC__getAngularOffsetFromRelatedObject(RelationName, Source)
-				local r, n
-				Source = Source or this
-				if RelationName == nil then 
-					return getPropertyValue("AngularOffset"),_warning, _info("Missing relation name in function call.")
+			function RC__getAngularOffsetFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return obj:getPropertyValue("AngularOffset"),_warning, _info("Missing relation name in function call.")
 				end
-				r, n = getRelatedObjects(RelationName, Source)
+				local r, n = obj:getRelatedObjects(rel)
 				if n == 0 then 
-					return getPropertyValue("AngularOffset"), _info("Object has no visible relation of type '"..RelationName.."'.")
-				elseif n == 1 then
-					return r[0].AngularOffset + (r[0].AlignmentTangent - Source.AlignmentTangent) * 180.0/math.pi,
-						_info("AngularOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return obj:getPropertyValue("AngularOffset"), _info("Object has no visible relation of type '"..rel.."'.")
 				else
-					return r[0].AngularOffset + (r[0].AlignmentTangent - Source.AlignmentTangent) * 180.0/math.pi, _info("AngularOffset deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."' (Note: more relations exist).")
+					local relatedObj = r[0]
+					return relatedObj.AngularOffset + math.deg(relatedObj.AlignmentTangent - obj.AlignmentTangent),
+						_info("Angular offset obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
 				end
 			end
 		</Formula>
@@ -200,19 +216,41 @@
 		Description="Returns the direction (Dir) from related object. Source object is an optional argument.">
 		<Signature>Double RC__getDirFromRelatedObject(String RelationName, Reference SourceObject = this)</Signature>
 		<Formula>
-			function RC__getDirFromRelatedObject(RelationName, Source)
-				local r, n
-				Source = Source or this
-				if RelationName == nil then 
-					return getPropertyValue("Dir"),_warning, _info("Missing relation name in function call.")
+			function RC__getDirFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return obj:getPropertyValue("dir"),_warning, _info("Missing relation name in function call.")
 				end
-				r, n = getRelatedObjects(RelationName, Source)
+				local r, n = obj:getRelatedObjects(rel)
 				if n == 0 then 
-					return getPropertyValue("Dir"), _info("Object has no visible relation of type '"..RelationName.."'.")
-				elseif n == 1 then
-					return r[0].dir, _info("Direction (Dir) deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."'.")
+					return obj:getPropertyValue("dir"), _info("Object has no visible relation of type '"..rel.."'.")
 				else
-					return r[0].dir, _info("Direction (Dir) deduced from object '"..RC__identify(r[0]).."' related by '"..RelationName.."' (Note: more relations exist).")
+					local relatedObj = r[0]
+					return obj:getPropertyValue("dir"),
+						_info("Direction obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
+				end
+			end
+		</Formula>
+	</LuaFunction>
+
+
+
+	<LuaFunction Name="RC__getCodeFromRelatedObject()" ReturnType="Double"
+		Description="Returns the code, obtained from the related object onto the calling object's own alignment. Source object is an optional argument.">
+		<Signature>Double RC__getCodeFromRelatedObject(String RelationName, ObjectReference SourceObject = this)</Signature>
+		<Formula>
+			function RC__getCodeFromRelatedObject(rel, obj)
+				obj = obj or this
+				if rel == nil then 
+					return obj:getPropertyValue("code"),_warning, _info("Missing relation name in function call.")
+				end
+				local r, n = obj:getRelatedObjects(rel)
+				if n == 0 then 
+					return obj:getPropertyValue("code"), _info("Object has no visible relation of type '"..rel.."'.")
+				else
+					local relatedObj = r[0]
+					return relatedObj.code,
+						_info("'code' obtained from "..relatedObj.RcType:sub(1,9)..":"..RC__identify(relatedObj).."' related by '"..rel.."'.")
 				end
 			end
 		</Formula>
@@ -221,13 +259,13 @@
 
 
 	<LuaFunction Name="RC__AcsToWcs()" ReturnType="String"
-		Description="Converts an Alignment Coordinate System (ACS) tuple acsX, acsY = LateralOffset, LongitudinalOffset into a World Coordinate System (WCS) tuple wcsX, wcsY. An angular offset in decimal degrees can be given, which will be added to the object's alignment's tangent direction. An object reference can be given as an alternative to 'this' (needed when using this function from a script).">
-        <Signature>Double, Double RC__AcsToWcs(Double lateralOffset, Double longitudinalOffset, Double useAngularOffsetInDegrees = 0, Reference obj = this)</Signature>
+		Description="Converts an Alignment Coordinate System (ACS) tuple acsX, acsY = LateralOffset, LongitudinalOffset into a World Coordinate System (WCS) tuple wcsX, wcsY. An optional angular offset in decimal degrees can be given, which will be added to the object's alignment's tangent direction. An optional object reference can be given as an alternative to 'this' (needed when using this function from a script).">
+        <Signature>Double, Double RC__AcsToWcs(Double lateralOffset, Double longitudinalOffset, Double angularOffsetInDegrees = 0, Reference obj = this)</Signature>
         <Formula>
-            function RC__AcsToWcs(lateralOffset, longitudinalOffset, useAngularOffsetInDegrees, obj)
+            function RC__AcsToWcs(lateralOffset, longitudinalOffset, angularOffsetInDegrees, obj)
 				obj = obj or this
-				useAngularOffsetInDegrees = useAngularOffsetInDegrees or 0
-                local angle = obj.AlignmentTangent + math.rad(useAngularOffsetInDegrees)
+				angularOffsetInDegrees = angularOffsetInDegrees or 0
+                local angle = obj.AlignmentTangent + math.rad(angularOffsetInDegrees)
                 local x, y = longitudinalOffset, -lateralOffset --Express ACS coordinates as WCS before rotation
                 return x*math.cos(angle) - y*math.sin(angle), x*math.sin(angle) + y*math.cos(angle) --Rotate
             end
@@ -237,13 +275,13 @@
 
 
     <LuaFunction Name="RC__WcsToAcs()"
-		Description="Converts a World Coordinate System (WCS) tuple wcsX, wcsY into an Alignment Coordinate System (ACS) tuple acsX, acsY = LateralOffset, LongitudinalOffset. An angular offset in decimal degrees can be given, which will be added to the object's alignment's tangent direction. An object reference can be given as an alternative to 'this' (needed when using this function from a script).">
-        <Signature>Double, Double RC__WcsToAcs(Double wcsX, Double wcsY, Double useAngularOffsetInDegrees = 0, Reference obj = this)</Signature>
+		Description="Converts a World Coordinate System (WCS) tuple wcsX, wcsY into an Alignment Coordinate System (ACS) tuple acsX, acsY = LateralOffset, LongitudinalOffset. An optional angular offset in decimal degrees can be given, which will be added to the object's alignment's tangent direction. An optional object reference can be given as an alternative to 'this' (needed when using this function from a script).">
+        <Signature>Double, Double RC__WcsToAcs(Double wcsX, Double wcsY, Double angularOffsetInDegrees = 0, Reference obj = this)</Signature>
         <Formula>
-            function RC__WcsToAcs(wcsX, wcsY, useAngularOffsetInDegrees, obj)
+            function RC__WcsToAcs(wcsX, wcsY, angularOffsetInDegrees, obj)
 				obj = obj or this
-				useAngularOffsetInDegrees = useAngularOffsetInDegrees or 0
-                local angle = obj.AlignmentTangent + math.rad(useAngularOffsetInDegrees)
+				angularOffsetInDegrees = angularOffsetInDegrees or 0
+                local angle = obj.AlignmentTangent + math.rad(angularOffsetInDegrees)
 				local x, y = wcsX*math.cos(-angle) - wcsY*math.sin(-angle), wcsX*math.sin(-angle) + wcsY*math.cos(-angle) --Rotate back
                 return -y, x --Express as ACS coordinates after rotation around the WCS origin.
             end
