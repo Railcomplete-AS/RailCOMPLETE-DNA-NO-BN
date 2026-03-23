@@ -1,6 +1,6 @@
 ;=========================================================================================================================
 ;
-; CONNECTOR-CONTINUATIONS Alignment Crossing.lsp
+; Connector Alignment Crossing.lsp
 ;
 ; Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
@@ -15,20 +15,20 @@
 (defun CONNECTOR-CROSSINGS ( / )
 	
 	(SetCadSystemDefaults)  
-	(CONNECTOR-CONTINUATIONS-CROSSING)
+	(CONNECTOR-CROSSING)
 )
 
 
 
-(defun CONNECTOR-CONTINUATIONS-CROSSING ( / blockName description r )
+(defun CONNECTOR-CROSSING ( / blockName description r )
 	;
 	; A cross (8r wide, 4r high) with four "cusps" 
 	;
-	;        U
+	;        v
 	;        |
 	;  )-----.-----(
 	;        |
-	;        A    
+	;        ^    
 	;
 	(setq blockName (strcat _TRK_ "SPV-" "FORBINDELSE-SPORKRYSS"	))
 	(setq description (strcat "FORBINDELSE, SPORKRYSS"				))
