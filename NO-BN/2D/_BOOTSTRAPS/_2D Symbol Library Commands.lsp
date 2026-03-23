@@ -5,8 +5,6 @@
 ; Copyright Railcomplete AS / NO916118503, 2015-2022. All rights reserved.
 ; RailCOMPLETE (R) and the RailCOMPLETE logo are registered trademarks owned by Railcomplete AS.
 ;
-; Change log:
-; 2022-10-07 CLFEY Merged 2D symbol generation into specific DNA repository. LISP code was adapted as needed.
 ;
 ;=========================================================================================================================
 ;
@@ -14,8 +12,7 @@
 ;
 ; 1) Start AutoCAD
 ; 2) Write _VLIDE
-; 3) In the Visual LISP IDE, press Ctrl+Shift+L and select one of the personal bootstrap files, such as 
-;    "_2D Symbol Library bootstrap - CLFEY.lsp" which loads and calls the library commands file.
+; 3) In the Visual LISP IDE, press Ctrl+Shift+L and select this file, which loads and calls the library commands file.
 ; 4) In VLIDE, write (mk) to start building the 2D library.
 ; 5) Tip: Use Ctrl+Shift+C in VLIDE to switch between interactive debugging and command mode.
 ;
