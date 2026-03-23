@@ -73,9 +73,9 @@ NO-BN/2D/
 │   │
 │   └── Fonts/                                         # Font resources
 │
-└── _BOOTSTRAPS/                                       # Personal build launchers — NOT deployed
-    ├── _2D Symbol Library Commands.lsp    # Shared bootstrap commands (MkLib, LdAll, etc.)
-    └── _2D Symbol Library Commands_CLFEY.lsp  # Example personal bootstrap (copy and rename)
+└── _BOOTSTRAPS/                                       # Build launchers — NOT deployed
+    ├── _2D Symbol Library Bootstrap.lsp   # Load this first — sets rootFolder, then loads Commands
+    └── _2D Symbol Library Commands.lsp    # Shared commands (MkLib, LdAll, Init, etc.) — requires rootFolder
 ```
 
 > **Convention:** folders and files prefixed with `_` are source/dev-only and are excluded from the deployed bundle by `xcopyignore.txt`.
@@ -89,18 +89,10 @@ NO-BN/2D/
 - **AutoCAD** (preferred) or **BricsCAD** with its integrated LISP debugger (VLIDE / BLADE)
 - Confirm `_CAD_` is set to `_ACAD_` or `_BCAD_` in `_SRC/Utilities/CAD system constants.lsp`
 
-### One-time setup: personal bootstrap file
-
-Copy `_BOOTSTRAPS/_2D Symbol Library Commands_CLFEY.lsp` to a new file with your own initials, then set `rootFolder` to point at the `_SRC` directory on your machine:
-
-```lisp
-(setq rootFolder "C:\\your\\path\\to\\NO-BN\\2D\\_SRC")
-```
-
 ### Running the build
 
 1. Open AutoCAD and type `_VLIDE` on the command line to open the Visual LISP IDE.
-2. Press **Ctrl+Shift+L** and select your personal bootstrap file. This loads the shared commands file automatically.
+2. Press **Ctrl+Shift+L** and select `_BOOTSTRAPS/_2D Symbol Library Bootstrap.lsp`. This sets `rootFolder` (assumes the repo is at `%USERPROFILE%\Documents\GitHub\RailCOMPLETE-DNA-NO-BN`) and loads the commands file.
 3. In the VLIDE console, type `(MkLib)` and press Enter.
 
 The build will:
