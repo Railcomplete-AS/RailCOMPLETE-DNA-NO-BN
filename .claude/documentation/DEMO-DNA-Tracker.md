@@ -236,8 +236,8 @@ Rules:
 
 | File | Status | Notes |
 |------|--------|-------|
-| `NO-BN-Telecom.xml` | ⬜ Pending | |
-| `NO-BN-LowPower.xml` | ⬜ Pending | |
+| `NO-BN-Telecom.xml` | ✅ Done (translated only) | Only 2 object types, 1 variant each — no condensing needed (commit `pending`) |
+| `NO-BN-LowPower.xml` | ✅ Done | Condensed + translated; 4 of 7 object types kept (commit `pending`) |
 
 ---
 
@@ -298,6 +298,7 @@ Use this checklist when condensing a new file.
 
 | Date | Commit | Files | What changed |
 |------|--------|-------|-------------|
+| 2026-03-23 | `pending` | `NO-BN-Telecom.xml`, `NO-BN-LowPower.xml` | Translated Telecom; condensed + translated Low Power (4 of 7 object types kept) |
 | 2026-03-16 | `e47ed101` | `NO-BN-BoardsAndPoles.xml` | Condensed + translated Boards & Signs; 7 of 32 object types kept |
 | 2026-03-13 | `9ecdabc9` | `NO-BN-CivilWorks.xml`, `NO-BN-TrackAndWaysideObjects.xml`, `NO-BN-ShowLayers.xml`, `NO-BN-StyleDefinitions.xml`, `NO-BN-Tables.xml` | Condensed + translated Tracks & Substructure |
 | 2026-03-09 | `71e5a50c` | `NO-BN-Balises.xml`, `NO-BN-Interlocking.xml`, `NO-BN-SignalSighting.xml`, `NO-BN-SignallingObjects.xml`, `NO-BN-Signals.xml` | Translated Signalling files to English |
