@@ -1,11 +1,14 @@
 <!--========================================================================================================
 
     NO-BN-TrackConnections.xml
-	
+
 	Include in DNA file using XPPq XML preprocessor directive <xpp:expand href="fileName.xml"/>.
 
 	Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
-	
+
+	Condensed for Demo-DNA: Track continuations (1 variant), Crossings (1 variant),
+	Switches (3 of 18 variants), Switch blades (3 of 10 variants).
+
 =========================================================================================================-->
 <xpp:bloc>
 
@@ -39,10 +42,10 @@
 		\nUsage:    NOBN_trk_getFoulingPoint(integer fpMethod, tSwitch swRef = this)
 		\n
 		\nwhere swRef is an optional reference to a switch object and fpMethod is mandatory, being one of 1, 2, 3 or 4, meaning:
-		\n          1 Ny bane, tog/*,
-		\n          2 Ny bane, skift/skift,
-		\n          3 Eks. bane, tog/*
-		\n          4 Eks. bane, skift/skift,
+		\n          1 New line, train/*,
+		\n          2 New line, shunt/shunt,
+		\n          3 Existing line, train/*
+		\n          4 Existing line, shunt/shunt,
 		">
 		<Signature>String NOBN_trk_getFarthestFoulingPoint(int fpMethod, tSwitch sw)</Signature>
 		<Formula>
@@ -50,10 +53,10 @@
 				--Note: fpMethods must be spelled exactly as shown in RC-Settings - see those declarations in NO-BN.Foulingpoint.xml.
 				--TODO: Replace (when ready) with code exploiting a new feature in getFoulingPoints() code that accesses FP methods directly.
 				local fpMethods = {
-					"1 Ny bane, tog/*",
-					"2 Ny bane, skift/skift",
-					"3 Eksist. bane, tog/*",
-					"4 Eksist. bane, skift/skift"
+					"1 New line, train/*",
+					"2 New line, shunt/shunt",
+					"3 Existing line, train/*",
+					"4 Existing line, shunt/shunt"
 				}
 				sw = sw or this
 				fpMethod = math.floor(fpMethod) or 1
@@ -71,7 +74,7 @@
 						return fp[nFp-1]
 					end
 				end
-			end 
+			end
 		</Formula>
 	</LuaFunction>
 
@@ -82,16 +85,16 @@
 	ALIGNMENT CONTINUATIONS
 	Objects that allows algorithms to graph-search from the end of one alignment and onwards in the next.
 =========================================================================================================-->
-	<!-- NB: 'KO-SPF' (Sporfortsettelser) er p.t. ikke en gyldig Banedata kode, men en vi 'fant på selv'. -->
-	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" LuaName="rctype_TrackContinuation" Name="JBTKO_SPF Sporfortsettelse"
+	<!-- NB: 'KO-SPF' (Track continuations) is currently not a valid BaneData code, but one we invented ourselves. -->
+	<ObjectType DataType="RailCOMPLETEContinuation" Class="RailwayPlacedObject" LuaName="rctype_TrackContinuation" Name="JBTKO_SPF Track continuation"
 				Layer="JBTKO_SPF" Color="ByLayer"
-				Group="Overbygning/Sporfortsettelser"
+				Group="Track/Track continuations"
 				>
-				
+
 		<RelationSpace>sporfortsettelse</RelationSpace>
 
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
-		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>		
+		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___TRK_SMALL"/>
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___CONTENT"/>
@@ -101,12 +104,12 @@
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT_NO_3D"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
-				
+
 		<!-- Model checks Continuation -->
 		<xpp:expand select="NOBN_com_CHK_CONNECTION___CONTINUATION"/>
 
-		<Variants DefaultValue="Sporfortsettelse">
-			<Variant Name="Sporfortsettelse">
+		<Variants DefaultValue="Track continuation">
+			<Variant Name="Track continuation">
 			</Variant>
 		</Variants>
 
@@ -141,7 +144,7 @@
 						end
 						--2021-08-23 CLFEY: Leave the text as-is, emphasize showing what is own / what is target:
 						--if MileageIncreasesTowardsLeft then
-						--	first, second = second, first 
+						--	first, second = second, first
 						--end
 						return "["..first.code.."] ==&gt; ["..second.code.."]"
 					end
@@ -150,7 +153,7 @@
 		</LuaFunction>
 
 		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
-					
+
 		<LuaExpression Name="Mileage"><Formula>_JBTKO_SPF_mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPF_mileage()" ReturnType="Double"
 				Description="Returns the mileage from its alignment.">
@@ -164,7 +167,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-						
+
 		<LuaExpression Name="TargetAlignment"><Formula>_JBTKO_SPF_TargetAlignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPF_TargetAlignment()" ReturnType="Double"
 				Description="Returns the target alignment, as long as its snaps to own alignment close to this continuation object.">
@@ -175,13 +178,13 @@
 				end
 			</Formula>
 		</LuaFunction>
-						
-		<InsertPointObject Name="Sporfortsettelse" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}" 
+
+		<InsertPointObject Name="Track continuation" DisplayBlockName="NO-BN-2D-JBTKO_SPF-FORBINDELSE-FORTSETTELSE-0-0-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
-				
+
 		<!-- Track and embankment viewpoint's symbol (the other disciplines don't show anything) -->
 		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTKO$SPF"
 				Color="ByBlock" Linetype="ByBlock" Lineweight="ByBlock" Transparency="ByBlock">
@@ -196,7 +199,7 @@
 				{{SymbolMode}}
 			</BlockNameFormat>
 		</SymbolDefinition>
-		
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
 
 	</ObjectType>
@@ -207,13 +210,13 @@
 	TRACK AND EMBANKMENT
 	CROSSING
 =========================================================================================================-->
-	<ObjectType DataType="eCrossing" Class="RailwayPlacedObject" LuaName="rctype_SwitchCrossing" Name="JBTKO_SPV Sporkryss"
+	<ObjectType DataType="eCrossing" Class="RailwayPlacedObject" LuaName="rctype_SwitchCrossing" Name="JBTKO_SPV Crossing"
 				Layer="JBTKO_SPV" Color="ByLayer"
-				Group="Overbygning/Sporkryss"
+				Group="Track/Crossings"
 				>
-				
+
 		<RelationSpace>sporkryss</RelationSpace>
-		
+
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
@@ -225,17 +228,17 @@
 		<xpp:expand select="NOBN_com_SET_OCP_STATION_REFERENCE"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT_NO_3D"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
-				
-		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression> 
-		
+
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+
 		<!-- Model checks Crossing -->
 		<xpp:expand select="NOBN_trk_CHK_CONNECTION___CROSSING"/>
 		<!-- Debug info - using "Var1" or "Var2" as calling property names: -->
 		<LuaExpression Name="Var1"><Formula>NOBN_trk_chkConnectionGradientAndCantMatch("Var1")</Formula></LuaExpression>
 		<LuaExpression Name="Var2"><Formula>NOBN_trk_chkConnectionGradientAndCantMatch("Var2")</Formula></LuaExpression>
 
-		<Variants DefaultValue="Sporkryss">
-			<Variant Name="Sporkryss">
+		<Variants DefaultValue="Crossing">
+			<Variant Name="Crossing">
 			</Variant>
 		</Variants>
 
@@ -261,7 +264,7 @@
 							return "Alignment and intersecting alignment cannot be the same ["..first.code.."]"
 						end
 						if MileageIncreasesTowardsLeft then
-							first, second = second, first 
+							first, second = second, first
 						end
 						return "["..first.code.."] -X- ["..second.code.."]"
 					end
@@ -270,26 +273,26 @@
 		</LuaFunction>
 
 		<LuaExpression Name="name"><Formula>code</Formula></LuaExpression>
-		
-		<InsertPointObject Name="Sporkryss" DisplayBlockName="NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORKRYSS-{{SymbolMode}}"
+
+		<InsertPointObject Name="Crossing" DisplayBlockName="NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORKRYSS-{{SymbolMode}}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true"/>
 			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
 		</InsertPointObject>
-		
+
 		<!-- Track and embankment viewpoint's symbol (the other disciplines don't show anything) -->
-		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORKRYSS-{{SymbolMode}}" AllowSymbolMove="false" Layer="JBTKO$SPV" 
+		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORKRYSS-{{SymbolMode}}" AllowSymbolMove="false" Layer="JBTKO$SPV"
 				Color="ByBlock" Linetype="ByBlock" Lineweight="ByBlock" Transparency="ByBlock">
 			<Rotation Add180DegreesIfDirIsDown="false" AddAngle="0"/>
 		</SymbolDefinition>
-				
+
 		<SymbolDefinition DefaultBlockName="NO-BN-2D-JBTRC_INNSETTINGSPUNKT-Schematic" DoNotIncludeInSymbolFrame="true"/>
 
 	</ObjectType>
 
 
-	
+
 <!--========================================================================================================
 	TRACK AND EMBANKMENT
 	TURNOUT
@@ -300,33 +303,14 @@
 		...
 	 </Switch>
 =========================================================================================================-->
-	<!--TODO Benytte ny feature (må lages) "ObjectInsertionMethodCycling" ("F" bokstav fra tastatur) til å veksle mellom SS, TK, BK1, BK2 som innsettingspunkt-->
-	<ObjectType DataType="eSwitch" Class="RailwayPlacedObject" LuaName="rctype_Switch" Name="JBTKO_SPV Sporveksel"
+	<!--TODO Use new feature (to be created) "ObjectInsertionMethodCycling" ("F" key from keyboard) to cycle between SS, TK, BK1, BK2 as insertion point-->
+	<ObjectType DataType="eSwitch" Class="RailwayPlacedObject" LuaName="rctype_Switch" Name="JBTKO_SPV Switch"
 				Layer="JBTKO_SPV" Color="ByLayer"
-				Group="Overbygning/Sporveksler"
+				Group="Track/Switches"
 				AttAddX="
-					{%    if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}13.503
-					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}10.523
-					
-					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}18.188
+					{%    if Variant == 'Generic switch' %}0
 					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}16.616
-					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}16.615
-					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}16.615
-
-					{% elsif Variant == '1:11.66 R500 FX 60E1 (KO-800068)' %}21.393
-					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}20.797
-					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}20.797
-					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}20.797
-
-					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}27.108
-					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}27.108
 					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}27.108
-					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}25.305
-					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}25.305
-
-					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}32.829
-
-					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}48.109
 					{% endif %}"
 				AttMirrorX="{% if quadrant == '2' or quadrant == '3' %}true{% else %}false{% endif %}"
 				AttMirrorY="{% if quadrant == '1' or quadrant == '2' %}true{% else %}false{% endif %}"
@@ -336,8 +320,8 @@
 		<!-- NB: The 'MileageIncreasesTowardsLeft' attribute corresponds to your screen view, provided that UCS Y azis points mainly upwards (use acad PLAN or EXPLAN command). -->
 		<!-- Note: DotLiquid parsing does not strip whitespace unless you put a dash '-' besides the percent sign: "{%- ..." (strip the immediately preceding whitespace) or "... -%}" (strip the immediately following whitespace). -->
 		<!-- Expressions such as AttAddX="{{quadrant}}" will work even if 'quadrant' contains whitespace, because the subsequent use of AttAddX in C# core code will strip off whitespace when extracting the numerical value. -->
-		<ObjectTypeAttribute 
-			Key="quadrant" 
+		<ObjectTypeAttribute
+			Key="quadrant"
 			Value="{% if dir == 'up' and SwitchGeometry == 'left' %}1
 				{%- elsif dir == 'down' and SwitchGeometry == 'right' %}2
 				{%- elsif dir == 'down' and SwitchGeometry == 'left' %}3
@@ -351,8 +335,6 @@
 		<SetValue Key="dir" Value="{{insertionDirection}}"/>
 
 		<RelationSpace>sporveksel</RelationSpace>
-		
-		<!--TODO finne konstruksjonstegninger for de vi mangler, samt Tp-forbudtområdet for 1:14 sporveksler med mer-->
 
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
@@ -364,22 +346,16 @@
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
 
-		<!--TODO For å kunne sette korrekt trackContinueRadius så må RC analysere avvikssporets fortsettelse, som er enten 0 (rettlinje) eller samme 
-        kurvatur som i vx. Se TRV, Overbygning, sporveksler. D-partiet er et rett parti etter avvikssporets krumning. Dersom D <> 0 så finnes det
-        kun ett svillesett. Dersom D = "-" så strekker avvikssporets kurvatur seg gjennomg hele sporvekselen og kan dermed fortsette inn i samme
-        kurvatur uten å få redusert komfort. Sporveksler som ender med klotoide (1:18,4 og 1:26,5) kan bare fortsette som klotoide (den avsluttes 
-        etter bakkant sporveksel). Se tabeller i TRV.
-        -->
-		<!--TODO DotLiquid-metode "cosisnegative" som er "True" for kvadrant I og IV, ellers "False". Note: cosisnegative (RC built-in filter for DotLiquid) returns 'True' with an uppercase T -->
-		<!--Innsettingsforløpet for sporveksler - vi definerer symbol og verdier alle fire kvadranter. I=out/left, II=in/right, III=in/left, IV=out/right-->
-		
+		<!--TODO DotLiquid-method "cosisnegative" which is "True" for quadrant I and IV, otherwise "False". Note: cosisnegative (RC built-in filter for DotLiquid) returns 'True' with an uppercase T -->
+		<!--Insertion sequence for switches - we define symbol and values for all four quadrants. I=out/left, II=in/right, III=in/left, IV=out/right-->
+
 		<!--Unspecified railML stuff:-->
 		<!-- tSwitch:type: ordinarySwitch, insideCurvedSwitch, outsideCurvedSwitch, threeWaySwitch, other:anything -->
-		
+
 		<!-- #0 3D geometry created by macro - TODO: geometry to be defined, with SS, TK, BL dock points etc -->
 		<SetValue Key="Geometry3D_0.Frozen" Value="True"/>
-		
-		<!-- #1 3D text annotation: Sitch number (code) and Km at stock rail joint -->
+
+		<!-- #1 3D text annotation: Switch number (code) and Km at stock rail joint -->
 		<DynamicProperty Type="Representation3D" Subtype="Annotation3D">
 			<LuaExpression Name="Contents"><Formula>_JBTKO_SPV_Annotation3D()</Formula></LuaExpression>
 			<SetValue Key="Parent" Value="ACS"/>
@@ -402,187 +378,76 @@
 			</Formula>
 		</LuaFunction>
 
-		<Variants DefaultValue="Generell sporveksel">
+		<!-- Condensed DNA: keeping 3 representative variant(s) only -->
+		<Variants DefaultValue="Generic switch">
 			<!-- Unrecognized geometry -->
-			<Variant Name="Generell sporveksel" 
+			<Variant Name="Generic switch"
 				Description="A two-way switch which does not match any of the predefined geometries stored in the administration's switch definition file.">
 				<SetValue Key="type" Value="other:unspecified"/>
 				<SetValue Key="trackContinueRadius" Value="0"/>
 			</Variant>
 
-			<!-- R190 -->
-			<Variant Name="1:7 R190 FX 54E3 (KO-800157)" 
-				Description="1:7(R190) two-way switch, fixed nose crossing, 54-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="190"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:9 R190 FX 54E3 (KO-701334)" 
-				Description="1:9(R190) two-way switch, fixed nose crossing, 54-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="190"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			
 			<!-- R300 -->
-			<Variant Name="1:8.21 R300 BX 60E1 (KO-065306)" 
-				Description="1:8.21(R300) two-way switch, movable nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="300"/>
-				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
-			</Variant>
-			<Variant Name="1:9 R300 FX 54E3 (KO-701287)" 
+			<Variant Name="1:9 R300 FX 54E3 (KO-701287)"
 				Description="1:9(R300) two-way switch, fixed nose crossing, 54-kg rails.">
 				<SetValue Key="type" Value="ordinarySwitch"/>
 				<SetValue Key="trackContinueRadius" Value="300"/>
 				<SetValue Key="SwitchNoseType" Value="FIXED"/>
 			</Variant>
-			<Variant Name="1:9 R300 FX 60E1 (KO-701409)" 
-				Description="1:9(R300) two-way switch, fixed nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="300"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:9 R300 BX 60E1 (KO-800099)" 
-				Description="1:9(R300) two-way switch, movable nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="300"/>
-				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
-			</Variant>
-			
-			<!-- R500 -->
-			<Variant Name="1:11.66 R500 FX 60E1 (KO-800068)" 
-				Description="1:11.66(R500) two-way switch, fixed nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="500"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:12 R500 FX 54E3 (KO-701306)" 
-				Description="1:12(R500) two-way switch, fixed nose crossing, 54-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="500"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:12 R500 FX 60E1 (KO-800068)" 
-				Description="1:12(R500) two-way switch, fixed nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="500"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:12 R500 BX 60E1 (KO-800090)" 
-				Description="1:12(R500) two-way switch, movabnle nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="500"/>
-				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
-			</Variant>
-			
+
 			<!-- R760 -->
-			<Variant Name="1:14 R760 FX 54E3 (KO-701319)" 
-				Description="1:14(R760) two-way switch, fixed nose crossing, 54-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="760"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:14 R760 FX 60E1 (KO-701372)" 
-				Description="1:14(R760) two-way switch, fixed nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="760"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:14 R760 BX 60E1 (KO-800108)" 
+			<Variant Name="1:14 R760 BX 60E1 (KO-800108)"
 				Description="1:14(R760) two-way switch, movable nose crossing, 60-kg rails.">
 				<SetValue Key="type" Value="ordinarySwitch"/>
 				<SetValue Key="trackContinueRadius" Value="760"/>
 				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
-			</Variant>	
-			<Variant Name="1:15 R760 FX 60E1 (KO-701382)" 
-				Description="1:15(R760) two-way switch, fixed nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="760"/>
-				<SetValue Key="SwitchNoseType" Value="FIXED"/>
-			</Variant>
-			<Variant Name="1:15 R760 BX 60E1 (KO-800164)" 
-				Description="1:15(R760) two-way switch, movable nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="760"/>
-				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
-			</Variant>
-			
-			<!-- R1200 -->
-			<Variant Name="1:18.4 R1200 BX 60E1 (KO-800081)" 
-				Description="1:18.4(R1200) two-way switch, movable nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="1200"/>
-				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
-			</Variant>
-
-			<!-- R2500 -->
-			<Variant Name="1:26.1 R2500 BX 60E1 (KO-701399)" 
-				Description="1:26.1(R760) two-way switch, movable nose crossing, 60-kg rails.">
-				<SetValue Key="type" Value="ordinarySwitch"/>
-				<SetValue Key="trackContinueRadius" Value="2500"/>
-				<SetValue Key="SwitchNoseType" Value="MOVABLE"/>
 			</Variant>
 		</Variants>
 
-		<CustomProperty DataType="Enumeration" Name="SwitchControlAndLocking" DisplayName="Omlegging / Låsing" DefaultValue="RM" Category="Connections"
+		<CustomProperty DataType="Enumeration" Name="SwitchControlAndLocking" DisplayName="Control and locking" DefaultValue="RM" Category="Connections"
 			Description="The 'SwitchControlAndLocking' custom property [RM | PL | PR | PB | PN | HL | HR | HB | HN ] defines the switch control and locking type. The abbreviations mean: R='Remote controlled'. P='Pushbutton, electrically operated'. H='Hand operated (hand thrown)'. M='Machine locked (using a point machine or clamping device, with end position detection)'. L='Keylocked for left switch leg train movements'. R='Keylocked for right switch leg train movements'. B='Keylocked for both right and left switch leg train movements (one at a time)'. N='Not interlocked'."
 			>
 			<Values>
-				<Value DisplayName="Sentralstilt, maskinlåst" Description="Remote controlled, machine locked">RM</Value>
-				<Value DisplayName="Kastelodd, kontrollåst V" Description="Hand thrown, keylocked for left switch leg train movements">HL</Value>
-				<Value DisplayName="Kastelodd, kontrollåst H" Description="Hand thrown, keylocked for right switch leg train movements">HR</Value>
-				<Value DisplayName="Kastelodd, kontrollåst HV" Description="Hand thrown, keylocked for both right and left switch leg train movements (one at a time)">HB</Value>
-				<Value DisplayName="Kastelodd, uforriglet" Description="Hand thrown, not interlocked">HN</Value>
-				<Value DisplayName="Trykknapp, kontrollåst V" Description="Pushbutton controlled, keylocked for left switch leg train movements (one at a time)">PL</Value>
-				<Value DisplayName="Trykknapp, kontrollåst H" Description="Pushbutton controlled, keylocked for right switch leg train movements">PR</Value>
-				<Value DisplayName="Trykknapp, kontrollåst HV" Description="Pushbutton controlled, keylocked for both right and left switch leg train movements">PB</Value>
-				<Value DisplayName="Trykknapp, uforriglet" Description="Pushbutton controlled, not interlocked">PN</Value>
-			</Values> 
-		</CustomProperty>
-		
-		<CustomProperty DataType="Enumeration" Name="SwitchElectrification" DisplayName="Ledningsføring" DefaultValue="Both" Category="Connections"
-			Description="The 'SwitchElectrification' custom property [Both | Left | Right | Unknown] defines the switch electrification (both/left/right driving directions are electrified)."
-			>
-			<Values>
-				<Value DisplayName="Begge spor" Description="Both switch legs are electrified">BOTH</Value>
-				<Value DisplayName="Enkelt spor venstre" Description="Only left switch leg is electrified">LEFT</Value>
-				<Value DisplayName="Enkelt spor høyre" Description="Only right switch leg is electrified">RIGHT</Value>
-				<Value DisplayName="Udefinert" Description="Switch leg electrification is unknown">UNKNOWN</Value>
+				<Value DisplayName="Remote controlled, machine locked" Description="Remote controlled, machine locked">RM</Value>
+				<Value DisplayName="Throw weight, control-locked L" Description="Hand thrown, keylocked for left switch leg train movements">HL</Value>
+				<Value DisplayName="Throw weight, control-locked R" Description="Hand thrown, keylocked for right switch leg train movements">HR</Value>
+				<Value DisplayName="Throw weight, control-locked LR" Description="Hand thrown, keylocked for both right and left switch leg train movements (one at a time)">HB</Value>
+				<Value DisplayName="Throw weight, uninterlocked" Description="Hand thrown, not interlocked">HN</Value>
+				<Value DisplayName="Push button, control-locked L" Description="Pushbutton controlled, keylocked for left switch leg train movements (one at a time)">PL</Value>
+				<Value DisplayName="Push button, control-locked R" Description="Pushbutton controlled, keylocked for right switch leg train movements">PR</Value>
+				<Value DisplayName="Push button, control-locked LR" Description="Pushbutton controlled, keylocked for both right and left switch leg train movements">PB</Value>
+				<Value DisplayName="Push button, uninterlocked" Description="Pushbutton controlled, not interlocked">PN</Value>
 			</Values>
 		</CustomProperty>
 
-		<!--railML modell av sporveksel:
-		================================
-		trackContinueCourse finnes i tSwitch. course finnes i tSwitchConnectionData. Disse to har samme type 
-		{'left', 'straight', 'right', 'unknown', 'none'}.
-		
-		normalPosition {'straight', 'left', 'right', 'unknown', 'none'} er implementert 
-		i RC. Vi tolker dette som rettfram/venstre/høyre/ikkeTildeltEnnå, eller ikke-i-kontroll, som normalstillinger i sikringsanlegget.
-		normalPosition er {'straight', 'left', 'right', 'other'} i følge Spy-XML wiki sider hos railML-org. Merk at det jo tungene som skal 
-		ha normalstilling, ikke sporvekselen. Modelleringsfeil i railML. 
-		
-		Dir {'up','down'} er en railML-attributt i objektet for kjørbar sporforbindelse (klassen tSwitchConnectionData). 
-		Outgoing betyr at et tog som kjører i økende mileage-retning treffer på tungepartiet før bakkantpartiet i sporvekselen.
-		-->
+		<CustomProperty DataType="Enumeration" Name="SwitchElectrification" DisplayName="Switch electrification" DefaultValue="Both" Category="Connections"
+			Description="The 'SwitchElectrification' custom property [Both | Left | Right | Unknown] defines the switch electrification (both/left/right driving directions are electrified)."
+			>
+			<Values>
+				<Value DisplayName="Both tracks" Description="Both switch legs are electrified">BOTH</Value>
+				<Value DisplayName="Single track left" Description="Only left switch leg is electrified">LEFT</Value>
+				<Value DisplayName="Single track right" Description="Only right switch leg is electrified">RIGHT</Value>
+				<Value DisplayName="Undefined" Description="Switch leg electrification is unknown">UNKNOWN</Value>
+			</Values>
+		</CustomProperty>
 
-		<!--Fast/bevegelig kryss var ikke modellert i railML i det hele tatt: -->
-		<CustomProperty DataType="Enumeration" Name="SwitchNoseType" DisplayName="Fast eller bevegelig kryss" DefaultValue="UNKNOWN" Category="Connections"
+		<!--Fixed/movable nose was not modeled in railML at all: -->
+		<CustomProperty DataType="Enumeration" Name="SwitchNoseType" DisplayName="Fixed or movable nose" DefaultValue="UNKNOWN" Category="Connections"
 			Description="The 'SwitchNoseType' custom property [Fixed | Movable] defines the type of switch nose (point frog), fixed or movable."
 			>
 			<!--tSwitchConnectionData-->
 			<Values>
-				<Value DisplayName="Fast">FIXED</Value>
-				<Value DisplayName="Bevegelig">MOVABLE</Value>
-				<Value DisplayName="Udefinert">UNKNOWN</Value>
+				<Value DisplayName="Fixed">FIXED</Value>
+				<Value DisplayName="Movable">MOVABLE</Value>
+				<Value DisplayName="Undefined">UNKNOWN</Value>
 			</Values>
 		</CustomProperty>
-		
+
 		<!-- Model checks for Switch -->
 		<xpp:expand select="NOBN_trk_CHK_CONNECTION___SWITCH"/>
 
-		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression> 
-		
+		<LuaExpression Name="LateralOffset"><Formula>RightSided and 1e-3 or -1e-3</Formula></LuaExpression>
+
 		<LuaExpression Name="code"><Formula>_JBTKO_SPV_switchCode()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPV_switchCode()" ReturnType="String"
 			Description="Returns a formated string containing the code properties '[Code1] -X- [Code2]' for the two tracks that meet in a track crossing.">
@@ -625,52 +490,14 @@
 					local sideOfTrack = SwitchGeometry:upper() == "RIGHT" and "H" or "V"
 					local suffix = SwitchNoseType:upper() == "FIXED" and "-FX" or "-BX" --Fixed or movable X-ing
 
-					-- R190:
-					if Variant == "1:7 R190 FX 54E3 (KO-800157)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-7-R190-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R190 FX 54E3 (KO-701334)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-9-R190-"..sideOfTrack..suffix					
-
 					-- R300:
-					elseif Variant == "1:8.21 R300 BX 60E1 (KO-065306)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-8.21-R300-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R300 FX 54E3 (KO-701287)" then
+					if Variant == "1:9 R300 FX 54E3 (KO-701287)" then
 						return "NO-BN-3D-KO-SPV-54E3-1-9-R300-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R300 FX 60E1 (KO-701409)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-9-R300-"..sideOfTrack..suffix
-					elseif Variant == "1:9 R300 BX 60E1 (KO-800099)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-9-R300-"..sideOfTrack..suffix
-
-					-- R500:
-					elseif Variant == "1:11.66 R500 FX 60E1 (KO-800068)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-11.66-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:12 R500 FX 54E3 (KO-701306)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-12-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:12 R500 FX 60E1 (KO-800068)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-12-R500-"..sideOfTrack..suffix
-					elseif Variant == "1:12 R500 BX 60E1 (KO-800090)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-12-R500-"..sideOfTrack..suffix
 
 					-- R760:
-					elseif Variant == "1:14 R760 FX 54E3 (KO-701319)" then
-						return "NO-BN-3D-KO-SPV-54E3-1-14-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:14 R760 FX 60E1 (KO-701372)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-14-R760-"..sideOfTrack..suffix
 					elseif Variant == "1:14 R760 BX 60E1 (KO-800108)" then
 						return "NO-BN-3D-KO-SPV-60E1-1-14-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:15 R760 FX 60E1 (KO-701382)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-15-R760-"..sideOfTrack..suffix
-					elseif Variant == "1:15 R760 BX 60E1 (KO-800164)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-15-R760-"..sideOfTrack..suffix
-
-					-- R1200:
-					elseif Variant == "1:18.4 R1200 BX 60E1 (KO-800081)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-18.4-R1200-"..sideOfTrack..suffix
-
-					-- R2500:
-					elseif Variant == "1:26.1 R2500 BX 60E1 (KO-701399)" then
-						return "NO-BN-3D-KO-SPV-60E1-1-26.1-R2500-"..sideOfTrack..suffix
-					else 
+					else
 						return "NO-BN-3D-UNSPECIFIED"
 					end
 				end
@@ -678,7 +505,7 @@
 		</LuaFunction>
 
 		<LuaExpression Name="model"><Formula>Variant</Formula></LuaExpression>
-		
+
 		<!-- railML property trackContinueCourse: -->
 		<LuaExpression Name="trackContinueCourse"><Formula>_JBTKO_SPV_trackContinueCourse()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_SPV_trackContinueCourse()" ReturnType="String"
@@ -686,7 +513,7 @@
 			<Signature>String _JBTKO_SPV_trackContinueCourse()</Signature>
 			<Formula>
 				function _JBTKO_SPV_trackContinueCourse()
-					if (ConnectionCourse == "right") then 
+					if (ConnectionCourse == "right") then
 						return "left"
 					elseif (ConnectionCourse == "left") then
 						return "right"
@@ -698,29 +525,8 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
-		<InsertPointObject Name="Generell sporveksel" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}" 
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
 
-		<!--R190 -->
-		<InsertPointObject Name="1:7 R190 FX 54E3 (KO-800157)"
-			DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-07-R190-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="1:9 R190 FX 54E3 (KO-701334)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R190-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-
-		<!-- R300 -->
-		<InsertPointObject Name="1:8.21 R300 BX 60E1 (KO-065306)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-08.21-R300-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
+		<InsertPointObject Name="Generic switch" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
@@ -731,84 +537,8 @@
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
 		</InsertPointObject>
-		
-		<InsertPointObject Name="1:9 R300 FX 60E1 (KO-701409)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="1:9 R300 BX 60E1 (KO-800099)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-09-R300-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<!--R500-->
-		<InsertPointObject Name="1:11.66 R500 FX 60E1 (KO-800068)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-11.66-R500-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="1:12 R500 FX 54E3 (KO-701306)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="1:12 R500 FX 60E1 (KO-800068)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="1:12 R500 BX 60E1 (KO-800090)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-12-R500-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
 
-		<!-- R760 -->
-		<InsertPointObject Name="1:14 R760 FX 54E3 (KO-701319)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-54E3-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
-		<InsertPointObject Name="1:14 R760 FX 60E1 (KO-701372)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-		
 		<InsertPointObject Name="1:14 R760 BX 60E1 (KO-800108)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-14-R760-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-
-		<InsertPointObject Name="1:15 R760 FX 60E1 (KO-701382)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-15-R760-60E1-FX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>		
-		
-		<InsertPointObject Name="1:15 R760 BX 60E1 (KO-800164)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-15-R760-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-
-		<!-- R1200 -->
-		<InsertPointObject Name="1:18.4 R1200 BX 60E1 (KO-800081)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-18.4-R1200-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
-		</InsertPointObject>
-
-		<!-- R2500 -->
-		<InsertPointObject Name="1:26.1 R2500 BX 60E1 (KO-701399)" DisplayBlockName="{% if SymbolMode == 'Geographic' %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-26.1-R2500-60E1-BX-1-Metric{% else %}NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-1-Schematic{% endif %}"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfRightSideOfAlignment="true"/>
@@ -822,66 +552,26 @@
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL
 				{% if SymbolMode == 'Geographic' %}
-					{%    if Variant == '1:7 R190 FX 54E3 (KO-800157)'     %}07-R190-54E3-FX
-					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)'     %}09-R190-54E3-FX
-					
-					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)'  %}08.21-R300-60E1-BX
-					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)'     %}09-R300-54E3-FX
-					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)'     %}09-R300-60E1-FX
-					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)'     %}09-R300-60E1-BX
-
-					{% elsif Variant == '1:11.66 R500 FX 60E1 (KO-800068)' %}11.66-R500-60E1-FX
-					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)'    %}12-R500-54E3-FX
-					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)'    %}12-R500-60E1-FX
-					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)'    %}12-R500-60E1-BX
-
-					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)'    %}14-R760-54E3-FX
-					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)'    %}14-R760-60E1-FX
+					{%    if Variant == '1:9 R300 FX 54E3 (KO-701287)'     %}09-R300-54E3-FX
 					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)'    %}14-R760-60E1-BX
-					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)'    %}15-R760-60E1-FX
-					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)'    %}15-R760-60E1-BX
-
-					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}18.4-R1200-60E1-BX
-
-					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}26.1-R2500-60E1-BX
 					{% else %}GENERELL
-					{% endif %}					
+					{% endif %}
 					{{quadrant}}-Metric
 				{% else %}GENERELL-{{quadrant}}-Schematic
 				{% endif %}
 			</BlockNameFormat>
 		</SymbolDefinition>
-		
+
 		<!-- Overhead Catenary System viewpoint's symbol (*nothing* shown in Schematic mode, nothing is shown if SwitchElectrification is 'Unknown') -->
-		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTEH$SPV" 
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTEH$SPV"
 			Color="ByBlock" Linetype="ByBlock" Lineweight="ByBlock" Transparency="ByBlock"
 		>
 			<Rotation Add180DegreesIfDirIsDown="true" AddAngle="0"/>
 			<BlockNameFormat JoinBy="-">
-				{% if SymbolMode == 'Geographic' and Variant != 'Generell sporveksel' %}
+				{% if SymbolMode == 'Geographic' and Variant != 'Generic switch' %}
 					NO-BN-2D-JBTEH_SPV-FORBINDELSE-SPORVEKSEL
-					{%    if Variant == '1:7 R190 FX 54E3 (KO-800157)'     %}07-R190-54E3-FX
-					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)'     %}09-R190-54E3-FX
-					
-					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)'  %}08.21-R300-60E1-BX
-					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)'     %}09-R300-54E3-FX
-					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)'     %}09-R300-60E1-FX
-					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)'     %}09-R300-60E1-BX
-
-					{% elsif Variant == '1:11.66 R500 FX 60E1 (KO-800068)' %}11.66-R500-60E1-FX
-					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)'    %}12-R500-54E3-FX
-					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)'    %}12-R500-60E1-FX
-					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)'    %}12-R500-60E1-BX
-					
-					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)'    %}14-R760-54E3-FX
-					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)'    %}14-R760-60E1-FX
+					{%    if Variant == '1:9 R300 FX 54E3 (KO-701287)'     %}09-R300-54E3-FX
 					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)'    %}14-R760-60E1-BX
-					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)'    %}15-R760-60E1-FX
-					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)'    %}15-R760-60E1-BX
-
-					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}18.4-R1200-60E1-BX
-
-					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}26.1-R2500-60E1-BX
 					{% else %}BAD_Variant_{{Variant}}
 					{% endif %}
 					{% if SwitchElectrification == 'BOTH' %}BOTH_LEGS_ELECTRIFIED
@@ -890,7 +580,7 @@
 					{% else %}BAD_SwitchElectrification-{{SwitchElectrification}}
 					{% endif %}
 					{{quadrant}}-Metric
-				{% elsif SymbolMode == 'Geographic' and Variant == 'Generell sporveksel' %}
+				{% elsif SymbolMode == 'Geographic' and Variant == 'Generic switch' %}
 					NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Metric
 				{% else %}
 					NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic
@@ -902,35 +592,15 @@
 		<!-- SwitchControlAndLocking enum names: <control><locking> where (see also the DNA declaration of enum elsewhere): -->
 		<!-- 		control = [ R = remote controlled | P = push-button operated | H = hand-thrown ]  -->
 		<!-- 		locking = [ R = right | L = left | B = both | N = none ] -->
-		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTSA$SPV" 
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" Layer="JBTSA$SPV"
 			Color="ByBlock" Linetype="ByBlock" Lineweight="ByBlock" Transparency="ByBlock"
 		>
 			<Rotation Add180DegreesIfDirIsDown="true" AddAngle="0"/>
 			<BlockNameFormat JoinBy="-">
-				{% if SymbolMode == 'Geographic' and Variant != 'Generell sporveksel' %}
+				{% if SymbolMode == 'Geographic' and Variant != 'Generic switch' %}
 					NO-BN-2D-JBTSA_SPV-FORBINDELSE-SPORVEKSEL
-					{%    if Variant == '1:7 R190 FX 54E3 (KO-800157)'     %}07-R190-54E3-FX
-					{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)'     %}09-R190-54E3-FX
-				
-					{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)'  %}08.21-R300-60E1-BX
-					{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)'     %}09-R300-54E3-FX
-					{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)'     %}09-R300-60E1-FX
-					{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)'     %}09-R300-60E1-BX
-
-					{% elsif Variant == '1:11.66 R500 FX 60E1 (KO-800068)' %}11.66-R500-60E1-FX
-					{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)'    %}12-R500-54E3-FX
-					{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)'    %}12-R500-60E1-FX
-					{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)'    %}12-R500-60E1-BX
-
-					{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)'    %}14-R760-54E3-FX
-					{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)'    %}14-R760-60E1-FX
+					{%    if Variant == '1:9 R300 FX 54E3 (KO-701287)'     %}09-R300-54E3-FX
 					{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)'    %}14-R760-60E1-BX
-					{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)'    %}15-R760-60E1-FX
-					{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)'    %}15-R760-60E1-BX
-
-					{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}18.4-R1200-60E1-BX
-
-					{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}26.1-R2500-60E1-BX
 					{% else %}BAD_Variant_{{Variant}}
 					{% endif %}
 					{%    if SwitchControlAndLocking == 'RM' %}REMOTE_CONTROLLED
@@ -940,7 +610,7 @@
 					{% else %}BAD_SwitchControlAndLocking
 					{% endif %}
 					{{quadrant}}-Metric
-				{% elsif SymbolMode == 'Geographic' and Variant == 'Generell sporveksel' %}
+				{% elsif SymbolMode == 'Geographic' and Variant == 'Generic switch' %}
 					NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Metric
 				{% else %}
 					NO-BN-2D-JBTKO_SPV-FORBINDELSE-SPORVEKSEL-GENERELL-{{quadrant}}-Schematic
@@ -949,34 +619,14 @@
 		</SymbolDefinition>
 
 		<!-- Signalling: Wipeout and circle at the theoretical crossing (both for geo and for schematic symbols) -->
-		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" DrawOrder="top" Layer="JBTSA$SPV" 
+		<SymbolDefinition DefaultBlockName="" AllowSymbolMove="false" DrawOrder="top" Layer="JBTSA$SPV"
 			Color="ByBlock" Linetype="ByBlock" Lineweight="ByBlock" Transparency="ByBlock">
 			<Rotation Add180DegreesIfDirIsDown="true" AddAngle="{% if Dir == 'down' %}180{% else %}0{% endif %}"/>
 			<BlockNameFormat JoinBy="-">
-				{% if SymbolMode == 'Geographic' and Variant != 'Generell sporveksel' %}
+				{% if SymbolMode == 'Geographic' and Variant != 'Generic switch' %}
 					{% if SwitchControlAndLocking == 'PR' or SwitchControlAndLocking == 'PL' or SwitchControlAndLocking == 'PB' or SwitchControlAndLocking == 'PN' %}NO-BN-2D-JBTSA_SPV-FORBINDELSE-SPORVEKSEL-CIRCLE-AT-TANGENT-INTERSECTION
-						{%    if Variant == '1:7 R190 FX 54E3 (KO-800157)' %}13.503
-						{% elsif Variant == '1:9 R190 FX 54E3 (KO-701334)' %}10.523
-						
-						{% elsif Variant == '1:8.21 R300 BX 60E1 (KO-065306)' %}18.188
-						{% elsif Variant == '1:9 R300 FX 54E3 (KO-701287)' %}16.616
-						{% elsif Variant == '1:9 R300 FX 60E1 (KO-701409)' %}16.615
-						{% elsif Variant == '1:9 R300 BX 60E1 (KO-800099)' %}16.615
-
-						{% elsif Variant == '1:11.66 R500 FX 60E1 (KO-800068)' %}21.393
-						{% elsif Variant == '1:12 R500 FX 54E3 (KO-701306)' %}20.797
-						{% elsif Variant == '1:12 R500 FX 60E1 (KO-800068)' %}20.797
-						{% elsif Variant == '1:12 R500 BX 60E1 (KO-800090)' %}20.797
-
-						{% elsif Variant == '1:14 R760 FX 54E3 (KO-701319)' %}27.108
-						{% elsif Variant == '1:14 R760 FX 60E1 (KO-701372)' %}27.108
+						{%    if Variant == '1:9 R300 FX 54E3 (KO-701287)' %}16.616
 						{% elsif Variant == '1:14 R760 BX 60E1 (KO-800108)' %}27.108
-						{% elsif Variant == '1:15 R760 FX 60E1 (KO-701382)' %}25.305
-						{% elsif Variant == '1:15 R760 BX 60E1 (KO-800164)' %}25.305
-
-						{% elsif Variant == '1:18.4 R1200 BX 60E1 (KO-800081)' %}32.829
-
-						{% elsif Variant == '1:26.1 R2500 BX 60E1 (KO-701399)' %}48.109
 						{% endif %}
 						Metric
 					{% endif %}
@@ -1008,226 +658,47 @@
 
 		<DockPointDefinitions>
 			<!-- Dock points common for all variants -->
-			<SnapPoints MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
+			<SnapPoints MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}"
 						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Lokalstiller. NB Pen display-posisjon håndteres i lokalstillerobjektet (etter docking). -->
+				<!-- Local switch controller. NB Display position is handled in the local controller object (after docking). -->
 				<SnapPoint X="0" Y="2.5" TargetSpace="lokalstiller"/>
 				<SnapPoint X="0" Y="-2.5" TargetSpace="lokalstiller"/>
-				<!-- Tunge -->
+				<!-- Switch blades -->
 				<SnapPoint X="0" Y="0" TargetSpace="sporvekseltunger"/>
 			</SnapPoints>
 
-			<!-- R190 -->
-			<SnapPoints Variant="1:7 R190 FX 54E3 (KO-800157)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- TODO - mangler sporvekseldrivmaskiner og isolasjoner -->
-				<!-- Sporsperre -->
-				<SnapPoint X="18.6474" Y="1.672" TargetSpace="sporsperre"/>
-				<SnapPoint X="18.7666" Y="-0.751" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:9 R190 FX 54E3 (KO-701334)" 
+			<!-- R300 -->
+			<SnapPoints Variant="1:9 R300 FX 54E3 (KO-701287)"
 						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}"
 						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
-				<SnapPoint X="0.84186177" Y="1.75188526" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="0.85" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
-				<SnapPoint X="3.89367110" Y="1.75002238" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="3.93" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Fabrikkslevert isolert skjøt -->
-				<SnapPoint X="16.8592" Y="0.7495" TargetSpace="skinneskjøt"/>
-				<SnapPoint X="16.8907" Y="0" TargetSpace="skinneskjøt"/>
-				<!-- Sporsperre -->
-				<SnapPoint X="18.0416" Y="1.613" TargetSpace="sporsperre"/>
-				<SnapPoint X="18.1541" Y="-0.751" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<!-- R300 -->
-			<SnapPoints Variant="1:8.21 R300 BX 60E1 (KO-065306)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
-				<SnapPoint X="1.00031" Y="2.51464" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="0.99801" Y="-2.49891" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
-				<SnapPoint X="5.21105" Y="2.5611" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="5.25295" Y="-2.49892" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 3 -->
-				<SnapPoint X="28.02852" Y="3.83954" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="28.32818" Y="-2.50416" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Sporsperre -->
-				<SnapPoint X="23.4996" Y="1.6885" TargetSpace="sporsperre"/>
-				<SnapPoint X="23.5911" Y="-0.7542" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:9 R300 FX 54E3 (KO-701287)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- TODO - mangler sporvekseldrivmaskiner og isolasjoner -->
-				<!-- Sporsperre -->
+				<!-- TODO - missing point machine data and insulations -->
+				<!-- Derail -->
 				<SnapPoint X="22.3197" Y="1.5846" TargetSpace="sporsperre"/>
 				<SnapPoint X="22.4967" Y="-0.751" TargetSpace="sporsperre"/>
 			</SnapPoints>
 
-			<SnapPoints Variant="1:9 R300 FX 60E1 (KO-701409)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
-				<SnapPoint X="1.00109109" Y="1.75225524" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="1.008" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
-				<SnapPoint X="5.20487399" Y="1.79794469" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="5.237" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Fabrikkslevert isolert skjøt-->
-				<SnapPoint X="15.7829" Y="0.4187" TargetSpace="skinneskjøt"/>
-				<SnapPoint X="15.79" Y="0" TargetSpace="skinneskjøt"/>
-				<!-- Sporsperre -->
-				<SnapPoint X="21.1317" Y="1.5006" TargetSpace="sporsperre"/>
-				<SnapPoint X="21.2113" Y="-0.7535" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:9 R300 BX 60E1 (KO-800099)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
-				<SnapPoint X="1.00031" Y="2.51464" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="0.99801" Y="-2.49891" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
-				<SnapPoint X="5.21105" Y="2.5611" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="5.25295" Y="-2.49892" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 3 -->
-				<SnapPoint X="28.02852" Y="3.83954" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="28.32818" Y="-2.50416" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Sporsperre -->
-				<SnapPoint X="23.4996" Y="1.6885" TargetSpace="sporsperre"/>
-				<SnapPoint X="23.5911" Y="-0.7542" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<!-- R500 -->
-			<SnapPoints Variant="1:11.66 R500 FX 60E1 (KO-800068)" 
-				MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}"
-				MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:12 R500 FX 54E3 (KO-701306)"
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- TODO - mangler sporvekseldrivmaskiner og isolasjoner -->
-				<!-- Sporsperre -->
-				<SnapPoint X="30.1318" Y="1.6611" TargetSpace="sporsperre"/>
-				<SnapPoint X="30.2045" Y="-0.751" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:12 R500 FX 60E1 (KO-800068)"
+			<!-- R760 -->
+			<SnapPoints Variant="1:14 R760 BX 60E1 (KO-800108)"
 						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}"
 						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
-				<SnapPoint X="0.98448908" Y="1.75094744" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="0.988" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
-				<SnapPoint X="4.03771321" Y="1.76617386" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="4.052" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 3 -->
-				<SnapPoint X="7.66716867" Y="1.80887624" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="7.695" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Fabrikkslevert isolert skjøt-->
-				<SnapPoint X="19.4052" Y="0.3768" TargetSpace="skinneskjøt"/>
-				<SnapPoint X="19.41" Y="0" TargetSpace="skinneskjøt"/>
-				<!-- Sporsperre -->
-				<SnapPoint X="27.3045" Y="1.4990" TargetSpace="sporsperre"/>
-				<SnapPoint X="27.3639" Y="-0.7552" TargetSpace="sporsperre"/>
-			</SnapPoints>
-
-			<SnapPoints Variant="1:12 R500 BX 60E1 (KO-800090)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-			</SnapPoints>
-
-			<!-- R760 -->
-			<SnapPoints Variant="1:14 R760 FX 54E3 (KO-701319)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- TODO - mangler sporvekseldrivmaskiner og isolasjoner -->
-				<!-- Sporsperre -->
-				<SnapPoint X="37.3852" Y="1.672" TargetSpace="sporsperre"/>
-				<SnapPoint X="37.4448" Y="-0.751" TargetSpace="sporsperre"/>
-			</SnapPoints>
-
-			<SnapPoints Variant="1:14 R760 FX 60E1 (KO-701372)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Sporsperre -->
-				<SnapPoint X="37.3153" Y="1.671" TargetSpace="sporsperre"/>
-				<SnapPoint X="37.3749" Y="-0.7535" TargetSpace="sporsperre"/>
-			</SnapPoints>
-
-			<SnapPoints Variant="1:14 R760 BX 60E1 (KO-800108)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" 
-						MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
+				<!-- Point machine 1 -->
 				<SnapPoint X="0.99406" Y="2.51234" TargetSpace="sporvekseldrivmaskin"/>
 				<SnapPoint X="1.00151" Y="-2.4974" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
+				<!-- Point machine 2 -->
 				<SnapPoint X="3.9443" Y="2.52334" TargetSpace="sporvekseldrivmaskin"/>
 				<SnapPoint X="3.9612" Y="-2.4974" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 3 -->
+				<!-- Point machine 3 -->
 				<SnapPoint X="8.16892" Y="2.555" TargetSpace="sporvekseldrivmaskin"/>
 				<SnapPoint X="8.19147" Y="-2.4974" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 4 -->
+				<!-- Point machine 4 -->
 				<SnapPoint X="45.06364" Y="3.8519" TargetSpace="sporvekseldrivmaskin"/>
 				<SnapPoint X="45.26258" Y="-2.4974" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 5 -->
+				<!-- Point machine 5 -->
 				<SnapPoint X="47.32825" Y="3.99248" TargetSpace="sporvekseldrivmaskin"/>
 				<SnapPoint X="47.56431" Y="-2.4974" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Sporsperre -->
+				<!-- Derail -->
 				<SnapPoint X="37.264" Y="1.68161" TargetSpace="sporsperre"/>
 				<SnapPoint X="37.32603" Y="-0.75487" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:15 R760 FX 60E1 (KO-701382)">
-				<!-- Sporsperre -->
-				<SnapPoint X="37.3151" Y="1.6786" TargetSpace="sporsperre"/>
-				<SnapPoint X="37.3751" Y="-0.761" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<SnapPoints Variant="1:15 R760 BX 60E1 (KO-800164)" 
-						MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}"
-							MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-			</SnapPoints>
-
-			<!-- R1200 -->
-			<SnapPoints Variant="1:18.4 R1200 BX 60E1 (KO-800081)" MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Drivmaskin 1 -->
-				<SnapPoint X="1.03614926" Y="1.75065431" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="1.038" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 2 -->
-				<SnapPoint X="5.73931411" Y="1.76471472" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="5.748" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 3 -->
-				<SnapPoint X="11.15110340" Y="1.80338543" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="11.168" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 4 -->
-				<SnapPoint X="56.74078823" Y="3.08518750" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="56.8541" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Drivmaskin 5 -->
-				<SnapPoint X="59.21244152" Y="3.20359522" TargetSpace="sporvekseldrivmaskin"/>
-				<SnapPoint X="59.3335" Y="-1.75" TargetSpace="sporvekseldrivmaskin"/>
-				<!-- Fabrikkslevert isolert skjøt -->
-				<SnapPoint X="37.3372" Y="0.8103" TargetSpace="skinneskjøt"/>
-				<SnapPoint X="37.3152" Y="-0.3382" TargetSpace="skinneskjøt"/>
-
-				<!-- Sporsperre -->
-				<SnapPoint X="50.6568" Y="1.8293" TargetSpace="sporsperre"/>
-				<SnapPoint X="50.7118" Y="-0.7616" TargetSpace="sporsperre"/>
-			</SnapPoints>
-			
-			<!-- R2500 -->
-			<SnapPoints Variant="1:26.1 R2500 BX 60E1 (KO-701399)" MirrorAboutAlignmentTangent="{% if SwitchGeometry == 'left' and dir == 'down' %}true{% elsif SwitchGeometry == 'right' and dir == 'up' %}true{% else %}false{% endif %}" MirrorAboutAlignmentNormal="{% if dir == 'down' %}true{% else %}false{% endif %}">
-				<!-- Sporsperre -->
-				<SnapPoint X="67.5777" Y="1.6748" TargetSpace="sporsperre"/>
-				<SnapPoint X="67.6106" Y="-0.761" TargetSpace="sporsperre"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 	</ObjectType>
@@ -1235,18 +706,18 @@
 
 
 <!--========================================================================================================
-	OVERBYGNING
-	SPORVEKSELTUNGER
-	JBTKO_TNG Sporvekseltunger
+	TRACK
+	SWITCH BLADES
+	JBTKO_TNG Switch blades
 =========================================================================================================-->
-	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_SwitchBlades" Name="JBTKO_TNG Sporvekseltunger"
+	<ObjectType DataType="tOrientedElement" Class="RailwayPlacedObject" LuaName="rctype_SwitchBlades" Name="JBTKO_TNG Switch blades"
 				Layer="JBTKO_TNG" Color="ByLayer"
-				Group="Overbygning/Tunger"
+				Group="Track/Switch blades"
 				AttMirrorY="{% if RightSided %}true{% else %}false{% endif %}"
 				>
 
 		<RelationSpace>sporvekseltunger</RelationSpace>
-		
+
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___SYMBOLFRAME"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___MILEAGE_INCREASES_TOWARDS_LEFT"/>
@@ -1258,22 +729,16 @@
 		<xpp:expand select="NOBN_com_CHK_NUMBER_OF_OCP_AREAS"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___TRACKBOUND_OBJECT"/>
 		<xpp:expand select="NOBN_com_STD_LUAEXPRESSIONS___EARTHED_TO_NONE"/>
-				
+
 		<LuaExpression Name="LateralOffset">
 			<Formula>RightSided and 1e-3 or -1e-3</Formula>
-		</LuaExpression> 
-		
+		</LuaExpression>
+
+		<!-- Condensed DNA: keeping 3 representative variant(s) only -->
 		<Variants DefaultValue="1:9 R190">
 			<Variant Name="1:9 R190"/>
-			<Variant Name="1:7 R190"/>
-			<Variant Name="1:8.21 R300"/>
 			<Variant Name="1:9 R300"/>
-			<Variant Name="1:11.66 R500"/>
-			<Variant Name="1:12 R500"/>
 			<Variant Name="1:14 R760"/>
-			<Variant Name="1:15 R760"/>
-			<Variant Name="1:18.4 R1200"/>
-			<Variant Name="1:26.1 R2500"/>
 		</Variants>
 
 		<LuaExpression Name="Variant"><Formula>_JBTKO_TNG_Variant()</Formula></LuaExpression>
@@ -1286,14 +751,14 @@
 					local r, n = getRelatedObjects(s)
 					if n == 0 then
 						return getPropertyValue("Variant"), _info("UNFINISHED - Relate with '"..s.."' to a switch (turnout).")
-					else 
+					else
 						local switch = r[0]
 						return switch.Variant:match("(1:%d+ R%d+)"), _info("Variant inherited with relation '"..s.."' from switch '"..RC__identify(switch).."' ")
 					end
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="Alignment"><Formula>_JBTKO_TNG_alignment()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_alignment()" ReturnType="ObjRef"
 				Description="Returns the alignment [ObjRef] from its switch, related with 'Er tunge for sporveksel'.">
@@ -1310,7 +775,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="Mileage"><Formula>_JBTKO_TNG_mileage()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_mileage()" ReturnType="Double"
 				Description="Returns the mileage from its switch, related with 'Er tunge for sporveksel'.">
@@ -1327,7 +792,7 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="code"><Formula>_JBTKO_TNG_code()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_code()" ReturnType="String"
 				Description="Returns the code from its switch, related with 'Er tunge for sporveksel'.">
@@ -1344,9 +809,9 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
 		<LuaExpression Name="name"><Formula>"Tng."..code</Formula></LuaExpression>
-		
+
 		<LuaExpression Name="dir"><Formula>_JBTKO_TNG_dir()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_dir()" ReturnType="Enum"
 				Description="Returns the direction (dir) [up | down] enum from its switch, related with 'Er tunge for sporveksel'.">
@@ -1366,30 +831,16 @@
 
 		<LuaExpression Name="Geometry3D_0.Name"><Formula>_JBTKO_TNG_SwitchBlades_Geometry3DName()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTKO_TNG_SwitchBlades_Geometry3DName()" ReturnType="String"
-				Description="Returns the switch blaedes' 3D geometry name.">
+				Description="Returns the switch blades' 3D geometry name.">
 			<Signature>String _JBTKO_TNG_SwitchBlades_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTKO_TNG_SwitchBlades_Geometry3DName()
 					if Variant == "1:9 R190" then
 						return "NO-BN-3D-KO_TNG-TUNGER-09-R190"
-					elseif Variant == "1:7 R190"	then
-						return "NO-BN-3D-KO_TNG-TUNGER-07-R190"
-					elseif Variant == "1:8.21 R300"	then
-						return "NO-BN-3D-KO_TNG-TUNGER-08.21-R300"
 					elseif Variant == "1:9 R300"	then
 						return "NO-BN-3D-KO_TNG-TUNGER-09-R300"
-					elseif Variant == "1:11.66 R500"	then
-						return "NO-BN-3D-KO_TNG-TUNGER-11.66-R500"
-					elseif Variant == "1:12 R500"	then
-						return  "NO-BN-3D-KO_TNG-TUNGER-12-R500"
 					elseif Variant == "1:14 R760"	then
 						return "NO-BN-3D-KO_TNG-TUNGER-14-R760"
-					elseif Variant == "1:15 R760"	then
-						return "NO-BN-3D-KO_TNG-TUNGER-15-R760"
-					elseif Variant == "1:18.4 R1200"	then
-						return "NO-BN-3D-KO_TNG-TUNGER-18.4-R1200"
-					elseif Variant == "1:26.1 R2500"	then
-						return "NO-BN-3D-KO_TNG-TUNGER-26.1-R2500"
 					else
 						return "Could not find 3D geometry name for variant"
 					end
@@ -1397,37 +848,17 @@
 			</Formula>
 		</LuaFunction>
 
-		<!--<TextAttribute Annotative="true" Style="RC-ARIAL" CadAttributeTag="Normalstilling" Height="1" Justify="MiddleCenter" Constant="true" -->
-		<!-- InsertTag="   UFERDIG - PÅ IDESTADIET FORTSATT- TUNGER ARVER STILLING FRA SPV sin normalPosition -->
-			<!-- {% if relateditem("sporveksel").normalPosition == 'straight' %}NORMAL_RETTSPOR -->
-			<!-- {% elsif ConnectionCourse == 'left' %} --> 
-				 <!-- {% if normalPosition == 'left' %}NORMAL_AVVIK --> 
-				 <!-- {% elsif normalPosition == 'right' %}NORMAL_RETTSPOR --> 
-				 <!-- {% endif %} --> 
-			<!-- {% elsif ConnectionCourse == 'right' %} --> 
-				 <!-- {% if normalPosition == 'right' %}NORMAL_AVVIK --> 
-				 <!-- {% elsif normalPosition == 'left' %}NORMAL_RETTSPOR --> 
-				 <!-- {% endif %} --> 
-			 <!-- {% endif %}" --> 
-		 <!-- DotLiquidExpression=" -->
-			<!-- {% if normalPosition == 'left' %}V -->
-			<!-- {% elsif normalPosition == 'right' %}H -->
-			<!-- {% elsif normalPosition == 'straight' %} -->
-				<!-- {% if ConnectionCourse == 'M' %}H{% else %}V{% endif %} -->
-			<!-- {% endif %}" -->
-		<!-- />-->
-
-		<CustomProperty DataType="Enumeration" Name="NormalPosition" DisplayName="Normalstilling" DefaultValue="Unknown"
-			Description="Normalstilling viser tungestilling i samsvar med relé-normalstilling i sikringsanleggets relétegninger. 'Venstre' betyr at toget vil kjøre til venstre, 'Høyre' betyr kjøring til høyre.">
+		<CustomProperty DataType="Enumeration" Name="NormalPosition" DisplayName="Normal position" DefaultValue="Unknown"
+			Description="Normal position shows blade position in accordance with the relay normal position in the interlocking relay drawings. 'Left' means the train will travel to the left, 'Right' means travel to the right.">
 			<Values>
-				<Value DisplayName="Ukjent">Unknown</Value>
-				<Value DisplayName="Venstre">Left</Value>
-				<Value DisplayName="Midtstilling">Straight</Value>	<!--Midtstilling er kun meningsfylt for 3-vei sporveksler.-->
-				<Value DisplayName="Høyre">Right</Value>
+				<Value DisplayName="Unknown">Unknown</Value>
+				<Value DisplayName="Left">Left</Value>
+				<Value DisplayName="Straight">Straight</Value>	<!-- Straight is only meaningful for 3-way switches. -->
+				<Value DisplayName="Right">Right</Value>
 			</Values>
 		</CustomProperty>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:9 R190" Name="1:9 R190" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R190-V-Metric" 
+		<InsertPointObject DisplayName="Switch blades 1:9 R190" Name="1:9 R190" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R190-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1435,7 +866,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:9 R300" Name="1:9 R300" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R300-V-Metric"
+		<InsertPointObject DisplayName="Switch blades 1:9 R300" Name="1:9 R300" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-09-R300-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1443,47 +874,7 @@
 			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
 		</InsertPointObject>
 
-		<InsertPointObject DisplayName="Sporvekseltunger 1:11.66 R500" Name="1:11.66 R500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-11.66-R500-V-Metric"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
-		</InsertPointObject>
-
-		<InsertPointObject DisplayName="Sporvekseltunger 1:12 R500" Name="1:12 R500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-12-R500-V-Metric"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
-		</InsertPointObject>
-
-		<InsertPointObject DisplayName="Sporvekseltunger 1:14 R760" Name="1:14 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-14-R760-V-Metric"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
-		</InsertPointObject>
-		
-		<InsertPointObject DisplayName="Sporvekseltunger 1:15 R760" Name="1:15 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-15-R760-V-Metric"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
-		</InsertPointObject>
-
-		<InsertPointObject DisplayName="Sporvekseltunger 1:18.4 R1200" Name="1:18.4 R1200" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-18.4-R1200-V-Metric"
-                DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
-			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
-			<SetValue Key="MileageIncreasesTowardsLeft" Value="{{alignmentRotation | minus:ucsRotation | cosisnegative}}"/>
-			<SetValue Key="NormalPosition" Value="{% if RightSided %}{% if dir == 'up' %}Left{% else %}Right{% endif %}{% else %}{% if dir == 'up' %}Right{% else %}Left{% endif %}{% endif %}"/>
-		</InsertPointObject>
-
-		<InsertPointObject DisplayName="Sporvekseltunger 1:26.1 R2500" Name="1:26.1 R2500" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-26.1-R2500-V-Metric"
+		<InsertPointObject DisplayName="Switch blades 1:14 R760" Name="1:14 R760" DisplayBlockName="NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE-14-R760-V-Metric"
                 DefaultSnapMode="Alignment" SnapToAlignment="true" SnapDistance="1e-3">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance EnableDirectionSetting="true" MirrorAboutJigYAxisIfLeftSideOfAlignment="true"/>
@@ -1495,16 +886,9 @@
 			<Rotation Add180DegreesIfDirIsDown="true"/>
 			<BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTKO_TNG-SPORVEKSELTUNGE
-				{% if Variant == '1:7 R190' %}07-R190
-				{% elsif Variant == '1:9 R190' %}09-R190
-				{% elsif Variant == '1:8.21 R300' %}08.21-R300
+				{% if Variant == '1:9 R190' %}09-R190
 				{% elsif Variant == '1:9 R300' %}09-R300
-				{% elsif Variant == '1:11.66 R500' %}11.66-R500
-				{% elsif Variant == '1:12 R500' %}12-R500
 				{% elsif Variant == '1:14 R760' %}14-R760
-                {% elsif Variant == '1:15 R760' %}15-R760
-				{% elsif Variant == '1:18.4 R1200' %}18.4-R1200
-				{% elsif Variant == '1:26.1 R2500' %}26.1-R2500
 				{% endif %}
 				{% if NormalPosition == 'Right' %}H
 				{% elsif NormalPosition == 'Left' %}V
@@ -1521,6 +905,6 @@
 
 
 <!--========================================================================================================
-    End of file 
+    End of file
 =========================================================================================================-->
 </xpp:bloc>

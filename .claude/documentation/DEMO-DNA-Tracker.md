@@ -219,8 +219,8 @@ Rules:
 |------|--------|-------|
 | `NO-BN-CivilWorks.xml` | ✅ Done | Condensed + translated (commit `9ecdabc9`) |
 | `NO-BN-TrackAndWaysideObjects.xml` | ✅ Done | Condensed + translated (commit `9ecdabc9`) |
-| `NO-BN-TrackConnections.xml` | ⬜ Pending | |
-| `NO-BN-GaugeHalfProfiles.xml` | ⬜ Pending | |
+| `NO-BN-TrackConnections.xml` | ✅ Done | Condensed + translated; all 4 object types kept, Switch 18→3 variants, SwitchBlades 10→3 |
+| `NO-BN-GaugeHalfProfiles.xml` | 🌐 Translated only | Profile names translated to English; no ObjectTypes to condense |
 
 ---
 
@@ -245,13 +245,13 @@ Rules:
 
 | File | Status | Notes |
 |------|--------|-------|
-| `NO-BN-CommonObjects.xml` | ⬜ Pending | |
-| `NO-BN-Labels.xml` | ⬜ Pending | |
+| `NO-BN-CommonObjects.xml` | ✅ Done | Condensed + translated; all 13 object types kept, Area 11→4, Proxy 20→2, Marker 4→2, TrackUsage 8→3 |
+| `NO-BN-Labels.xml` | ✅ Done | Condensed + translated; 28→6 variants kept |
 | `NO-BN-ShowLayers.xml` | ✅ Done | Minor update (commit `9ecdabc9`) |
 | `NO-BN-StyleDefinitions.xml` | ✅ Done | Minor update (commit `9ecdabc9`) |
 | `NO-BN-Tables.xml` | ✅ Done | Minor update (commit `9ecdabc9`) |
-| `NO-BN-Relations.xml` | ⬜ Pending | Check for relations referencing removed object types |
-| `NO-BN-ModelChecks.xml` | ⬜ Pending | Check for checks referencing removed object types |
+| `NO-BN-Relations.xml` | ✅ Done | Translated all relation names/prompts; commented out 17 relation blocks/entries for removed OCS + signalling types; cleaned up 4 mixed blocks with stale Source/TargetSpaces |
+| `NO-BN-ModelChecks.xml` | ✅ Done | Translated DisplayName; fixed critical bug — OCS variant names in compatibility array updated to match already-translated OcsWireSystem.xml |
 
 ---
 
@@ -298,6 +298,8 @@ Use this checklist when condensing a new file.
 
 | Date | Commit | Files | What changed |
 |------|--------|-------|-------------|
+| 2026-03-31 | `pending` | `NO-BN-Relations.xml` | Fixed stale relations: commented out 8 entire blocks for removed OCS types (HV switches, footplates, wire clamps, WTB, midpoint anchor, wire annotation); cleaned 4 mixed blocks removing stale Source/TargetSpaces; commented out 3 relations for undefined types (ETCS_LEU, ETCS/NSS_kodetabell); removed kabelboks SourceSpace |
+| 2026-03-31 | `pending` | `NO-BN-GaugeHalfProfiles.xml`, `NO-BN-CommonObjects.xml`, `NO-BN-TrackConnections.xml`, `NO-BN-Labels.xml`, `NO-BN-ModelChecks.xml`, `NO-BN-Relations.xml` | Condensed/translated remaining 6 pending files: GaugeHalfProfiles (translated profile names); CommonObjects (Area 11→4, Proxy 20→2, Marker 4→2, TrackUsage 8→3); TrackConnections (Switch 18→3, SwitchBlades 10→3); Labels (28→6 variants); ModelChecks (fixed stale Norwegian variant names in OCS compatibility array); Relations (translated all names/prompts, commented out 3 blocks for removed types, cleaned stale TargetSpaces) |
 | 2026-03-31 | `pending` | `NO-BN-Signals.xml`, `NO-BN-SignallingObjects.xml`, `NO-BN-Balises.xml`, `NO-BN-Interlocking.xml`, `NO-BN-Foulingpoint.xml` | Condensed Signalling files; removed 11 object types total, reduced variants across all files, fixed Norwegian strings ("Ja"→"Yes", BaliseType values, interlocking filters); translated Foulingpoint setting names |
 | 2026-03-23 | `14154825` | `NO-BN-Telecom.xml`, `NO-BN-LowPower.xml` | Translated Telecom; condensed + translated Low Power (4 of 7 object types kept) |
 | 2026-03-16 | `e47ed101` | `NO-BN-BoardsAndPoles.xml` | Condensed + translated Boards & Signs; 7 of 32 object types kept |
