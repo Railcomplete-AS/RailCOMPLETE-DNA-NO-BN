@@ -761,7 +761,7 @@ local polyline = cadInterface.getCadEntityFromRcObject(alignment)
 
 ### askForPoint — Point Picking
 
-**Important**: `askForPoint()` throws an exception if the user presses Escape. Always check for nil:
+**Important**: `askForPoint()` returns nil if the user presses Escape. Always check for nil:
 
 ```lua
 local point = askForPoint("Click insertion point:")
@@ -1509,9 +1509,9 @@ local luaTable = {}
 table.insert(luaTable, "a")  -- luaTable[1] = "a"
 ```
 
-### askForPoint() Cancel Exception
+### askForPoint() Cancellation
 
-`askForPoint()` throws an exception when the user presses Escape. Always check for nil:
+`askForPoint()` returns nil when the user presses Escape. Always check for nil:
 
 ```lua
 local point = askForPoint("Click a point:")
