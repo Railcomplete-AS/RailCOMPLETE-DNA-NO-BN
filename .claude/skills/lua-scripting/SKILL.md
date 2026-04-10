@@ -708,59 +708,7 @@ Scripts differ from property formulas in several ways:
 | Scope | Read-only computation | Create, modify, delete objects |
 | API | ~88 object-level functions | All object-level + ~60 script-only functions |
 
-## 11. Script Structure
-
-### Standard Script Template
-
-This template conforms to the section header conventions from Part A, Section 1:
-
-```lua
---[[
-    File name (verbatim, without file type)
-    =======================================
-    Brief description of what the script does.
-
-    2025-01-15 v1.0 AUTHOR Created.
-    2025-03-20 v1.1 AUTHOR Added feature X.
---]]
-
-
-
----GLOBAL CONSTANTS---
-_HEADER_ = "Script Title"
-_VERSION_ = "2025-03-20 v1.1"
-_DEBUG_ = false
-_TRACE_ = false
-
-
-
----INCLUDES---
-local lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
-local lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
-
-
-
----LOCAL CONSTANTS---
-local _USAGE_ = [[
-    Script Title
-    ============
-    Description of usage, inputs, outputs.
-
-    - Step 1: Select a file
-    - Step 2: Select a template object
-    - Step 3: Objects are created
-]]
-
-
-
----SCRIPT---
-lib2.show(_USAGE_)
-
--- Main logic
--- ...
-```
-
-## 12. User Interaction
+## 11. User Interaction
 
 ### askForKeyword — Multiple Choice Dialog
 
@@ -843,7 +791,7 @@ end
 showMessage("Operation completed successfully.")
 ```
 
-## 13. Object Creation and Manipulation
+## 12. Object Creation and Manipulation
 
 ### Alignment Creation
 
@@ -859,7 +807,7 @@ local track = createAlignmentObject(rctype_Track, "Variant Name", geometry)
 local points = {getPoint3D(x1, y1, z1), getPoint3D(x2, y2, z2), getPoint3D(x3, y3, z3)}
 local track = createAlignmentObject(rctype_Track, "Variant Name", points)
 
--- Set properties after creation (see formula reset pattern in Section 13):
+-- Set properties after creation (see formula reset pattern in Section 12):
 track.code = "="
 track.code = "V1"
 track.name = track.name -- Force save and update data
@@ -965,7 +913,7 @@ end))
 eraseObject(obj)
 ```
 
-## 14. File I/O
+## 13. File I/O
 
 ### Excel Reading
 
@@ -1043,7 +991,7 @@ local files = getFilesInFolder(folderPath)
 local folders = getFoldersInFolder(folderPath)
 ```
 
-## 15. Running Commands
+## 14. Running Commands
 
 ### Pattern
 
@@ -1061,7 +1009,7 @@ local logOutput = result.log       -- Command output text
 local status = result.result       -- Execution status
 ```
 
-**Important:** `runCommand()` breaks undo buffer grouping — see Undo Buffer Grouping in Section 15 for details.
+**Important:** `runCommand()` breaks undo buffer grouping — see Undo Buffer Grouping in Section 14 for details.
 
 ### Common AutoCAD Commands
 
@@ -1146,7 +1094,7 @@ runCommand("_GRIPS 0 ")  -- This breaks the undo buffer!
 endUndoBufferItem()
 ```
 
-## 16. Advanced Patterns
+## 15. Advanced Patterns
 
 ### Selection Sets
 
@@ -1297,7 +1245,7 @@ end
 local wcsVector = getWcsVectorFromAcsVector(obj, lateralOffset, longitudinalOffset)
 ```
 
-## 17. Error Handling
+## 16. Error Handling
 
 ### General Guidance
 
@@ -1344,7 +1292,7 @@ function importTracksFromShapefile(shapefileTable)
 end
 ```
 
-## 18. Real Examples
+## 17. Real Examples
 
 ### Import Objects from Excel
 
@@ -1528,12 +1476,12 @@ end
 
 endUndoBufferItem()
 
--- Zoom to extents (note: must be outside undo buffer, see Section 15):
+-- Zoom to extents (note: must be outside undo buffer, see Section 14):
 runCommand("_z _e ")
 lib2.show("Import complete")
 ```
 
-## 19. Common Pitfalls
+## 18. Common Pitfalls
 
 ### 0-Indexed RC Collections vs 1-Indexed Lua Tables
 
@@ -1577,7 +1525,7 @@ string.format("%04d", number)    -- 4-digit zero-padded: "0042"
 string.format("%d: %s", i, msg)  -- Integer and string
 ```
 
-## 20. Constants Reference
+## 19. Constants Reference
 
 ### FileType Constants
 
@@ -1599,7 +1547,7 @@ _warning     -- Yellow triangle
 _error       -- Red X
 ```
 
-## 21. Documentation Reference
+## 20. Documentation Reference
 
 - **Full API reference**: `.claude/references/080-luacommands.html` — all object-level + script-only functions
 - **Lua language tutorial**: `.claude/references/070-lua.html` — syntax, types, control structures
