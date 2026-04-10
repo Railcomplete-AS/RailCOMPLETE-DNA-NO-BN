@@ -374,7 +374,9 @@ local track = insertAlignment(rctype_Track, "Variant Name", createHorizontalGeom
 
 ```lua
 local signal = insertPointObject(track, rctype_Signal, "Signal variant", pos, 3.5, true)
--- Args: alignment, rctype, variant, position, distFromAlignment, leftSide
+-- Args: alignment, rctype, insertPointObjectOptions, pos, distFromAlignment, insertionSideIsLeft
+-- The insertPointObjectOptions string (optional) selects the variant from the ribbon dropdown.
+-- Overload without options: insertPointObject(alignment, rctype, pos, distFromAlignment, insertionSideIsLeft)
 ```
 
 ### Property Assignment
@@ -397,8 +399,10 @@ Vertical, cant, speed, and mileage profiles follow the same pattern:
 local events = {}
 table.insert(events, createVerticalEvent(pos, elevation))
 createVerticalProfile(events)
--- Similarly: createCantEvent/Profile, createSpeedEvent/Profile
--- Mileage requires eventType: createMileageEvent(pos, value, "Milepost")
+-- Cant: createCantEvent(pos, leftSuperelevation=0, rightSuperelevation=0)
+-- Speed: createSpeedEvent(pos, leftSuperelevation=0, rightSuperelevation=0)
+-- Mileage: createMileageEvent(pos, mileage, eventType, name="")
+-- eventType is one of: "Equation", "Reset", "Milepost"
 ```
 
 ### Other Operations
