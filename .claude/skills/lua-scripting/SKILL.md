@@ -630,12 +630,12 @@ if not paths then return end
 
 ### 9.2 Error Dialogs
 
-- Use **`lib2.show(msg, _error)`** followed by `return` for recoverable errors:
+- Use **`lib2.show(msg, nil, _error)`** followed by `return` for recoverable errors:
 
   ```lua
   if not shapefileNdv then
       -- "Could not find NDV shapefile.":
-      lib2.show("Impossible de trouver le shapefile 'NDV'.", _error)
+      lib2.show("Impossible de trouver le shapefile 'NDV'.", nil, _error)
       return
   end
   ```
@@ -698,7 +698,7 @@ for _, shape in pairs(shapeVoieTable) do
     -- Is this a derailer alignment that should be skipped?
     if shape.NumParts == 1 and shape.NumPoints == 2
         and math.abs(geometriesTable[recordNumber].Length - 2.0) < 0.1 then
-        lib2.show("Derailleur ignore : "..alignmentName, _warning)
+        lib2.show("Derailleur ignore : "..alignmentName, nil, _warning)
         goto continue
     end
 
@@ -1412,7 +1412,7 @@ lib2.show(nItems.." rows found in sheet '"..sheetName.."'")
 lib2.show("Select an existing object as template. Its RcType and Variant will be used.")
 local template = askForObject("Select template object")
 if template.Alignment == nil then
-    lib2.show("Aborting: template object must have an alignment.", _error)
+    lib2.show("Aborting: template object must have an alignment.", nil, _error)
     return
 end
 
