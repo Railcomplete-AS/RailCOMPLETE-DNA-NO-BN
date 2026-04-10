@@ -69,6 +69,8 @@ For **library files** (files loaded via `includeLuaFile()`), the standard order 
 
 Library files use `---LOCAL CONSTANTS---` (not `---CONSTANTS---` or `---GLOBAL CONSTANTS---`) to make it explicit to the developer that libraries are not supposed to declare global constants. All constants in a library file shall be declared with the `local` keyword.
 
+Omit any section that has no content. For example, a script with no function definitions omits `---FUNCTIONS---`.
+
 ### 1.2 File-Level Block Comment
 
 Every Lua file shall begin with a block comment (`--[[ ... ]]`) containing:
