@@ -887,26 +887,26 @@ setRelation(sourceObj, targetObj, "RelationType")
 ### Profile Creation
 
 ```lua
--- Vertical profile:
+-- Vertical profile (no alignment arg — returns a profile object):
 local events = {}
 table.insert(events, createVerticalEvent(pos1, elevation1))
 table.insert(events, createVerticalEvent(pos2, elevation2))
-createVerticalProfile(alignment, events)
+createVerticalProfile(events)
 
 -- Cant profile:
 local cantEvents = {}
 table.insert(cantEvents, createCantEvent(pos, cantValue))
-createCantProfile(alignment, cantEvents)
+createCantProfile(cantEvents)
 
 -- Speed profile:
 local speedEvents = {}
 table.insert(speedEvents, createSpeedEvent(pos, speedKmh))
-createSpeedProfile(alignment, speedEvents)
+createSpeedProfile(speedEvents)
 
--- Mileage profile:
+-- Mileage profile (eventType is required: "Start", "ChainBreak", or "Milepost"):
 local mileageEvents = {}
-table.insert(mileageEvents, createMileageEvent(pos, mileageValue))
-createMileageProfile(alignment, mileageEvents)
+table.insert(mileageEvents, createMileageEvent(pos, mileageValue, "Milepost"))
+createMileageProfile(mileageEvents)
 
 -- Update vertical data from point list:
 updateAlignmentVerticalData(alignment, table.select(pointList, function(p)
