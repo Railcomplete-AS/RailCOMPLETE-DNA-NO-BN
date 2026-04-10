@@ -557,7 +557,7 @@ alignment.code = "="
 Exceptions:
 
 - The **exponentiation operator** `^` and **unary minus** may omit spaces when the expression is clearer that way: `(p1.X - p2.X)^2`
-- The **string concatenation operator** `..` — see Section 10.2 for the specific rules.
+- The **string concatenation operator** `..` — see Section 9.2 for the specific rules.
 
 Double spaces (or more) are not permitted in Lua expressions; only single spaces are used. Multiple spaces are permitted only inside string literals.
 
@@ -617,60 +617,13 @@ When you encounter duplicate code during a review:
 3. Have the other file call the shared version, or remove the duplicate entirely.
 4. Verify that all callers still work after the change.
 
-## 9. Error Handling
+## 9. Miscellaneous Style Rules
 
-### 9.1 General Guidance
-
-Functions that **can fail** in expected ways (e.g., user cancellation, missing data, file not found) should communicate this to the caller. The recommended pattern is to **return `nil`** on failure so the caller can check:
-
-```lua
-local paths = getShapefilePaths(folder)
-if not paths then return end
-```
-
-### 9.2 Error Dialogs
-
-- Use **`lib2.show(msg, nil, _error)`** followed by `return` for recoverable errors:
-
-  ```lua
-  if not shapefileNdv then
-      -- "Could not find NDV shapefile.":
-      lib2.show("Impossible de trouver le shapefile 'NDV'.", nil, _error)
-      return
-  end
-  ```
-
-- Use **`lib2.stop(msg)`** for unrecoverable errors that should halt the script:
-
-  ```lua
-  lib2.stop("Bad arguments to importTracksFromShapefile(): ["
-      ..tostring(arg1)..", "..tostring(arg2).."].")
-  ```
-
-### 9.3 Guard Clauses
-
-Every function that receives optional arguments or depends on external data should validate inputs early:
-
-```lua
-function importTracksFromShapefile(shapefileTable)
-    -- Get shapefiles if not passed:
-    if not shapefileTable then
-        local shapefileFolder = askForFolderName("Selectionnez le dossier...")
-        if not shapefileFolder then return end
-        local shapefilePaths = getShapefilePaths(shapefileFolder)
-        shapefileTable = getShapefileTable(shapefilePaths)
-    end
-    -- ...
-end
-```
-
-## 10. Miscellaneous Style Rules
-
-### 10.1 Semicolons
+### 9.1 Semicolons
 
 Do not use semicolons to terminate statements. Lua does not require them and they add visual noise.
 
-### 10.2 String Concatenation
+### 9.2 String Concatenation
 
 It is recommended to have **no spaces** surrounding the `..` concatenation operator. This keeps concatenated text items visually coupled, making it easier to read the resulting string as a whole:
 
@@ -687,7 +640,7 @@ lib2.show(
     tostring(nCrossings).." traversees obliques creees : "..(crossingNames or "-"))
 ```
 
-### 10.3 `goto` and Labels
+### 9.3 `goto` and Labels
 
 The `goto` statement with `::continue::` labels is acceptable for skipping to the next iteration of a loop when the alternative would be deeply nested `if` statements. Place the `::continue::` label at the end of the loop body, at the same indentation level as the loop contents:
 
@@ -708,7 +661,7 @@ for _, shape in pairs(shapeVoieTable) do
 end
 ```
 
-### 10.4 Magic Numbers
+### 9.4 Magic Numbers
 
 Avoid unexplained numeric literals in code. Use named constants or add an inline comment explaining the value:
 
@@ -722,7 +675,7 @@ if RC__getDistance2D(pointA, pointB) < _1_MM_ then
 if RC__getDistance2D(previousCoordinate, c) > 1e-6 then -- 1 um tolerance
 ```
 
-### 10.5 Boolean Flags: `_DEBUG_` and `_TRACE_`
+### 9.5 Boolean Flags: `_DEBUG_` and `_TRACE_`
 
 - `_DEBUG_` — When `true`, enables extra code that creates auxiliary objects or produces additional output useful during development:
 
@@ -739,52 +692,11 @@ if RC__getDistance2D(previousCoordinate, c) > 1e-6 then -- 1 um tolerance
 
 Both flags default to `false` in production code.
 
-### 10.6 The `beginUndoBufferItem()` / `endUndoBufferItem()` Pattern
-
-When a script or function creates or modifies multiple CAD objects that should be undoable as a single operation, wrap the relevant block in `beginUndoBufferItem()` and `endUndoBufferItem()`:
-
-```lua
-beginUndoBufferItem()
-
-for _, track in pairs(tracks) do
-    -- ... create or modify objects ...
-end
-
-endUndoBufferItem()
-```
-
-Ensure that every `beginUndoBufferItem()` has a matching `endUndoBufferItem()`, even when the function returns early due to errors.
-
-**Important:** Any call to the AutoCAD console using `runCommand()` will break the undo grouping established by the surrounding `beginUndoBufferItem()` / `endUndoBufferItem()` pair. Do not place `runCommand()` calls between these two statements:
-
-```lua
--- WRONG -- runCommand() breaks the undo grouping:
-beginUndoBufferItem()
-runCommand("_GRIPS 0 ")  -- This breaks the undo buffer!
--- ... create objects ...
-endUndoBufferItem()
-```
-
-### 10.7 Formula Reset Pattern
-
-RailCOMPLETE objects may have properties governed by DNA formulas. To override a formula-driven property with a literal value, first assign `"="` to clear the formula, then assign the desired value:
-
-```lua
-alignment.code = "="         -- Remove possible existing formula from DNA
-alignment.code = trackName   -- Set the literal value
-```
-
-Similarly, to trigger a recalculation/save without changing the value:
-
-```lua
-track.name = track.name -- Force save and update data
-```
-
 ---
 
 # PART B — TECHNICAL PATTERNS AND API
 
-## 11. Overview: Two Lua Contexts
+## 10. Overview: Two Lua Contexts
 
 Scripts differ from property formulas in several ways:
 
@@ -796,7 +708,7 @@ Scripts differ from property formulas in several ways:
 | Scope | Read-only computation | Create, modify, delete objects |
 | API | ~88 object-level functions | All object-level + ~60 script-only functions |
 
-## 12. Script Structure
+## 11. Script Structure
 
 ### Standard Script Template
 
@@ -848,7 +760,7 @@ lib2.show(_USAGE_)
 -- ...
 ```
 
-## 13. User Interaction
+## 12. User Interaction
 
 ### askForKeyword — Multiple Choice Dialog
 
@@ -931,7 +843,7 @@ end
 showMessage("Operation completed successfully.")
 ```
 
-## 14. Object Creation and Manipulation
+## 13. Object Creation and Manipulation
 
 ### Alignment Creation
 
@@ -947,7 +859,7 @@ local track = createAlignmentObject(rctype_Track, "Variant Name", geometry)
 local points = {getPoint3D(x1, y1, z1), getPoint3D(x2, y2, z2), getPoint3D(x3, y3, z3)}
 local track = createAlignmentObject(rctype_Track, "Variant Name", points)
 
--- Set properties after creation (see Section 10.7 for formula reset pattern):
+-- Set properties after creation (see formula reset pattern in Section 13):
 track.code = "="
 track.code = "V1"
 track.name = track.name -- Force save and update data
@@ -997,16 +909,16 @@ signal.dir = "down"
 object.VerticalOffset = 5.5
 ```
 
-**Formula binding pattern** — reset formula, then assign (see Section 10.7):
+**Formula reset pattern** — RailCOMPLETE objects may have properties governed by DNA formulas. To override a formula-driven property with a literal value, first assign `"="` to clear the formula, then assign the desired value:
 ```lua
-obj.name = "="          -- Remove any existing formula
-obj.name = "New Name"   -- Assign concrete value
+alignment.code = "="         -- Remove possible existing formula from DNA
+alignment.code = trackName   -- Set the literal value
 
 obj.VerticalOffset = "=" -- Remove elevation formula
 obj.VerticalOffset = z   -- Assign explicit value
 ```
 
-**Force save/update:**
+**Force save/update** — trigger a recalculation/save without changing the value:
 ```lua
 alignment.name = alignment.name  -- Triggers save and recalculation of derived fields
 ```
@@ -1053,7 +965,7 @@ end))
 eraseObject(obj)
 ```
 
-## 15. File I/O
+## 14. File I/O
 
 ### Excel Reading
 
@@ -1131,7 +1043,7 @@ local files = getFilesInFolder(folderPath)
 local folders = getFoldersInFolder(folderPath)
 ```
 
-## 16. Running Commands
+## 15. Running Commands
 
 ### Pattern
 
@@ -1149,7 +1061,7 @@ local logOutput = result.log       -- Command output text
 local status = result.result       -- Execution status
 ```
 
-**Important:** `runCommand()` breaks undo buffer grouping — see Section 10.6 for details.
+**Important:** `runCommand()` breaks undo buffer grouping — see Undo Buffer Grouping in Section 15 for details.
 
 ### Common AutoCAD Commands
 
@@ -1208,7 +1120,33 @@ local tmp = runCommand("_RC-ShowVersion  ").log
 local rcVersion = tmp:match("version (%d+%.%d+)%.%d+%.%d+")
 ```
 
-## 17. Advanced Patterns
+### Undo Buffer Grouping
+
+When a script or function creates or modifies multiple CAD objects that should be undoable as a single operation, wrap the relevant block in `beginUndoBufferItem()` and `endUndoBufferItem()`:
+
+```lua
+beginUndoBufferItem()
+
+for _, track in pairs(tracks) do
+    -- ... create or modify objects ...
+end
+
+endUndoBufferItem()
+```
+
+Ensure that every `beginUndoBufferItem()` has a matching `endUndoBufferItem()`, even when the function returns early due to errors.
+
+**Important:** Any call to the AutoCAD console using `runCommand()` will break the undo grouping established by the surrounding `beginUndoBufferItem()` / `endUndoBufferItem()` pair. Do not place `runCommand()` calls between these two statements:
+
+```lua
+-- WRONG -- runCommand() breaks the undo grouping:
+beginUndoBufferItem()
+runCommand("_GRIPS 0 ")  -- This breaks the undo buffer!
+-- ... create objects ...
+endUndoBufferItem()
+```
+
+## 16. Advanced Patterns
 
 ### Selection Sets
 
@@ -1357,6 +1295,53 @@ end
 
 -- WCS vector from ACS vector:
 local wcsVector = getWcsVectorFromAcsVector(obj, lateralOffset, longitudinalOffset)
+```
+
+## 17. Error Handling
+
+### General Guidance
+
+Functions that **can fail** in expected ways (e.g., user cancellation, missing data, file not found) should communicate this to the caller. The recommended pattern is to **return `nil`** on failure so the caller can check:
+
+```lua
+local paths = getShapefilePaths(folder)
+if not paths then return end
+```
+
+### Error Dialogs
+
+- Use **`lib2.show(msg, nil, _error)`** followed by `return` for recoverable errors:
+
+  ```lua
+  if not shapefileNdv then
+      -- "Could not find NDV shapefile.":
+      lib2.show("Impossible de trouver le shapefile 'NDV'.", nil, _error)
+      return
+  end
+  ```
+
+- Use **`lib2.stop(msg)`** for unrecoverable errors that should halt the script:
+
+  ```lua
+  lib2.stop("Bad arguments to importTracksFromShapefile(): ["
+      ..tostring(arg1)..", "..tostring(arg2).."].")
+  ```
+
+### Guard Clauses
+
+Every function that receives optional arguments or depends on external data should validate inputs early:
+
+```lua
+function importTracksFromShapefile(shapefileTable)
+    -- Get shapefiles if not passed:
+    if not shapefileTable then
+        local shapefileFolder = askForFolderName("Selectionnez le dossier...")
+        if not shapefileFolder then return end
+        local shapefilePaths = getShapefilePaths(shapefileFolder)
+        shapefileTable = getShapefileTable(shapefilePaths)
+    end
+    -- ...
+end
 ```
 
 ## 18. Real Examples
@@ -1543,7 +1528,7 @@ end
 
 endUndoBufferItem()
 
--- Zoom to extents (note: must be outside undo buffer, see Section 10.6):
+-- Zoom to extents (note: must be outside undo buffer, see Section 15):
 runCommand("_z _e ")
 lib2.show("Import complete")
 ```
