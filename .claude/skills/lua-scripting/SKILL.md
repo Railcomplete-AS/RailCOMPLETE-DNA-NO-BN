@@ -1245,7 +1245,7 @@ local linearAddr = getLinearAddress(worldPosition, alignment)
 -- linearAddr.DistanceAlong, .LateralOffset, .LongitudinalOffset, .VerticalOffset
 
 -- Get alignment info at a point:
-local ai = alignment:getAlignmentInfo(point)
+local ai = getAlignmentInfo(alignment.id, point)
 if ai.NormalProjectionExists then
     local pos = ai.RelativePosition
     local mileage = ai.Mileage
