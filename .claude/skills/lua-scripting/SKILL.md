@@ -742,8 +742,12 @@ until option == "Exit" or option == nil
 local obj = askForObject("Select an object in the drawing")
 local pointObj = askForPointObject("Select a point object")
 
--- Multiple objects:
-local objects = askForPointObjects("Select point objects (press Enter when done)")
+-- Multiple objects (loop until user cancels):
+local objects = {}
+repeat
+    local obj = askForPointObject("Select a point object (press Enter when done)")
+    if obj then table.insert(objects, obj) end
+until not obj
 ```
 
 ### askForAlignment — Alignment Selection
