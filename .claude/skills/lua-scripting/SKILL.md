@@ -78,7 +78,7 @@ Every Lua file shall begin with a block comment (`--[[ ... ]]`) containing:
 1. The short name of the file (matching the filename without extension).
 2. A row of equals signs (`=`) whose length matches the short name, for visual separation.
 3. A brief description of the file's purpose.
-4. Usage examples showing how to include and call the file's functions.
+4. Usage examples showing how to include and call the file's functions (for library files; script files may omit this or replace it with a workflow summary).
 5. A note on global constants that the file expects to be inherited from the calling sandbox (if applicable).
 6. A version history with entries in the format: `YYYY-MM-DD vX.Y AUTHOR Description.`
 
