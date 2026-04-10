@@ -369,7 +369,7 @@ lib2.writeln("Creation de voie : " .. trackName)
    - **Single line:** Place `--[[` and `--]]` on the same line, wrapping both the dead code and any inline comment it may have:
 
      ```lua
-     --[[ local marker = createPointObject(possibleAlignment, "JBTFE_MRK Marker", "Knappenal", coordinate) --]]
+     --[[ local marker = insertPointObject(possibleAlignment, "JBTFE_MRK Marker", "Knappenal", coordinate) --]]
      ```
 
    - **Multiple lines:** Place `--[[` and `--]]` on their own lines, flush with the **left margin** (column 1), immediately before and after the dead code block.
@@ -685,7 +685,7 @@ if RC__getDistance2D(previousCoordinate, c) > 1e-6 then -- 1 um tolerance
   ```lua
   if _DEBUG_ then
       -- Create an auxiliary line object to visualize the milepost markers:
-      local referenceMileageHelpLine = createAlignmentObject(
+      local referenceMileageHelpLine = insertAlignment(
           rctype_AuxiliaryLine, "Ligne auxiliaire",
           refAlignmentHorizontalGeometries[referenceAlignmentName])
   end
@@ -808,11 +808,11 @@ local segments = {}
 table.insert(segments, createLineSegment(p1, p2))
 table.insert(segments, createCurveSegment2(p2, directionDeg, p3))
 local geometry = createHorizontalGeometry(segments)
-local track = createAlignmentObject(rctype_Track, "Variant Name", geometry)
+local track = insertAlignment(rctype_Track, "Variant Name", geometry)
 
 -- From coordinate points (implicit geometry):
 local points = {getPoint3D(x1, y1, z1), getPoint3D(x2, y2, z2), getPoint3D(x3, y3, z3)}
-local track = createAlignmentObject(rctype_Track, "Variant Name", points)
+local track = insertAlignment(rctype_Track, "Variant Name", points)
 
 -- Set properties after creation (see formula reset pattern in Section 12):
 track.code = "="
@@ -839,8 +839,8 @@ local geometry = createHorizontalGeometry(segments)
 ### Point Object Creation
 
 ```lua
--- createPointObject(alignment, rctype, variant, position, distFromAlignment, leftSide):
-local signal = createPointObject(
+-- insertPointObject(alignment, rctype, variant, pos, distFromAlignment, leftSide):
+local signal = insertPointObject(
     track,
     rctype_Signal,
     "Signal classique, cible ACFH",
@@ -849,9 +849,9 @@ local signal = createPointObject(
     true    -- Left side of track
 )
 
--- insertPointObject (modern, simpler API):
-local obj = insertPointObject(alignment, rctype, variant, position)
-local obj = insertPointObject(alignment, rctype, position)  -- No variant
+-- Simpler overloads:
+local obj = insertPointObject(alignment, rctype, variant, insertionPoint)
+local obj = insertPointObject(alignment, rctype, insertionPoint)  -- Default variant
 ```
 
 ### Property Assignment
@@ -927,7 +927,7 @@ eraseObject(obj)
 ```lua
 -- 1. Open file:
 local filename = askForFileName("Select Excel file")
-local file = getContentsFromFile(FileType.Excel, "", filename)
+local file = getFileFromPath(FileType.Excel, filename)
 
 -- 2. Get sheet names:
 local sheets = getExpandoObjectPropertyNames(file)
@@ -955,7 +955,7 @@ end
 ### XML Reading
 
 ```lua
-local xml = getContentsFromFile(FileType.Xml, "Select XML file", "*.xml")
+local xml = getFileFromPrompt(FileType.Xml, "Select XML file")
 local props = getExpandoObjectPropertyNames(xml)
 local nProps = getCollectionLength(props)
 
@@ -968,7 +968,7 @@ end
 ### Text File Reading
 
 ```lua
-local file = getContentsFromFile(FileType.Text, "", filename)
+local file = getFileFromPath(FileType.Text, filename)
 local lines = {}
 for s in file:gmatch("[^\r\n]+") do
     table.insert(lines, s)
@@ -1343,7 +1343,7 @@ lib2.show(_USAGE_)
 
 -- Select file:
 local filename = askForFileName("Select Excel file with X, Y columns")
-local file = getContentsFromFile(FileType.Excel, "", filename)
+local file = getFileFromPath(FileType.Excel, filename)
 local sheets = getExpandoObjectPropertyNames(file)
 local sheetName = sheets[0]
 local items = file[sheetName]
@@ -1469,7 +1469,7 @@ for _, shape in pairs(shapes) do
             table.insert(points, getPoint3D(vertex.X, vertex.Y, z))
         end
 
-        local alignment = createAlignmentObject(rctype_Track, _TRACK_VARIANT_, points)
+        local alignment = insertAlignment(rctype_Track, _TRACK_VARIANT_, points)
         if alignment then
             alignment.code = "="
             alignment.code = trackName
@@ -1495,7 +1495,7 @@ lib2.show("Import complete")
 
 ### 0-Indexed RC Collections vs 1-Indexed Lua Tables
 
-RailCOMPLETE collections (from `getRelatedObjects()`, `getContentsFromFile()`, `filter()`, `getExpandoObjectPropertyNames()`) are **0-indexed**. Lua tables created with `table.insert()` are **1-indexed**.
+RailCOMPLETE collections (from `getRelatedObjects()`, `getFileFromPath()`, `filter()`, `getExpandoObjectPropertyNames()`) are **0-indexed**. Lua tables created with `table.insert()` are **1-indexed**.
 
 ```lua
 -- RC collection: 0-indexed
