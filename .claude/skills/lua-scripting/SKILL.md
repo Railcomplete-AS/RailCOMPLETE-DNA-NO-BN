@@ -978,11 +978,14 @@ end
 ### JSON
 
 ```lua
--- Read JSON:
-local data = deserializeJson(jsonString)
+-- Read JSON from file (first arg is filename, second is target object):
+local data = deserializeJson(filename, targetObject)
 
--- Export to JSON:
-exportToJson(luaTable, "output.json")
+-- Export table to JSON string:
+local jsonString = exportToJson(luaTable)
+
+-- Write JSON string to file:
+exportStringToFile(jsonString, "output.json")
 ```
 
 ### File Output
