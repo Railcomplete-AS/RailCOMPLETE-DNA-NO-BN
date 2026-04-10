@@ -249,7 +249,7 @@ local _USAGE_ = [[
 Pre-requis :
 - Donnees d'entree exportees depuis Gaia Data Etude...
 
-Version : ]].._VERSION_
+Version : ]] .. _VERSION_
 ```
 
 In this example, `_HEADER_`, `_VERSION_`, `_DEBUG_`, `_TRACE_`, `_YES_`, `_NO_`, `_OK_`, `_HELP_`, `_TERMINATE_`, and `_TERMINATED_` are all global. They are inherited by `lib1`, `lib2`, and `VA`. The included libraries may declare their own `local _VERSION_` without affecting the parent's `_VERSION_`.
@@ -352,12 +352,12 @@ When a line of code contains a user-facing string in a foreign language (e.g., F
 
 ```lua
 -- "Could not find path to ... Please select new own alignment for ...":
-write("Impossible de trouver un parcours vers "..rkObject.Var1..
-    ". Veuillez selectionner un nouvel axe propre pour "..rkObject.code.."\n", _warning)
+write("Impossible de trouver un parcours vers " .. rkObject.Var1 ..
+    ". Veuillez selectionner un nouvel axe propre pour " .. rkObject.code .. "\n", _warning)
 -- "Select the folder containing the shapefiles":
 shapefileFolder = askForFolderName("Selectionnez le dossier contenant les fichiers shapefile")
 -- "Track created:":
-lib2.writeln("Creation de voie : "..trackName)
+lib2.writeln("Creation de voie : " .. trackName)
 ```
 
 ### 4.4 Dead Code and Alternative Code
@@ -391,7 +391,7 @@ Both lines are displayed together in the tooltip. Only the comment line directly
 -- Writes a message to the log window and appends a newline. Call as lib2.writeln(msg, symbol = nil).
 function writeln(msg, symbol)
     if msg then
-        write(msg.."\n", symbol or _noSymbol)
+        write(msg .. "\n", symbol or _noSymbol)
     else
         write("\n", symbol or _noSymbol)
     end
@@ -550,7 +550,7 @@ local result = createExternalLibraryObject(
 
 ### 7.3 Spaces Around Operators
 
-Use spaces around binary operators (`=`, `==`, `~=`, `<`, `>`, `<=`, `>=`, `+`, `-`, `*`, `/`, `and`, `or`):
+Use spaces around binary operators (`=`, `==`, `~=`, `<`, `>`, `<=`, `>=`, `+`, `-`, `*`, `/`, `..`, `and`, `or`):
 
 ```lua
 local distance = math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
@@ -561,7 +561,6 @@ alignment.code = "="
 Exceptions:
 
 - The **exponentiation operator** `^` and **unary minus** may omit spaces when the expression is clearer that way: `(p1.X - p2.X)^2`
-- The **string concatenation operator** `..` — see Section 9.2 for the specific rules.
 
 Double spaces (or more) are not permitted in Lua expressions; only single spaces are used. Multiple spaces are permitted only inside string literals.
 
@@ -593,8 +592,8 @@ local applicableAlignments = table.select(allTracks,
     } end)
     :where(function(x) return isOnAlignment(x["alignmentInfo"]) end)
 -- String continuation — both lines are parts of the same string, so same indentation:
-lib2.show("L'importation de voies sera faite sans introduire les reperes "..
-"kilometriques correspondants. Pour completer le plan de trace, "..
+lib2.show("L'importation de voies sera faite sans introduire les reperes " ..
+"kilometriques correspondants. Pour completer le plan de trace, " ..
 "vous devez suivre les pas suivants :")
 ```
 
@@ -629,19 +628,19 @@ Do not use semicolons to terminate statements. Lua does not require them and the
 
 ### 9.2 String Concatenation
 
-It is recommended to have **no spaces** surrounding the `..` concatenation operator. This keeps concatenated text items visually coupled, making it easier to read the resulting string as a whole:
+Use **spaces** around the `..` concatenation operator, consistent with all other binary operators (see Section 7.3):
 
 ```lua
-local msg = "Track created: "..trackName
-lib2.writeln("Associe la voie "..track.code.." a l'axe de reference "..refAlignment.code)
+local msg = "Track created: " .. trackName
+lib2.writeln("Associe la voie " .. track.code .. " a l'axe de reference " .. refAlignment.code)
 ```
 
 When a concatenated expression must be broken across multiple lines, break **after** the `..` operator:
 
 ```lua
 lib2.show(
-    tostring(nSwitches).." aiguillages crees : "..(switchNames or "-").."\n\n"..
-    tostring(nCrossings).." traversees obliques creees : "..(crossingNames or "-"))
+    tostring(nSwitches) .. " aiguillages crees : " .. (switchNames or "-") .. "\n\n" ..
+    tostring(nCrossings) .. " traversees obliques creees : " .. (crossingNames or "-"))
 ```
 
 ### 9.3 `goto` and Labels
@@ -655,7 +654,7 @@ for _, shape in pairs(shapeVoieTable) do
     -- Is this a derailer alignment that should be skipped?
     if shape.NumParts == 1 and shape.NumPoints == 2
         and math.abs(geometriesTable[recordNumber].Length - 2.0) < 0.1 then
-        lib2.show("Derailleur ignore : "..alignmentName, nil, _warning)
+        lib2.show("Derailleur ignore : " .. alignmentName, nil, _warning)
         goto continue
     end
 
@@ -958,7 +957,7 @@ local nProps = getCollectionLength(props)
 
 for i = 0, nProps - 1 do
     local value = xml[props[i]]
-    lib2.writeln(props[i].." = "..tostring(value))
+    lib2.writeln(props[i] .. " = " .. tostring(value))
 end
 ```
 
@@ -1038,7 +1037,7 @@ runCommand("_-OSNAP _END,_MID,_CEN,_NOD,_INT,_PER,_TAN,_NEA ")
 runCommand("_-COLOR _BYLAYER ")
 
 -- Drawing:
-runCommand("_CIRCLE "..x..","..y.." "..radius.." ")
+runCommand("_CIRCLE " .. x .. "," .. y .. " " .. radius .. " ")
 
 -- Zoom:
 runCommand("_z _e ")       -- Zoom extents
@@ -1197,7 +1196,7 @@ cadInterface.addEntitiesToModelSpace({circle, line, polyline, text})
 
 ```lua
 -- Create a block:
-local blockName = "myBlock_"..generateGuid()
+local blockName = "myBlock_" .. generateGuid()
 cadInterface.createBlock(blockName, entities)
 
 -- Create block reference (instance):
@@ -1276,7 +1275,7 @@ if not paths then return end
 
   ```lua
   lib2.stop("Bad arguments to importTracksFromShapefile(): ["
-      ..tostring(arg1)..", "..tostring(arg2).."].")
+      .. tostring(arg1) .. ", " .. tostring(arg2) .. "].")
   ```
 
 ### Guard Clauses
@@ -1343,7 +1342,7 @@ local sheetName = sheets[0]
 local items = file[sheetName]
 local nItems = getCollectionLength(items)
 
-lib2.show(nItems.." rows found in sheet '"..sheetName.."'")
+lib2.show(nItems .. " rows found in sheet '" .. sheetName .. "'")
 
 -- Select template object:
 lib2.show("Select an existing object as template. Its RcType and Variant will be used.")
@@ -1395,7 +1394,7 @@ end
 endUndoBufferItem()
 
 setSelectionSet(objTable)
-lib2.show("\n"..nCreated.." objects created out of "..nItems.." rows.")
+lib2.show("\n" .. nCreated .. " objects created out of " .. nItems .. " rows.")
 ```
 
 ### Batch Create Tracks from Shapefile
@@ -1438,7 +1437,7 @@ local shapefile = runExternalLibraryFunction(
 local shapes = table.select(shapefile.ShapeIndices)
 local geometries = table.select(shapefile.Features, function(x) return x.Geometry end)
 
-lib2.writeln("Importing from: "..shapefilePath)
+lib2.writeln("Importing from: " .. shapefilePath)
 
 beginUndoBufferItem()
 
@@ -1449,7 +1448,7 @@ for _, shape in pairs(shapes) do
     -- Is this a very short segment (derailer) that should be skipped?
     if shape.NumParts == 1 and shape.NumPoints == 2 and
        math.abs(geometries[recordNumber].Length - 2.0) < 0.1 then
-        lib2.writeln("Skipping derailer: "..trackName, _warning)
+        lib2.writeln("Skipping derailer: " .. trackName, _warning)
         goto continue
     end
 
@@ -1469,9 +1468,9 @@ for _, shape in pairs(shapes) do
             alignment.code = trackName
             -- Force save and update data:
             alignment.name = alignment.name
-            lib2.writeln("Created track: "..trackName, _ok)
+            lib2.writeln("Created track: " .. trackName, _ok)
         else
-            lib2.writeln("Failed to create track: "..trackName, _error)
+            lib2.writeln("Failed to create track: " .. trackName, _error)
         end
     end
 
