@@ -11,7 +11,7 @@ description: Guide for writing standalone Lua scripts in DNA repositories -- cod
 
 $ARGUMENTS
 
-For the full API reference, see `.claude/documentation/080-luacommands.html`. For RC commands, see `.claude/documentation/050-commands.html`. For debugger usage, see `.claude/documentation/080-luadebugger.html`.
+For the full API reference, see `.claude/references/080-luacommands.html`. For RC commands, see `.claude/references/050-commands.html`. For debugger usage, see `.claude/references/080-luadebugger.html`.
 
 ---
 
@@ -1616,7 +1616,7 @@ _error       -- Red X
 
 ## 21. Documentation Reference
 
-- **Full API reference**: `.claude/documentation/080-luacommands.html` — all object-level + script-only functions
-- **Lua language tutorial**: `.claude/documentation/070-lua.html` — syntax, types, control structures
-- **RC commands**: `.claude/documentation/050-commands.html` — commands available via `runCommand()`
-- **Debugger**: `.claude/documentation/080-luadebugger.html` — breakpoints, watches, stepping
+- **Full API reference**: `.claude/references/080-luacommands.html` — all object-level + script-only functions
+- **Lua language tutorial**: `.claude/references/070-lua.html` — syntax, types, control structures
+- **RC commands**: `.claude/references/050-commands.html` — commands available via `runCommand()`
+- **Debugger**: `.claude/references/080-luadebugger.html` — breakpoints, watches, stepping
