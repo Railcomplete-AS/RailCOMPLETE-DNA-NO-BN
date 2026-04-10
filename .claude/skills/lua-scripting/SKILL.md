@@ -71,6 +71,8 @@ Library files use `---LOCAL CONSTANTS---` (not `---CONSTANTS---` or `---GLOBAL C
 
 Omit any section that has no content. For example, a script with no function definitions omits `---FUNCTIONS---`.
 
+**Note:** Some existing files in the codebase use two-dash headers (`--CONSTANTS--`, `--FUNCTIONS--`). New and updated code shall use the three-dash format (`---CONSTANTS---`, `---FUNCTIONS---`) defined above.
+
 ### 1.2 File-Level Block Comment
 
 Every Lua file shall begin with a block comment (`--[[ ... ]]`) containing:
