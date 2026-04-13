@@ -37,7 +37,7 @@ end
 
 configA = askForKeyword("A-balise", {"Fixed A", "Controlled A"})
 configB = askForKeyword("B-balise", {"Fixed B", "Controlled B"})
-if RC__isMemberOf({"Hovedsignalbalisegruppe" or "Forsignalbalisegruppe", "Repeterbalisegruppe", "Hastighetsbalisegruppe"}, groupType) then
+if RC__isMemberOf({"Hovedsignalbalisegruppe", "Forsignalbalisegruppe", "Repeterbalisegruppe", "Hastighetsbalisegruppe"}, groupType) then
 	configC = askForKeyword("C-balise", {"No C", "Fixed C", "Controlled C"})
 else
 	configC = "No C"
@@ -102,8 +102,8 @@ if askForKeyword("Confirm insertion", {"Insert group", "Cancel"}) == "Insert gro
 	if RC__DNA_VERSION():match("2021%-11%-27") then
 		setTextPositionFormula(baliseGroup, "OBJEKTNAVN", "RC__acsVector2wcsVector((RightSided and 1 or -1) * 8/DocumentData.Document.Database.Cannoscale.Scale, 0)")
 	else
-		balisegroup.TextAttribute_OBJEKTNAVN.Position = "="
-		balisegroup.TextAttribute_OBJEKTNAVN.Position = "=(RightSided and 1 or -1), 0"
+		baliseGroup.TextAttribute_OBJEKTNAVN.Position = "="
+		baliseGroup.TextAttribute_OBJEKTNAVN.Position = "=(RightSided and 1 or -1), 0"
 	end
 	
 	runCommand('(ALERT "Complete the balisegroup configuration using relations relevant to the group type / set its Sequence number") ')
