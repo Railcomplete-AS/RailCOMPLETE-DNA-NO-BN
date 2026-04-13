@@ -109,7 +109,7 @@ RC avrunder slik at reell gradient avrundes til nærmeste heltall. Dvs. at et fa
 som igjen betyr at fallbalise skal benyttes med C-balise og verdi 10 promille i ATC kodetabell. Tilsvarende så vil 10.500-15.499
 promille fall avrundes til hhv. 11/12/13/14/15 i ATC kodetabell (og bør angis slik i skjematisk tegning, uten desimaler i
 promille-angivelsen) og resulterer i ATC-koding tilsvarende tabellverdien for 15 promille. For FATC så vil et fall på
-0.500..1.449 o/oo resultere i avrundet verdi 1 promille som betyr at fallbalise skal benyttes med ATC-koding tilsvarende
+0.500..1.499 o/oo resultere i avrundet verdi 1 promille som betyr at fallbalise skal benyttes med ATC-koding tilsvarende
 tabellverdien for 5 promille. Valg av målavstand-tabell for bremsekurve følger samme logikk: Beregne fall, avrunde til nærmeste
 heltallige promille, deretter følger TRV bestemmelser som angitt over.
 

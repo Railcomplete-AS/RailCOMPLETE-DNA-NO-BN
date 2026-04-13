@@ -168,6 +168,7 @@ repeat
 
 				else
 					-- Valid coordinates found:
+					-- Z is 0 or DNA-bound to its alignment's elevation:
 					local targetPosition = getPoint3D(x, y)
 
 					if type(rctype) == "string" and type(variant) == "string" then
@@ -194,6 +195,7 @@ repeat
 					obj.LongitudinalOffset = linearAddress.LongitudinalOffset
 
 					if option == _INSERT_OBJECTS_XY_ then
+						-- Lock to vertical profile of alignment:
 						obj.VerticalOffset = "=0"
 					else
 						targetPosition = getPoint3D(x, y, z)

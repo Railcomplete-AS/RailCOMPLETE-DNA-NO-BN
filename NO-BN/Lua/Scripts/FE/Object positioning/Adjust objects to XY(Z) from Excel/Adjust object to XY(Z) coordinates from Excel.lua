@@ -182,6 +182,7 @@ repeat
 				local targetPosition = getPoint3D(x, y)
 				local nearbyObjects, nNearbyObjects = getNearbyPointObjects2D(templateObject.RcType, targetPosition, tolerance)
 				if nNearbyObjects > 0 then
+					-- Assume all objects have a non-nil Alignment:
 					obj = nearbyObjects[0]
 					local initialPosition = getPoint3D(obj)
 					local newPosition
