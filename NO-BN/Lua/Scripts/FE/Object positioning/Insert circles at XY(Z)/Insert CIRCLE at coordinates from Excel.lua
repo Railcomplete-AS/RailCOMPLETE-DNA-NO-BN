@@ -41,7 +41,7 @@ local _ASK_FOR_EXCEL_FILE_MSG_ = lib2.language(
 	{EN="Select Excel file with XY coordinates columns with caption 'X' and 'Y'.",
 	NO="Velg Excel-fil med XY-koordinatkolonner med overskriften «X» og «Y».",
 	FR="Sélectionnez le fichier Excel contenant les colonnes de coordonnées XY intitulées « X » et « Y ».",
-	DE="Wählen Sie eine Excel-Datei mit XY-Koordinatenspalten mit den Beschriftungen „X" und „Y" aus."})
+	DE="Wählen Sie eine Excel-Datei mit XY-Koordinatenspalten mit den Beschriftungen „X“ und „Y“ aus."})
 
 local _BAD_SELECTION_MSG_ = lib2.language({EN="Invalid menu selection", NO="Ugyldig menyvalg", FR="Sélection de menu non valide", DE="Ungültige Menüauswahl"})
 local _TERMINATED_MSG_ = lib2.language({EN="Terminated.", NO="Utført.", FR="Terminé.", DE="Beendet."})

@@ -35,7 +35,7 @@ local _INSERT_OBJECTS_XYZ_ = lib2.language(
 	{EN="Insert objects' at XYZ coordinates (removing possible DNA formula on the VerticalOffset property)",
 	NO="Sett inn objekter på XYZ-koordinater (fjerner eventuell DNA-formel på VerticalOffset-egenskapen)",
 	FR="Insérer des objets aux coordonnées XYZ (en supprimant la formule ADN éventuelle dans la propriété VerticalOffset)",
-	DE="Objekte an den XYZ-Koordinaten einfügen (mögliche DNA-Formel in der Eigenschaft „VerticalOffset" wird entfernt)"})
+	DE="Objekte an den XYZ-Koordinaten einfügen (mögliche DNA-Formel in der Eigenschaft „VerticalOffset“ wird entfernt)"})
 local _HELP_ = lib2.language({EN="Help", NO="Hjelp", FR="Aide", DE="Hilfe"})
 local _TERMINATE_ = lib2.language({EN="Terminate", NO="Avslutt", FR="Terminer", DE="Abbrechen"})
 
@@ -50,13 +50,13 @@ local _ASK_FOR_XY_EXCEL_FILE_MSG_ = lib2.language(
 	{EN="Select Excel file where the first worksheet has column captions 'X' and 'Y' (a 'Z' column will be ignored)",
 	NO="Velg Excel-fil der det første regnearket har kolonneoverskriftene «X» og «Y» (en «Z»-kolonne vil bli ignorert).",
 	FR="Sélectionnez le fichier Excel dont la première feuille de calcul comporte les en-têtes de colonne « X » et « Y » (la colonne « Z » sera ignorée).",
-	DE="Wählen Sie eine Excel-Datei aus, in der das erste Arbeitsblatt die Spaltenüberschriften „X" und „Y" enthält (eine Spalte „Z" wird ignoriert)."})
+	DE="Wählen Sie eine Excel-Datei aus, in der das erste Arbeitsblatt die Spaltenüberschriften „X“ und „Y“ enthält (eine Spalte „Z“ wird ignoriert)."})
 
 local _ASK_FOR_XYZ_EXCEL_FILE_MSG_ = lib2.language(
 	{EN="Select Excel file where the first worksheet has column captions 'X' and 'Y' and 'Z'",
 	NO="Velg Excel-fil der det første regnearket har kolonneoverskriftene «X», «Y» og «Z».",
 	FR="Sélectionnez le fichier Excel dont la première feuille de calcul comporte les en-têtes de colonnes « X », « Y » et « Z ».",
-	DE="Wählen Sie eine Excel-Datei aus, in der das erste Arbeitsblatt die Spaltenüberschriften „X", „Y" und „Z" enthält."})
+	DE="Wählen Sie eine Excel-Datei aus, in der das erste Arbeitsblatt die Spaltenüberschriften „X“, „Y“ und „Z“ enthält."})
 
 local _SELECT_TEMPLATE_OBJECT_MSG_ = lib2.language(
 	{EN="Select an existing object as template.\n\nIts RcType and Variant will be used as a template for inserting similar objects if no RcType and Variant is stated in the Excel file",
