@@ -4,9 +4,8 @@
 	Computes distances, gradients and ATC balise encoding from a source object
 	to target objects along the railway alignment.
 
-	Change history: See 'aboutMsg' below.
-	Usage: See usageMsg below.
-	About: See aboutMsg below.
+	Requires RC 2024.2.6 or later.
+	Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
 
 	2024-10-19 v1.0 CLFEY Created.
 	2024-11-02 v1.1 CLFEY Script continues, also after non-successful choice of object.
@@ -18,7 +17,7 @@
 
 ---LOCAL CONSTANTS---
 
-local tWindowTitle = "Avstand, gradient og ATC koding mot et målpunkt"
+local _HEADER_ = "Avstand, gradient og ATC koding mot et målpunkt"
 
 -- Set by user before running script:
 local _USE_OWN_TRACK_ELEVATION_ = true -- true==>measure heights in own track, false==>measure heights in reference alignments
@@ -30,7 +29,7 @@ local _FATC_GRADIENT_LIMIT_ = -5 -- o/oo, i.e., ignore gradients above limit whe
 local _DATC_GRADIENT_LIMIT_ = -10 -- o/oo, i.e., ignore gradients above limit when encoding DATC balises (round down to closest multiple of 5 o/oo)
 local _TARGET_DISTANCE_GRADIENT_LIMIT_ = -1 -- o/oo, i.e. ignore gradients above limit when computing braking curve target distances
 
-local usageMsg = [[
+local _USAGE_ = [[
 BEREGNING AV HØYDE, MÅLAVSTAND OG GRADIENT (FALL)
 =========================================================================================
 
@@ -52,7 +51,7 @@ Planlagte utvidelser:
 - Tilrettelegge for ERTMS bremsekurver.
 ]]
 
-local outputFormatMsg = [[
+local _OUTPUT_FORMAT_ = [[
 BESKRIVELSE AV OUTPUTFORMATET
 =========================================================================================
 
@@ -99,7 +98,7 @@ FLAGG (vises etter tallverdiene):
      - Alle andre balisegrupper benytter A-balisens posisjon
 ]]
 
-local rcCalculationMethodMsg =
+local _RC_CALCULATION_METHOD_ =
 [[
 RailCOMPLETE BEREGNINGSMETODE - Endringsforslag til TRV pr desember 2025 fra C. Feyling
 =========================================================================================
@@ -139,7 +138,7 @@ hele promille, avviker fra G, så skal avrundet Greell benyttes i den videre ber
 kodetabeller bør det da angis "Reell gradient" i en fotnote.
 ]]
 
-local trvMsg = [[
+local _TRV_EXCERPT_ = [[
 UTDRAG FRA TRV
 =========================================================================================
 
@@ -194,22 +193,6 @@ c) Fall.
 	dette fallet benyttes, forhøyet til  nærmeste 5, 10, 15, 20 eller 25 ‰.
 ]]
 
-local aboutMsg = [[
-ABOUT
-=========================================================================================
-
-This script requires RC 2024.2.6 or more recent versions.
-
-2024-10-19_000 CLFEY Created.
-2024-11-02_001 CLFEY Script continues, also after non-successful choice of object.
-2025-11-07_002 CLFEY Print using monospace font. Added better explanations in the Usage window. Added RC rounding method.
-2026-02-16_003 CLFEY/Claude Implemented algorithm corresponding to CLFEY's TRV change proposal.
-
-TODO: Better user dialogs / menus.
-
-Copyright (c) 2015-2026 Railcomplete AS, Norway, NO916118503
-]]
-
 --[[Example output from RC-ShowVersion:
 RailCOMPLETE® version 2024.2.1.0
 DNA version information:
@@ -235,7 +218,7 @@ local function writeln(t) write((t or "") .. "\n") end
 -- Shows a message in the log window and a popup with OK button:
 local function show(t)
 	writeln(t)
-	askForKeyword(t, {"OK"}, "Avstand og gradient til målpunkt", FontType.Monospace)
+	askForKeyword(t, {"OK"}, _HEADER_, FontType.Monospace)
 end
 
 
@@ -534,28 +517,24 @@ local tFindAllTargets = "Velg startobjekt, finn målavstand og gradient ved å s
 local tOutputFormat = "Vis output-format"
 local tRcCalculationMethod = "Vis RailCOMPLETEs beregningsmetode (TRV endringsforslag)"
 local tBaneNorTrv = "Vis utdrag fra Bane NOR Teknisk Regelverk"
-local tAbout = "About"
 local tQuit = "Avslutt"
 local mode
 repeat
-	mode = askForKeyword(usageMsg, {tSingleTarget, tRelatedTargets, tFindAllTargets, tOutputFormat, tRcCalculationMethod, tBaneNorTrv, tAbout, tQuit}, "Avstand og gradient til målpunkt", false, FontType.Proportional)
+	mode = askForKeyword(_USAGE_, {tSingleTarget, tRelatedTargets, tFindAllTargets, tOutputFormat, tRcCalculationMethod, tBaneNorTrv, tQuit}, _HEADER_, false, FontType.Proportional)
 	if mode == tOutputFormat then
-		writeln(outputFormatMsg)
-		showMessage(outputFormatMsg, "OUTPUT-FORMAT - " .. tWindowTitle, FontType.Proportional, false)
+		writeln(_OUTPUT_FORMAT_)
+		showMessage(_OUTPUT_FORMAT_, "OUTPUT-FORMAT - " .. _HEADER_, FontType.Proportional, false)
 	elseif mode == tRcCalculationMethod then
-		writeln(rcCalculationMethodMsg)
-		showMessage(rcCalculationMethodMsg, "BEREGNINGSMETODE - " .. tWindowTitle, FontType.Proportional, false)
+		writeln(_RC_CALCULATION_METHOD_)
+		showMessage(_RC_CALCULATION_METHOD_, "BEREGNINGSMETODE - " .. _HEADER_, FontType.Proportional, false)
 	elseif mode == tBaneNorTrv then
-		writeln(trvMsg)
-		showMessage(trvMsg, "TRV UTDRAG - " .. tWindowTitle, FontType.Proportional, true)
-	elseif mode == tAbout then
-		writeln(aboutMsg)
-		showMessage(aboutMsg, "ABOUT - " .. tWindowTitle, FontType.Proportional, false)
+		writeln(_TRV_EXCERPT_)
+		showMessage(_TRV_EXCERPT_, "TRV UTDRAG - " .. _HEADER_, FontType.Proportional, true)
 	elseif mode == tQuit then
 		stop()
 	end
 until mode == tSingleTarget or mode == tRelatedTargets or mode == tFindAllTargets or mode == tQuit
-writeln("Avstand og gradient til målpunkt")
+writeln(_HEADER_)
 
 -- Main loop:
 local finished = false
