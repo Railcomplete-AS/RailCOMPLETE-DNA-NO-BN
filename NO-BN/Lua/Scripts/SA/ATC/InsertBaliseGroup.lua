@@ -22,6 +22,15 @@ local _VARIANTS_BALISE_GROUP_ = {
 	"Hastighetsbalisegruppe", "Lenkingsbalisegruppe", "Signalhøyningsbalisegruppe", "ET-balisegruppe",
 	"Grensebalisegruppe", "Radioområdebalisegruppe", "Diversebalisegruppe"
 }
+local _SELECT_PLACEMENT_MSG_ = "Select balise group placement (Km will be rounded)"
+local _SELECT_DIRECTION_MSG_ = "Select balise group direction"
+local _SELECT_TYPE_MSG_ = "Select balise group type"
+local _P_BALISE_MSG_ = "P-balise"
+local _SELECT_DIRECTION_MODE_MSG_ = "Select single/dual direction"
+local _A_BALISE_MSG_ = "A-balise"
+local _B_BALISE_MSG_ = "B-balise"
+local _C_BALISE_MSG_ = "C-balise"
+local _CONFIRM_INSERTION_MSG_ = "Confirm insertion"
 
 
 
@@ -34,28 +43,28 @@ local function writeln(t) write(t and (tostring(t) or "") .. "\n") end
 
 ---SCRIPT---
 
-local p = askForPoint("Select balise group placement (Km will be rounded)")
+local p = askForPoint(_SELECT_PLACEMENT_MSG_)
 local alg = p:getNearbyAlignments()[0]
 local inKm = getAlignmentInfo(getAlignmentInfo(alg.id, p).ReferenceAlignmentId, p).Mileage
 local km = RC__round(inKm)
 local inPos = getAlignmentInfo(alg.id, p).RelativePosition
 local pos = inPos + (km - inKm)
-local dir = askForKeyword("Select balise group direction", {"up", "down"})
-local groupType = askForKeyword("Select balise group type", _VARIANTS_BALISE_GROUP_)
+local dir = askForKeyword(_SELECT_DIRECTION_MSG_, {"up", "down"})
+local groupType = askForKeyword(_SELECT_TYPE_MSG_, _VARIANTS_BALISE_GROUP_)
 local configP, configA, configB, configC
 local dualDirection
 if RC__isMemberOf({"Hovedsignalbalisegruppe", "Forsignalbalisegruppe", "Repeterbalisegruppe"}, groupType) then
-	configP = askForKeyword("P-balise", {"No P", "Fixed P", "Controlled P"})
+	configP = askForKeyword(_P_BALISE_MSG_, {"No P", "Fixed P", "Controlled P"})
 	dualDirection = "Single"
 else
 	configP = "No P"
-	dualDirection = askForKeyword("Select single/dual direction", {"Single", "Dual"})
+	dualDirection = askForKeyword(_SELECT_DIRECTION_MODE_MSG_, {"Single", "Dual"})
 end
 
-configA = askForKeyword("A-balise", {"Fixed A", "Controlled A"})
-configB = askForKeyword("B-balise", {"Fixed B", "Controlled B"})
+configA = askForKeyword(_A_BALISE_MSG_, {"Fixed A", "Controlled A"})
+configB = askForKeyword(_B_BALISE_MSG_, {"Fixed B", "Controlled B"})
 if RC__isMemberOf({"Hovedsignalbalisegruppe", "Forsignalbalisegruppe", "Repeterbalisegruppe", "Hastighetsbalisegruppe"}, groupType) then
-	configC = askForKeyword("C-balise", {"No C", "Fixed C", "Controlled C"})
+	configC = askForKeyword(_C_BALISE_MSG_, {"No C", "Fixed C", "Controlled C"})
 else
 	configC = "No C"
 end
@@ -64,7 +73,7 @@ writeln(string.format("Alignment: %s, dir:= %s, Km: %s, groupType: %s, configura
 	RC__identify(alg), dir, NOBN_trk_toKm(km), groupType, configP, configA, configB, configC))
 
 -- Is the insertion confirmed?
-if askForKeyword("Confirm insertion", {"Insert group", "Cancel"}) == "Insert group" then
+if askForKeyword(_CONFIRM_INSERTION_MSG_, {"Insert group", "Cancel"}) == "Insert group" then
 	local baliseGroupAbsDistanceToAlignment = 10
 	-- Is p on the left side of the alignment?
 	local baliseGroupSideOfAlignmentIsLeft = getAlignmentInfo(alg.id, p).DistanceToAlignment < 0

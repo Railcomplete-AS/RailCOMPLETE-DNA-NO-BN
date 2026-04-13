@@ -10,6 +10,58 @@
 
 
 
+---LOCAL CONSTANTS---
+
+local _USAGE_ = [[
+Adjust object at XY(Z) coordinates from Excel
+=============================================
+2025-02-07_000 KNHEL Created. See also similar Lua scripts inserting circle or object at XY(Z).
+2025-02-07_001 CLFEY Some spelling errors corrected.
+
+INPUT
+Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
+The source data can come from an Excel file a KOF 2.0 file or a 'simple KOF' file.
+
+EXCEL FORMAT
+Input may be Excel with captions 'X'=Easting and 'Y'=Northing coordinates in the top row (insertion point coords).
+The Excel file may contain an additional column 'Z' providing insertion point elevation above mean sea level.
+Note that an object's elevation relative to its alignment (VerticalOffset) will be set to 0 when using this script.
+The Excel file title row may contain captions 'name', 'code' or 'id' of the objects (searched in this priority).
+Subsequent Excel rows contain X and Y coordinates (and Z) in the 'X' and the 'Y' (and Z) columns.
+Close the Excel file before running the script.
+
+KOF FORMAT
+See the KOF specification 2.0 from 2025-08-12.
+For both KOF 2.0 and simple KOF, only datablocks 01 and 05 are treated.
+For KOF 2.0 the 'Punkt' field (point name) is treated as keydata.
+For Simple KOF, the second non-whitespace block is treated as keydata.
+For both KOF formats, scale and northing-easting configurations from 01 blocks are respected.
+For both KOF formats, X is by default treated as Easting, Y is Northing, distances in meters.
+Ensure your model represents the same coordinate system as your XY(Z) survey points are referencing.
+RailCOMPLETE adjusts objects using World Coordinates also when a different User Coordinate System is in effect.
+
+USAGE
+1. Use the 'Edit Script' command and enable the Log output window to see more info from the execution.
+2. Select file format and an appropriate coordinate file, the file is then read.
+3. Select whether to find objects based on key or proximity and select either the RC property to match with,
+   or input the radius around the coordinates to search for objects.
+4. Select an existing RC object to get its RcType.
+5. The script starts searching for objects and adjusting their position.
+6. Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlignment or LateralOffset will be
+   replaced by the coordinate data.
+7. Any formula on VerticalOffset property will be replaced by the difference in elevation between the object's
+   own alignment (railway tracks for most objects, contact wire for CW insulators etc) and then Z elevation from
+   the coordinate file (if Z is provided).
+8. If no 'Z' data is given in the coordinate file, then existing formulas and values for the VerticalOffset
+   property are kept unchanged.
+
+OUTPUT
+-	For each valid row in the coordinate file the best match RC object of the same RcType as the selected object
+    has been adjusted to the given coordinates.
+]]
+
+
+
 ---FUNCTIONS---
 
 -- Writes a message to the log window and appends a newline:
@@ -142,53 +194,7 @@ end
 
 ---SCRIPT---
 
-show([[
-Adjust object at XY(Z) coordinates from Excel
-=============================================
-2025-02-07_000 KNHEL Created. See also similar Lua scripts inserting circle or object at XY(Z).
-2025-02-07_001 CLFEY Some spelling errors corrected.
-
-INPUT
-Script is run inside a RailCOMPLETE model based on any DNA, running under RC 2024.2 or later.
-The source data can come from an Excel file a KOF 2.0 file or a 'simple KOF' file.
-
-EXCEL FORMAT
-Input may be Excel with captions 'X'=Easting and 'Y'=Northing coordinates in the top row (insertion point coords).
-The Excel file may contain an additional column 'Z' providing insertion point elevation above mean sea level.
-Note that an object's elevation relative to its alignment (VerticalOffset) will be set to 0 when using this script.
-The Excel file title row may contain captions 'name', 'code' or 'id' of the objects (searched in this priority).
-Subsequent Excel rows contain X and Y coordinates (and Z) in the 'X' and the 'Y' (and Z) columns.
-Close the Excel file before running the script.
-
-KOF FORMAT
-See the KOF specification 2.0 from 2025-08-12.
-For both KOF 2.0 and simple KOF, only datablocks 01 and 05 are treated.
-For KOF 2.0 the 'Punkt' field (point name) is treated as keydata.
-For Simple KOF, the second non-whitespace block is treated as keydata.
-For both KOF formats, scale and northing-easting configurations from 01 blocks are respected.
-For both KOF formats, X is by default treated as Easting, Y is Northing, distances in meters.
-Ensure your model represents the same coordinate system as your XY(Z) survey points are referencing.
-RailCOMPLETE adjusts objects using World Coordinates also when a different User Coordinate System is in effect.
-
-USAGE
-1. Use the 'Edit Script' command and enable the Log output window to see more info from the execution.
-2. Select file format and an appropriate coordinate file, the file is then read.
-3. Select whether to find objects based on key or proximity and select either the RC property to match with,
-   or input the radius around the coordinates to search for objects.
-4. Select an existing RC object to get its RcType.
-5. The script starts searching for objects and adjusting their position.
-6. Any formula on Mileage, ReferenceMileage, DistanceAlong, DistanceToAlignment or LateralOffset will be
-   replaced by the coordinate data.
-7. Any formula on VerticalOffset property will be replaced by the difference in elevation between the object's
-   own alignment (railway tracks for most objects, contact wire for CW insulators etc) and then Z elevation from
-   the coordinate file (if Z is provided).
-8. If no 'Z' data is given in the coordinate file, then existing formulas and values for the VerticalOffset
-   property are kept unchanged.
-
-OUTPUT
--	For each valid row in the coordinate file the best match RC object of the same RcType as the selected object
-    has been adjusted to the given coordinates.
-]])
+show(_USAGE_)
 
 local items
 
