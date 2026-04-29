@@ -1932,19 +1932,20 @@
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_DistanceToEdge()" ReturnType="Double"
-			Description="Distance from the mast's centerline to the nearest end of the portal beam [m]. The åk's local Y axis runs along the beam from its insertion point; the beam length is taken from _JBTEH_AAK_Length().">
+			Description="Distance from the åk's nearest beam end to the mast's outer edge [m]. Equals (mast half cross-section width) + (distance from the beam end to the mast centerline). The åk beam length is taken from _JBTEH_AAK_Length(); the cross-section number (e.g. HEB220) is the section depth in mm.">
 			<Signature>Double _JBTEH_AAK_KONSOLL_DistanceToEdge(Reference mast)</Signature>
 			<Formula>
 				function _JBTEH_AAK_KONSOLL_DistanceToEdge(mast)
 					local L = tonumber(_JBTEH_AAK_Length():match("%d+"))
 					local d = math.abs(_JBTEH_AAK_KONSOLL_Placement(mast))
-					return math.min(d, math.abs(L - d))
+					local halfWidth = tonumber(mast.OcsPoleCrossSection:match("%d+")) * 0.0005
+					return math.min(d, math.abs(L - d)) + halfWidth
 				end
 			</Formula>
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Geometry3DName()" ReturnType="String"
-			Description="Returns the bracket's 3D model name. Sub-variant 02 is used when the mast's centerline sits within 250 mm of the nearest portal beam end.">
+			Description="Returns the bracket's 3D model name. Sub-variant 02 is used when the mast's outer edge sits within 250 mm of the nearest portal beam end.">
 			<Signature>String _JBTEH_AAK_KONSOLL_Geometry3DName(Reference mast, Int n)</Signature>
 			<Formula>
 				function _JBTEH_AAK_KONSOLL_Geometry3DName(mast, n)
@@ -1965,7 +1966,7 @@
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Rotation()" ReturnType="Double"
-			Description="Bracket Z-rotation [deg]. Returns 180 when the mast's centerline sits within 250 mm of the nearest portal beam end so the alt sub-variant 02 mounts the correct way around.">
+			Description="Bracket Z-rotation [deg]. Returns 180 when the mast's outer edge sits within 250 mm of the nearest portal beam end so the alt sub-variant 02 mounts the correct way around.">
 			<Signature>Double _JBTEH_AAK_KONSOLL_Rotation(Reference mast)</Signature>
 			<Formula>
 				function _JBTEH_AAK_KONSOLL_Rotation(mast)
