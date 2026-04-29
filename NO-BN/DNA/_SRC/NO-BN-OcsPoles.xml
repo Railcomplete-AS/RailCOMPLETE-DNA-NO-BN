@@ -1877,53 +1877,28 @@
 
 		<!-- Brackets ("konsoller") attached to each supporting mast of the OCS portal. -->
 
-		<LuaExpression Name="Geometry3D_1.Name">
-			<Formula>
-				local r, n = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
-				return _JBTEH_AAK_KONSOLL_Geometry3DName(r[0], n)
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="Geometry3D_1.Name"><Formula>_JBTEH_AAK_KONSOLL_Geometry3DName(0)</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_1.Parent"><Formula>0</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_1.Offset.Y">
-			<Formula>
-				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
-				return _JBTEH_AAK_KONSOLL_Placement(r[0])
-			</Formula>
-		</LuaExpression>
-		<LuaExpression Name="Geometry3D_1.Rotation.Z">
-			<Formula>
-				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
-				return _JBTEH_AAK_KONSOLL_Rotation(r[0])
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="Geometry3D_1.Offset.Y"><Formula>_JBTEH_AAK_KONSOLL_Placement(0)</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_1.Rotation.Z"><Formula>_JBTEH_AAK_KONSOLL_Rotation(0)</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_1.RotationBeforeOffset"><Formula>true</Formula></LuaExpression>
 
-		<LuaExpression Name="Geometry3D_2.Name">
-			<Formula>
-				local r, n = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
-				return _JBTEH_AAK_KONSOLL_Geometry3DName(r[1], n)
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="Geometry3D_2.Name"><Formula>_JBTEH_AAK_KONSOLL_Geometry3DName(1)</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_2.Parent"><Formula>0</Formula></LuaExpression>
-		<LuaExpression Name="Geometry3D_2.Offset.Y">
-			<Formula>
-				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
-				return _JBTEH_AAK_KONSOLL_Placement(r[1])
-			</Formula>
-		</LuaExpression>
-		<LuaExpression Name="Geometry3D_2.Rotation.Z">
-			<Formula>
-				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
-				return _JBTEH_AAK_KONSOLL_Rotation(r[1])
-			</Formula>
-		</LuaExpression>
+		<LuaExpression Name="Geometry3D_2.Offset.Y"><Formula>_JBTEH_AAK_KONSOLL_Placement(1)</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_2.Rotation.Z"><Formula>_JBTEH_AAK_KONSOLL_Rotation(1)</Formula></LuaExpression>
 		<LuaExpression Name="Geometry3D_2.RotationBeforeOffset"><Formula>true</Formula></LuaExpression>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Placement()" ReturnType="Double"
-			Description="Bracket offset along the portal beam toward the related mast [m] (signed, negative).">
-			<Signature>Double _JBTEH_AAK_KONSOLL_Placement(Reference mast)</Signature>
+			Description="Bracket offset along the portal beam toward the related mast [m] (signed, negative). idx selects which supporting mast (0 = first, 1 = second).">
+			<Signature>Double _JBTEH_AAK_KONSOLL_Placement(Int idx)</Signature>
 			<Formula>
-				function _JBTEH_AAK_KONSOLL_Placement(mast)
+				function _JBTEH_AAK_KONSOLL_Placement(idx)
+					local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+					local mast = r[idx]
+					if mast == nil then
+						return 0
+					end
 					local dx = geoCoord.X - mast.geoCoord.X
 					local dy = geoCoord.Y - mast.geoCoord.Y
 					return -math.sqrt(dx * dx + dy * dy)
@@ -1932,12 +1907,17 @@
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_DistanceToEdge()" ReturnType="Double"
-			Description="Distance from the åk's nearest beam end to the mast's outer edge [m]. Equals (mast half cross-section width) + (distance from the beam end to the mast centerline). The åk beam length is taken from _JBTEH_AAK_Length(); the cross-section number (e.g. HEB220) is the section depth in mm.">
-			<Signature>Double _JBTEH_AAK_KONSOLL_DistanceToEdge(Reference mast)</Signature>
+			Description="Distance from the åk's nearest beam end to the mast's outer edge [m]. Equals (mast half cross-section width) + (distance from the beam end to the mast centerline). The åk beam length is taken from _JBTEH_AAK_Length(); the cross-section number (e.g. HEB220) is the section depth in mm. idx selects which supporting mast (0 or 1).">
+			<Signature>Double _JBTEH_AAK_KONSOLL_DistanceToEdge(Int idx)</Signature>
 			<Formula>
-				function _JBTEH_AAK_KONSOLL_DistanceToEdge(mast)
+				function _JBTEH_AAK_KONSOLL_DistanceToEdge(idx)
+					local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+					local mast = r[idx]
+					if mast == nil then
+						return math.huge
+					end
 					local L = tonumber(_JBTEH_AAK_Length():match("%d+"))
-					local d = math.abs(_JBTEH_AAK_KONSOLL_Placement(mast))
+					local d = math.abs(_JBTEH_AAK_KONSOLL_Placement(idx))
 					local halfWidth = tonumber(mast.OcsPoleCrossSection:match("%d+")) * 0.0005
 					return math.min(d, math.abs(L - d)) + halfWidth
 				end
@@ -1945,14 +1925,16 @@
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Geometry3DName()" ReturnType="String"
-			Description="Returns the bracket's 3D model name. Sub-variant 02 is used when the mast's outer edge sits within 250 mm of the nearest portal beam end.">
-			<Signature>String _JBTEH_AAK_KONSOLL_Geometry3DName(Reference mast, Int n)</Signature>
+			Description="Returns the bracket's 3D model name. Sub-variant 02 is used when the mast's outer edge sits within 250 mm of the nearest portal beam end. idx selects which supporting mast (0 or 1).">
+			<Signature>String _JBTEH_AAK_KONSOLL_Geometry3DName(Int idx)</Signature>
 			<Formula>
-				function _JBTEH_AAK_KONSOLL_Geometry3DName(mast, n)
+				function _JBTEH_AAK_KONSOLL_Geometry3DName(idx)
+					local r, n = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+					local mast = r[idx]
 					if mast == nil or n == 0 then
 						return nil
 					end
-					local subVariant = (_JBTEH_AAK_KONSOLL_DistanceToEdge(mast) > 0.250) and "01" or "02"
+					local subVariant = (_JBTEH_AAK_KONSOLL_DistanceToEdge(idx) > 0.250) and "01" or "02"
 					local strengthened = Strengthened and "2" or "1"
 					if Variant == "Type 12" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-12-%s-KONSOLL-%s-%s", strengthened, subVariant, mast.OcsPoleCrossSection))
@@ -1966,11 +1948,11 @@
 		</LuaFunction>
 
 		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Rotation()" ReturnType="Double"
-			Description="Bracket Z-rotation [deg]. Returns 180 when the mast's outer edge sits within 250 mm of the nearest portal beam end so the alt sub-variant 02 mounts the correct way around.">
-			<Signature>Double _JBTEH_AAK_KONSOLL_Rotation(Reference mast)</Signature>
+			Description="Bracket Z-rotation [deg]. Returns 180 when the mast's outer edge sits within 250 mm of the nearest portal beam end so the alt sub-variant 02 mounts the correct way around. idx selects which supporting mast (0 or 1).">
+			<Signature>Double _JBTEH_AAK_KONSOLL_Rotation(Int idx)</Signature>
 			<Formula>
-				function _JBTEH_AAK_KONSOLL_Rotation(mast)
-					if _JBTEH_AAK_KONSOLL_DistanceToEdge(mast) > 0.250 then
+				function _JBTEH_AAK_KONSOLL_Rotation(idx)
+					if _JBTEH_AAK_KONSOLL_DistanceToEdge(idx) > 0.250 then
 						return 0
 					else
 						return 180
