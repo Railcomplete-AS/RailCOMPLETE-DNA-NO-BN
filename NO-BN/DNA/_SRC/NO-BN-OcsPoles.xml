@@ -1482,7 +1482,9 @@
 		</Variants>
 		
 		<DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
-		
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
+		<DynamicProperty Type="Representation3D" Subtype="Geometry3D"/>
+
 		<CustomProperty DataType="Enumeration" Name="Length" DisplayName="Lengde" DefaultValue="11m"
 			Description="The overhead catenary system (OCS) portal length (oyl), given in predefined lengths in 1 meter steps. Each may be composed of subparts, where the joints may hinder drop arm mounting.">
 			<Values Variant="Type 12">
@@ -1858,11 +1860,11 @@
 			<Signature>String _JBTEH_AAK_Geometry3DName()</Signature>
 			<Formula>
 				function _JBTEH_AAK_Geometry3DName()
-					if Variant == "Type 12" then 
+					if Variant == "Type 12" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-12-%d-%02d-%s", Strengthened and "2" or "1", Length:sub(1,-2)-10, Length))
-					elseif Variant == "Type 14" then 
+					elseif Variant == "Type 14" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-14-%d-%02d-%s", Strengthened and "2" or "1", Length:sub(1,-2)-27, Length))
-					elseif Variant == "Type 40" then 
+					elseif Variant == "Type 40" then
 						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-40-%02d-%s", Length:sub(1,-2)-9, Length))
 					elseif Variant == "OCS gantry" then
 						return "NO-BN-3D-EH-AAK-UTLIGGERÅK-6M"
@@ -1872,7 +1874,103 @@
 				end
 			</Formula>
 		</LuaFunction>
-		
+
+		<!-- Brackets ("konsoller") attached to each supporting mast of the OCS portal. -->
+
+		<LuaExpression Name="Geometry3D_1.Name">
+			<Formula>
+				local r, n = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+				return _JBTEH_AAK_KONSOLL_Geometry3DName(r[0], n)
+			</Formula>
+		</LuaExpression>
+		<LuaExpression Name="Geometry3D_1.Parent"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_1.Offset.Y">
+			<Formula>
+				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+				return _JBTEH_AAK_KONSOLL_Placement(r[0])
+			</Formula>
+		</LuaExpression>
+		<LuaExpression Name="Geometry3D_1.Rotation.Z">
+			<Formula>
+				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+				return _JBTEH_AAK_KONSOLL_Rotation(r[0])
+			</Formula>
+		</LuaExpression>
+		<LuaExpression Name="Geometry3D_1.RotationBeforeOffset"><Formula>true</Formula></LuaExpression>
+
+		<LuaExpression Name="Geometry3D_2.Name">
+			<Formula>
+				local r, n = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+				return _JBTEH_AAK_KONSOLL_Geometry3DName(r[1], n)
+			</Formula>
+		</LuaExpression>
+		<LuaExpression Name="Geometry3D_2.Parent"><Formula>0</Formula></LuaExpression>
+		<LuaExpression Name="Geometry3D_2.Offset.Y">
+			<Formula>
+				local r = getRelatedObjects(rel_OcsPortal_IsSupportedBy_OcsPole)
+				return _JBTEH_AAK_KONSOLL_Placement(r[1])
+			</Formula>
+		</LuaExpression>
+		<LuaExpression Name="Geometry3D_2.RotationBeforeOffset"><Formula>true</Formula></LuaExpression>
+
+		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Placement()" ReturnType="Double"
+			Description="Bracket offset along the portal beam toward the related mast [m] (signed, negative).">
+			<Signature>Double _JBTEH_AAK_KONSOLL_Placement(Reference mast)</Signature>
+			<Formula>
+				function _JBTEH_AAK_KONSOLL_Placement(mast)
+					local dx = geoCoord.X - mast.geoCoord.X
+					local dy = geoCoord.Y - mast.geoCoord.Y
+					return -math.sqrt(dx * dx + dy * dy)
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTEH_AAK_KONSOLL_DistanceToEdge()" ReturnType="Double"
+			Description="Gap between bracket insertion point and the mast's near edge [m]. Cross-section number (e.g. HEB220) is the section depth in mm; half-width = depth/2.">
+			<Signature>Double _JBTEH_AAK_KONSOLL_DistanceToEdge(Reference mast)</Signature>
+			<Formula>
+				function _JBTEH_AAK_KONSOLL_DistanceToEdge(mast)
+					local halfWidth = tonumber(mast.OcsPoleCrossSection:match("%d+")) * 0.0005
+					return math.abs(_JBTEH_AAK_KONSOLL_Placement(mast)) - halfWidth
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Geometry3DName()" ReturnType="String"
+			Description="Returns the bracket's 3D model name. Sub-variant 02 is used when the bracket sits within 250 mm of the mast edge.">
+			<Signature>String _JBTEH_AAK_KONSOLL_Geometry3DName(Reference mast, Int n)</Signature>
+			<Formula>
+				function _JBTEH_AAK_KONSOLL_Geometry3DName(mast, n)
+					if mast == nil or n == 0 then
+						return nil
+					end
+					local subVariant = (_JBTEH_AAK_KONSOLL_DistanceToEdge(mast) > 0.250) and "01" or "02"
+					local strengthened = Strengthened and "2" or "1"
+					if Variant == "Type 12" then
+						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-12-%s-KONSOLL-%s-%s", strengthened, subVariant, mast.OcsPoleCrossSection))
+					elseif Variant == "Type 14" then
+						return string.upper(string.format("NO-BN-3D-EH-AAK-KONTAKTLEDNINGSÅK-TYPE-14-%s-KONSOLL-%s-%s", strengthened, subVariant, mast.OcsPoleCrossSection))
+					else
+						return nil
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
+		<LuaFunction Name="_JBTEH_AAK_KONSOLL_Rotation()" ReturnType="Double"
+			Description="Bracket Z-rotation (degrees). Returns 180 when the bracket sits within 250 mm of the mast edge so the alt sub-variant 02 mounts the correct way around.">
+			<Signature>Double _JBTEH_AAK_KONSOLL_Rotation(Reference mast)</Signature>
+			<Formula>
+				function _JBTEH_AAK_KONSOLL_Rotation(mast)
+					if _JBTEH_AAK_KONSOLL_DistanceToEdge(mast) > 0.250 then
+						return 0
+					else
+						return 180
+					end
+				end
+			</Formula>
+		</LuaFunction>
+
 		<InsertPointObject Name="Type 12" DisplayBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-{% if SymbolMode == 'Schematic' %}Schematic{% else %}Metric{% endif %}"
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="4">
 			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
