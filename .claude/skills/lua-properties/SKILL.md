@@ -9,7 +9,7 @@ This guide covers writing Lua code in the DNA context: reusable `<LuaFunction>` 
 
 $ARGUMENTS
 
-For the full API reference, see `.claude/documentation/080-luacommands.html`. For Lua language basics, see `.claude/documentation/070-lua.html`.
+For the full API reference, see `.claude/references/080-luacommands.html`. For Lua language basics, see `.claude/references/070-lua.html`.
 
 ## Overview
 
@@ -22,6 +22,25 @@ There are three XML elements that embed Lua in DNA files:
 | `<LuaFunction>` | Declare a reusable named function |
 | `<LuaExpression>` | Bind a Lua formula to a specific property |
 | TextPosition/TextRotation | Special formulas for text attribute placement |
+
+## Coding Style
+
+DNA-embedded Lua follows the same coding conventions as standalone Lua scripts. For the full style reference, see **PART A — CODING STYLE** in the lua-scripting guide (`.claude/skills/lua-scripting/SKILL.md`).
+
+### Applicable Rules (Summary)
+
+These rules from the lua-scripting coding style apply to `<Formula>` blocks:
+
+- **Naming**: camelCase for functions and variables; UPPERCASE with underscore prefix/suffix/infixes for constants (`_MIN_DISTANCE_`); discipline prefixes for function names (see Naming Conventions below)
+- **Comments**: one space after `--`, capitalize first letter, no trailing period unless 2+ sentences; align consecutive inline comments at the same column
+- **Preceding-line comments**: end with colon for actions (`-- Compute the distance:`), question mark for conditions (`-- Is the object on an alignment?`)
+- **Indentation**: tabs, 4-space width (matches the embedded Lua editor)
+- **Operators**: spaces around binary operators (`=`, `==`, `~=`, `<`, `>`, `+`, `-`, `*`, `/`, `..`, `and`, `or`); break `..` concatenation after the operator
+- **Commas**: no space before, one space after
+- **Comparison order**: unknown value on the left (`if dist < 2.35 then`, not `if 2.35 > dist then`)
+- **Semicolons**: do not use
+- **Magic numbers**: use named constants or inline comments to explain numeric literals
+
 
 ## DNA XML Structure
 
@@ -689,5 +708,7 @@ RC__isMemberOf(coll, item)       -- membership test
 
 ## Documentation Reference
 
-- **Full API reference**: `.claude/documentation/080-luacommands.html` — all ~88 object-level functions with signatures, descriptions, and examples
-- **Lua language tutorial**: `.claude/documentation/070-lua.html` — Lua syntax, types, operators, control structures
+- **Full API reference**: `.claude/references/080-luacommands.html` — all ~88 object-level functions with signatures, descriptions, and examples
+- **Lua language tutorial**: `.claude/references/070-lua.html` — Lua syntax, types, operators, control structures
+- **RC commands**: `.claude/references/050-commands.html` — command list referenced by some Lua functions
+- **Debugger**: `.claude/references/080-luadebugger.html` — Lua debugger for troubleshooting formulas

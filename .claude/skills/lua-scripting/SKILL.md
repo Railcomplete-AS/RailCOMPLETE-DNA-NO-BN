@@ -1,183 +1,357 @@
 ---
 name: lua-scripting
-description: Guide for writing standalone Lua scripts in DNA repositories -- user interaction, object creation, file I/O, AutoCAD commands, and CAD entity drawing
+description: Guide for writing standalone Lua scripts in DNA repositories -- coding style, commenting conventions, technical patterns, API usage, and common pitfalls
 ---
 
-# Lua Scripts Guide
+# RailCOMPLETE Lua Scripting Guide
 
-This guide covers writing standalone Lua scripts that execute actions in the drawing. Scripts run in the `RunScriptLuaContext` which provides all object-level API functions plus ~60 script-only functions for user interaction, object manipulation, file I/O, and CAD entity creation.
+> **Purpose:** Coding style, commenting conventions, and technical patterns for all Lua scripts and function libraries published by RailCOMPLETE AS (RCAS).
+>
+> **Goal:** All RCAS-published Lua files should look and feel consistent — it should not be easy to tell who wrote a particular piece of code.
 
 $ARGUMENTS
 
-For the full API reference, see `.claude/documentation/080-luacommands.html`. For RC commands, see `.claude/documentation/050-commands.html`. For debugger usage, see `.claude/documentation/080-luadebugger.html`.
+For the full API reference, see `.claude/references/080-luacommands.html`. For RC commands, see `.claude/references/050-commands.html`. For debugger usage, see `.claude/references/080-luadebugger.html`.
 
-## Overview
+---
 
-Scripts differ from property formulas in several ways:
+# PART A — CODING STYLE
+
+## File Organization
+
+### Top-Level Sections in a Lua File
+
+Every Lua file is organized into clearly labeled sections, separated by **three blank lines** before each section. Section headers use the exact format `---UPPERCASED SECTION NAME---` (three dashes, no spaces).
+
+**Script files:** `---GLOBAL CONSTANTS---`, `---INCLUDES---`, `---LOCAL CONSTANTS---`, `---FUNCTIONS---`, `---SCRIPT---`
+
+**Library files** (loaded via `includeLuaFile()`): `---INCLUDES---`, `---LOCAL CONSTANTS---`, `---FUNCTIONS---`
+
+Library files use `---LOCAL CONSTANTS---` (not `---GLOBAL CONSTANTS---`) to make it explicit that libraries shall not declare global constants. Omit any section with no content.
+
+**Note:** Some existing files use two-dash headers (`--CONSTANTS--`). New and updated code shall use the three-dash format.
+
+### File-Level Block Comment
+
+Every Lua file begins with `--[[ ... ]]` containing: (1) short name matching the filename, (2) a row of `=` signs matching the name length, (3) brief purpose description, (4) usage examples for libraries, (5) note on expected global constants if applicable, (6) version history as `YYYY-MM-DD vX.Y AUTHOR Description.`
+
+```lua
+--[[
+    lib2
+    ====
+    Generic Lua functions callable from scripts.
+
+    Usage:
+    lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
+    return lib2.writeln("Hello, world!", _ok)
+
+    Note on global constants - these must be declared before including this file:
+    _HEADER_, _DEBUG_, _TRACE_
+
+    2026-01-30 v1.0 CLFEY Created.
+    2026-04-08 v1.2 CLFEY Minor layout issues.
+--]]
+```
+
+### Trailing Blank Line
+
+Every file ends with exactly **one blank line** after the last line of code (the embedded Lua editor handles the last line poorly).
+
+## Naming Conventions
+
+### File Naming and Placement
+
+- **Libraries:** `lib<N>.lua` for generic, `lib<N>_<CONTEXT>.lua` for domain-specific (e.g., `lib2_VA.lua`).
+- **No hyphens** in filenames used as Lua identifiers — the local variable should mirror the filename.
+- **Scripts:** Named descriptively, often in the target audience's language.
+- **Libraries** go in `Lua\Functions\`, **scripts** go in `Lua\Scripts\`.
+
+### Library Hierarchy and Scope
+
+The number in the library name indicates callable contexts:
+
+1. **`lib1.lua`** — Generic utilities, callable from **any Lua context** (scripts, functions, property expressions).
+2. **`lib1_<ADM>.lua`** — Administration-specific, still callable from **any context**.
+3. **`lib2.lua`** — Generic utilities, callable from **scripts only** (uses `write()`, `askForKeyword()`, `runCommand()`, etc.).
+4. **`lib2_<ADM>.lua`** — Administration-specific, **scripts only**.
+5. Domain-specific files with descriptive names — specialized workflow functions.
+
+**Rule:** A library must not contain text or logic specific to a narrower scope than its level.
+
+### Constants
+
+Constant identifiers: **UPPERCASE** with single underscore prefix, suffix, and infixes: `_STOP_KEYWORD_`, `_TRACE_`, `_VERSION_`.
+
+The underscores make search-and-replace safer across files. Lua has no true constants — treat these as immutable by convention. Avoid the `<const>` qualifier (confusing with `includeLuaFile()` sandboxes).
+
+### Functions and Variables
+
+- Functions: **camelCase** (`getShapefilePaths()`). Private functions use `local function`.
+- Variables: **camelCase** (`shapefileFolder`). Loop counters may use `i`, `j`, `k`, `_`.
+
+## Constants: Global vs. Local and Sandbox Inheritance
+
+### The `includeLuaFile()` Sandbox Model
+
+`includeLuaFile()` creates a **child sandbox**. Key rules:
+
+1. **Globals declared before the call are inherited** by the child.
+2. The child can override an inherited global (local to the child, doesn't propagate back).
+3. A child's `local` variable shadows the global — and is **not** inherited by grandchild sandboxes.
+4. **Order matters:** Declare globals **before** the `includeLuaFile()` calls that need them.
+
+### Recommended Declaration Order in Script Files
+
+```lua
+---GLOBAL CONSTANTS---
+_HEADER_ = "My Script"
+_VERSION_ = "2026-04-08 v1.4"
+_DEBUG_ = false
+_TRACE_ = false
+_YES_ = "Oui"
+_NO_ = "Non"
+
+
+
+---INCLUDES---
+local lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
+local lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
+
+
+
+---LOCAL CONSTANTS---
+local _TRACK_VARIANT_ = "Traverses et rails - 3D simple"
+```
+
+Globals (`_HEADER_`, `_VERSION_`, etc.) are inherited by included libraries. Libraries should declare their own constants as `local`.
+
+## Comments
+
+### General Formatting
+
+1. **One space** after `--`: `-- This is a comment` (exception: section headers `---GLOBAL CONSTANTS---`).
+2. **Capitalize** the first letter.
+3. **No trailing period** unless two or more sentences.
+4. **Inline comments** separated by at least one space from code; align consecutive inline comments at the same column:
+
+   ```lua
+   runCommand("_PICKADD 0 ")    -- Disables PICKADD
+   runCommand("_FILEDIA 1 ")    -- Open files with a normal explorer window
+   runCommand("_ORTHOMODE 0 ")  -- The cursor is not snapped to grid lines
+   ```
+
+### Preceding-Line Comments
+
+End with punctuation signaling what follows:
+
+- **Colon** when the next code **performs an action**: `-- Force save and update data:`
+- **Question mark** when the next code **tests a condition**: `-- Is this a derailer that should be skipped?`
+
+### Translated Prompt Comments
+
+When code contains a foreign-language string, wrap the English translation in **double quotes** and end with a **colon**:
+
+```lua
+-- "Select the folder containing the shapefiles":
+shapefileFolder = askForFolderName("Selectionnez le dossier contenant les fichiers shapefile")
+```
+
+### Dead Code
+
+Remove dead code whenever possible. If retained, use long comments (`--[[ ... ]]`): single line wraps code inline; multi-line places `--[[` and `--]]` on their own lines at column 1.
+
+## Function Documentation and Tooltips
+
+### The Tooltip System
+
+RailCOMPLETE's Lua editor tooltip uses **the single comment line immediately preceding the `function` declaration** plus the function signature line. Only the last comment line before the declaration is picked up.
+
+Keep the `function` line clean — just the keyword, name, and arguments:
+
+```lua
+-- Writes a message to the log window and appends a newline. Call as lib2.writeln(msg, symbol = nil).
+function writeln(msg, symbol)
+    write(msg and (msg .. "\n") or "\n", symbol or _noSymbol)
+end
+```
+
+Very short functions may be one line:
+
+```lua
+-- Point-to-string conversion. Call as lib1.p2s(p) where p is a 3D point.
+function p2s(p) return string.format("(%.03f,  %.03f,  %.03f)", p.X, p.Y, p.Z) end
+```
+
+### Tooltip Format for Generic Libraries
+
+In the **master (English) repository**, tooltip comments are English only. Include: (1) what the function does, (2) how to call it with the library prefix, (3) an example return value if helpful.
+
+### Language-Specific Repositories and Tooltip Translation
+
+Generic libraries (`lib1.lua`, `lib2.lua`) have **identical function declarations** across language repositories. Only tooltip comments differ. Target-language repositories use **dual comment lines** — English first (for the developer), then the target language (for the end user, which becomes the tooltip):
+
+```lua
+-- Returns a table with partial strings. Call as lib1.splitString("The quick brown fox", " ").
+-- Renvoie un tableau de sous-chaines. Appel : lib1.splitString("The quick brown fox", " ").
+function splitString(s, splitChar)
+```
+
+### Administration-Specific Libraries
+
+These exist in only one repository. Tooltips use **two lines** — English then target language:
+
+```lua
+-- Import tracks from shapefiles. Call as: importTracksFromShapefile(shapefileTable = nil).
+-- Importer les voies depuis des shapefiles. Appel : importTracksFromShapefile(shapefileTable = nil).
+function importTracksFromShapefile(shapefileTable, arg1)
+```
+
+### Private Functions
+
+Local helper functions need only a single English comment:
+
+```lua
+-- Check whether the alignment info indicates the point lies on the alignment:
+local function isOnAlignment(alignmentInfo)
+```
+
+## Language Constants and Multilingual Text
+
+**Option lists and menu keywords** should use named constants for readability and reuse:
+
+```lua
+_YES_ = "Oui"
+_NO_ = "Non"
+_TERMINATE_ = "Terminer"
+
+option = askForKeyword("Selectionnez votre action :", {_INSERT_, _HELP_, _TERMINATE_}, _HEADER_)
+```
+
+**One-off prompt strings** may be inline with an English comment (see *Translated Prompt Comments*).
+
+When multiple scripts share the same language constants, accept the repetition — each script declares them as globals in its own `---GLOBAL CONSTANTS---` section for sandbox inheritance.
+
+## Formatting Rules
+
+### Indentation
+
+**Tabs**, one per nesting level. Tab width: **4 spaces** (matches the embedded Lua editor).
+
+### Commas
+
+No space before, one space after. If a comma is the last character on a line, the newline replaces the trailing space:
+
+```lua
+local result = createExternalLibraryObject(
+    "RailCOMPLETE.RailMLModel.ReferenceAlignmentSegment",
+    {},
+    {AlignmentRef = ref, Pos = posStart})
+```
+
+### Operators
+
+Spaces around binary operators (`=`, `==`, `~=`, `<`, `>`, `+`, `-`, `*`, `/`, `..`, `and`, `or`). Exceptions: `^` and unary minus may omit spaces. No double spaces in expressions (only inside string literals). When breaking a `..` concatenation across lines, break **after** the `..` operator.
+
+### Comparison Order
+
+Place the **unknown value on the left**, known on the right: `if option == _TERMINATE_ then` (not `if _TERMINATE_ == option then`).
+
+### Line Length and Line Breaking
+
+No strict max. Guideline: break around 120 characters. Indent continuations at least one tab beyond the starting line, except string continuations at the same level:
+
+```lua
+lib2.show("L'importation de voies sera faite sans introduire les reperes " ..
+"kilometriques correspondants.")
+```
+
+### Blank Lines
+
+1. **No blank line** between closely related code.
+2. **One blank line** as readability "air" (e.g., before `elseif` in long branches).
+3. **Three blank lines** before section headers and before each top-level function definition.
+4. **One blank line** as the very last line of the file (see *Trailing Blank Line*).
+
+## Miscellaneous Style Rules
+
+### Semicolons
+
+Do not use semicolons.
+
+### `goto` and Labels
+
+`goto` with `::continue::` labels is acceptable for loop skipping when the alternative would be deeply nested `if` blocks. Place `::continue::` at the end of the loop body, at loop-body indentation.
+
+### Magic Numbers
+
+Avoid unexplained numeric literals. Use named constants or inline comments:
+
+```lua
+local _1_MM_ = 1e-3
+if RC__getDistance2D(pointA, pointB) < _1_MM_ then
+```
+
+### `_DEBUG_` and `_TRACE_`
+
+- `_DEBUG_` — enables extra auxiliary objects/output during development.
+- `_TRACE_` — enables verbose logging via `lib2.trace()`.
+
+Both default to `false` in production code.
+
+---
+
+# PART B — TECHNICAL PATTERNS AND API
+
+> For complete function signatures, see `.claude/references/080-luacommands.html`.
+
+## Overview: Two Lua Contexts
 
 | Aspect | Property Formulas | Scripts |
 |--------|-------------------|---------|
 | Context | `LuaContext` (sandboxed, per-object) | `RunScriptLuaContext` (full drawing access) |
-| Execution | Synchronous, triggered on property eval | Async, user-initiated |
-| `this` | Current railway object | Not available (select objects explicitly) |
+| `this` | Current railway object | Not available |
 | Scope | Read-only computation | Create, modify, delete objects |
-| API | ~88 object-level functions | All object-level + ~60 script-only functions |
-
-## Script Structure
-
-### Standard Template
-
-```lua
---[[
-    Script Title
-    ============
-    Brief description of what the script does.
-
-    2025-01-15 v1.0 AUTHOR Created
-    2025-03-20 v1.1 AUTHOR Added feature X
---]]
-
--- Helper functions
-function writeln(t) write((t or "") .. "\n") end
-function show(t) writeln(t) askForKeyword(t, {"OK"}) end
-
--- Constants
-local _HEADER_ = "Script Title"
-
--- Display initial message
-show([[
-    Script Title
-    ============
-    Description of usage, inputs, outputs.
-
-    - Step 1: Select a file
-    - Step 2: Select a template object
-    - Step 3: Objects are created
-]])
-
--- Main logic
--- ...
-```
-
-### Helper Functions
-
-**writeln** — output with newline:
-```lua
-function writeln(t) write((t or "") .. "\n") end
-```
-
-**writeln with status symbol**:
-```lua
-function writeln(t, symbol) write((t or "") .. "\n", symbol or _noSymbol) end
-```
-
-**show** — modal dialog:
-```lua
-function show(t) writeln(t) askForKeyword(t, {"OK"}) end
-```
-
-**show with abort option**:
-```lua
-function show(t)
-    writeln(t)
-    local r = askForKeyword(t, {"OK", "Abort"})
-    if r == "Abort" then Halt() end
-end
-```
-
-### Constants
-
-```lua
-local _HEADER_ = "Script Title"
-local _VERSION_ = "1.0"
-local _DEBUG_ = false
-local _YES_ = "Yes"
-local _NO_ = "No"
-local _HELP_ = "Help"
-local _TERMINATE_ = "Terminate"
-```
+| API | ~88 object-level functions | All object-level + ~60 script-only |
 
 ## User Interaction
-
-### askForKeyword — Multiple Choice Dialog
-
-```lua
-local option = askForKeyword("Select action:", {"Option 1", "Option 2", "Abort"})
-
--- With header/title
-local option = askForKeyword("Choose format:", {"Excel", "CSV", "JSON"}, _HEADER_)
-```
 
 **Menu loop pattern:**
 ```lua
 local option
 repeat
     option = askForKeyword("Select action:", {"Insert", "Help", "Exit"}, _HEADER_)
-
     if option == "Help" then
-        show("Help text here...")
+        lib2.show("Help text here...")
     elseif option == "Insert" then
-        -- do work
+        -- Do work
     end
 until option == "Exit" or option == nil
 ```
 
-### askForObject / askForPointObject — Object Selection
-
+**Object selection loop:**
 ```lua
-local obj = askForObject("Select an object in the drawing")
-local pointObj = askForPointObject("Select a point object")
-
--- Multiple objects
-local objects = askForPointObjects("Select point objects (press Enter when done)")
+local objects = {}
+repeat
+    local obj = askForPointObject("Select a point object (Enter when done)")
+    if obj then table.insert(objects, obj) end
+until not obj
 ```
 
-### askForAlignment — Alignment Selection
-
-```lua
-local alignment = askForAlignment("Select reference alignment: ")
-
--- Get the underlying CAD polyline
-local polyline = cadInterface.getCadEntityFromRcObject(alignment)
-```
-
-### askForPoint — Point Picking
-
-**Important**: `askForPoint()` throws an exception if the user presses Escape. Wrap in a nil check if cancellation should be graceful:
-
+**Point picking** — always check for nil (user may press Escape):
 ```lua
 local point = askForPoint("Click insertion point:")
 if not point then return end
 ```
 
-### askForDouble / askForInteger / askForString — Value Input
-
+**File/folder dialogs:**
 ```lua
-local radius = askForDouble("Enter search radius [m]:")
-local count = askForInteger("Enter number of objects:")
-local name = askForString("Enter a name:")
-
--- With default value
-local mileage = askForDouble("Enter start mileage [m]:", 0)
-```
-
-### askForFileName / askForFolderName — File/Folder Dialogs
-
-```lua
-local filename = askForFileName("Select Excel file with coordinates")
+local filename = askForFileName("Select Excel file")
 local folder = askForFolderName("Select output folder")
-
--- Optional file (Escape to skip)
-local optionalFile = askForFileName("Select file (Escape to skip)")
-if optionalFile then
-    -- process file
-end
 ```
 
-### showMessage — Display Message
-
+**Value input with default:**
 ```lua
-showMessage("Operation completed successfully.")
+local mileage = askForDouble("Enter start mileage [m]:", 0)
 ```
 
 ## Object Creation and Manipulation
@@ -185,121 +359,58 @@ showMessage("Operation completed successfully.")
 ### Alignment Creation
 
 ```lua
--- From geometry segments
+-- From coordinate points:
+local points = {getPoint3D(x1, y1, z1), getPoint3D(x2, y2, z2)}
+local track = insertAlignment(rctype_Track, "Variant Name", points)
+
+-- From geometry segments:
 local segments = {}
 table.insert(segments, createLineSegment(p1, p2))
 table.insert(segments, createCurveSegment2(p2, directionDeg, p3))
-local geometry = createHorizontalGeometry(segments)
-local track = createAlignmentObject(rctype_Track, "Variant Name", geometry)
-
--- From coordinate points (implicit geometry)
-local points = {getPoint3D(x1, y1, z1), getPoint3D(x2, y2, z2), getPoint3D(x3, y3, z3)}
-local track = createAlignmentObject(rctype_Track, "Variant Name", points)
-
--- Set properties after creation
-track.code = "="        -- reset formula first
-track.code = "V1"       -- then assign value
-track.name = track.name -- force save and update derived fields
-```
-
-### Geometry Segments
-
-```lua
--- Straight line
-local line = createLineSegment(startPoint, endPoint)
-
--- Circular arc (from start point, direction, end point)
-local arc = createCurveSegment2(startPoint, directionDegrees, endPoint)
-
--- Clothoid/spiral
-local clothoid = createClothoidSegment(startPoint, directionDegrees, length, startRadius, A, isPositive)
-
--- Combine into horizontal geometry
-local geometry = createHorizontalGeometry(segments)
+local track = insertAlignment(rctype_Track, "Variant Name", createHorizontalGeometry(segments))
 ```
 
 ### Point Object Creation
 
 ```lua
--- createPointObject(alignment, rctype, variant, position, distFromAlignment, leftSide)
-local signal = createPointObject(
-    track,
-    rctype_Signal,
-    "Signal classique, cible ACFH",
-    pos,
-    3.5,    -- distance from alignment [m]
-    true    -- left side of track
-)
-
--- insertPointObject (modern, simpler API)
-local obj = insertPointObject(alignment, rctype, variant, position)
-local obj = insertPointObject(alignment, rctype, position)  -- no variant
+local signal = insertPointObject(track, rctype_Signal, "Signal variant", pos, 3.5, true)
+-- Args: alignment, rctype, insertPointObjectOptions, pos, distFromAlignment, insertionSideIsLeft
+-- The insertPointObjectOptions string (optional) selects the variant from the ribbon dropdown.
+-- Overload without options: insertPointObject(alignment, rctype, pos, distFromAlignment, insertionSideIsLeft)
 ```
 
 ### Property Assignment
 
-**Direct assignment:**
+**Formula reset pattern** — clear a DNA formula before assigning a literal:
 ```lua
-signal.name = "Signal A"
-signal.DrawTail = true
-signal.dir = "down"
-object.VerticalOffset = 5.5
-```
-
-**Formula binding pattern** — reset formula, then assign:
-```lua
-obj.name = "="          -- remove any existing formula
-obj.name = "New Name"   -- assign concrete value
-
-obj.VerticalOffset = "=" -- remove elevation formula
-obj.VerticalOffset = z   -- assign explicit value
+alignment.code = "="         -- Remove formula
+alignment.code = trackName   -- Set value
 ```
 
 **Force save/update:**
 ```lua
-alignment.name = alignment.name  -- triggers save and recalculation of derived fields
+alignment.name = alignment.name  -- Triggers recalculation
 ```
 
-### Relations
+### Profiles
+
+Vertical, cant, speed, and mileage profiles follow the same pattern:
+```lua
+local events = {}
+table.insert(events, createVerticalEvent(pos, elevation))
+createVerticalProfile(events)
+-- Cant: createCantEvent(pos, leftSuperelevation=0, rightSuperelevation=0)
+-- Speed: createSpeedEvent(pos, leftSuperelevation=0, rightSuperelevation=0)
+-- Mileage: createMileageEvent(pos, mileage, eventType, name="")
+-- eventType is one of: "Equation", "Reset", "Milepost"
+```
+
+### Other Operations
 
 ```lua
 setRelation(sourceObj, targetObj, "RelationType")
-```
-
-### Profile Creation
-
-```lua
--- Vertical profile
-local events = {}
-table.insert(events, createVerticalEvent(pos1, elevation1))
-table.insert(events, createVerticalEvent(pos2, elevation2))
-createVerticalProfile(alignment, events)
-
--- Cant profile
-local cantEvents = {}
-table.insert(cantEvents, createCantEvent(pos, cantValue))
-createCantProfile(alignment, cantEvents)
-
--- Speed profile
-local speedEvents = {}
-table.insert(speedEvents, createSpeedEvent(pos, speedKmh))
-createSpeedProfile(alignment, speedEvents)
-
--- Mileage profile
-local mileageEvents = {}
-table.insert(mileageEvents, createMileageEvent(pos, mileageValue))
-createMileageProfile(alignment, mileageEvents)
-
--- Update vertical data from point list
-updateAlignmentVerticalData(alignment, table.select(pointList, function(p)
-    return getPoint3D(p.X, p.Y, p.Z)
-end))
-```
-
-### Deletion
-
-```lua
 eraseObject(obj)
+updateAlignmentVerticalData(alignment, pointList)
 ```
 
 ## File I/O
@@ -307,146 +418,75 @@ eraseObject(obj)
 ### Excel Reading
 
 ```lua
--- 1. Open file
-local filename = askForFileName("Select Excel file")
-local file = getContentsFromFile(FileType.Excel, "", filename)
-
--- 2. Get sheet names
+local file = getFileFromPath(FileType.Excel, filename)
 local sheets = getExpandoObjectPropertyNames(file)
-local sheetName = sheets[0]  -- 0-indexed!
-
--- 3. Get rows
-local items = file[sheetName]
+local items = file[sheets[0]]  -- 0-indexed!
 local nItems = getCollectionLength(items)
 
--- 4. Process rows
 for i = 0, nItems - 1 do
     local row = items[i]
-    local x = row["X"]       -- column access by header name
-    local y = row["Y"]
-    local z = row["Z"]       -- nil if column doesn't exist
-
-    if type(x) == "number" and type(y) == "number" then
-        -- process valid row
-    else
-        writeln(string.format("Skipping row %d: invalid data", i + 1))
-    end
+    local x = row["X"]  -- Column access by header name
 end
 ```
 
-### XML Reading
+### Text and XML
 
 ```lua
-local xml = getContentsFromFile(FileType.Xml, "Select XML file", "*.xml")
+-- Text:
+local file = getFileFromPath(FileType.Text, filename)
+for s in file:gmatch("[^\r\n]+") do ... end
+
+-- XML:
+local xml = getFileFromPrompt(FileType.Xml, "Select XML file")
 local props = getExpandoObjectPropertyNames(xml)
-local nProps = getCollectionLength(props)
-
-for i = 0, nProps - 1 do
-    local value = xml[props[i]]
-    writeln(props[i] .. " = " .. tostring(value))
-end
-```
-
-### Text File Reading
-
-```lua
-local file = getContentsFromFile(FileType.Text, "", filename)
-local lines = {}
-for s in file:gmatch("[^\r\n]+") do
-    table.insert(lines, s)
-end
 ```
 
 ### JSON
 
 ```lua
--- Read JSON
-local data = deserializeJson(jsonString)
-
--- Export to JSON
-exportToJson(luaTable, "output.json")
+local data = deserializeJson(filename, targetObject)
+local jsonString = exportToJson(luaTable)
+exportStringToFile(jsonString, "output.json")
 ```
 
-### File Output
+### File Output and Directories
 
 ```lua
 exportStringToFile(contentString, "output.txt")
-```
-
-### Directory Listing
-
-```lua
 local files = getFilesInFolder(folderPath)
 local folders = getFoldersInFolder(folderPath)
 ```
 
 ## Running Commands
 
-### Pattern
-
 Commands require a **trailing space** to execute:
 
 ```lua
-runCommand("_COMMANDNAME args ")  -- note trailing space
+runCommand("_COMMANDNAME args ")  -- Note trailing space!
 ```
 
 ### Return Value
 
 ```lua
 local result = runCommand("_RC-ShowVersion  ")
-local logOutput = result.log       -- command output text
-local status = result.result       -- execution status
+local logOutput = result.log
 ```
 
 ### Common AutoCAD Commands
 
 ```lua
--- System variables
-runCommand("_PICKADD 0 ")
-runCommand("_FILEDIA 1 ")
-runCommand("_ORTHOMODE 0 ")
-runCommand("_GRID _OFF ")
-runCommand("_SNAP _OFF ")
-runCommand("_NAVVCUBE _OFF ")
-runCommand("_DYNMODE 3 ")
-runCommand("_SELECTIONCYCLING 2 ")
-
--- Units setup
-runCommand('_-UNITS 2 3 1 3 0 _NO ')
-
--- Object snap modes
+runCommand("_PICKADD 0 ")    -- Disables PICKADD
+runCommand("_FILEDIA 1 ")    -- Normal file dialogs
 runCommand("_-OSNAP _END,_MID,_CEN,_NOD,_INT,_PER,_TAN,_NEA ")
-
--- Color
-runCommand("_-COLOR _BYLAYER ")
-
--- Drawing
-runCommand("_CIRCLE " .. x .. "," .. y .. " " .. radius .. " ")
-
--- Zoom
-runCommand("_z _e ")       -- zoom extents
-runCommand("_zoom _e\n")   -- alternate form
-
--- Regen / Purge
-runCommand("_REGEN ")
-runCommand("_-PURGE _ALL * _NO ")
-
--- Save
-runCommand("_QSAVE ")
+runCommand("_z _e ")          -- Zoom extents
+runCommand("_QSAVE ")         -- Save
 ```
 
-### LISP Wrapping
-
-For commands that need LISP syntax:
+### LISP Wrapping and RC Commands
 
 ```lua
 runCommand('(command "._ZOOM" "_EXTENTS") ')
-```
-
-### RC Commands
-
-```lua
-runCommand("RC-CommandName ")  -- see 050-commands.html for full list
+runCommand("RC-CommandName ")  -- See 050-commands.html
 ```
 
 ### Version Checking
@@ -456,169 +496,94 @@ local tmp = runCommand("_RC-ShowVersion  ").log
 local rcVersion = tmp:match("version (%d+%.%d+)%.%d+%.%d+")
 ```
 
-## Advanced Patterns
+### Undo Buffer Grouping
 
-### Undo Buffer
-
-Wrap modifications in an undo group so they can be undone as one step:
+Wrap multi-object operations in `beginUndoBufferItem()` / `endUndoBufferItem()`:
 
 ```lua
 beginUndoBufferItem()
-
--- create/modify objects here
-local obj = insertPointObject(alignment, rctype, variant, position)
-obj.name = "="
-obj.name = "New Name"
-
+for _, track in pairs(tracks) do
+    -- ... create or modify objects ...
+end
 endUndoBufferItem()
 ```
 
-### Selection Sets
+**Important:** `runCommand()` breaks undo grouping — never place it between `beginUndoBufferItem()` and `endUndoBufferItem()`.
 
-After creating objects, make them the current selection:
+## Advanced Patterns
+
+### Selection Sets
 
 ```lua
 local created = {}
-for i = 0, nItems - 1 do
-    local obj = insertPointObject(alignment, rctype, variant, positions[i])
-    table.insert(created, obj)
-end
+-- ... insert objects into created ...
 setSelectionSet(created)
 ```
 
 ### External Libraries
 
-Call C# methods from external DLLs:
-
 ```lua
--- Open a shapefile via DotSpatial
-local shapefile = runExternalLibraryFunction(
-    "DotSpatial.Data.Shapefile",
-    "OpenFile",
-    {shapefilePath}
-)
-
--- Create a .NET object
-local milepost = createExternalLibraryObject(
-    "RailCOMPLETE.Model.GeometryModels.Milepost",
-    {},  -- constructor args
-    {Name = "1.0KM", Pos = 1000, Mileage = 1000}  -- property assignments
-)
-```
-
-### Library Inclusion
-
-```lua
-lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
-lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
-
--- Use library functions
-lib2.zoomExtents()
-local id = RC__identify(obj)
+local shapefile = runExternalLibraryFunction("DotSpatial.Data.Shapefile", "OpenFile", {path})
+local obj = createExternalLibraryObject("Namespace.Type", {}, {Prop = value})
 ```
 
 ### CAD Entity Creation
 
-Create raw AutoCAD entities:
-
 ```lua
--- Points and vectors
 local point = cadInterface.createCadEntity("Geometry.Point3d", {x, y, z})
-local vector = cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1})
-local point2d = cadInterface.createCadEntity("Geometry.Point2d", {x, y})
-
--- Circle
 local circle = cadInterface.createCadEntity("DatabaseServices.Circle", {point, vector, radius})
+local line = cadInterface.createCadEntity("DatabaseServices.Line", {getAcadPoint3D(p1), getAcadPoint3D(p2)})
 
--- Line
-local line = cadInterface.createCadEntity("DatabaseServices.Line", {
-    getAcadPoint3D(p1), getAcadPoint3D(p2)
-})
-
--- Polyline
+-- Polyline:
 local polyline = cadInterface.createCadEntity("DatabaseServices.Polyline", {})
-local index = 0
-for _, v in pairs(points) do
-    polyline:AddVertexAt(index, cadInterface.createCadEntity("Geometry.Point2d", {v.X, v.Y}), 0, 0, 0)
-    index = index + 1
+for i, v in ipairs(points) do
+    polyline:AddVertexAt(i - 1, cadInterface.createCadEntity("Geometry.Point2d", {v.X, v.Y}), 0, 0, 0)
 end
-polyline.Closed = true
 
--- MText
-local text = cadInterface.createCadEntity("DatabaseServices.MText", {})
-text.Height = 2.0
-text.TextHeight = 1.25
-text.TextStyleId = cadInterface.getTextStyleId("ISO")
-text.Contents = "Line 1\\PLine 2"  -- \\P = newline
-text.Attachment = cadInterface.createCadEntity("DatabaseServices.AttachmentPoint", {"TopRight"})
-text.Location = getAcadPoint3D(textPosition)
-
--- Dimension
-local dim = cadInterface.createCadEntity("DatabaseServices.AlignedDimension", {})
-dim.XLine1Point = getAcadPoint3D(p1)
-dim.XLine2Point = getAcadPoint3D(p2)
-dim.DimLinePoint = getAcadPoint3D(dimPoint)
-dim.DimensionText = string.format("%.0f", distance)
-
--- Add entities to drawing
-cadInterface.addEntitiesToModelSpace({circle, line, polyline, text})
+cadInterface.addEntitiesToModelSpace({circle, line, polyline})
 ```
 
 ### Block Operations
 
 ```lua
--- Create a block
-local blockName = "myBlock_" .. generateGuid()
 cadInterface.createBlock(blockName, entities)
-
--- Create block reference (instance)
 local ref = cadInterface.createBlockReference(blockName, insertionPoint)
 ref.ScaleFactors = cadInterface.createCadEntity("Geometry.Scale3d", {scaleFactor})
-
--- Check if block exists
-if not cadInterface.blockExist(blockName) then
-    cadInterface.createBlock(blockName, entities)
-end
-
--- Get CAD entity from RC object
+if not cadInterface.blockExist(blockName) then ... end
 local cadEntity = cadInterface.getCadEntityFromRcObject(rcObject)
 ```
 
 ### Table Operations
 
-These extend Lua's built-in table library:
-
 ```lua
--- Transform collection to Lua table
 local luaTable = table.select(rcCollection, function(x) return x end)
-
--- Filter
 local filtered = table.where(items, function(x) return x.RcType == rctype_Signal end)
-
--- Get first match
 local first = table.firstOrNil(items, function(x) return x.code == "V1" end)
-
--- Sort
 table.sort(items, function(a, b) return a.Mileage < b.Mileage end)
 ```
 
 ### Coordinate Conversions
 
 ```lua
--- Get alignment-relative coordinates
-local linearAddr = getLinearAddress(worldPosition, alignment)
--- linearAddr.DistanceAlong, .LateralOffset, .LongitudinalOffset, .VerticalOffset
-
--- Get alignment info at a point
-local ai = alignment:getAlignmentInfo(point)
+local ai = getAlignmentInfo(alignment.id, point)
 if ai.NormalProjectionExists then
     local pos = ai.RelativePosition
     local mileage = ai.Mileage
 end
-
--- WCS vector from ACS vector
 local wcsVector = getWcsVectorFromAcsVector(obj, lateralOffset, longitudinalOffset)
 ```
+
+## Error Handling
+
+Return `nil` on expected failures so the caller can check:
+
+```lua
+local paths = getShapefilePaths(folder)
+if not paths then return end
+```
+
+- **`lib2.show(msg, nil, _error)`** + `return` for recoverable errors.
+- **`lib2.stop(msg)`** for unrecoverable errors that halt the script.
 
 ## Real Examples
 
@@ -628,41 +593,44 @@ local wcsVector = getWcsVectorFromAcsVector(obj, lateralOffset, longitudinalOffs
 --[[
     Insert objects at XY coordinates from Excel
     ============================================
-    2025-01-15 v1.0 AUTHOR Created
+    2025-01-15 v1.0 AUTHOR Created.
 --]]
 
-function writeln(t) write((t or "") .. "\n") end
-function show(t) writeln(t) askForKeyword(t, {"OK"}) end
 
-show([[
-    Insert objects at XY(Z) coordinates from Excel
-    ===============================================
-    Input: Excel file with columns X, Y (and optionally Z).
-    Usage: Select file, select template object, objects are inserted.
-]])
 
--- Select file
+---GLOBAL CONSTANTS---
+_HEADER_ = "Insert objects at XY(Z) coordinates from Excel"
+_VERSION_ = "2025-01-15 v1.0"
+_DEBUG_ = false
+_TRACE_ = false
+
+
+
+---INCLUDES---
+local lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
+
+
+
+---SCRIPT---
+
+-- Select file:
 local filename = askForFileName("Select Excel file with X, Y columns")
-local file = getContentsFromFile(FileType.Excel, "", filename)
+local file = getFileFromPath(FileType.Excel, filename)
 local sheets = getExpandoObjectPropertyNames(file)
-local sheetName = sheets[0]
-local items = file[sheetName]
+local items = file[sheets[0]]
 local nItems = getCollectionLength(items)
 
-show(nItems .. " rows found in sheet '" .. sheetName .. "'")
-
--- Select template object
-show("Select an existing object as template. Its RcType and Variant will be used.")
+-- Select template object:
+lib2.show("Select an existing object as template.")
 local template = askForObject("Select template object")
 if template.Alignment == nil then
-    show("Aborting: template object must have an alignment.")
+    lib2.show("Aborting: template must have an alignment.", nil, _error)
     return
 end
 
--- Process rows
+-- Process rows:
 local objTable = {}
 local nCreated = 0
-
 beginUndoBufferItem()
 
 for i = 0, nItems - 1 do
@@ -671,17 +639,14 @@ for i = 0, nItems - 1 do
     local y = row["Y"]
     local z = row["Z"]
 
+    -- Is this row valid?
     if type(x) ~= "number" or type(y) ~= "number" then
-        writeln(string.format("Skipping row %d: X='%s' or Y='%s' is not a number.",
-            i + 1, tostring(x), tostring(y)))
+        lib2.writeln(string.format("Skipping row %d: invalid data.", i + 1), _warning)
         goto continue
     end
 
-    local p = getPoint3D(x, y)
     local obj = insertPointObject(
-        template.Alignment, template.RcType, template.Variant, p
-    )
-
+        template.Alignment, template.RcType, template.Variant, getPoint3D(x, y))
     if obj then
         if z and type(z) == "number" then
             obj.VerticalOffset = "="
@@ -689,236 +654,50 @@ for i = 0, nItems - 1 do
         end
         table.insert(objTable, obj)
         nCreated = nCreated + 1
-        writeln(string.format("%d: Created at (%.3f, %.3f)", i + 1, x, y))
-    else
-        writeln(string.format("Row %d: Failed to create object at (%.3f, %.3f)", i + 1, x, y))
     end
 
     ::continue::
 end
 
 endUndoBufferItem()
-
 setSelectionSet(objTable)
-show("\n" .. nCreated .. " objects created out of " .. nItems .. " rows.")
-```
-
-### Batch Create Tracks from Shapefile
-
-```lua
---[[
-    Import tracks from Shapefile
-    ============================
-    2025-02-01 v1.0 AUTHOR Created
---]]
-
-lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
-lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
-
-local _HEADER_ = "Import Tracks"
-local _TRACK_VARIANT_ = "Traverses et rails - 3D simple"
-
-show("Import tracks from a Shapefile (.shp)")
-
-local shapefilePath = askForFileName("Select the Shapefile (.shp)")
-local shapefile = runExternalLibraryFunction(
-    "DotSpatial.Data.Shapefile", "OpenFile", {shapefilePath}
-)
-local shapes = table.select(shapefile.ShapeIndices)
-local geometries = table.select(shapefile.Features, function(x) return x.Geometry end)
-
-writeln("Importing from: " .. shapefilePath)
-
-beginUndoBufferItem()
-
-for _, shape in pairs(shapes) do
-    local recordNumber = shape.RecordNumber
-    local trackName = tostring(shapefile.Attributes.Table.Rows[recordNumber - 1].ItemArray[2])
-
-    -- Skip very short segments (derailers)
-    if shape.NumParts == 1 and shape.NumPoints == 2 and
-       math.abs(geometries[recordNumber].Length - 2.0) < 0.1 then
-        writeln("Skipping derailer: " .. trackName, _warning)
-        goto continue
-    end
-
-    local parts = table.select(shape.Parts)
-    for _, part in pairs(parts) do
-        local coords = table.select(part)
-        local points = {}
-
-        for idx, vertex in ipairs(coords) do
-            local z = shapefile.Z[shape.StartIndex + idx - 1]
-            table.insert(points, getPoint3D(vertex.X, vertex.Y, z))
-        end
-
-        local alignment = createAlignmentObject(rctype_Track, _TRACK_VARIANT_, points)
-        if alignment then
-            alignment.code = "="
-            alignment.code = trackName
-            alignment.name = alignment.name  -- force save
-            writeln("Created track: " .. trackName)
-        else
-            writeln("Failed to create track: " .. trackName, _error)
-        end
-    end
-
-    ::continue::
-end
-
-endUndoBufferItem()
-runCommand("_z _e ")
-show("Import complete")
-```
-
-### Draw AutoCAD Circles from Coordinates
-
-```lua
---[[
-    Insert circles at XY coordinates
-    =================================
-    2025-01-10 v1.0 AUTHOR Created
---]]
-
-function writeln(t) write((t or "") .. "\n") end
-function show(t) writeln(t) askForKeyword(t, {"OK"}) end
-
-local filename = askForFileName("Select Excel file with X, Y columns")
-local file = getContentsFromFile(FileType.Excel, "", filename)
-local sheets = getExpandoObjectPropertyNames(file)
-local items = file[sheets[0]]
-local nItems = getCollectionLength(items)
-local radius = 0.5
-
--- Check RC version for undo buffer support
-local tmp = runCommand("_RC-ShowVersion  ").log
-local rcVersion = tmp:match("version (%d+%.%d+)%.%d+%.%d+")
-
-for i = 0, nItems - 1 do
-    local x = items[i]["X"]
-    local y = items[i]["Y"]
-
-    if type(x) == "number" and type(y) == "number" then
-        if rcVersion > "2024.2" then
-            beginUndoBufferItem()
-            local insertionPoint = cadInterface.createCadEntity("Geometry.Point3d", {x, y, 0})
-            local normalVector = cadInterface.createCadEntity("Geometry.Vector3d", {0, 0, 1})
-            local circle = cadInterface.createCadEntity("DatabaseServices.Circle",
-                {insertionPoint, normalVector, radius})
-            cadInterface.addEntitiesToModelSpace({circle})
-            endUndoBufferItem()
-        else
-            runCommand("_CIRCLE " .. x .. "," .. y .. " " .. radius .. " ")
-        end
-        writeln(string.format("%04d Inserted circle at (%.3f, %.3f)", i + 1, x, y))
-    end
-end
-
-show("Done. " .. nItems .. " rows processed.")
+lib2.show(nCreated .. " objects created out of " .. nItems .. " rows.")
 ```
 
 ## Common Pitfalls
 
 ### 0-Indexed RC Collections vs 1-Indexed Lua Tables
 
-RailCOMPLETE collections (from `getRelatedObjects()`, `getContentsFromFile()`, `filter()`, `getExpandoObjectPropertyNames()`) are **0-indexed**. Lua tables created with `table.insert()` are **1-indexed**.
+RC collections (from `getRelatedObjects()`, `getFileFromPath()`, `filter()`, etc.) are **0-indexed**. Lua tables from `table.insert()` are **1-indexed**.
 
 ```lua
--- RC collection: 0-indexed
-local items = file[sheetName]
-for i = 0, getCollectionLength(items) - 1 do
-    local row = items[i]
-end
-
--- Lua table: 1-indexed
-local luaTable = {}
-table.insert(luaTable, "a")  -- luaTable[1] = "a"
+-- RC collection: for i = 0, getCollectionLength(items) - 1 do
+-- Lua table: luaTable[1] is the first element
 ```
 
-### askForPoint() Cancel Exception
-
-`askForPoint()` throws an exception when the user presses Escape. Always check for nil:
-
-```lua
-local point = askForPoint("Click a point:")
-if not point then return end
-```
-
-### Trailing Space in runCommand()
-
-Commands won't execute without a trailing space:
-
-```lua
-runCommand("_CIRCLE 0,0 10 ")  -- works (trailing space)
-runCommand("_CIRCLE 0,0 10")   -- may hang waiting for input!
-```
-
-### Formula Reset Before Assignment
-
-To replace a formula-bound property with a concrete value, first reset it with `"="`:
-
-```lua
-obj.VerticalOffset = "="    -- remove formula
-obj.VerticalOffset = 5.0    -- assign value
-```
-
-### goto continue / ::continue:: Pattern
-
-Lua has no `continue` keyword. Use `goto` with a label at the end of the loop body:
-
-```lua
-for i = 0, n - 1 do
-    if shouldSkip then
-        goto continue
-    end
-
-    -- process item
-
-    ::continue::
-end
-```
+Also watch for: `askForPoint()` returning nil on Escape (see *User Interaction*), and `runCommand()` requiring a trailing space (see *Running Commands*).
 
 ### string.format() Patterns
 
 ```lua
-string.format("%.3f", value)     -- 3 decimal places: "1.234"
-string.format("%04d", number)    -- 4-digit zero-padded: "0042"
-string.format("%d: %s", i, msg)  -- integer and string
+string.format("%.3f", value)     -- "1.234"
+string.format("%04d", number)    -- "0042"
+string.format("%d: %s", i, msg)  -- Integer and string
 ```
 
-### Force Save After Property Changes
-
-After modifying alignment properties, force a save by re-assigning name:
+## Constants Reference
 
 ```lua
-alignment.code = "="
-alignment.code = "V1"
-alignment.name = alignment.name  -- triggers save and derived field update
-```
+-- FileType:
+FileType.Excel, FileType.Xml, FileType.Text, FileType.Csv, FileType.Json, FileType.Lua
 
-## FileType Constants
-
-```lua
-FileType.Excel    -- .xlsx files
-FileType.Xml      -- .xml files
-FileType.Text     -- .txt files
-FileType.Csv      -- .csv files
-FileType.Json     -- .json files
-FileType.Lua      -- .lua files
-```
-
-## Output Symbols
-
-```lua
-_noSymbol    -- standard output
-_ok          -- green checkmark
-_warning     -- yellow triangle
-_error       -- red X
+-- Output symbols:
+_noSymbol, _ok, _warning, _error
 ```
 
 ## Documentation Reference
 
-- **Full API reference**: `.claude/documentation/080-luacommands.html` — all object-level + script-only functions
-- **Lua language tutorial**: `.claude/documentation/070-lua.html` — syntax, types, control structures
-- **RC commands**: `.claude/documentation/050-commands.html` — commands available via `runCommand()`
-- **Debugger**: `.claude/documentation/080-luadebugger.html` — breakpoints, watches, stepping
+- **Full API reference**: `.claude/references/080-luacommands.html`
+- **Lua tutorial**: `.claude/references/070-lua.html`
+- **RC commands**: `.claude/references/050-commands.html`
+- **Debugger**: `.claude/references/080-luadebugger.html`

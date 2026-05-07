@@ -1,35 +1,27 @@
 --[[
-Run AutoCAD ATTSYNC command on selected RailCOMPLETE point object
+	Run ATTSYNC on RC object
+	========================
+	Runs the AutoCAD ATTSYNC command on each block in a selected
+	RailCOMPLETE point object and then regenerates the display.
 
-=========================================================================
-2025-02-28_001 THBEN Created script
+	2025-02-28 v1.0 THBEN Created.
+--]]
 
 
-Input:
--	RC point object.
 
-Output:
--	Prints the total number of blocks located in the selected point object.
--	Runs the ATTSYNC command and prints the block name for each block in the RC object.
-]]
-	
+---SCRIPT---
+
 local pointObject = askForPointObject("Select point object:")
+if not pointObject then return end
 
-if not pointObject then
-	goto endOfScript
-end
-
--- Create table of the point object block names
+-- Get block names from the point object:
 local blockNames = table.select(pointObject:getBlockNames())
 
-
-write(#blockNames.." blocks found\n")
+write(#blockNames .. " blocks found\n")
 
 for k, blockName in pairs(blockNames) do
-	runCommand("ATTSYNC n\n"..blockName.."\n")	
-	write("Attsync used on block "..blockName.."\n")
+	runCommand("ATTSYNC n\n" .. blockName .. "\n")
+	write("Attsync used on block " .. blockName .. "\n")
 end
 
 runCommand("REGEN\n")
-
-::endOfScript::
