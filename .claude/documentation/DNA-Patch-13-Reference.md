@@ -38,6 +38,18 @@ Net Lua function count: **137** (136 in patch 12, +3 added, −2 removed).
 - **`DefaultLandxmlImportSettings`** added inside `<DefaultSettingsForCommands>`: specifies `JBTKO_SPO Spor` as the default object type when importing alignments from LandXML files.
 - **`DnaIdentification`** name updated from `"NO-BN 2021.a (patch 11)"` to `"NO-BN 2021.a (patch 13)"`.
 
+### Signal and ERTMS sign sighting target defaults
+- All 7 optical signal ObjectTypes and all 3 ERTMS sign/marker-board ObjectTypes now declare `SightingTarget=True` on their main 3D geometry, via the dynamic-property block:
+  ```xml
+  <SetDynamicProperty Type="Representation3D" Subtype="Geometry3D">
+    <SetValue Key="SightingTarget" Value="True" />
+  </SetDynamicProperty>
+  ```
+- All optical signals and ERTMS signs are train-route targets, so their main 3D geometry must default to being a sighting target.
+- Affected ObjectTypes (10 total):
+  - Optical signals (7): `JBTSA_SIG Signal`, `JBTSA_SIG Togsporsignal`, `JBTSA_SIG Høyt skiftesignal, frittstående`, `JBTSA_SIG Rasvarslingssignal`, `JBTSA_SIG Brusignal/Frostportsignal`, `JBTSA_SIG Planovergangssignal`, `JBTSA_SIG Veisignal`.
+  - ERTMS signs (3): `JBTSA_ERT ERTMS-signal` (E35 stop/marker boards), `JBTSA_MSS ERTMS Signalskilt` (E106/E107/E108/E36/E200/E201), `JBTSA_MSS Signal E101 ERTMS Identifikasjonsskilt` (E101A–E101L ID boards).
+
 ---
 
 ## Table of Contents
