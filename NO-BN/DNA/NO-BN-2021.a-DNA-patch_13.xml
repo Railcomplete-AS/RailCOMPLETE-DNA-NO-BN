@@ -14706,6 +14706,41 @@ return s</Data>
       <Formula>0</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
+	<!-- 2026-06-01 CLFEY Added for parity with JBTEH_BAR Bardun (PR #276): Z-coordinate for struts drawn in either direction. -->
+    <LuaFunction Name="_JBTEH_STR_Offset3DZ()"
+		Description="Returns the Z coordinate for a strut (strever), on condition that it has a relation to its footplate ('forankring') at one end and to its anchoring-to-pole (kraftoverføringskonsoll) at the catenary mast end. Struts are supposed to be drawn from mast to anchoring footplate.">
+      <Formula>
+				function _JBTEH_STR_Offset3DZ()
+					--2026-06-01 CLFEY Mirrors _JBTEH_BAR_Offset3DZ(): handles a strut drawn either from the footplate to the mast or from the mast to the footplate.
+					local rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole = "Har kraftoverføringskonsoll"
+					local rel_Strut_IsAnchoredBy_StrutFootplate = "Har forankring" --(Bytter navn til "Har fotplate" i kommende DNA)
+					local atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole)[0]
+					local stf = getRelatedObjects(rel_Strut_IsAnchoredBy_StrutFootplate)[0]
+					if atp == nil or stf == nil then
+						--Relation to mast console ('kraftoverføringskonsoll') and/or footplate ('forankring') not yet established: keep the strut flat (pre-fix behaviour) rather than erroring.
+						return 0
+					end
+					local L = RcAlignment.HorizontalGeometry.Length
+					local z0, z1, dZ
+					local d = RC__getDistance2D(getPoint3D(stf), RcAlignment.HorizontalGeometry.StartPoint)
+					if d &lt; 1.0 then
+						--The strut has probably been drawn from strut-footplate to force relaying console on OCS pole
+						z0 = stf.geoCoord.Z
+						z1 = atp.GeoCoord.Z
+					else
+						--The strut has probably been drawn from force relaying console on pole to strut-footplate
+						z0 = atp.GeoCoord.Z
+						z1 = stf.geoCoord.Z
+					end
+					dZ = z1 - z0
+					return z0 + _position.Pos * (dZ/L)
+				end
+			</Formula>
+    </LuaFunction>
+    <LuaExpression Name="Offset3D.Z" IsModelCheck="false">
+      <Formula>_JBTEH_STR_Offset3DZ()</Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
     <LuaExpression Name="Model3DSeparation" IsModelCheck="false">
       <Formula>RC__getNearest3DStep(1.0)</Formula>
       <Symbol>_noSymbol</Symbol>
@@ -32704,6 +32739,7 @@ return s</Data>
     <SourceSpace>forankring</SourceSpace>
     <Relation Name="KL forankring" AskForRelation="true" AskForReverseRelation="true" Color="32" RelationLineScale="10">
       <TargetSpace>kl-bardun</TargetSpace>
+      <TargetSpace>kl-strever</TargetSpace>
       <RelatesTo Prompt="Er forankring for" Min="1" Max="2" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
       <ReverseRelatesTo Prompt="Har" Min="1" Max="1" WarnAtSaturation="true" NumberOfPromptsDuringInsertion="1" />
     </Relation>
