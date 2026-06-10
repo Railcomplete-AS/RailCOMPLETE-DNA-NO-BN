@@ -1411,16 +1411,20 @@
 					--This code allows the guy wire to be drawn either from the OCS pole to the footplate or the opposite way.
 					local atp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)[0]
 					local gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
+					if atp == nil or gwf == nil then
+						--Relation to the force relaying console and/or the guywire footplate not yet established: keep the guy wire flat rather than erroring.
+						return 0
+					end
 					local L = RcAlignment.HorizontalGeometry.Length
 					local z0, z1, dZ
 					local d = RC__getDistance2D(getPoint3D(gwf), RcAlignment.HorizontalGeometry.StartPoint)
 					if d &lt; 1.0 then 
 						--The guywire has probably been drawn from guywire-footplate to force relaying console on OCS pole
 						z0 = gwf.geoCoord.Z
-						z1 = atp.GeoCoord.Z
+						z1 = atp.geoCoord.Z
 					else
 						--The guywire has probably been drawn from force relaying console on pole to guywire-footplate
-						z0 = atp.GeoCoord.Z
+						z0 = atp.geoCoord.Z
 						z1 = gwf.geoCoord.Z
 					end
 					dZ = z1 - z0
@@ -1545,10 +1549,10 @@
 					if d &lt; 1.0 then
 						--The spanner has probably been drawn from spanner-footplate to force relaying console on OCS pole
 						z0 = stf.geoCoord.Z
-						z1 = atp.GeoCoord.Z
+						z1 = atp.geoCoord.Z
 					else
 						--The spanner has probably been drawn from force relaying console on pole to spanner-footplate
-						z0 = atp.GeoCoord.Z
+						z0 = atp.geoCoord.Z
 						z1 = stf.geoCoord.Z
 					end
 					dZ = z1 - z0
