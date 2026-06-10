@@ -1451,7 +1451,8 @@
 				>
 		
 		<RelationSpace>kl-strever</RelationSpace>
-		
+		<AttachmentCategory Name="kl-strever" PassAttachmentToTarget="true"/>
+
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
@@ -1523,8 +1524,40 @@
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="SweptGeometry3D_0.Roll"><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
-		
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+
+		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTEH_STR_Offset3DZ()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STR_Offset3DZ()"
+			ReturnType="Double"
+			Description="Returns the Z offset for a spanner (strever) object, assuming the alignment has no (or zero) vertical profile. The start point is fetched from the spanner's force relaying console on its OCS pole. The end point is fetched from the spanner's anchoring to a spanner footplate. Returns 0 (flat) when either relation is not yet established.">
+			<Signature>Double _JBTEH_STR_Offset3DZ()</Signature>
+			<Formula>
+				function _JBTEH_STR_Offset3DZ()
+					--This code allows the spanner to be drawn either from the OCS pole to the footplate or the opposite way.
+					local atp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)[0]
+					local stf = getRelatedObjects(rel_Spanner_IsAnchoredBy_SpannerFootplate)[0]
+					if atp == nil or stf == nil then
+						--Relation to the force relaying console and/or the spanner footplate not yet established: keep the spanner flat rather than erroring.
+						return 0
+					end
+					local L = RcAlignment.HorizontalGeometry.Length
+					local z0, z1, dZ
+					local d = RC__getDistance2D(getPoint3D(stf), RcAlignment.HorizontalGeometry.StartPoint)
+					if d &lt; 1.0 then
+						--The spanner has probably been drawn from spanner-footplate to force relaying console on OCS pole
+						z0 = stf.geoCoord.Z
+						z1 = atp.GeoCoord.Z
+					else
+						--The spanner has probably been drawn from force relaying console on pole to spanner-footplate
+						z0 = atp.GeoCoord.Z
+						z1 = stf.geoCoord.Z
+					end
+					dZ = z1 - z0
+					return z0 + _position.Pos * (dZ / L)
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner"
 			Description="Checks complex requirements on the number of established relations between this object and other objects."/>
 		<LuaExpression Name="mc_Relations" IsModelCheck="true"><Formula>_JBTEH_STR_chkRelations()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STR_chkRelations()" ReturnType="String"
@@ -1547,11 +1580,35 @@
 					end
 				end
 			</Formula>
-		</LuaFunction> 
+		</LuaFunction>
 
-		<InsertAlignment Name="Strever" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false"> 
+		<!-- 2D geometry: when the spanner is related to exactly one force relaying console (on OCS pole) and one spanner footplate, snap the line to a straight segment between them - mirrors JBTEH_BAR Bardun. -->
+		<LuaExpression Name="RcAlignment.HorizontalGeometry.Segments"><Formula>_JBTEH_STR_getGeometrySegments2D()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STR_getGeometrySegments2D()" ReturnType="String"
+			Description="Returns an ordered sequence of horizontal segments for use in the spanner's RcAlignment.HorizontalGeometry.Segments property. When the spanner is related to exactly one force relaying console on OCS pole and one spanner footplate, the line snaps to a straight segment between them; otherwise the drawn geometry is kept.">
+			<Signature>HorizontalSegments _JBTEH_STR_getGeometrySegments2D(ObjRef spanner = this)</Signature>
+			<Formula>
+				function _JBTEH_STR_getGeometrySegments2D(spn)
+					spn = spn or this
+					local lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
+
+					local rCon, nCon = spn:getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)
+					local rFpl, nFpl = spn:getRelatedObjects(rel_Spanner_IsAnchoredBy_SpannerFootplate)
+					if nCon ~= 1 or nFpl ~= 1 then
+						return spn:getPropertyValue("RcAlignment.HorizontalGeometry.Segments")
+					end
+					local con = rCon[0]
+					local fpl = rFpl[0]
+					local segment = {}
+					table.insert(segment, lib1.createHorizontalGeometryStraightSegment(getPoint3D(con), getPoint3D(fpl)))
+					return segment
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertAlignment Name="Strever" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false">
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
-			<SetValue Key="SweptGeometry3D_0.Name" Value="NO-BN-2D-FE-DIV-STEEL-BEAM-HUP-120-120"/>
+			<SetValue Key="SweptGeometry3D_0.Name" Value="NO-BN-2D-FE-BJS-BJELKE-STÅL-HUP-120-120"/>
 		</InsertAlignment>
 
 	</ObjectType>
