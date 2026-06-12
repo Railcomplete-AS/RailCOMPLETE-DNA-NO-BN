@@ -44,17 +44,17 @@
 	(setq
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-64A-GRENSE-INNKOBLINGSSTOLPE"
 		description "SKILT SIGNAL 64A GRENSE- / INNKOBLINGSSTOLPE"
-		TL	'(-0.5 10.5)	TR  (AddVectors TL  '(0.7 0))
-		p51	'(-0.5  9.5)	p52 (AddVectors p51 '(0.7 0))
-		p43	'(-0.5  8.5)	p44 (AddVectors p43 '(0.7 0))
-		p41	'(-0.5  7.5)	p42 (AddVectors p41 '(0.7 0))
-		p33	'(-0.5  6.5)	p34 (AddVectors p33 '(0.7 0))
-		p31	'(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
+		TL	'(-0.35 10.5)	TR  (AddVectors TL  '(0.7 0))
+		p51	'(-0.35  9.5)	p52 (AddVectors p51 '(0.7 0))
+		p43	'(-0.35  8.5)	p44 (AddVectors p43 '(0.7 0))
+		p41	'(-0.35  7.5)	p42 (AddVectors p41 '(0.7 0))
+		p33	'(-0.35  6.5)	p34 (AddVectors p33 '(0.7 0))
+		p31	'(-0.35  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.35  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.35  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.35  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.35  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.35  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
@@ -125,11 +125,11 @@
 	(setq
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-64B-SEKSJONERINGSSTOLPE"
 		description "SKILT SIGNAL 64B SEKSJONERINGSSTOLPE"
-		TL	'(-0.5 11.2)	TR  (AddVectors TL  '(0.7 0))
-		p21	'(-0.5  8.4)	p22 (AddVectors p21 '(0.7 0))
-		p13	'(-0.5  5.6)	p14 (AddVectors p13 '(0.7 0))
-		p11	'(-0.5  2.8)	p12 (AddVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
+		TL	'(-0.35 11.2)	TR  (AddVectors TL  '(0.7 0))
+		p21	'(-0.35  8.4)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.35  5.6)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.35  2.8)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.35  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  5.0)    t2  '(2.0  5.0)
 	)
 	; Wipeout under pole
@@ -186,17 +186,17 @@
 	(setq	
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-64C-RASVARSLINGSSTOLPE"
 		description "SKILT SIGNAL 64C RASVARSLINGSSTOLPE"
-		TL	'(-0.5 10.5)	TR  (AddVectors TL  '(0.7 0))
-		p51	'(-0.5  9.5)	p52 (AddVectors p51 '(0.7 0))
-		p43	'(-0.5  8.5)	p44 (AddVectors p43 '(0.7 0))
-		p41	'(-0.5  7.5)	p42 (AddVectors p41 '(0.7 0))
-		p33	'(-0.5  6.5)	p34 (AddVectors p33 '(0.7 0))
-		p31	'(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
+		TL	'(-0.35 10.5)	TR  (AddVectors TL  '(0.7 0))
+		p51	'(-0.35  9.5)	p52 (AddVectors p51 '(0.7 0))
+		p43	'(-0.35  8.5)	p44 (AddVectors p43 '(0.7 0))
+		p41	'(-0.35  7.5)	p42 (AddVectors p41 '(0.7 0))
+		p33	'(-0.35  6.5)	p34 (AddVectors p33 '(0.7 0))
+		p31	'(-0.35  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.35  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.35  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.35  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.35  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.35  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
@@ -267,11 +267,11 @@
 	(setq
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-64D-BREMSESTOLPE"
 		description "SKILT SIGNAL 64D BREMSESTOLPE"
-		TL	'(-0.5 11.2)	TR  (AddVectors TL  '(0.7 0))
-		p21	'(-0.5  8.4)	p22 (AddVectors p21 '(0.7 0))
-		p13	'(-0.5  5.6)	p14 (AddVectors p13 '(0.7 0))
-		p11	'(-0.5  2.8)	p12 (AddVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
+		TL	'(-0.35 11.2)	TR  (AddVectors TL  '(0.7 0))
+		p21	'(-0.35  8.4)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.35  5.6)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.35  2.8)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.35  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  5.0)    t2  '(2.0  5.0)
 	)
 	; Wipeout under pole
@@ -328,17 +328,17 @@
 	(setq	
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-64E-TEKNISK-STOLPE"
 		description "SKILT SIGNAL 64E TEKNISK STOLPE"
-		TL	'(-0.5 10.5)	TR  (AddVectors TL  '(0.7 0))
-		p51	'(-0.5  9.5)	p52 (AddVectors p51 '(0.7 0))
-		p43	'(-0.5  8.5)	p44 (AddVectors p43 '(0.7 0))
-		p41	'(-0.5  7.5)	p42 (AddVectors p41 '(0.7 0))
-		p33	'(-0.5  6.5)	p34 (AddVectors p33 '(0.7 0))
-		p31	'(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
+		TL	'(-0.35 10.5)	TR  (AddVectors TL  '(0.7 0))
+		p51	'(-0.35  9.5)	p52 (AddVectors p51 '(0.7 0))
+		p43	'(-0.35  8.5)	p44 (AddVectors p43 '(0.7 0))
+		p41	'(-0.35  7.5)	p42 (AddVectors p41 '(0.7 0))
+		p33	'(-0.35  6.5)	p34 (AddVectors p33 '(0.7 0))
+		p31	'(-0.35  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.35  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.35  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.35  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.35  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.35  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  6.0)    t2  '(2.0  6.0)
 	)
 	; Wipeout under pole
@@ -405,13 +405,13 @@
 	(setq
 		blockName "NO-BN-2D-JBTSK_SKK-SKILT-KJOERENDE-SIGNAL-64F-DVERGSIGNALSTOLPE"
 		description "SKILT SIGNAL 64F DVERGSIGNALSTOLPE"
-		TL	'(-0.5  6.5)	TR  (AddVectors TL  '(0.7 0))
-		p31 '(-0.5  5.5)	p32 (AddVectors p31 '(0.7 0))
-		p23 '(-0.5  4.5)	p24 (AddVectors p23 '(0.7 0))
-		p21	'(-0.5  3.5)	p22 (AddVectors p21 '(0.7 0))
-		p13	'(-0.5  2.5)	p14 (AddVectors p13 '(0.7 0))
-		p11	'(-0.5  1.5)	p12 (AddVectors p11 '(0.7 0))
-		BL	'(-0.5  0.0)	BR  (AddVectors BL  '(0.7 0))
+		TL	'(-0.35  6.5)	TR  (AddVectors TL  '(0.7 0))
+		p31 '(-0.35  5.5)	p32 (AddVectors p31 '(0.7 0))
+		p23 '(-0.35  4.5)	p24 (AddVectors p23 '(0.7 0))
+		p21	'(-0.35  3.5)	p22 (AddVectors p21 '(0.7 0))
+		p13	'(-0.35  2.5)	p14 (AddVectors p13 '(0.7 0))
+		p11	'(-0.35  1.5)	p12 (AddVectors p11 '(0.7 0))
+		BL	'(-0.35  0.0)	BR  (AddVectors BL  '(0.7 0))
 		t1  '(-2.0  4.0)    t2  '(2.0  4.0)
 	)
 	; Wipeout under pole
