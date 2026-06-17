@@ -48,15 +48,16 @@ Net Lua function count: **137** (136 in patch 12, +3 added, −2 removed).
 4. [Object Types](#object-types)
 5. [Lua Functions](#lua-functions)
 6. [Lua Expressions](#lua-expressions)
-7. [Show Layers](#show-layers)
-8. [Property Overrides](#property-overrides)
-9. [Property Categories](#property-categories)
-10. [Fouling Point Settings](#fouling-point-settings)
-11. [Display Gauge Settings](#display-gauge-settings)
-12. [Position Tool Settings](#position-tool-settings)
-13. [Default Settings for Commands](#default-settings-for-commands)
-14. [Default Interlocking Export Options](#default-interlocking-export-options)
-15. [DNA Identification](#dna-identification)
+7. [Dock Points and Dynamic Snap Points](#dock-points-and-dynamic-snap-points)
+8. [Show Layers](#show-layers)
+9. [Property Overrides](#property-overrides)
+10. [Property Categories](#property-categories)
+11. [Fouling Point Settings](#fouling-point-settings)
+12. [Display Gauge Settings](#display-gauge-settings)
+13. [Position Tool Settings](#position-tool-settings)
+14. [Default Settings for Commands](#default-settings-for-commands)
+15. [Default Interlocking Export Options](#default-interlocking-export-options)
+16. [DNA Identification](#dna-identification)
 
 ---
 
@@ -715,6 +716,53 @@ Common existing expressions (unchanged from patch 12):
 | Signal naming expressions | Signal number, litra, full name, short name |
 | TextAttribute content expressions | Bindings for OBJEKTNAVN, OBJEKTID, OBJEKTBESKRIVELSE |
 | Variant-specific expressions | Properties differing per object variant |
+
+---
+
+## Dock Points and Dynamic Snap Points
+
+Object types expose **dock points** through `<DockPointDefinitions>` / `<SnapPoints>`. Each `<SnapPoint>` defines a position — in the object's local frame — that objects of a given `TargetSpace` can snap to.
+
+- For an **alignment (line) object**, `X` is the distance measured **along the alignment** from its start point, `Y` is the lateral offset, and `Z` the vertical offset.
+- For a **point object**, `X`/`Y`/`Z` are offsets from the object's insertion point.
+
+```xml
+<DockPointDefinitions>
+    <SnapPoints>
+        <SnapPoint X="0" Y="0" Z="0" TargetSpace="forankring" />
+    </SnapPoints>
+</DockPointDefinitions>
+```
+
+### Dynamic snap points (coordinate overrides)
+
+Any axis of a `<SnapPoint>` can be computed at runtime with a Lua formula instead of a fixed attribute, using a `<XOverride>`, `<YOverride>`, or `<ZOverride>` child element wrapping a `<Formula>`. The formula returns the coordinate value and may reference object properties and `RcAlignment`. When an axis is overridden, omit its static attribute and supply the override child instead; un-overridden axes keep their attribute values.
+
+```xml
+<DockPointDefinitions>
+    <SnapPoints>
+        <SnapPoint X="0" TargetSpace="OhlAttachment">
+            <YOverride>
+                <Formula>return WireHeight</Formula>
+            </YOverride>
+        </SnapPoint>
+    </SnapPoints>
+</DockPointDefinitions>
+```
+
+This anchors a snap point to a value that varies per object — e.g. a wire's height, or the **end of a variable-length alignment**.
+
+#### Usage in patch 13
+
+The **JBTEH_BAR Bardun** (guy wire) and **JBTEH_STR Strever** (strut) each expose a dynamic dock point at their **foot end**, so their fastening footplates (festemekanismer — `JBTEH_BAF Bardunfeste` / `JBTEH_STF Streverfeste`, both in the `forankring` space) snap precisely to the end of the line regardless of its length:
+
+```xml
+<SnapPoint Y="0" Z="0" TargetSpace="forankring">
+    <XOverride>
+        <Formula>return RcAlignment.HorizontalGeometry.Length</Formula>
+    </XOverride>
+</SnapPoint>
+```
 
 ---
 
