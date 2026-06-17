@@ -1402,25 +1402,29 @@
 		<LuaExpression Name="SweptGeometry3D_0.Roll"><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
 		
 		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTEH_BAR_Offset3DZ()</Formula></LuaExpression>
-		<LuaFunction Name="_JBTEH_BAR_Offset3DZ()" 
-			ReturnType="Double"
-			Description="Returns the Z offset for a guywire object, assuming the alignment has no (or zero) vertical profile. The start point is fetched from the guywire's force relaying console on its OCS pole. The end point is fetched from the guy wire's anchoring to a guywire footplate.">
-			<Signature>Enumeration _JBTEH_BAR_Offset3DZ()</Signature>
+		<LuaFunction Name="_JBTEH_BAR_Offset3DZ()"
+			Description="Returns the Z coordinate for a guy wire, on condition that it has a relation to its footplate at one end and to its anchoring-to-pole at the catenary mast end. Guy wires are supposed to be drawn from mast to anchoring footplate."
+			ReturnType="Double" HideFromUser="false">
+			<Signature>Double _JBTEH_BAR_Offset3DZ()</Signature>
 			<Formula>
 				function _JBTEH_BAR_Offset3DZ()
 					--This code allows the guy wire to be drawn either from the OCS pole to the footplate or the opposite way.
-					local atp = getRelatedObjects(rel_OcsPole_IsInstallationTargetFor_ConsoleOnOcsPole)[0]
+					local atp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)[0]
 					local gwf = getRelatedObjects(rel_GuyWire_IsAnchoredBy_GuywireFootplate)[0]
+					if atp == nil or gwf == nil then
+						--Relation to the force relaying console and/or the guywire footplate not yet established: keep the guy wire flat rather than erroring.
+						return 0
+					end
 					local L = RcAlignment.HorizontalGeometry.Length
 					local z0, z1, dZ
 					local d = RC__getDistance2D(getPoint3D(gwf), RcAlignment.HorizontalGeometry.StartPoint)
 					if d &lt; 1.0 then 
 						--The guywire has probably been drawn from guywire-footplate to force relaying console on OCS pole
 						z0 = gwf.geoCoord.Z
-						z1 = atp.GeoCoord.Z
+						z1 = atp.geoCoord.Z
 					else
 						--The guywire has probably been drawn from force relaying console on pole to guywire-footplate
-						z0 = atp.GeoCoord.Z
+						z0 = atp.geoCoord.Z
 						z1 = gwf.geoCoord.Z
 					end
 					dZ = z1 - z0
@@ -1432,7 +1436,7 @@
 		<!-- Asks for relation to its corresponding contact wire, and derives it code from it. -->
 		<PropertyPrompt Key="code" DefaultValue="Bardun" AcceptEmptyValue="false"/> 		
 
-		<InsertAlignment Name="Bardun" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false"> 
+		<InsertAlignment Name="Bardun" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false">
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
 			<SetValue Key="SweptGeometry3D_0.Name" Value="NO-BN-2D-FE-WIR-WIRE-GRÅ-DIAMETER-010"/>
 		</InsertAlignment>
@@ -1451,7 +1455,8 @@
 				>
 		
 		<RelationSpace>kl-strever</RelationSpace>
-		
+		<AttachmentCategory Name="kl-strever" PassAttachmentToTarget="true"/>
+
 		<xpp:expand select="NOBN_com_DEROGATION"/>
 		<xpp:expand select="NOBN_com_STD_CUSTOMATTRIBUTES___VAR"/>
 		<xpp:expand select="NOBN_com_STD_TEXTATTRIBUTES___OCS_NORMAL"/>
@@ -1523,8 +1528,40 @@
 
 		<!-- RailCOMPLETE provides the '_position' reserved identifier, sampled along the alignment, to be used in e.g. getAlignmentInfo() etc. -->
 		<LuaExpression Name="SweptGeometry3D_0.Roll"><Formula>NOBN_com_getRollFromCantInterpretedAsDecimalDegrees(_position)</Formula></LuaExpression>
-		
-		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner" 
+
+		<LuaExpression Name="SweptGeometry3D_0.Offset.Z"><Formula>_JBTEH_STR_Offset3DZ()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STR_Offset3DZ()"
+			Description="Returns the Z coordinate for a strut, on condition that it has a relation to its footplate at one end and to its anchoring-to-pole at the catenary mast end. Struts are supposed to be drawn from mast to anchoring footplate."
+			ReturnType="Double" HideFromUser="false">
+			<Signature>Double _JBTEH_STR_Offset3DZ()</Signature>
+			<Formula>
+				function _JBTEH_STR_Offset3DZ()
+					--This code allows the spanner to be drawn either from the OCS pole to the footplate or the opposite way.
+					local atp = getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)[0]
+					local stf = getRelatedObjects(rel_Spanner_IsAnchoredBy_SpannerFootplate)[0]
+					if atp == nil or stf == nil then
+						--Relation to the force relaying console and/or the spanner footplate not yet established: keep the spanner flat rather than erroring.
+						return 0
+					end
+					local L = RcAlignment.HorizontalGeometry.Length
+					local z0, z1, dZ
+					local d = RC__getDistance2D(getPoint3D(stf), RcAlignment.HorizontalGeometry.StartPoint)
+					if d &lt; 1.0 then
+						--The spanner has probably been drawn from spanner-footplate to force relaying console on OCS pole
+						z0 = stf.geoCoord.Z
+						z1 = atp.geoCoord.Z
+					else
+						--The spanner has probably been drawn from force relaying console on pole to spanner-footplate
+						z0 = atp.geoCoord.Z
+						z1 = stf.geoCoord.Z
+					end
+					dZ = z1 - z0
+					return z0 + _position.Pos * (dZ / L)
+				end
+			</Formula>
+		</LuaFunction>
+
+		<CustomProperty DataType="String" ReadOnly="true" Category="Model check" Name="mc_Relations" DisplayName="Relasjoner"
 			Description="Checks complex requirements on the number of established relations between this object and other objects."/>
 		<LuaExpression Name="mc_Relations" IsModelCheck="true"><Formula>_JBTEH_STR_chkRelations()</Formula></LuaExpression>
 		<LuaFunction Name="_JBTEH_STR_chkRelations()" ReturnType="String"
@@ -1547,11 +1584,35 @@
 					end
 				end
 			</Formula>
-		</LuaFunction> 
+		</LuaFunction>
 
-		<InsertAlignment Name="Strever" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false"> 
+		<!-- 2D geometry: when the spanner is related to exactly one force relaying console (on OCS pole) and one spanner footplate, snap the line to a straight segment between them - mirrors JBTEH_BAR Bardun. -->
+		<LuaExpression Name="RcAlignment.HorizontalGeometry.Segments"><Formula>_JBTEH_STR_getGeometrySegments2D()</Formula></LuaExpression>
+		<LuaFunction Name="_JBTEH_STR_getGeometrySegments2D()" ReturnType="String"
+			Description="Returns an ordered sequence of horizontal segments for use in the spanner's RcAlignment.HorizontalGeometry.Segments property. When the spanner is related to exactly one force relaying console on OCS pole and one spanner footplate, the line snaps to a straight segment between them; otherwise the drawn geometry is kept.">
+			<Signature>HorizontalSegments _JBTEH_STR_getGeometrySegments2D(ObjRef spanner = this)</Signature>
+			<Formula>
+				function _JBTEH_STR_getGeometrySegments2D(spn)
+					spn = spn or this
+					local lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
+
+					local rCon, nCon = spn:getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)
+					local rFpl, nFpl = spn:getRelatedObjects(rel_Spanner_IsAnchoredBy_SpannerFootplate)
+					if nCon ~= 1 or nFpl ~= 1 then
+						return spn:getPropertyValue("RcAlignment.HorizontalGeometry.Segments")
+					end
+					local con = rCon[0]
+					local fpl = rFpl[0]
+					local segment = {}
+					table.insert(segment, lib1.createHorizontalGeometryStraightSegment(getPoint3D(con), getPoint3D(fpl)))
+					return segment
+				end
+			</Formula>
+		</LuaFunction>
+
+		<InsertAlignment Name="Strever" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-KONTAKTLEDNINGSOPPHENG-Schematic" DefaultToTangentContinuity="false">
 			<IncludeSegmentType>Tangent</IncludeSegmentType>
-			<SetValue Key="SweptGeometry3D_0.Name" Value="NO-BN-2D-FE-DIV-STEEL-BEAM-HUP-120-120"/>
+			<SetValue Key="SweptGeometry3D_0.Name" Value="NO-BN-2D-FE-BJS-BJELKE-STÅL-HUP-120-120"/>
 		</InsertAlignment>
 
 	</ObjectType>
@@ -1678,13 +1739,13 @@
 
 		<InsertPointObject Name="Bardun fotplate, enkel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUN-FOTPLATE-ENKEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 																				
 		<InsertPointObject Name="Bardun fotplate, dobbel" DisplayBlockName="NO-BN-2D-JBTEH_BAF-BARDUN-FOTPLATE-DOBBEL-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-bardun</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 		
@@ -1809,7 +1870,7 @@
 					local spn = fpl:getRelatedObjects(rel_SpannerFootplate_Anchors_Spanner)[0]
 					local con = spn:getRelatedObjects(rel_GuyWireOrSpannerOrWtb_IsAttachedTo_ConsoleOnOcsPole)[0]
 					local spannerVector = getVectorDifference(getPoint3D(con), getPoint3D(fpl))
-					local d = math.atan(guyWireVector.Y, guyWireVector.X)
+					local d = math.atan(spannerVector.Y, spannerVector.X)
 					return (math.deg(d - fpl.AlignmentTangent) + 360) % 360
 				end
 			</Formula>
@@ -1858,21 +1919,21 @@
 		<InsertPointObject Name="Strever fotplate (uten streveren)"
 				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVER-FOTPLATE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 		
 		<InsertPointObject Name="Strever fotplate og strever, 2.08m fra sidekant KL-mast"
 				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVER-FOTPLATE-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 		
 		<InsertPointObject Name="Strever fotplate og strever for Ø120 hengemast for bru og tunnel"
 				DisplayBlockName="NO-BN-2D-JBTEH_STF-STREVER-FOTPLATE-OG-STREVER-FOR-BRU-OG-TUNNEL-120-{{SymbolMode}}" 
 				DefaultSnapMode="Point" SnapToAlignment="true" SnapDistance="1e-3">
-			<OwnAlignmentTargetSpace>spor</OwnAlignmentTargetSpace>
+			<OwnAlignmentTargetSpace>kl-strever</OwnAlignmentTargetSpace>
 			<JigSymbolAppearance AddAngle="-90" EnableDirectionSetting="true"/>
 		</InsertPointObject>
 
@@ -1901,7 +1962,7 @@
 		<DockPointDefinitions>
 			<SnapPoints>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-fundament"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bardun"/>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever"/>
 			</SnapPoints>
 		</DockPointDefinitions>
 
@@ -2321,7 +2382,17 @@
 		<DockPointDefinitions>
 			<SnapPoints>
 				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-mast"/>
-				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bardun"/>
+				<!-- Barduner og strevere fester seg til konsollen. Snappunktet senkes ned til mastens fot (ned ConsoleHeight) slik at det vises ved masten og ikke oppe ved konsollen. -->
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-bardun">
+					<ZOverride>
+						<Formula>return -ConsoleHeight</Formula>
+					</ZOverride>
+				</SnapPoint>
+				<SnapPoint X="0.0" Y="0.0" TargetSpace="kl-strever">
+					<ZOverride>
+						<Formula>return -ConsoleHeight</Formula>
+					</ZOverride>
+				</SnapPoint>
 			</SnapPoints>
 		</DockPointDefinitions>
 
