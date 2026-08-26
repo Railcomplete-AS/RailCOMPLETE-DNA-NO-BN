@@ -15,7 +15,7 @@ local _OK_ = "OK"
 local _COPY_ = "Copy object group"
 local _MOVE_ = "Move object group"
 local _TERMINATE_ = "Terminate"
-local _ESC_ = nil --askForKeyword() return nil when ESC is pressed or if the the user clicks the 'x' in upper right corner
+local _ESC_ = nil --askForKeyword() returns nil when ESC is pressed or if the the user clicks the 'x' in upper right corner
 
 local _RCTYPE_RAILWAY_TRACK_ = "JBTKO_SPO Spor"
 
