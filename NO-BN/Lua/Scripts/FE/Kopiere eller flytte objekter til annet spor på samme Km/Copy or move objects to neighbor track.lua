@@ -32,7 +32,6 @@ end
 
 local actionName = option == _COPY_ and "copied" or "moved" --Used in prompts
 
-
 --Select object(s) to copy or move:
 local objects = {}
 local obj
