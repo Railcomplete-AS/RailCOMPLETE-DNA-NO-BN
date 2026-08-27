@@ -16312,7 +16312,7 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
-    <LuaFunction Name="_JBTEH_MAS_OcsMastHeight()" Description="Returns an angular offset, to orient the (ordinary) mast colinear with its yoke (if any)." ReturnType="Double" HideFromUser="false">
+    <LuaFunction Name="_JBTEH_MAS_OcsMastHeight()" Description="Returns the OCS mast height [mm], based on the related yoke's vertical offset and portal frame type (if any). Without a yoke relation the manually selected mast height is kept." ReturnType="Double" HideFromUser="false">
       <Signature>Double _JBTEH_MAS_OcsMastHeight()</Signature>
       <Formula>
 				function _JBTEH_MAS_OcsMastHeight()
@@ -16326,7 +16326,7 @@ return s</Data>
 						elseif r[0].Variant == "Type 40" then
 							PortalHeight = 0.4  --Height of Type 40 portal frames
 						else
-							return tostring(getPropertyValue("OcsMastHeight")), _info("ERROR - Yoke Variant ["..r[0].Variant.."] has no known portal frame height.", _error)
+							return tostring(getPropertyValue("OcsMastHeight")), _error, _info("ERROR - Yoke Variant ["..tostring(r[0].Variant).."] has no known portal frame height.")
 						end
 						if r[0].Strengthened then
 							AdditionalHeight = PortalHeight --Portal frame has full height at both ends
@@ -16336,8 +16336,8 @@ return s</Data>
 						local MinimumExtraHeight = 0.75
 						return string.format("%.0f", 500 * ((r[0].VerticalOffset + AdditionalHeight + MinimumExtraHeight) // 0.5)) --[mm]
 					else
-						--Assume that the 3D library uses steps of 500 mm, assume using tall poles (for AT):
-						return tostring(9500 - 500*math.floor((250 + 1000*VerticalOffset)//500)) --[mm]
+						--No control input - keep the manually selected mast height:
+						return tostring(getPropertyValue("OcsMastHeight")), _info("No control input - select mast height manually, or relate with 'Er åk-mast for åk' to a yoke.")
 					end
 				end
 			</Formula>
@@ -17333,10 +17333,10 @@ return s</Data>
 			local cnt, nCnt = obj:getRelatedObjects("Er kl-mast for utligger")
 			local cntOverheadClearance
 			if nPor == 0 then
-				return obj:getPropertyValue("OcsMastHeight"), _info("ERROR - Relate OCS droparm to its portal.", _error)
+				return obj:getPropertyValue("OcsMastHeight"), _error, _info("ERROR - Relate OCS droparm to its portal.")
 			else
 				if nCnt == 0 then
-					return obj:getPropertyValue("OcsMastHeight"), _info("UNFINISHED - Relate OCS droparm to at least one cantilever.", _unfinished)
+					return obj:getPropertyValue("OcsMastHeight"), _unfinished, _info("UNFINISHED - Relate OCS droparm to at least one cantilever.")
 				elseif nCnt == 1 then
 					local cntLco = _JBTEH_UTL_StandardValues(cnt[0].Variant)["lco"]
 					cntOverheadClearance = cnt[0].VerticalOffset + cntLco
@@ -17465,6 +17465,7 @@ return s</Data>
         <Value>6m</Value>
       </Values>
     </CustomProperty>
+    <CustomProperty DataType="Boolean" Name="Strengthened" DisplayName="Forsterket" Description="The 'Strengthened' property [boolean] is true for strengthened (type 2) portals, where the portal frame has its full height at both ends. Legacy (type 1) portals are 'flat' at both ends. Used when computing the height of the yoke's support masts." DefaultValue="False" Category="General" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <CustomProperty DataType="String" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="When this yoke is refreshed, then all of its support masts and suspension masts are modelchecked as well." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <SymbolDefinition RotationCenter="OwnPosition" DefaultBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-Schematic" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
       <BlockNameFormat JoinBy="-">
@@ -17833,17 +17834,24 @@ return s</Data>
 
 		  if nSupportMasts == 0 then
 			return getPropertyValue("VerticalOffset"), _unfinished, _info("UNFINISHED - Relate yoke to its support mast(s) using 'Er åk holdt oppe av kl-mast'.")
-
-		  elseif nSupportMasts == 1 then
-			local mastBaseElevation = supportMasts[0].geoCoord.Z
-			return mastBaseElevation + 7.9
-
-		  else -- nSupportMasts >= 2
-			local mast1BaseElevation = supportMasts[0].geoCoord.Z
-			local mast2BaseElevation = supportMasts[1].geoCoord.Z
-			local highestMastBaseElevation = math.max(mast1BaseElevation, mast2BaseElevation)
-			return highestMastBaseElevation + 7.9
 		  end
+
+		  --Highest support mast base (geoCoord.Z is an absolute elevation):
+		  local highestMastBaseElevation = supportMasts[0].geoCoord.Z
+		  for i = 1, nSupportMasts - 1 do
+			highestMastBaseElevation = math.max(highestMastBaseElevation, supportMasts[i].geoCoord.Z)
+		  end
+
+		  if Alignment == nil then
+			return getPropertyValue("VerticalOffset"), _unfinished, _info("UNFINISHED - Assign the yoke to an alignment.")
+		  end
+		  local ai = getAlignmentInfo()
+		  if ai == nil or RC__isNan(ai.Elevation) then
+			return 7.9, _info("Missing alignment elevation - assuming nominal 7.9 m clearance above the alignment.")
+		  end
+
+		  --VerticalOffset is measured relative to the alignment ("Høyde over linje"):
+		  return highestMastBaseElevation - ai.Elevation + 7.9
 		end
 	  </Formula>
 	</LuaFunction>
