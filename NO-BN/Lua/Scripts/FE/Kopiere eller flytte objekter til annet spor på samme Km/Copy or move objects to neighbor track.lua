@@ -1,5 +1,5 @@
 local _HEADER_ = "Copy or move objects to neighbor track"
-local _VERSION_ = "2026-07-03_000 CLFEY Created."
+local _VERSION_ = "2026-07-18_000 CLFEY Created."
 
 local _USAGE_ = [[
 1) Click somewhere in modelspace to activate the script.
@@ -14,12 +14,22 @@ Relations internal to the selected group of objects will be preserved.
 local _OK_ = "OK"
 local _COPY_ = "Copy object group"
 local _MOVE_ = "Move object group"
+local _TERMINATE_ = "Terminate"
+local _ESC_ = nil --askForKeyword() returns nil when ESC is pressed or if the the user clicks the 'x' in upper right corner
+
 local _RCTYPE_RAILWAY_TRACK_ = "JBTKO_SPO Spor"
 
 local option
 repeat
-	option = askForKeyword(_USAGE_, {_COPY_, _MOVE_}, _HEADER_)
-until option == _COPY_ or option == _MOVE_
+	option = askForKeyword(_USAGE_, {_COPY_, _MOVE_, _TERMINATE_}, _HEADER_)
+until option == _COPY_ or option == _MOVE_ or option == _TERMINATE_ or option == _ESC_
+
+if option == _TERMINATE_ or option == _ESC_ then
+	write("Terminated.")
+	return
+end
+
+
 local actionName = option == _COPY_ and "copied" or "moved" --Used in prompts
 
 --Select object(s) to copy or move:
@@ -69,21 +79,30 @@ local sign = getLinearAddress(p, trk).lateralOffset > 0 and 1 or -1
 local source = {}
 for k, v in pairs(objects) do table.insert(source, v) end
 setSelectionSet(getCollectionFromTable(source))
---Copy previous selection set to same position, while preserving relations within the selection set:
-runCommand("_COPY _P _M _S '(0 0 0) '(0 0 0) _E ")
+if option == _COPY_ then 
+	--Copy previous selection set to same position, while preserving relations within the selection set:
+	runCommand("_COPY _P _M _S '(0 0 0) '(0 0 0) _E ")
+end
 
 for k, v in pairs(objects) do
-	--Find the clones, move to target alignment:
-	clone = getNearbyPointObjects2D(v, v.RcType, 0.1):filter(function (x) return x.Variant == v.Variant and x.Dir == v.Dir end)[0]
-	local lateralOffset = clone.LateralOffset
-	clone.Alignment = trk.id --attach to target alignment - must assign using the ID (illogical)
-	if getLuaFormulaString(clone, "DistanceToAlignment") then
-		clone.DistanceToAlignment = "=" --remove formula on DistanceToAlignment, if any
+	--Move items to new target alignment and side of alignment:
+	if option == _COPY_ then
+		--operate on the cloned item (search around original items for their clone)
+		item = getNearbyPointObjects2D(v, v.RcType, 0.1):filter(function (x) return x.Variant == v.Variant and x.Dir == v.Dir end)[0]
+	else
+		--option == _MOVE_, operate on the item itself
+		item = v
 	end
-	if getLuaFormulaString(clone, "LateralOffset") then
-		clone.DistanceToAlignment = "=" --remove formula on DistanceToAlignment, if any
+	local lateralOffset = item.LateralOffset
+	item.Alignment = trk.id --attach to target alignment - must assign using the ID (an illogical API...)
+	if getLuaFormulaString(item, "DistanceToAlignment") then
+		item.DistanceToAlignment = "=" --remove formula on DistanceToAlignment, if any
 	end
-	clone.LateralOffset = sign * math.abs(lateralOffset)
+	if getLuaFormulaString(item, "LateralOffset") then
+		item.DistanceToAlignment = "=" --remove formula on DistanceToAlignment, if any
+	end
+	item.LateralOffset = sign * math.abs(lateralOffset)
 end
 
 write("Done.")
+
