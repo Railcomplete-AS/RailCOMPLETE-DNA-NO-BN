@@ -16316,25 +16316,25 @@ return s</Data>
       <Signature>Double _JBTEH_MAS_OcsMastHeight()</Signature>
       <Formula>
 				function _JBTEH_MAS_OcsMastHeight()
-					local por, nPor = getRelatedObjects("Er åk-mast for åk")
-					if nPor > 0 then
+					local yokes, nYokes = getRelatedObjects("Er åk-mast for åk")
+					if nYokes > 0 then
 						local portalFrameHeight, additionalFrameHeight
-						if por[0].Variant == "Type 12" then
+						if yokes[0].Variant == "Type 12" then
 							portalFrameHeight = 0.8 --Height of Type 12 portal frames
-						elseif por[0].Variant == "Type 14" then
+						elseif yokes[0].Variant == "Type 14" then
 							portalFrameHeight = 1.2 --Height of Type 14 portal frames
-						elseif por[0].Variant == "Type 40" then
+						elseif yokes[0].Variant == "Type 40" then
 							portalFrameHeight = 0.4  --Height of Type 40 portal frames
 						else
-							return tostring(getPropertyValue("OcsMastHeight")), _error, _info("ERROR - Yoke Variant ["..tostring(por[0].Variant).."] has no known portal frame height.")
+							return tostring(getPropertyValue("OcsMastHeight")), _error, _info("ERROR - Yoke Variant ["..tostring(yokes[0].Variant).."] has no known portal frame height.")
 						end
-						if por[0].Strengthened then
+						if yokes[0].Strengthened then
 							additionalFrameHeight = portalFrameHeight --Portal frame has full height at both ends
 						else
 							additionalFrameHeight = 0 --Legacy portals are "flat" at both ends
 						end
 						local minimumExtraHeight = 0.75
-						return string.format("%.0f", 500 * ((por[0].VerticalOffset + additionalFrameHeight + minimumExtraHeight) // 0.5)) --[mm]
+						return string.format("%.0f", 500 * ((yokes[0].VerticalOffset + additionalFrameHeight + minimumExtraHeight) // 0.5)) --[mm]
 					else
 						--No control input - keep the manually selected mast height:
 						return tostring(getPropertyValue("OcsMastHeight")), _info("No control input - select mast height manually, or relate with 'Er åk-mast for åk' to a yoke.")
@@ -17329,21 +17329,21 @@ return s</Data>
       <Formula>
 		function _JBTEH_MAS_suspension_mast_OcsMastHeight(obj)
 			obj = obj or this
-			local por, nPor = obj:getRelatedObjects("Er hengemast festet i åk")
-			local cnt, nCnt = obj:getRelatedObjects("Er kl-mast for utligger")
+			local yokes, nYokes = obj:getRelatedObjects("Er hengemast festet i åk")
+			local cantilevers, nCantilevers = obj:getRelatedObjects("Er kl-mast for utligger")
 			local lowestCantileverConsoleElevation
-			if nPor == 0 then
+			if nYokes == 0 then
 				return obj:getPropertyValue("OcsMastHeight"), _error, _info("ERROR - Relate OCS droparm to its portal.")
 			else
-				if nCnt == 0 then
+				if nCantilevers == 0 then
 					return obj:getPropertyValue("OcsMastHeight"), _unfinished, _info("UNFINISHED - Relate OCS droparm to at least one cantilever.")
-				elseif nCnt == 1 then
-					local cntLowerConsoleOffset = _JBTEH_UTL_StandardValues(cnt[0].Variant)["lco"]
-					lowestCantileverConsoleElevation = cnt[0].VerticalOffset + cntLowerConsoleOffset
+				elseif nCantilevers == 1 then
+					local cantileverLowerConsoleOffset = _JBTEH_UTL_StandardValues(cantilevers[0].Variant)["lco"]
+					lowestCantileverConsoleElevation = cantilevers[0].VerticalOffset + cantileverLowerConsoleOffset
 				else
-					local cntLowerConsoleOffset0 = _JBTEH_UTL_StandardValues(cnt[0].Variant)["lco"]
-					local cntLowerConsoleOffset1 = _JBTEH_UTL_StandardValues(cnt[1].Variant)["lco"]
-					lowestCantileverConsoleElevation = math.min(cnt[0].VerticalOffset + cntLowerConsoleOffset0, cnt[1].VerticalOffset + cntLowerConsoleOffset1)
+					local cantileverLowerConsoleOffset0 = _JBTEH_UTL_StandardValues(cantilevers[0].Variant)["lco"]
+					local cantileverLowerConsoleOffset1 = _JBTEH_UTL_StandardValues(cantilevers[1].Variant)["lco"]
+					lowestCantileverConsoleElevation = math.min(cantilevers[0].VerticalOffset + cantileverLowerConsoleOffset0, cantilevers[1].VerticalOffset + cantileverLowerConsoleOffset1)
 				end
 			end
 			local dropArmHeightMm = (obj.VerticalOffset - lowestCantileverConsoleElevation + 0.15) * 1000
@@ -17826,32 +17826,40 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
-	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Computes the vertical offset [m] of the yoke bottom above the alignment, based on the highest ground elevation of its support masts plus the minimum clearance height of 7.9 m." ReturnType="Double" HideFromUser="false">
+	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Computes the vertical offset [m] of the yoke bottom above the alignment, controlled by the height of its support masts (the lowest mast governs). Without a support mast relation the default 7.9 m above the alignment is used." ReturnType="Double" HideFromUser="false">
 	  <Signature>Double _JBTEH_AAK_VerticalOffset()</Signature>
 	  <Formula>
 		function _JBTEH_AAK_VerticalOffset()
 		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
 
 		  if nSupportMasts == 0 then
-			return getPropertyValue("VerticalOffset"), _unfinished, _info("UNFINISHED - Relate yoke to its support mast(s) using 'Er åk holdt oppe av kl-mast'.")
+			return 7.9, _info("No control input - using the default 7.9 m above the alignment. Relate yoke to its support mast(s) using 'Er åk holdt oppe av kl-mast' to let the mast height control the yoke height.")
 		  end
 
-		  --Highest support mast base (geoCoord.Z is an absolute elevation):
-		  local highestMastBaseElevation = supportMasts[0].geoCoord.Z
+		  local portalFrameHeight, additionalFrameHeight
+		  if Variant == "Type 12" then
+			portalFrameHeight = 0.8 --Height of Type 12 portal frames
+		  elseif Variant == "Type 14" then
+			portalFrameHeight = 1.2 --Height of Type 14 portal frames
+		  elseif Variant == "Type 40" then
+			portalFrameHeight = 0.4 --Height of Type 40 portal frames
+		  else
+			return getPropertyValue("VerticalOffset"), _error, _info("ERROR - Yoke Variant ["..tostring(Variant).."] has no known portal frame height.")
+		  end
+		  if Strengthened then
+			additionalFrameHeight = portalFrameHeight --Portal frame has full height at both ends
+		  else
+			additionalFrameHeight = 0 --Legacy portals are "flat" at both ends
+		  end
+
+		  --The lowest support mast governs the yoke height (OcsMastHeight is an enumeration in mm):
+		  local lowestMastHeight = tonumber(supportMasts[0].OcsMastHeight)
 		  for i = 1, nSupportMasts - 1 do
-			highestMastBaseElevation = math.max(highestMastBaseElevation, supportMasts[i].geoCoord.Z)
+			lowestMastHeight = math.min(lowestMastHeight, tonumber(supportMasts[i].OcsMastHeight))
 		  end
 
-		  if Alignment == nil then
-			return getPropertyValue("VerticalOffset"), _unfinished, _info("UNFINISHED - Assign the yoke to an alignment.")
-		  end
-		  local alignmentInfo = getAlignmentInfo()
-		  if alignmentInfo == nil or RC__isNan(alignmentInfo.Elevation) then
-			return 7.9, _info("Missing alignment elevation - assuming nominal 7.9 m clearance above the alignment.")
-		  end
-
-		  --VerticalOffset is measured relative to the alignment ("Høyde over linje"):
-		  return highestMastBaseElevation - alignmentInfo.Elevation + 7.9
+		  local minimumExtraHeight = 0.75 --Mast must extend this far above the yoke attachment
+		  return lowestMastHeight / 1000 - additionalFrameHeight - minimumExtraHeight
 		end
 	  </Formula>
 	</LuaFunction>
