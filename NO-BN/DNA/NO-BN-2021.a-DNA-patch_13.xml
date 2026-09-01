@@ -17826,40 +17826,76 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
-	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Computes the vertical offset [m] of the yoke bottom above the alignment, controlled by the height of its support masts (the lowest mast governs). Without a support mast relation the default 7.9 m above the alignment is used." ReturnType="Double" HideFromUser="false">
+	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Computes the vertical offset [m] of the yoke bottom, placing it at the nominal 7.9 m above the highest rail passing underneath the yoke. The yoke governs its support mast heights (see _JBTEH_MAS_OcsMastHeight()), never the other way around. Without two related support masts the yoke span is unknown and the nominal height above the yoke's own alignment is used." ReturnType="Double" HideFromUser="false">
 	  <Signature>Double _JBTEH_AAK_VerticalOffset()</Signature>
 	  <Formula>
 		function _JBTEH_AAK_VerticalOffset()
+		  local nominalYokeHeight = 7.9 --Nominal yoke underside height above the governing rail [m]
 		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
 
-		  if nSupportMasts == 0 then
-			return 7.9, _info("No control input - using the default 7.9 m above the alignment. Relate yoke to its support mast(s) using 'Er åk holdt oppe av kl-mast' to let the mast height control the yoke height.")
+		  if nSupportMasts &lt; 2 then
+			return nominalYokeHeight, _info("Using the default "..nominalYokeHeight.." m above the yoke's own alignment. Relate the yoke to its two support masts using 'Er åk holdt oppe av kl-mast' to let the highest rail underneath the yoke control the yoke height.")
 		  end
 
-		  local portalFrameHeight, additionalFrameHeight
-		  if Variant == "Type 12" then
-			portalFrameHeight = 0.8 --Height of Type 12 portal frames
-		  elseif Variant == "Type 14" then
-			portalFrameHeight = 1.2 --Height of Type 14 portal frames
-		  elseif Variant == "Type 40" then
-			portalFrameHeight = 0.4 --Height of Type 40 portal frames
-		  else
-			return getPropertyValue("VerticalOffset"), _error, _info("ERROR - Yoke Variant ["..tostring(Variant).."] has no known portal frame height.")
+		  --The highest rail passing underneath the yoke governs the yoke height:
+		  local railAdjustment, governingTrack = _JBTEH_AAK_HighestRailAdjustment()
+		  if railAdjustment &gt; 0.001 then
+			return nominalYokeHeight + railAdjustment, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrack).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment).")
 		  end
-		  if Strengthened then
-			additionalFrameHeight = portalFrameHeight --Portal frame has full height at both ends
-		  else
-			additionalFrameHeight = 0 --Legacy portals are "flat" at both ends
+		  return nominalYokeHeight, _info(nominalYokeHeight.." m above the highest rail underneath the yoke.")
+		end
+	  </Formula>
+	</LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_HighestRailAdjustment()" Description="Returns the elevation difference [m] between the highest track passing underneath the yoke and the yoke's own alignment at the yoke's position, plus the name of the governing track. Only tracks crossing the yoke span between its two support masts are considered - tracks beside the yoke are ignored. Returns 0 when the yoke geometry cannot be determined." ReturnType="Double" HideFromUser="false">
+	  <Signature>Double _JBTEH_AAK_HighestRailAdjustment()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_HighestRailAdjustment()
+		  if Alignment == nil then return 0 end
+
+		  --The yoke spans between its two support masts:
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+		  if nSupportMasts &lt; 2 then return 0 end
+
+		  local mast1 = supportMasts[0]
+		  local mast2 = supportMasts[1]
+		  local x1 = mast1.geoCoord.X
+		  local y1 = mast1.geoCoord.Y
+		  local x2 = mast2.geoCoord.X
+		  local y2 = mast2.geoCoord.Y
+		  local yokeSpan = RC__getDistance2D(mast1, mast2)
+		  if yokeSpan &lt; 0.01 then return 0 end
+
+		  local ownElevation = getAlignmentInfo().Elevation
+		  if ownElevation == nil or RC__isNan(ownElevation) then return 0 end
+
+		  local midPoint = getPoint3D((x1 + x2) / 2, (y1 + y2) / 2)
+		  local tracks, nTracks = getNearbyAlignments(midPoint, "JBTKO_SPO Spor", 0.5 * yokeSpan + 1.0)
+
+		  local highestElevation = nil
+		  local governingTrack = nil
+		  for i = 0, nTracks - 1 do
+			local track = tracks[i]
+			local ai1 = getAlignmentInfo(track.id, x1, y1)
+			local ai2 = getAlignmentInfo(track.id, x2, y2)
+			if ai1 ~= nil and ai2 ~= nil and ai1.NormalProjectionExists and ai2.NormalProjectionExists then
+			  local d1 = ai1.DistanceToAlignment
+			  local d2 = ai2.DistanceToAlignment
+			  --The track passes underneath the yoke only if the two support masts stand on opposite sides of it:
+			  if d1 * d2 &lt;= 0 and (d1 ~= 0 or d2 ~= 0) then
+				local t = math.abs(d1) / (math.abs(d1) + math.abs(d2))
+				local crossing = getAlignmentInfo(track.id, x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+				if crossing ~= nil and not RC__isNan(crossing.Elevation) then
+				  if highestElevation == nil or crossing.Elevation &gt; highestElevation then
+					highestElevation = crossing.Elevation
+					governingTrack = RC__identify(track)
+				  end
+				end
+			  end
+			end
 		  end
 
-		  --The lowest support mast governs the yoke height (OcsMastHeight is an enumeration in mm):
-		  local lowestMastHeight = tonumber(supportMasts[0].OcsMastHeight)
-		  for i = 1, nSupportMasts - 1 do
-			lowestMastHeight = math.min(lowestMastHeight, tonumber(supportMasts[i].OcsMastHeight))
-		  end
-
-		  local minimumExtraHeight = 0.75 --Mast must extend this far above the yoke attachment
-		  return lowestMastHeight / 1000 - additionalFrameHeight - minimumExtraHeight
+		  if highestElevation == nil then return 0 end
+		  return highestElevation - ownElevation, governingTrack
 		end
 	  </Formula>
 	</LuaFunction>
