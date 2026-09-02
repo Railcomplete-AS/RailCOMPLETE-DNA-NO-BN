@@ -16312,7 +16312,7 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
-    <LuaFunction Name="_JBTEH_MAS_OcsMastHeight()" Description="Returns the OCS mast height [mm], based on the related yoke's vertical offset and portal frame type (if any). Without a yoke relation the manually selected mast height is kept." ReturnType="Double" HideFromUser="false">
+    <LuaFunction Name="_JBTEH_MAS_OcsMastHeight()" Description="Calculates how tall this mast must be [mm] to carry its yoke. The mast height follows the yoke's height above the track, with extra room for the portal frame. If the mast has no 'Er åk-mast for åk' relation to a yoke, the manually selected height is kept." ReturnType="Double" HideFromUser="false">
       <Signature>Double _JBTEH_MAS_OcsMastHeight()</Signature>
       <Formula>
 				function _JBTEH_MAS_OcsMastHeight()
@@ -17324,7 +17324,7 @@ return s</Data>
 			end
 		</Formula>
     </LuaFunction>
-    <LuaFunction Name="_JBTEH_MAS_suspension_mast_OcsMastHeight()" Description="Computes the drop-arm height (OcsMastHeight) [mm] for this OCS suspension mast based on its vertical offset relative to its cantilever mast's vertical offset and lower console offset (lco)." ReturnType="Double" HideFromUser="false">
+    <LuaFunction Name="_JBTEH_MAS_suspension_mast_OcsMastHeight()" Description="Calculates how long this drop arm must be [mm] to reach from the yoke down to the lowest cantilever it carries. Relate the drop arm to its yoke ('Er hengemast festet i åk') and to its cantilever(s) ('Er kl-mast for utligger') - without these relations the manually selected height is kept." ReturnType="Double" HideFromUser="false">
       <Signature>Double _JBTEH_MAS_suspension_mast_OcsMastHeight([RailwayPlacedObject obj])</Signature>
       <Formula>
 		function _JBTEH_MAS_suspension_mast_OcsMastHeight(obj)
@@ -17333,10 +17333,10 @@ return s</Data>
 			local cantilevers, nCantilevers = obj:getRelatedObjects("Er kl-mast for utligger")
 			local lowestCantileverConsoleElevation
 			if nYokes == 0 then
-				return obj:getPropertyValue("OcsMastHeight"), _error, _info("ERROR - Relate OCS droparm to its portal.")
+				return obj:getPropertyValue("OcsMastHeight"), _error, _info("ERROR - Relate OCS drop arm to its yoke.")
 			else
 				if nCantilevers == 0 then
-					return obj:getPropertyValue("OcsMastHeight"), _unfinished, _info("UNFINISHED - Relate OCS droparm to at least one cantilever.")
+					return obj:getPropertyValue("OcsMastHeight"), _unfinished, _info("UNFINISHED - Relate OCS drop arm to at least one cantilever.")
 				elseif nCantilevers == 1 then
 					local cantileverLowerConsoleOffset = _JBTEH_UTL_StandardValues(cantilevers[0].Variant)["lco"]
 					lowestCantileverConsoleElevation = cantilevers[0].VerticalOffset + cantileverLowerConsoleOffset
@@ -17826,7 +17826,7 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
-	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Computes the vertical offset [m] of the yoke bottom, placing it at the nominal 7.9 m above the highest rail passing underneath the yoke. The yoke governs its support mast heights (see _JBTEH_MAS_OcsMastHeight()), never the other way around. Without two related support masts the yoke span is unknown and the nominal height above the yoke's own alignment is used." ReturnType="Double" HideFromUser="false">
+	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Places the yoke 7.9 m above the highest rail that passes underneath it. If the yoke is not related to both of its support masts ('Er åk holdt oppe av kl-mast'), it is placed 7.9 m above its own track instead." ReturnType="Double" HideFromUser="false">
 	  <Signature>Double _JBTEH_AAK_VerticalOffset()</Signature>
 	  <Formula>
 		function _JBTEH_AAK_VerticalOffset()
@@ -17838,23 +17838,29 @@ return s</Data>
 		  end
 
 		  --The highest rail passing underneath the yoke governs the yoke height:
-		  local railAdjustment, governingTrack = _JBTEH_AAK_HighestRailAdjustment()
-		  if railAdjustment &gt; 0.001 then
-			return nominalYokeHeight + railAdjustment, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrack).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment).")
+		  local railAdjustment, governingTrackOrReason = _JBTEH_AAK_HighestRailAdjustment()
+		  if railAdjustment == nil then
+			return nominalYokeHeight, _warning, _info("WARNING - Using the default "..nominalYokeHeight.." m above the yoke's own alignment since the highest rail underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".")
 		  end
-		  return nominalYokeHeight, _info(nominalYokeHeight.." m above the highest rail underneath the yoke.")
+		  if railAdjustment &gt; 0.001 then
+			return nominalYokeHeight + railAdjustment, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment).")
+		  end
+		  if governingTrackOrReason ~= nil then
+			return nominalYokeHeight, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', at or below the yoke's own alignment).")
+		  end
+		  return nominalYokeHeight, _info(nominalYokeHeight.." m above the yoke's own alignment - no other track crosses underneath the yoke.")
 		end
 	  </Formula>
 	</LuaFunction>
-	<LuaFunction Name="_JBTEH_AAK_HighestRailAdjustment()" Description="Returns the elevation difference [m] between the highest track passing underneath the yoke and the yoke's own alignment at the yoke's position, plus the name of the governing track. Only tracks crossing the yoke span between its two support masts are considered - tracks beside the yoke are ignored. Returns 0 when the yoke geometry cannot be determined." ReturnType="Double" HideFromUser="false">
+	<LuaFunction Name="_JBTEH_AAK_HighestRailAdjustment()" Description="Returns the elevation difference [m] between the highest track passing underneath the yoke and the yoke's own alignment at the yoke's position, plus the name of the governing track. Returns 0 when no other track crosses underneath the yoke, and nil plus a reason when the yoke geometry cannot be determined." ReturnType="Double" HideFromUser="false">
 	  <Signature>Double _JBTEH_AAK_HighestRailAdjustment()</Signature>
 	  <Formula>
 		function _JBTEH_AAK_HighestRailAdjustment()
-		  if Alignment == nil then return 0 end
+		  if Alignment == nil then return nil, "the yoke has no alignment" end
 
 		  --The yoke spans between its two support masts:
 		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
-		  if nSupportMasts &lt; 2 then return 0 end
+		  if nSupportMasts &lt; 2 then return nil, "the yoke is not related to both of its support masts" end
 
 		  local mast1 = supportMasts[0]
 		  local mast2 = supportMasts[1]
@@ -17863,16 +17869,17 @@ return s</Data>
 		  local x2 = mast2.geoCoord.X
 		  local y2 = mast2.geoCoord.Y
 		  local yokeSpan = math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
-		  if yokeSpan &lt; 0.01 then return 0 end
+		  if yokeSpan &lt; 0.01 then return nil, "the two support masts stand at the same point" end
 
 		  local ownElevation = getAlignmentInfo().Elevation
-		  if ownElevation == nil or RC__isNan(ownElevation) then return 0 end
+		  if ownElevation == nil or RC__isNan(ownElevation) then return nil, "the elevation of the yoke's own alignment is unknown" end
 
 		  local midPoint = getPoint3D((x1 + x2) / 2, (y1 + y2) / 2)
 		  local tracks, nTracks = getNearbyAlignments(midPoint, "JBTKO_SPO Spor", 0.5 * yokeSpan + 1.0)
 
 		  local highestElevation = nil
 		  local governingTrack = nil
+		  local nUncheckedTracks = 0 --Nearby tracks that might cross the yoke span but could not be measured
 		  for i = 0, nTracks - 1 do
 			local track = tracks[i]
 			local ai1 = getAlignmentInfo(track.id, x1, y1)
@@ -17884,17 +17891,26 @@ return s</Data>
 			  if d1 * d2 &lt;= 0 and (d1 ~= 0 or d2 ~= 0) then
 				local t = math.abs(d1) / (math.abs(d1) + math.abs(d2))
 				local crossing = getAlignmentInfo(track.id, x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-				if crossing ~= nil and not RC__isNan(crossing.Elevation) then
+				if crossing ~= nil and crossing.Elevation ~= nil and not RC__isNan(crossing.Elevation) then
 				  if highestElevation == nil or crossing.Elevation &gt; highestElevation then
 					highestElevation = crossing.Elevation
 					governingTrack = RC__identify(track)
 				  end
+				else
+				  nUncheckedTracks = nUncheckedTracks + 1 --Crosses the span, but no elevation at the crossing point
 				end
 			  end
+			else
+			  nUncheckedTracks = nUncheckedTracks + 1 --Cannot be projected onto from both support masts
 			end
 		  end
 
-		  if highestElevation == nil then return 0 end
+		  if highestElevation == nil then
+			if nUncheckedTracks &gt; 0 then
+			  return nil, nUncheckedTracks.." nearby track(s) could not be checked against the yoke span"
+			end
+			return 0 --No other track crosses underneath the yoke - its own alignment governs
+		  end
 		  return highestElevation - ownElevation, governingTrack
 		end
 	  </Formula>
