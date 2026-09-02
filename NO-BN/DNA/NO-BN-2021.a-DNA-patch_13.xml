@@ -17331,23 +17331,25 @@ return s</Data>
 			obj = obj or this
 			local yokes, nYokes = obj:getRelatedObjects("Er hengemast festet i åk")
 			local cantilevers, nCantilevers = obj:getRelatedObjects("Er kl-mast for utligger")
-			local lowestCantileverConsoleElevation
+			local lowestCantileverConsoleZ --Absolute elevation [m] - independent of which alignment each cantilever is referenced to
 			if nYokes == 0 then
 				return obj:getPropertyValue("OcsMastHeight"), _error, _info("ERROR - Relate OCS drop arm to its yoke.")
 			else
 				if nCantilevers == 0 then
 					return obj:getPropertyValue("OcsMastHeight"), _unfinished, _info("UNFINISHED - Relate OCS drop arm to at least one cantilever.")
-				elseif nCantilevers == 1 then
-					local cantileverLowerConsoleOffset = _JBTEH_UTL_StandardValues(cantilevers[0].Variant)["lco"]
-					lowestCantileverConsoleElevation = cantilevers[0].VerticalOffset + cantileverLowerConsoleOffset
 				else
-					local cantileverLowerConsoleOffset0 = _JBTEH_UTL_StandardValues(cantilevers[0].Variant)["lco"]
-					local cantileverLowerConsoleOffset1 = _JBTEH_UTL_StandardValues(cantilevers[1].Variant)["lco"]
-					lowestCantileverConsoleElevation = math.min(cantilevers[0].VerticalOffset + cantileverLowerConsoleOffset0, cantilevers[1].VerticalOffset + cantileverLowerConsoleOffset1)
+					for i = 0, nCantilevers - 1 do
+						local cantileverLowerConsoleOffset = _JBTEH_UTL_StandardValues(cantilevers[i].Variant)["lco"]
+						local cantileverConsoleZ = cantilevers[i].geoCoord.Z + cantileverLowerConsoleOffset
+						if lowestCantileverConsoleZ == nil or cantileverConsoleZ &lt; lowestCantileverConsoleZ then
+							lowestCantileverConsoleZ = cantileverConsoleZ
+						end
+					end
 				end
 			end
-			local dropArmHeightMm = (obj.VerticalOffset - lowestCantileverConsoleElevation + 0.15) * 1000
-			return math.ceil(dropArmHeightMm/100) * 100
+			--Anchor at the yoke's absolute Z (stable), not the drop arm's own geoCoord.Z (moves with the computed height):
+			local dropArmHeightMm = (yokes[0].geoCoord.Z - lowestCantileverConsoleZ + 0.15) * 1000
+			return math.ceil(dropArmHeightMm/100) * 100, _info("Yoke Z = "..RC__round(yokes[0].geoCoord.Z, 3).." m, lowest cantilever console Z = "..RC__round(lowestCantileverConsoleZ, 3).." m.")
 		end
 	  </Formula>
     </LuaFunction>
