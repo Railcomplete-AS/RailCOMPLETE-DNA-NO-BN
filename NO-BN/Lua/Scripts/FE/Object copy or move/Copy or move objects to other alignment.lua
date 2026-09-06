@@ -1,13 +1,16 @@
-local _HEADER_ = "Copy or move objects to neighbor track"
-local _VERSION_ = "2026-07-18_000 CLFEY Created."
+local _HEADER_ = "Copy or move objects sideways to selected alignment"
+local _VERSION_ = "2026-09-06_001" --CLFEY Adjusted Header and Usage text items. Accepts any alignment type."
+--"2026-07-18_000" --CLFEY Created.
 
 local _USAGE_ = [[
-1) Click somewhere in modelspace to activate the script.
-2) Select objects one by one, complete your selection by pressing ENTER.
-3) Select a nearby alignment to which the objects shall be moved or copied.
-4) Select side-of-track. The objects' distance to alignment will be preserved.
-
+This script copies or moves selected objects sideways, prependicularly to their new alignment. 
 Relations internal to the selected group of objects will be preserved.
+
+1) Select action COPY or MOVE.
+2) Click somewhere in modelspace to activate the script.
+3) Select objects one by one, complete your selection by pressing ENTER.
+4) Select an alignment to which the objects shall be moved or copied.
+5) Select side-of-track. The objects' lateral offset absolute value will be preserved.
 
 ]].._VERSION_
 
@@ -29,10 +32,10 @@ if option == _TERMINATE_ or option == _ESC_ then
 	return
 end
 
-
 local actionName = option == _COPY_ and "copied" or "moved" --Used in prompts
 
---Select object(s) to copy or move:
+--Select object(s) to copy or move.
+--(...but only the first in a preselection set will be retained.)
 local objects = {}
 local obj
 local n = 0
@@ -58,19 +61,15 @@ until obj == nil
 
 --Select target alignment:
 local trk
-repeat
-	trk = askForAlignment("Select a railway track alignment to which the "..actionName.." object(s) will be attached.")
-	if trk.Rctype ~= _RCTYPE_RAILWAY_TRACK_ then 
-		askForKeyword(RC__identify(trk).." has wrong Rctype [".._RCTYPE_RAILWAY_TRACK_.."].\n", {_OK_}, _HEADER_)
-	else
-		write(RC__identify(trk).."\n")
-	end
-until trk.Rctype == _RCTYPE_RAILWAY_TRACK_
+trk = askForAlignment("Select the alignment to which the "..actionName.." object(s) will be attached.")
+write(RC__identify(trk).."\n")
 
 local p = askForPoint("Pick side of track to place "..actionName.." objects")
 local sign = getLinearAddress(p, trk).lateralOffset > 0 and 1 or -1
 
 --[[
+	AutoCAD's COPY / MOVE commands' options that are useful here:
+	
 	_P: Use previous selection set
 	_M: Mode, either Multiple (_M - keep asking for more) or single (_S).
 	'(0 0 0) '(0 0 0) : From 0,0,0 to 0,0,0 (i.e. copy to same position as the source)
