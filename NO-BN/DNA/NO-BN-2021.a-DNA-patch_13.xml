@@ -17637,6 +17637,10 @@ return s</Data>
     <LuaExpression Name="AngularOffset" IsModelCheck="false">
       <Formula>_JBTEH_AAK_AngularOffset()</Formula>
       <Symbol>_noSymbol</Symbol>
+    </LuaExpression>    
+	<LuaExpression Name="VerticalOffset" IsModelCheck="false">
+      <Formula>_JBTEH_AAK_VerticalOffset()</Formula>
+      <Symbol>_noSymbol</Symbol>
     </LuaExpression>
     <LuaExpression Name="Mileage" IsModelCheck="false">
       <Formula>_JBTEH_AAK_Mileage()</Formula>
@@ -17867,6 +17871,95 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Places the yoke 7.9 m above the highest rail that passes underneath it. If the yoke is not related to both of its support masts ('Er åk holdt oppe av kl-mast'), it is placed 7.9 m above its own track instead." ReturnType="Double" HideFromUser="false">
+	  <Signature>Double _JBTEH_AAK_VerticalOffset()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_VerticalOffset()
+		  local nominalYokeHeight = 7.9 --Nominal yoke underside height above the governing rail [m]
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+
+		  if nSupportMasts &lt; 2 then
+			return nominalYokeHeight, _info("Using the default "..nominalYokeHeight.." m above the yoke's own alignment. Relate the yoke to its two support masts using 'Er åk holdt oppe av kl-mast' to let the highest rail underneath the yoke control the yoke height.")
+		  end
+
+		  --The highest rail passing underneath the yoke governs the yoke height:
+		  local railAdjustment, governingTrackOrReason = _JBTEH_AAK_HighestRailAdjustment()
+		  if railAdjustment == nil then
+			return nominalYokeHeight, _warning, _info("WARNING - Using the default "..nominalYokeHeight.." m above the yoke's own alignment since the highest rail underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".")
+		  end
+		  if railAdjustment &gt; 0.001 then
+			return nominalYokeHeight + railAdjustment, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment).")
+		  end
+		  if governingTrackOrReason ~= nil then
+			return nominalYokeHeight, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', at or below the yoke's own alignment).")
+		  end
+		  return nominalYokeHeight, _info(nominalYokeHeight.." m above the yoke's own alignment - no other track crosses underneath the yoke.")
+		end
+	  </Formula>
+	</LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_HighestRailAdjustment()" Description="Returns the elevation difference [m] between the highest track passing underneath the yoke and the yoke's own alignment at the yoke's position, plus the name of the governing track. Returns 0 when no other track crosses underneath the yoke, and nil plus a reason when the yoke geometry cannot be determined." ReturnType="Double" HideFromUser="false">
+	  <Signature>Double _JBTEH_AAK_HighestRailAdjustment()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_HighestRailAdjustment()
+		  if Alignment == nil then return nil, "the yoke has no alignment" end
+
+		  --The yoke spans between its two support masts:
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+		  if nSupportMasts &lt; 2 then return nil, "the yoke is not related to both of its support masts" end
+
+		  local mast1 = supportMasts[0]
+		  local mast2 = supportMasts[1]
+		  local x1 = mast1.geoCoord.X
+		  local y1 = mast1.geoCoord.Y
+		  local x2 = mast2.geoCoord.X
+		  local y2 = mast2.geoCoord.Y
+		  local yokeSpan = math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+		  if yokeSpan &lt; 0.01 then return nil, "the two support masts stand at the same point" end
+
+		  local ownElevation = getAlignmentInfo().Elevation
+		  if ownElevation == nil or RC__isNan(ownElevation) then return nil, "the elevation of the yoke's own alignment is unknown" end
+
+		  local midPoint = getPoint3D((x1 + x2) / 2, (y1 + y2) / 2)
+		  local tracks, nTracks = getNearbyAlignments(midPoint, "JBTKO_SPO Spor", 0.5 * yokeSpan + 1.0)
+
+		  local highestElevation = nil
+		  local governingTrack = nil
+		  local nUncheckedTracks = 0 --Nearby tracks that might cross the yoke span but could not be measured
+		  for i = 0, nTracks - 1 do
+			local track = tracks[i]
+			local ai1 = getAlignmentInfo(track.id, x1, y1)
+			local ai2 = getAlignmentInfo(track.id, x2, y2)
+			if ai1 ~= nil and ai2 ~= nil and ai1.NormalProjectionExists and ai2.NormalProjectionExists then
+			  local d1 = ai1.DistanceToAlignment
+			  local d2 = ai2.DistanceToAlignment
+			  --The track passes underneath the yoke only if the two support masts stand on opposite sides of it:
+			  if d1 * d2 &lt;= 0 and (d1 ~= 0 or d2 ~= 0) then
+				local t = math.abs(d1) / (math.abs(d1) + math.abs(d2))
+				local crossing = getAlignmentInfo(track.id, x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+				if crossing ~= nil and crossing.Elevation ~= nil and not RC__isNan(crossing.Elevation) then
+				  if highestElevation == nil or crossing.Elevation &gt; highestElevation then
+					highestElevation = crossing.Elevation
+					governingTrack = RC__identify(track)
+				  end
+				else
+				  nUncheckedTracks = nUncheckedTracks + 1 --Crosses the span, but no elevation at the crossing point
+				end
+			  end
+			else
+			  nUncheckedTracks = nUncheckedTracks + 1 --Cannot be projected onto from both support masts
+			end
+		  end
+
+		  if highestElevation == nil then
+			if nUncheckedTracks &gt; 0 then
+			  return nil, nUncheckedTracks.." nearby track(s) could not be checked against the yoke span"
+			end
+			return 0 --No other track crosses underneath the yoke - its own alignment governs
+		  end
+		  return highestElevation - ownElevation, governingTrack
+		end
+	  </Formula>
+	</LuaFunction>
     <LuaFunction Name="_JBTEH_AAK_Mileage()" Description="Deduces the galley's / yoke's mileage, based on relation to one or two yoke support masts." ReturnType="Double" HideFromUser="false">
       <Signature>Double _JBTEH_AAK_Mileage()</Signature>
       <Formula>
