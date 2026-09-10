@@ -17174,6 +17174,10 @@ return s</Data>
       <Formula>_JBTEH_MAS_yoke_suspension_mast_Model3DName()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
+    <LuaExpression Name="OcsMastHeight" IsModelCheck="false">
+      <Formula>_JBTEH_MAS_yoke_suspension_mast_OcsMastHeight()</Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
     <TextPositionLuaExpression Name="SPENNLENGDE" IsModelCheck="false">
       <Formula>_JBTEH_MAS_SpanLengthTextOffset(SpanLengthTextOffsetLateral, SpanLengthTextOffsetAlong)</Formula>
       <Symbol>_noSymbol</Symbol>
@@ -17421,6 +17425,34 @@ return s</Data>
 				return "NO-BN-3D-EH-MAS-HENGEMAST-I-ÅK-HUP-"..OcsMastProfile:match("%d+x%d+").."-"..(100 * math.floor(OcsMastHeight / 100 + 0.5)) --3D geometries exist in steps of 100 mm
 			end
 		</Formula>
+    </LuaFunction>
+    <LuaFunction Name="_JBTEH_MAS_yoke_suspension_mast_OcsMastHeight()" Description="Calculates how long this drop arm must be [mm] to reach from the yoke down to the lowest cantilever it carries. Relate the drop arm to its yoke ('Er hengemast festet i åk') and to its cantilever(s) ('Er kl-mast for utligger') - without these relations the manually selected height is kept." ReturnType="Double" HideFromUser="false">
+      <Signature>Double _JBTEH_MAS_yoke_suspension_mast_OcsMastHeight([RailwayPlacedObject obj])</Signature>
+      <Formula>
+		function _JBTEH_MAS_yoke_suspension_mast_OcsMastHeight(obj)
+			obj = obj or this
+			local yokes, nYokes = obj:getRelatedObjects("Er hengemast festet i åk")
+			local cantilevers, nCantilevers = obj:getRelatedObjects("Er kl-mast for utligger")
+			if nYokes == 0 then
+				return obj:getPropertyValue("OcsMastHeight"), _error, _info("ERROR - Relate the drop arm to its yoke with 'Er hengemast festet i åk'.")
+			end
+			if nCantilevers == 0 then
+				return obj:getPropertyValue("OcsMastHeight"), _warning, _info("UNFINISHED - Relate the drop arm to at least one cantilever with 'Er kl-mast for utligger'.")
+			end
+			--The lowest cantilever console governs - absolute elevations [m], independent of which alignment each cantilever is referenced to:
+			local lowestCantileverConsoleZ
+			for i = 0, nCantilevers - 1 do
+				local cantileverConsoleZ = cantilevers[i].geoCoord.Z + _JBTEH_UTL_StandardValues(cantilevers[i].Variant)["lco"]
+				if lowestCantileverConsoleZ == nil or cantileverConsoleZ &lt; lowestCantileverConsoleZ then
+					lowestCantileverConsoleZ = cantileverConsoleZ
+				end
+			end
+			--Anchor at the yoke's absolute Z (stable), not the drop arm's own geoCoord.Z (moves with the computed height):
+			local requiredDropMm = (yokes[0].geoCoord.Z - lowestCantileverConsoleZ + 0.15) * 1000
+			local heightMm = 100 * math.ceil(requiredDropMm / 100) --Steps of 100 mm, rounded up
+			return heightMm, _info("Drop arm height "..heightMm.." mm. Yoke Z = "..RC__round(yokes[0].geoCoord.Z, 3).." m, lowest cantilever console Z = "..RC__round(lowestCantileverConsoleZ, 3).." m.")
+		end
+	  </Formula>
     </LuaFunction>
     <DockPointDefinitions Annotative="true">
       <SnapPoints>
