@@ -17512,6 +17512,7 @@ return s</Data>
       </Values>
     </CustomProperty>
     <CustomProperty DataType="String" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="When this yoke is refreshed, then all of its support masts and suspension masts are modelchecked as well." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
+    <CustomProperty DataType="String" Name="mc_HeightAboveHighestRail" DisplayName="Høyde over høyeste skinne" Description="Checks that the yoke lies at least 7.9 m above the highest rail passing underneath its span. The yoke must be related to both of its support masts ('Er åk holdt oppe av kl-mast') for the highest rail underneath to be determined." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <SymbolDefinition RotationCenter="OwnPosition" DefaultBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-Schematic" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
       <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_AAK
@@ -17614,6 +17615,10 @@ return s</Data>
       <Formula>_JBTEH_AAK_otherObjectsToModelcheck()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
+    <LuaExpression Name="mc_HeightAboveHighestRail" IsModelCheck="true">
+      <Formula>_JBTEH_AAK_chkHeightAboveHighestRail()</Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
     <LuaExpression Name="name" IsModelCheck="false">
       <Formula>"KL-åk "..code.." ("..Variant..", "..Length..")"</Formula>
       <Symbol>_noSymbol</Symbol>
@@ -17636,10 +17641,6 @@ return s</Data>
     </LuaExpression>
     <LuaExpression Name="AngularOffset" IsModelCheck="false">
       <Formula>_JBTEH_AAK_AngularOffset()</Formula>
-      <Symbol>_noSymbol</Symbol>
-    </LuaExpression>    
-	<LuaExpression Name="VerticalOffset" IsModelCheck="false">
-      <Formula>_JBTEH_AAK_VerticalOffset()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
     <LuaExpression Name="Mileage" IsModelCheck="false">
@@ -17871,29 +17872,40 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
-	<LuaFunction Name="_JBTEH_AAK_VerticalOffset()" Description="Places the yoke 7.9 m above the highest rail that passes underneath it. If the yoke is not related to both of its support masts ('Er åk holdt oppe av kl-mast'), it is placed 7.9 m above its own track instead." ReturnType="Double" HideFromUser="false">
-	  <Signature>Double _JBTEH_AAK_VerticalOffset()</Signature>
+	<LuaFunction Name="_JBTEH_AAK_chkHeightAboveHighestRail()" Description="Checks that the yoke lies at least 7.9 m above the highest rail passing underneath its span. The yoke's height above its own alignment is given by its 'RelativeElevation' property. The yoke must be related to both of its support masts ('Er åk holdt oppe av kl-mast') for the highest rail underneath to be determined." ReturnType="String" HideFromUser="false">
+	  <Signature>String _JBTEH_AAK_chkHeightAboveHighestRail()</Signature>
 	  <Formula>
-		function _JBTEH_AAK_VerticalOffset()
-		  local nominalYokeHeight = 7.9 --Nominal yoke underside height above the governing rail [m]
-		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+		function _JBTEH_AAK_chkHeightAboveHighestRail()
+		  local requiredHeight = 7.9 --Minimum yoke underside height above the governing rail [m]
+		  if Alignment == nil then return "UNFINISHED - Missing own alignment.", _error end
+		  local yokeHeight = RelativeElevation
+		  if yokeHeight == nil or RC__isNan(yokeHeight) then return "UNFINISHED - The yoke's relative elevation is unknown.", _error end
 
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
 		  if nSupportMasts &lt; 2 then
-			return nominalYokeHeight, _info("Using the default "..nominalYokeHeight.." m above the yoke's own alignment. Relate the yoke to its two support masts using 'Er åk holdt oppe av kl-mast' to let the highest rail underneath the yoke control the yoke height.")
+			return "Not checked - Relate the yoke to its two support masts using 'Er åk holdt oppe av kl-mast' to check the yoke height against the highest rail passing underneath.", _info
 		  end
 
-		  --The highest rail passing underneath the yoke governs the yoke height:
+		  --The highest rail passing underneath the yoke governs the required yoke height:
 		  local railAdjustment, governingTrackOrReason = _JBTEH_AAK_HighestRailAdjustment()
 		  if railAdjustment == nil then
-			return nominalYokeHeight, _warning, _info("WARNING - Using the default "..nominalYokeHeight.." m above the yoke's own alignment since the highest rail underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".")
+			return "WARNING - The highest rail underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".", _warning
+		  end
+
+		  local clearance = yokeHeight - railAdjustment
+		  if clearance &lt; requiredHeight - 0.001 then
+			if railAdjustment &gt; 0.001 then
+			  return string.format("%.3f", clearance)..": WARNING - The yoke lies less than "..requiredHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment). Increase the yoke's relative elevation.", _warning
+			end
+			return string.format("%.3f", clearance)..": WARNING - The yoke lies less than "..requiredHeight.." m above the highest rail underneath. Increase the yoke's relative elevation.", _warning
 		  end
 		  if railAdjustment &gt; 0.001 then
-			return nominalYokeHeight + railAdjustment, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment).")
+			return string.format("%.3f", clearance)..": OK - At least "..requiredHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment).", _ok
 		  end
 		  if governingTrackOrReason ~= nil then
-			return nominalYokeHeight, _info(nominalYokeHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', at or below the yoke's own alignment).")
+			return string.format("%.3f", clearance)..": OK - At least "..requiredHeight.." m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', at or below the yoke's own alignment).", _ok
 		  end
-		  return nominalYokeHeight, _info(nominalYokeHeight.." m above the yoke's own alignment - no other track crosses underneath the yoke.")
+		  return string.format("%.3f", clearance)..": OK - No other track crosses underneath the yoke.", _ok
 		end
 	  </Formula>
 	</LuaFunction>
