@@ -17512,6 +17512,7 @@ return s</Data>
       </Values>
     </CustomProperty>
     <CustomProperty DataType="String" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="When this yoke is refreshed, then all of its support masts and suspension masts are modelchecked as well." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
+    <CustomProperty DataType="String" Name="mc_HeightAboveHighestRail" DisplayName="Høyde over høyeste skinne" Description="Checks that the yoke lies at least 7.9 m above the highest rail passing underneath its span. The yoke must be related to both of its support masts ('Er åk holdt oppe av kl-mast') for the highest rail underneath to be determined." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <SymbolDefinition RotationCenter="OwnPosition" DefaultBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-Schematic" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
       <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_AAK
@@ -17612,6 +17613,10 @@ return s</Data>
     </LuaExpression>
     <LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true">
       <Formula>_JBTEH_AAK_otherObjectsToModelcheck()</Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
+    <LuaExpression Name="mc_HeightAboveHighestRail" IsModelCheck="true">
+      <Formula>_JBTEH_AAK_chkHeightAboveHighestRail()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
     <LuaExpression Name="name" IsModelCheck="false">
@@ -17867,6 +17872,103 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_chkHeightAboveHighestRail()" Description="Checks that the yoke lies at least 7.9 m above the highest rail passing underneath its span. The yoke's height above its own alignment is given by its 'RelativeElevation' property. The yoke must be related to both of its support masts ('Er åk holdt oppe av kl-mast') for the highest rail underneath to be determined." ReturnType="String" HideFromUser="false">
+	  <Signature>String _JBTEH_AAK_chkHeightAboveHighestRail()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_chkHeightAboveHighestRail()
+		  local requiredHeight = 7.9 --Minimum yoke underside height above the governing rail [m]
+		  if Alignment == nil then return "UNFINISHED - Missing own alignment.", _error end
+		  local yokeHeight = RelativeElevation
+		  if yokeHeight == nil or RC__isNan(yokeHeight) then return "UNFINISHED - The yoke's relative elevation is unknown.", _error end
+
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+		  if nSupportMasts &lt; 2 then
+			return "Not checked - Relate the yoke to its two support masts using 'Er åk holdt oppe av kl-mast' to check the yoke height against the highest rail passing underneath.", _info
+		  end
+
+		  --The highest rail passing underneath the yoke governs the required yoke height:
+		  local railAdjustment, governingTrackOrReason = _JBTEH_AAK_HighestRailAdjustment()
+		  if railAdjustment == nil then
+			return "WARNING - The highest rail underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".", _warning
+		  end
+
+		  local clearance = yokeHeight - railAdjustment
+		  if clearance &lt; requiredHeight - 0.001 then
+			if railAdjustment &gt; 0.001 then
+			  return "WARNING - Clearance of "..string.format("%.2f", clearance).."m above the highest rail underneath (track '"..tostring(governingTrackOrReason).."', lying "..RC__round(railAdjustment, 3).." m above the yoke's own alignment) is less than "..requiredHeight.."m. Increase the yoke's relative elevation.", _warning
+			end
+			return "WARNING - Clearance of "..string.format("%.2f", clearance).."m above the highest rail underneath is less than "..requiredHeight.."m. Increase the yoke's relative elevation.", _warning
+		  end
+		  if governingTrackOrReason ~= nil then
+			return "OK - Clearance of "..string.format("%.2f", clearance).."m above the highest rail underneath.", _ok
+		  end
+		  return "OK - Clearance of "..string.format("%.2f", clearance).."m above the yoke's own alignment - no other track crosses underneath.", _ok
+		end
+	  </Formula>
+	</LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_HighestRailAdjustment()" Description="Returns the elevation difference [m] between the highest track passing underneath the yoke and the yoke's own alignment at the yoke's position, plus the name of the governing track. Returns 0 when no other track crosses underneath the yoke, and nil plus a reason when the yoke geometry cannot be determined." ReturnType="Double" HideFromUser="false">
+	  <Signature>Double _JBTEH_AAK_HighestRailAdjustment()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_HighestRailAdjustment()
+		  if Alignment == nil then return nil, "the yoke has no alignment" end
+
+		  --The yoke spans between its two support masts:
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+		  if nSupportMasts &lt; 2 then return nil, "the yoke is not related to both of its support masts" end
+
+		  local mast1 = supportMasts[0]
+		  local mast2 = supportMasts[1]
+		  local x1 = mast1.geoCoord.X
+		  local y1 = mast1.geoCoord.Y
+		  local x2 = mast2.geoCoord.X
+		  local y2 = mast2.geoCoord.Y
+		  local yokeSpan = math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+		  if yokeSpan &lt; 0.01 then return nil, "the two support masts stand at the same point" end
+
+		  local ownElevation = getAlignmentInfo().Elevation
+		  if ownElevation == nil or RC__isNan(ownElevation) then return nil, "the elevation of the yoke's own alignment is unknown" end
+
+		  local midPoint = getPoint3D((x1 + x2) / 2, (y1 + y2) / 2)
+		  local tracks, nTracks = getNearbyAlignments(midPoint, "JBTKO_SPO Spor", 0.5 * yokeSpan + 1.0)
+
+		  local highestElevation = nil
+		  local governingTrack = nil
+		  local nUncheckedTracks = 0 --Nearby tracks that might cross the yoke span but could not be measured
+		  for i = 0, nTracks - 1 do
+			local track = tracks[i]
+			local ai1 = getAlignmentInfo(track.id, x1, y1)
+			local ai2 = getAlignmentInfo(track.id, x2, y2)
+			if ai1 ~= nil and ai2 ~= nil and ai1.NormalProjectionExists and ai2.NormalProjectionExists then
+			  local d1 = ai1.DistanceToAlignment
+			  local d2 = ai2.DistanceToAlignment
+			  --The track passes underneath the yoke only if the two support masts stand on opposite sides of it:
+			  if d1 * d2 &lt;= 0 and (d1 ~= 0 or d2 ~= 0) then
+				local t = math.abs(d1) / (math.abs(d1) + math.abs(d2))
+				local crossing = getAlignmentInfo(track.id, x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+				if crossing ~= nil and crossing.Elevation ~= nil and not RC__isNan(crossing.Elevation) then
+				  if highestElevation == nil or crossing.Elevation &gt; highestElevation then
+					highestElevation = crossing.Elevation
+					governingTrack = RC__identify(track)
+				  end
+				else
+				  nUncheckedTracks = nUncheckedTracks + 1 --Crosses the span, but no elevation at the crossing point
+				end
+			  end
+			else
+			  nUncheckedTracks = nUncheckedTracks + 1 --Cannot be projected onto from both support masts
+			end
+		  end
+
+		  if highestElevation == nil then
+			if nUncheckedTracks &gt; 0 then
+			  return nil, nUncheckedTracks.." nearby track(s) could not be checked against the yoke span"
+			end
+			return 0 --No other track crosses underneath the yoke - its own alignment governs
+		  end
+		  return highestElevation - ownElevation, governingTrack
+		end
+	  </Formula>
+	</LuaFunction>
     <LuaFunction Name="_JBTEH_AAK_Mileage()" Description="Deduces the galley's / yoke's mileage, based on relation to one or two yoke support masts." ReturnType="Double" HideFromUser="false">
       <Signature>Double _JBTEH_AAK_Mileage()</Signature>
       <Formula>
