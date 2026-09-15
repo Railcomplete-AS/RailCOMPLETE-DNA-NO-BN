@@ -1,0 +1,197 @@
+2026-08-25_000 CLAUDE skills for writing Lua scripts
+
+
+Please translate to US English and insert reasonable titles, subtitles and point numberings in MarkDown format. This shall result in a "Claude skills" input document that will later be used as input to you (Claude) together with various scripts for RailCOMPLETE sofwtare, written in the Lua language, and will act as the input for a "please clean my Lua code source files and make them consistent with this Skills document = this set of coding style and comment style rules."  The result shall be a downloadable MarkDown text file (.md) with coding + commenting style rules.
+
+
+
+Attached you will find a few examples of manually reviewed Lua files which are meant to be consistent with the following draft document text.
+
+
+
+
+
+For your information:
+
+
+
+1) You will understand more by studying the attached three Lua function libraries as well as the attached scripts intended for use with our French customer, SNCF Réseau.
+
+
+
+2) RailCOMPLETE has a tooltip feature in its built-in editor that I want you to understand and explain in the MD document to be made: When the user writes the name of a function, like the ones in the attached libraries and script files, then the Auto-fill feature offers to complete the name of the function as you write. Moreover, if there is a Lua comment (starting with two dashes) in the text file line immediately preceding the Lua function declaration, then this line of text will be presented to the user as part of the hover-over-item tooltip text presented byt our embedded Lua editor. When the user is French, it is our intention that the tooltip of every library function or script file function that is in the current Lua context shall tell in French what the function does and how the user shall call the function (function name, argument list). However, our Lua code developers are not fluent in French but they write in English, so the English version of the tooltip shall immediately precede the French version. See examples in attached files. Of course, if the target audience was German, then the two comment lines would be English followed by German followed by the Lua function declaration.
+
+
+
+3) local vs global constants when using the includeLuaFile() feature of RailCOMPLETE: Please try to formulate this in an instructive manner in the Skills document to be made:
+
+
+
+When a script file declares a global Lua identifier (such as: _VERSION_ = "v1.2") and thereafter makes a reference to libraries of functions with the includeLuaFile() API call from RailCOMPLETE, then the outermost (calling) sandbox creates a child  sandbox per include file and passes all global constants to each child sandbox. In the child sandbox, the globally inherited constant may be used as-is or may be overridden by an assignment to that identifier (since Lua does not have protected constants, it is just a variable that you don't intend to change, normally), or it may be may replaced by a local declaration using the same identifier name - whereupon the call to a next level child sandboxed includeLuaFile() would NOT inherited neither the top-level version or the locally declared identifer on the same name.
+
+
+
+---GLOBAL CONSTANTS---
+
+
+
+---INCLUDES---
+
+local lib1 = includeLuaFile("Lua\\Functions\\lib1.lua")
+
+local lib2 = includeLuaFile("Lua\\Functions\\lib2.lua")
+
+local VA = includeLuaFile("Lua\\Functions\\lib2_VA.lua")
+
+
+
+---LOCAL CONSTANTS---
+
+local _USAGE_ = "To this, then do that...blah, blah, blah."
+
+
+
+
+
+where the included files use the inherited global _HEADER_ constant but its own and locally declared _VERSION constant. Also 
+
+
+
+-----------
+
+
+
+Here is the announced half-written document from me (in Norwegian) - pålease translate and improve & complete it: 
+
+
+
+1)	Jeg ønsker at det ikke skal være enkelt å se forskjell på hvem som har kodet hva når det er RCAS som har utgitt et script eller en Lua-funksjon for en RC property.
+
+2)	Jeg tror det er duplikat-kode og en del igjen å finpusse på FRSR-scriptene. Jeg har gjort mye på en egen sub-branch fra 
+
+Jeg ser over github branch “2026-01-23-ES-CLFEY-Better-Script-for-creating-and-updating-Reference-Alignment-System-in-existing-track-model” og det er en go del jeg ikke skjønner meg på nå, av smått og stort, og points-of-style som jeg ønsker at vi skal enes om før vi lage og utgir flere scripts (det blir en CCB-greie).
+
+-	Prinsipp: lib1 og lib2 er generiske, gjelder alle administrasjoner. Om de definerer konstanter så som _TRACE_ så kan disse overrides senere og nærmere bruken av dem. Men de bør / skal ikke inneholde adm-spesifikke tekster.
+
+-	“lib2_FR-SR.lua” – bør ikke ha bindestrek i navnet fordi koden bør bruke filnavnet som identifier: «lib2_FRSR» er dermed det foretrukne navnet, mener CLFEY.
+
+-	Lib2_FRSR.lua er en spesialisering av lib2 == script-only functions. MEN når vi skriver «FRSR» bak så bør det bety «fortsatt helt generelle funksjoner, men innenfor konteksten FR-SR», dvs lib2 = any administration, lib2_FRSR = bare SNCF. Dvs at spesifikke funksjoner for track plan generation må ha et enda med spesialisert navn – og fransk, på linje med tekstene inni funksjonen - feks. «FRSR Fonctions plan de trace.lua». Og siden funksjonene i nåværende lib2_FRSR.lua er spesifikke for å lage sporplan så bør denne filen ligge nede i VA_katalogen sammen med de øvrige scriptene som benytter denne. Kun GENERELLE greier bør ligge i Lua\Functions – mener CLFEY.
+
+-	Versjonsinfo:
+
+1) _HEADER_ og _VERSION_ - skal angis i TOPPEN av en lua-fil og BARE der. Benyttes normalt bare i script-filer og gjelder da hele filen.
+
+2) VI kan vurdere å innføre en stilart for versjonsinfo på enkeltvise funksjoners nivå. Forslag: _HEADER_functionName_ og _VERSION_functionName_.
+
+-	Function description:
+
+1) Alle lib1, lib2, lib2_FRSR funksjoner som brukeren kan tenkes å benytte selv skal ha en kommentarlinje umiddelbart OVER kode-raden: function funksjonsNavn(). Lua-editoren fanger opp dette og viser denne tekstlinjen som tooltip i Lua-editoren, med autofill. 
+
+2) I lib1 og lib2 skal tooltip tekst være skrevet på engelsk.
+
+3) I lib2_FRSR skal tooltip tekst være skrevet på fransk.
+
+4) I lib2_FRSR bør den engelske toooltip-teksten gjengis umiddelbart NEDENFOR kode-raden: function funksjonsNavn().
+
+-	Kommentar-stilart:
+
+1) Alltid eksakt 1 blank etter dobbel bindestrek («-- Kommentar». THBEN har som regel 1 blnak, CLFEY som regel 0 blank etttr dobbel bindestrek.
+
+2) Stor forbokstav i kommentar: «--Force save and update data» (kommentar til høyre på en kodelinje).
+
+3) Ingen punktum med mindre kommentaren har to eller flere setninger i seg: «--Force save and update data».
+
+4) ALLTID kolon (eller spsm.tegn) etter kommentar dersom den skrives på egen linje foran tilhørende kodelinje / kodelinjer  «--Force save and update data:». (men CLFEY er usikker her, lesbarheten er best med kolon sist i linjen).
+
+5) Når en kommentar prefikser en kodelinje med språk-spesifikk prompt og kommentaren er den engelske versjonen av det det spørres om eller opplyses om, så skal kommentaren omgis av doble anførselstegn og ende med kolon.
+
+   Eksempel: -- "Could not find path to ... Please select new own alignment for ...":
+
+-	Buk av konstanter for språk-items: 
+
+   Fordel nr 1 er at konstantens navn kan skrives på engelsk som _THIS_IS_OPTION_ONE_ og innholdet kan skrives på engelsk, og så kan Claude oversette bare innholdet, og koden er fortsatt lesbar for ikke-franske utviklere.
+
+   Fordel nr 2 er gjenbruk av konstant i flere sammenhenger. De generiske språk-konstantene med fransk oversettelse samles i lib1_FRSR.lua.
+
+   Ulempen med konstanter er at det fort blir en suppe der noen er uttrykt som konstanter og andre ikke. 
+
+  Forslag: Lister av options bruker konstanter, mens småtekster gjør det ikke – ELLER konsekvent bruke konstanter + Claude oversettelse men deklarere disse rett før de benyttes, om de ikke er generiske.
+
+-	Skrivemåte for konstanter:
+
+1) Konstantens Lua identifier skrives i uppercase med underscore prefix og underscore postfix og med underscore infix dersom det er multiple ord: 
+
+   FEIL:   __stopKeyword__ (doble underscores pleier å være reservert for den underliggende Lua-interpreteren, som er skrevet i C++).
+
+   KORREKT: _STOP_KEYWORD_ eller bare _STOP_
+
+2) Ved test på returnert verdi så skal den variable være LeftSide og konstanten skal være RightSide:  
+
+   Duplikatfunksjoner skal ikke finnes:
+
+-	getShapefilePaths() finnes to ganger med ulik definisjon i lib2.lua og i lib2_FRSR.lua Må ryddes opp i.
+
+  Bruk av Assert() og Standard for returverdi fra biblioteksfunksjoner:
+
+               1) Biblioteksfunksjoner så som inneholdt i lib1, lib2, lib2_VA osv bør returnere en verdi som angir at funksjonen har lykkes eller feilet. 
+
+                   CLFEY Forslag: Returner symbol _ok eller _error (disse finnes i alle kontekster, ikke sant?
+
+               2) Se eksempel der returverdi mangler: lin2_FR-SR.lua ca linje 353 etter «if not shapefileNdv then». Og samme fil linje ca 628 «if not shapefileFolder then return end»
+
+  Død kode / alternativ kode:
+
+1) Fjerne død kode / alternative forslag til kode.
+
+2) Dersom koden likevel skal være der (fordi den kan bli aktuell igjen senere) så skal den skilles ut som lang kommentar med –[[ … --]]. Start av lang kommentar skal plasseres helt ute i venstre margen. Dersom det er kun én kodelinje som skal kommenteres ut som død kode så skal –[[ og --]] stå foran / bak den døde koden på samme linje. Dersom det er flere linjer med død kode så skal start lang kommentar –[[ og slutt lang kommentar --]] stå på egne linjer henholdsvis rett før og rett etter den døde koden.
+
+Eksempel: single line dead code:
+
+Eksempel: multi-line dead code:
+
+Regler for blank etter komma:
+
+                1) Når komma inngår i en kode-sammenheng (ikke inne i en tekst-streng) så skal det alltid være eksakt 1 stk mellomrom etter kommaet. Dog, dersom komma er siste tegn på en kodelinje så skal ‘\n’ (linjeskift) erstatte mellomrom, og tabulatorer benyttes på neste linje for å få et pent innrykk som er minst et hakk forbi foregående linjes innrykk.
+
+                2) Det skal IKKE være blank etter anonym identifier ‘_’:  
+
+                    Eksempel: for _, item in pairs(items) do
+
+Regler for linjebryting
+
+ENTEN aldri bryte linjer – Notepad++ gjør dette automatisk med riktige innstillinger
+
+ELLER bryte linjer ved f.eks. 132 tegn linjelengde – eller noe annet.
+
+ELLER la det være opp til den som skriver kode å formatere teksten lesbar for de fleste sammenhenger. Husk at Avalon Lua-editoren ofte er nokså smal og viser mindre pr linje enn når du sitter med VS eller Notepad++ på en stor skjerm.
+
+
+
+
+Regler for bruk av blanke linjer i script (for lesbarhet)
+
+1) Ingen blank linje mellom kodelinjer som hører naturlig sammen.
+
+2) Én blank linje som «luft» for lesbarhet, f.eks. før hver ny «elseif xxxxx» linje dersom det er mye kode (10 linjer eller mer) i hver av elseif’ene Dette tilsvarer en paragraf i en løpende tekst, dvs ikke skifte av kontekst.
+
+3) Tre blanke linjer mellom kontekster i en script-fil. F.eks. før ---INCLUDES--- og før ---CONSTANTS---og før ---FUNCTIONS--- og før ---SCRIPT---.
+
+4) Tre blanke linjer før ny funksjon på ytterste nivå, eller før kommentarlinjen som introduserer funksjonen. 
+
+5) Alltid en blank linje som den siste linjen i en lua-fil. Det er fordi Avalon Lua-editoren vår ikke takler siste-linje særlig bra (lang cursor virker ikke, end-of-line virker ikke som den skal etc).
+
+   Regler for bruk av blanke linjer i script (for lesbarhet)
+
+   Konstanter så som _DEBUG_ og _TRACE_ deklareres som globale i den filen som benytter dem. Disse arves av include-filer (i nøstede sandboxes). Dvs at en fil Script1.lua kan definere som globale f.eks. _HEADER_ = «Script1» og _VERSION_ = «2026-04-08 v1.2» og kan så inkludere hver av lib1.lua, lib2.lua og lib2_VA.lua som arver disse identifierne fra Script1.lua og kan bruke dem med den nedarvede verdien. De inkluderte sandboxene kan lage sine egne lokale versjoner eller lokalt override verdien i den nedarvede identifieren, uten at denne vil arves «oppover» til nivået over dem. En forutsetning er dog at det øverste nivåets identifier må være definert FØR man inkluderer neste nivå, og at det øverste nivåets identifier er deklarert som global (dvs har ikke ‘local’ som prefix).
+
+Gode eksempler - se SNCF scripts fra januar - februar 2026.
+
+
+
+
+
+
+
+
+
+
