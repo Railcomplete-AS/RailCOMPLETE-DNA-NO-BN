@@ -34,7 +34,7 @@ layouts. The export window's preview runs the same script headless, one object a
 
 1. **Is this an installation drawing at all?** It fits a sheet per object, built around a projection or drawn by the
    script from model queries (schematic plans, 2D elevations, tables inside the sheet). A list over many objects, the
-   real surveyed drawing next to other views on one sheet, or two views of one object on one sheet do not fit — see
+   real surveyed drawing beside other views on one sheet, or two views of one object on one sheet do not fit — see
    drawing-script.md §8 (choosing the host) and §9 (limits) before promising anything.
 2. **Frames** on the object types — cross-section-frames.md. Check the 3D models are solids and add named points where
    dimensions need them.
@@ -117,7 +117,7 @@ layouts. The export window's preview runs the same script headless, one object a
 | Reading `this.<object property>` in a component formula (`this` is the track) | draw object-dependent parts in the script (not visible in the viewer), or look the object up from the track position |
 | Expecting existing objects to pick up new frames or dimensions | give the retrofit steps with the handover |
 | `askForDouble` in the script for a user option | a component toggle or a BooleanParameter |
-| Copying FR-SR's PV d'implantation script contract (own arrows, own layouts, layout prompt) | copy example-schema.xml's contract, reuse FR-SR's content |
+| Copying an older script's contract, such as the FR-SR DNA's PV d'implantation (own arrows, own layouts, layout prompt) | copy example-schema.xml's contract; reuse only the older script's content |
 | Indexing `data.AlignmentSnapshots[0]` blindly | check `.Count`; decide what the sheet shows without a track |
 | Reusing the built-in schema's dimension names (copied from example code) | prefix every dimension name per drawing type |
 | Designing a dimension around a marker in a 3D model that does not exist yet | list the new or changed DWG as a deliverable for the user |

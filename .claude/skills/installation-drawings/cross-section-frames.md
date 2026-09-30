@@ -47,7 +47,7 @@ The frame is a box in the object's **local** coordinate system:
 | `Rotation.X` (pitch) | tilts the view; 90 gives plan-like views (untested by any DNA) |
 
 `RotationCenter = BoxCenter` turns the box in place. With `InsertionPoint` an asymmetric box swings round the
-insertion point, so a 180° frame needs its X bounds mirrored (FR-SR's potence frames do this).
+insertion point, so a 180° frame needs its X bounds mirrored (the FR-SR DNA's potence frames do this).
 
 ## 2. Declaring frames in the DNA
 
@@ -91,7 +91,7 @@ Use the new spelling in new code.
 
 The formula text is copied onto each object **when it is inserted**. A formula that only calls a named DNA function
 (`<Formula>MYDNA_getFrameMinimumBound()</Formula>`) keeps improving when you ship a better function; a formula with
-the logic inlined is frozen on every existing object. FR-SR's frame macros follow this pattern.
+the logic inlined is frozen on every existing object. The FR-SR DNA's frame macros follow this pattern.
 
 ## 3. Existing objects do not get new frames
 
@@ -101,8 +101,8 @@ DNA, objects already in drawings keep what they had. Tell users how to retrofit:
 - **`_RC-MatchDynamicProperties`** (the reliable route): pick a freshly inserted object as the source, then the
   existing objects. It copies the source object's frames and their formulas (not the DNA's). By default it copies
   **every** dynamic property type — untick everything but cross section frames in its *Settings* — and its default
-  mode **Prepend** puts the copies in front, shifting existing frames (frame 0 is the Default frame and decides the
-  tracks). Use *Replace* to swap the frames out.
+  mode **Prepend** puts the copies in front, shifting existing frames (frame 0 is the Default frame; the first
+  non-frozen frame, normally frame 0, decides the tracks). Use *Replace* to swap the frames out.
 - Properties palette, category **Cross sections**, **Add**: appends one frame with RailCOMPLETE's **built-in defaults,
   not the DNA's values** — only useful for manual experiments.
 - Delete and re-insert the objects.
@@ -241,7 +241,7 @@ Caveats for yawed frames: if the track falls inside the box, the schema draws ra
 section, laid into the wrong plane. Keep the track out of the box, or use a dedicated schema without rail/gauge
 components for this drawing type. Lateral distances to rails are meaningless in this view; heights above
 `OwnAlignment_LowestRail` still work if the track is in the box. The drawing script must not require a track.
-Remember that frame 0 decides the tracks for every frame of the object.
+Remember that the first non-frozen frame (normally frame 0) decides the tracks for every frame of the object.
 
 **Object far from any track, object only**: a small box around the object (e.g. `-1 -1 -0.5` to `1 1 3`). The object
 needs a solid 3D model; the script must tolerate an empty `AlignmentSnapshots`.

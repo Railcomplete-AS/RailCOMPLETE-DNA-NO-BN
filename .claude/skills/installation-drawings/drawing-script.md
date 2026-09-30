@@ -66,7 +66,7 @@ Lua table and test `.Count` before indexing.
 | `ExpandedDimensions` | resolved dimensions (`Name`, `FromPoint`, `ToPoint`, `Orientation`, `Offset`, `SetValueLuaScript`, …) — only needed if the script draws its own arrows |
 | `PlaceDimensionsExternally` | true in export and preview: RailCOMPLETE draws the dimension arrows; the script must not |
 | `DimensionExtents` | `MinX, MaxX, MinY, MaxY, Present` of RailCOMPLETE's arrows in frame-local coordinates, for sizing the sheet — or `nil` when there are none: test `data.DimensionExtents and data.DimensionExtents.Present` |
-| `LayoutReport` | writable — how the script tells RailCOMPLETE where things ended up (§4) |
+| `LayoutReport` | writable — how the script tells RailCOMPLETE where things ended up (§3) |
 | `FrameDirection` | `"up"`, `"down"`, `"both"`, `"none"` or `"unknown"` — of the frame that was used |
 | `AlignmentSnapshots` | one per track found through the object's first non-frozen frame (the object must project perpendicularly onto it) that the schema's `AppliesToAlignmentType` accepts; the object's own reference track, when it is among them, is kept even if `AppliesToAlignmentType` rejects it (no rails are drawn for it then): `Id`, `Name`, `AlignmentGauge`, `PointObjectDistanceAlong`, `Radius`, `Cant` (mm), `DesignSpeed`, `VerticalProfileRadius` — **may be empty** |
 | `RasterImageFilePaths` | point-cloud backdrops for the section |
@@ -120,7 +120,7 @@ is right only for sheets with ISO portrait proportions (10.5 × 14.85, 14.85 × 
 reported this way gets a wrong layout, not an error.** Landscape, custom media (multi-A4 strips) or other scales need
 script-created layouts (§6).
 
-FR-SR's "PV d'implantation" script predates this contract (it draws its own arrows and creates its own layouts after a
+The FR-SR DNA's "PV d'implantation" script predates this contract (it draws its own arrows and creates its own layouts after a
 prompt). Copy its *content* (SNCF sheet furniture, tables, gauges), not its contract.
 
 ## 4. Building entities (there is no `addLine`/`addText` API)
@@ -168,7 +168,7 @@ local tableObject = insertTableObject(rctype_TableUserdefined, getPoint3D(x, y),
   passed (`rctype_TableUserdefined` does in FR-SR and NO-BN); otherwise the call fails with "No valid InsertTableOptions
   found".
 - The row filter is Lua *source text* evaluated later, outside the script — it cannot see script variables. Compute the
-  rows in the script and embed them as literals (FR-SR's `serializeLuaTable`).
+  rows in the script and embed them as literals (the FR-SR DNA's `serializeLuaTable` does this).
 - The table is a persistent RailCOMPLETE object of the DNA's user-defined table type; `resizeTableObject(t, w, h)`
   (resize twice, smaller first, to work round a known bug), `cadInterface.getCadEntityFromRcObject(t)` for the
   AutoCAD table.
@@ -191,8 +191,9 @@ local tableObject = insertTableObject(rctype_TableUserdefined, getPoint3D(x, y),
   "Create paper space layouts" box is not visible to Lua; give users their own switch (a BooleanParameter under
   Gauges/CatenaryOutlines, or an export-time `askForKeyword`, which returns nil in preview).
 - Several viewports on one layout, or entities in paper space: reachable only through fragile reflection
-  (`DatabaseServices.Viewport`, `cadInterface.addEntitiesToBlock("*Paper_Space…", …)`), never previewed, duplicated on
-  re-export unless the script cleans up. Do not build a deliverable on it without the user testing it first.
+  (`DatabaseServices.Viewport`, `cadInterface.addEntitiesToBlock("*Paper_Space…", …)`), never previewed. Call
+  `createLayoutWithViewport` first and add extra viewports after it: a later call on the same layout erases every
+  viewport but the first. Paper-space entities are duplicated on re-export unless the script cleans up. Do not build a deliverable on it without the user testing it first.
 - Not possible from a drawing script today: plotting to PDF (the user plots or publishes the created layouts), two
   frames of one object in one run.
   Keep sheet furniture (frame, cartouche, tables, logos, notes) in **model space** around the section — that is what
@@ -207,7 +208,7 @@ local tableObject = insertTableObject(rctype_TableUserdefined, getPoint3D(x, y),
 | objects of a type | `table.where(DocumentData.ObjectCollection, function(o) return o.RcType == rctype_Track end)` (every `rctype_*` LuaName is a global holding the type's Name string — the same string `obj.RcType` returns) |
 | by id | `getObjectFromId(id)` |
 | related objects | `getRelatedObjects("relation prompt text", obj)`; mounted/attached objects: `obj.AttachedElements` |
-| near a point | `getNearbyPointObjects2D(point, rcType, false, distance)`, `getNearbyAlignments(point, rcType, distance)` |
+| near a point | `getNearbyPointObjects2D(rcType, false, point, distance)`, `getNearbyAlignments(point, rcType, distance)` |
 | mileage / PK and track data at a point | `getAlignmentInfo(obj)` → `.Mileage`, `.ReferenceMileage`, `.DistanceToAlignment`, `.SideOfAlignment`, `.CurveRadius`, `.Cant`, `.Elevation`, `.AlignmentName` … |
 | position from PK | `alignment:getPosFromMileage(m)`, then `alignment:getPoint(pos)` |
 | sample a track in plan | `alignment.RcAlignment.HorizontalGeometry:GetPointAtPos(s)` (for schematic plans drawn by the script) |
@@ -267,11 +268,11 @@ Patterns that recur:
 | cross section at an object, with rails, gauges, dimensions, cartouche, tables | yes — the core use |
 | front elevation of equipment beside the track | yes — a frame yawed ±90° (cross-section-frames.md §7); no track needed; needs solid 3D models |
 | equipment elevation drawn from 2D blocks with heights from properties | yes — in the script |
-| schematic plan de situation drawn by the script from model queries (tracks, the object, distances, PK) | yes — FR-SR's PV d'implantation already draws one in its signal cartouche (signal symbol, track, PK, track-circuit joint dimension); a general helper is a few hundred lines once, reusable (§8) |
+| schematic plan de situation drawn by the script from model queries (tracks, the object, distances, PK) | yes — the FR-SR DNA's PV d'implantation already draws one in its signal cartouche (signal symbol, track, PK, track-circuit joint dimension); a general helper is a few hundred lines once, reusable (§8) |
 | the real drawing (survey, roads, symbols) as a whole sheet at a scale, with an overlay | yes — a script-created layout (§6, §8), outside the preview |
-| the real drawing next to other views or sheet furniture on one sheet | no — needs several viewports per layout, a RailCOMPLETE C# change (only fragile reflection today) |
+| the real drawing beside a separate cartouche or other views on one sheet | no — needs a second viewport or paper-space content, a RailCOMPLETE C# change (only fragile reflection today). A frame or cartouche drawn in model space over the viewed area works (§8), but the drawing shows through it |
 | two views of one object on one sheet (face + side, or up + down) | no in one run. `cadInterface.getCrossSectionFrame(obj, false)` returns the old-style projection of **all** non-frozen frames of an object merged into one list (overlapping, no schema components, points keyed by frame name) — usable only for an object with exactly one frame, e.g. a neighbour |
 | landscape or multi-A4 sheets with RailCOMPLETE-created layouts | no — script-created layouts only (§6) |
-| tables inside a sheet | yes — an RC table built from a Lua spec with `insertTableObject` (§5), as FR-SR's PV d'implantation does for its "implantation longitudinale" table |
+| tables inside a sheet | yes — an RC table built from a Lua spec with `insertTableObject` (§5), as the FR-SR DNA's PV d'implantation does for its "implantation longitudinale" table (it still calls the deprecated name `createTableObject`; use `insertTableObject`) |
 | a document that is only a list over many objects (one row per object, e.g. a signal survey form) | better as a Scripts-menu script (RC-RunScript, §8): an installation drawing prepares one data object and one preview per object |
 | PDF output | yes, through AutoCAD's own plot/PUBLISH on the created layouts; no automatic PDF from within the drawing script |
