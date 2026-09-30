@@ -1,0 +1,309 @@
+<!--
+	Example railway installation drawing schema - a complete, minimal starting point.
+
+	Derived from RailCOMPLETE's built-in ("intrinsic") schema, which is the only script that implements the
+	current layout contract (LayoutReport + PlaceDimensionsExternally). Copy it, rename it, then adapt.
+
+	Where it goes:
+	  * The <RailwayInstallationSchema> element goes INSIDE the DNA's one and only
+	    <RailwayInstallationSchemaContainer> (a second container is silently ignored).
+	  * The <DimensionStyle> at the bottom goes into <StyleDefinitions>, not into the schema.
+
+	Embedded Lua: a raw CDATA section is used here so the Lua can contain < and & unescaped; XPPq passes it through
+	unchanged. The alternative is escaping < and & as &lt; and &amp;. Never wrap escaped Lua in xpp:cdata.
+	Note: table.select/firstOrNil run their function under pcall, so a failing call silently drops that element.
+-->
+<RailwayInstallationSchema Name="Example installation drawing" Description="One sheet per selected object: cross section, dimensions, track box and cartouche.">
+
+	<!-- Which alignments the schema draws rails/sleepers/components for. "eTrack" = every track type. -->
+	<AppliesToAlignmentType>eTrack</AppliesToAlignmentType>
+
+	<RailwayInstallationDrawingScript><![CDATA[
+-- Layout: one A4 portrait sheet per object (no growth - see RailCOMPLETE's built-in script for A4 -> A3), drawing
+-- units = metres, section at 1:50 on paper.
+-- Contract: report the section transform, the dimension style and the sheet frame through LayoutReport;
+-- RailCOMPLETE then draws the dimension arrows and creates the paper-space layouts itself.
+
+local _SCALE_ = 1                          -- 1 = A4 frame of 10.5 x 14.85 units; 2 = everything twice as large in model space (the layout still plots the section at 1:50)
+local _REQUIRE_TRACK_ = true               -- false for drawings of objects away from any track (front elevations)
+
+-- Warnings: write() is not shown to the user during the export, so also try the command line.
+local function warn(message)
+	local shown = pcall(function() DocumentData.Document.Editor:WriteMessage("\n" .. message) end)
+	if not shown then write("\n" .. message) end
+end
+
+local function getAcadPoint3D(p)
+	return cadInterface.createCadEntity("Geometry.Point3d", {p.X, p.Y, p.Z})
+end
+
+local function createAcadPolyline(points, closed)
+	local polyline = cadInterface.createCadEntity("DatabaseServices.Polyline", {})
+	local index = 0
+	for _, v in pairs(points) do
+		polyline:AddVertexAt(index, cadInterface.createCadEntity("Geometry.Point2d", {v.X, v.Y}), 0, 0, 0)
+		index = index + 1
+	end
+	polyline.Closed = closed or false
+	polyline.Layer = "0"
+	return polyline
+end
+
+local function createText(contents, location, attachment, scaleFactor)
+	local text = cadInterface.createCadEntity("DatabaseServices.MText", {})
+	text.Contents = contents
+	text.TextHeight = 0.125 * scaleFactor
+	text.TextStyleId = cadInterface.getTextStyleId("RC-STANDARD")
+	text.Attachment = cadInterface.createCadEntity("DatabaseServices.AttachmentPoint", {attachment})
+	text.Location = getAcadPoint3D(location)
+	return text
+end
+
+-- Frame-local point (as delivered by RailCOMPLETE) -> sheet point, given the section block's position and scale.
+local function toSheet(point, sectionPosition, scaleFactor)
+	return getPoint3D(sectionPosition.X + point.X * scaleFactor, sectionPosition.Y + point.Y * scaleFactor)
+end
+
+-- Track box under each track centre line: name, radius, cant.
+local function getTrackInfoEntities(alignmentSnapshot, centerLinePoint, scaleFactor)
+	local radius = alignmentSnapshot.Radius
+	local hasRadius = radius ~= nil and radius == radius and math.abs(radius) ~= math.huge
+	local cant = alignmentSnapshot.Cant
+	local hasCant = cant ~= nil and cant == cant
+	local contents = "Track : " .. tostring(alignmentSnapshot.Name or "?") ..
+		"\\PRadius : " .. (hasRadius and string.format("%.0f m", math.abs(radius)) or "-") ..
+		"\\PCant : " .. (hasCant and string.format("%.0f mm", math.abs(cant)) or "-")
+	local text = createText(contents, getPoint3D(centerLinePoint.X, centerLinePoint.Y - 0.6 * scaleFactor), "TopCenter", scaleFactor)
+	text.ShowBorders = true
+	return {text}
+end
+
+local function createSheet(data, sheetTopLeft, scaleFactor)
+	local pointObject = data.PointObject
+	local hasTrack = data.AlignmentSnapshots ~= nil and data.AlignmentSnapshots.Count > 0   -- test .Count, never index blindly
+	if _REQUIRE_TRACK_ and not hasTrack then
+		-- The preview still lists the object (Warning status, "Content preview" badge) and keeps it ticked for export.
+		if not _railwayInstallationDrawingPreviewMode then
+			warn("Installation drawing skipped for " .. tostring(pointObject.name) .. ": no track inside its cross section frame.")
+		end
+		return nil
+	end
+
+	local width = 10.5 * scaleFactor
+	local height = 14.85 * scaleFactor
+	local margin = 0.5 * scaleFactor
+	local cartoucheHeight = 2.5 * scaleFactor
+	local sectionBandHeight = height - 2 * margin - cartoucheHeight
+
+	-- 1. The section: everything RailCOMPLETE projected and generated, as one block with a frame-local origin.
+	local blockName = "section_" .. generateGuid()
+	local makeBlock = cadInterface.insertBlock or cadInterface.createBlock   -- createBlock is the deprecated name
+	makeBlock(blockName, table.select(data.AllEntities))
+	local bandCentre = getPoint3D(sheetTopLeft.X + width / 2, sheetTopLeft.Y - margin - sectionBandHeight / 2)
+	local section = cadInterface.createBlockReference(blockName, bandCentre)   -- takes an RC Point3D
+	-- Frame-local coordinates have no meaningful absolute origin: centre the block on its own bounds
+	-- (measured at scale 1, then scaled - the same order as RailCOMPLETE's built-in script).
+	local bounds = section.Bounds
+	local contentCentre = getPoint3D((bounds.MaxPoint.X + bounds.MinPoint.X) / 2, (bounds.MaxPoint.Y + bounds.MinPoint.Y) / 2)
+	section.Position = getAcadPoint3D(getPoint3D(section.Position.X + (bandCentre.X - contentCentre.X) * scaleFactor, section.Position.Y + (bandCentre.Y - contentCentre.Y) * scaleFactor))
+	section.ScaleFactors = cadInterface.createCadEntity("Geometry.Scale3d", {scaleFactor})
+
+	-- 2. Dimensions: RailCOMPLETE draws them when PlaceDimensionsExternally is true (export and preview).
+	--    DimensionExtents tells how much room they take; use it to grow the sheet if you implement growth.
+	if not data.PlaceDimensionsExternally then
+		warn("Stand-alone run or pre-contract RailCOMPLETE: dimensions are not drawn.")
+	end
+
+	-- 3. Report the section transform, dimension style and sheet frame. Guards keep older RC builds working.
+	local sheetName = pointObject.name or ""   -- empty: RailCOMPLETE names the layout after the object's identity (+ " (up)"/" (down)")
+	if sheetName ~= "" and (data.FrameDirection == "up" or data.FrameDirection == "down") then
+		sheetName = sheetName .. " (" .. data.FrameDirection .. ")"
+	end
+	local report = data.LayoutReport
+	if report then
+		report.SectionOriginX = section.Position.X
+		report.SectionOriginY = section.Position.Y
+		report.ScaleFactor = scaleFactor
+		report.Reported = true
+		if data.PlaceDimensionsExternally ~= nil then
+			report.ScriptDrewDimensions = not data.PlaceDimensionsExternally
+			report.DimensionStyleReported = true
+			report.DimensionTextHeight = 0.125
+			report.DimensionArrowSize = 0.075
+			report.DimensionExtensionLineExtension = 0.05
+			report.DimensionExtensionLineOffset = 0
+			report.DimensionTextGap = 0.025
+			report.DimensionMeasurementScaleFactor = 1000
+			report.DimensionDecimalPlaces = 0
+			report.DimensionTextStyleName = "RC-STANDARD"
+		end
+		if report.SheetReported ~= nil then
+			report.ScriptCreatedLayouts = false
+			report.SheetReported = true
+			report.SheetName = sheetName
+			report.SheetWidth = width
+			report.SheetHeight = height
+			report.SheetTopLeftX = sheetTopLeft.X
+			report.SheetTopLeftY = sheetTopLeft.Y
+		end
+	end
+
+	-- 4. Annotations anchored on points of interest (never on absolute frame-local coordinates).
+	local entities = {section}
+	local pointsOfInterest = table.select(data.PointObjectPointsOfInterest)
+	if hasTrack then
+		for _, snapshot in pairs(table.select(data.AlignmentSnapshots)) do
+			local anchor = table.firstOrNil(pointsOfInterest, function(p) return p.Item2 == "CenterLine" and p.Item3 == snapshot.Id end)
+				or table.firstOrNil(pointsOfInterest, function(p) return p.Item2 == "CenterLine" and p.Item3 == "OwnAlignment" end)
+			if anchor then
+				for _, e in pairs(getTrackInfoEntities(snapshot, toSheet(anchor.Item1, section.Position, scaleFactor), scaleFactor)) do
+					table.insert(entities, e)
+				end
+			end
+		end
+	end
+
+	-- 5. Sheet frame and cartouche.
+	local left, right = sheetTopLeft.X, sheetTopLeft.X + width
+	local top, bottom = sheetTopLeft.Y, sheetTopLeft.Y - height
+	table.insert(entities, createAcadPolyline({getPoint3D(left, top), getPoint3D(right, top), getPoint3D(right, bottom), getPoint3D(left, bottom)}, true))
+	local innerLeft, innerRight = left + margin, right - margin
+	local innerTop, innerBottom = top - margin, bottom + margin
+	table.insert(entities, createAcadPolyline({getPoint3D(innerLeft, innerTop), getPoint3D(innerRight, innerTop), getPoint3D(innerRight, innerBottom), getPoint3D(innerLeft, innerBottom)}, true))
+	local cartoucheTop = innerBottom + cartoucheHeight
+	table.insert(entities, createAcadPolyline({getPoint3D(innerLeft, cartoucheTop), getPoint3D(innerRight, cartoucheTop)}, false))
+	local cartoucheText = "{\\LObject: " .. tostring(pointObject.name) .. "}" ..
+		"\\PType: " .. tostring(pointObject.RcType) ..
+		"\\PScale 1:50"
+	table.insert(entities, createText(cartoucheText, getPoint3D(innerLeft + 0.1 * scaleFactor, cartoucheTop - 0.1 * scaleFactor), "TopLeft", scaleFactor))
+
+	-- 6. Draw in sheet space, then transform everything by the current UCS as the very last step.
+	local ucs = DocumentData.Document.Editor.CurrentUserCoordinateSystem
+	for _, entity in pairs(entities) do
+		cadInterface.runEntityMethods(entity, {TransformBy = {ucs}})
+	end
+	cadInterface.addEntitiesToModelSpace(entities)
+	return {width = width}
+end
+
+-- Main. Export and preview inject _railwayInstallationDrawingSelectionData; RC-RUNSCRIPT does not.
+local selection
+if _railwayInstallationDrawingSelectionData then
+	selection = table.select(_railwayInstallationDrawingSelectionData)
+else
+	local data = getRailwayInstallationDrawingSelectionData("Example installation drawing")
+	if not data or data.Count == 0 then return end
+	selection = table.select(data)
+end
+
+-- askForPoint is preview-safe (returns the origin in preview); most other ask* prompts are NOT.
+local point = askForPoint("Insertion point:")
+if not point then return end
+point = table.firstOrNil(cadInterface.runEntityMethods(getAcadPoint3D(point), {TransformBy = {DocumentData.Document.Editor.CurrentUserCoordinateSystem:Inverse()}}))
+
+local offset = 0
+for _, data in pairs(selection) do
+	local result = createSheet(data, getPoint3D(point.X + offset, point.Y), _SCALE_)
+	if result then
+		offset = offset + result.width + 1 * _SCALE_
+	end
+end
+]]></RailwayInstallationDrawingScript>
+
+	<!-- Rails and sleepers: always drawn (no toggle), once per applicable track in the frame.
+	     Coordinates: metres, X = lateral from the track axis (+ = right looking in increasing mileage),
+	     Y = up from the rolling plane. RC_ApplyLiftAndRotate applies the (possibly overridden) cant. -->
+	<Rails>
+		<Section2DItemWrapper>
+			<Polyline2D Name="Right rail" Parent="ACS" Closed="true"/>
+			<Formula><![CDATA[
+local gauge = _alignmentSnapshot.AlignmentGauge
+local points = {getPoint3D(gauge / 2, 0), getPoint3D(gauge / 2 + 0.072, 0), getPoint3D(gauge / 2 + 0.111, -0.172), getPoint3D(gauge / 2 - 0.039, -0.172)}
+return table.select(points, function(p) return RC_ApplyLiftAndRotate(this, _alignmentSnapshot.PointObjectDistanceAlong, p, _alignmentSnapshot.Cant) end)
+]]></Formula>
+		</Section2DItemWrapper>
+		<Section2DItemWrapper>
+			<Polyline2D Name="Left rail" Parent="ACS" Closed="true"/>
+			<Formula><![CDATA[
+local gauge = _alignmentSnapshot.AlignmentGauge
+local points = {getPoint3D(-gauge / 2, 0), getPoint3D(-gauge / 2 - 0.072, 0), getPoint3D(-gauge / 2 - 0.111, -0.172), getPoint3D(-gauge / 2 + 0.039, -0.172)}
+return table.select(points, function(p) return RC_ApplyLiftAndRotate(this, _alignmentSnapshot.PointObjectDistanceAlong, p, _alignmentSnapshot.Cant) end)
+]]></Formula>
+		</Section2DItemWrapper>
+	</Rails>
+
+	<Sleepers>
+		<Section2DItemWrapper>
+			<Polyline2D Name="Sleeper" Parent="ACS" Closed="true"/>
+			<Formula><![CDATA[
+local points = {getPoint3D(1.3, -0.172), getPoint3D(1.3, -0.395), getPoint3D(-1.3, -0.395), getPoint3D(-1.3, -0.172)}
+return table.select(points, function(p) return RC_ApplyLiftAndRotate(this, _alignmentSnapshot.PointObjectDistanceAlong, p, _alignmentSnapshot.Cant) end)
+]]></Formula>
+		</Section2DItemWrapper>
+	</Sleepers>
+
+	<!-- An optional component: shows as a check box in the export window (RailAnnotations are ON by default). -->
+	<RailAnnotations>
+		<ComponentSubcategory Name="Track lines" Description="Helper lines from characteristic track points.">
+			<PresentationComponent Name="Centre line" Description="A line from the middle of the track, tilted with the cant.">
+				<Section2DItemWrapper>
+					<Polyline2D Name="Centre line" Parent="ACS"/>
+					<Formula><![CDATA[
+return table.select({getPoint3D(0, 0), getPoint3D(0, 6.0)}, function(p) return RC_ApplyLiftAndRotate(this, _alignmentSnapshot.PointObjectDistanceAlong, p, _alignmentSnapshot.Cant) end)
+]]></Formula>
+				</Section2DItemWrapper>
+			</PresentationComponent>
+		</ComponentSubcategory>
+	</RailAnnotations>
+
+	<!-- Dimension templates. Copied onto an object (SetValueScript included) when it is INSERTED, from the schema
+	     selected in that drawing's export settings; later DNA edits do not reach placed objects (delete the dimension,
+	     then viewer canvas menu "Restore missing dimensions from the DNA"). Names must be unique across all schemas and
+	     must not reuse the built-in schema's names (Lateral offset, Insertion height, Top height, Cant): prefix them.
+	     DimensionStyle must name a style with Dimlfac 1000. -->
+	<!-- SetValueScript rule: every this.X = ... assignment removes that property's formula and saves at once, so
+	     compute first and assign last. -->
+
+	<DefaultDimensions DimensionStyle="RID_Example_DimStyle">
+		<!-- Editable: the SetValueScript mentions _dimensionValue, so the viewer shows it green-yellow and editable. -->
+		<Dimension Name="EX_LateralOffset" PointOfInterestA="OwnAlignment_NearestRail" PointOfInterestB="My_InsertionPoint" Orientation="Horizontal" Offset="2.0">
+			<SetValueScript><![CDATA[
+if this.Alignment == nil then return end
+local alignmentSnapshot = _alignmentSnapshots[this.Alignment.id]
+if alignmentSnapshot == nil then return end
+
+-- Compute everything first: each this.X assignment below is saved immediately.
+local cantInMeters = (alignmentSnapshot.Cant or 0) / 1000
+local cantGauge = this.Alignment.AlignmentSystem.CantGauge
+local innerRailDistance = math.cos(math.asin(cantInMeters / cantGauge)) * alignmentSnapshot.AlignmentGauge / 2
+
+-- _dimensionValue is in metres (the typed millimetres divided by the style's Dimlfac). Its magnitude is the distance
+-- from the nearest inner rail; a negative value moves the object across that rail.
+local distanceFromTrackCentre = _dimensionValue < 0 and (_dimensionValue - innerRailDistance) or (_dimensionValue + innerRailDistance)
+local newLateralOffset = RightSided and distanceFromTrackCentre or -distanceFromTrackCentre
+
+-- Clear the formula of the property that would recompute LateralOffset, then assign (which clears LateralOffset's own):
+this.DistanceToAlignment = "="
+this.LateralOffset = newLateralOffset
+]]></SetValueScript>
+		</Dimension>
+		<!-- Read-only: no SetValueScript. My_TopCenter is the top of the object's projected 3D model. -->
+		<Dimension Name="EX_TopHeight" PointOfInterestA="My_TopCenter" PointOfInterestB="OwnAlignment_LowestRail" Orientation="Vertical" Offset="2.4"/>
+	</DefaultDimensions>
+</RailwayInstallationSchema>
+
+<!-- Put this into <StyleDefinitions> (not into the schema). Drawing units are metres, labels millimetres:
+
+<DimensionStyle Name="RID_Example_DimStyle">
+	<Dimtxt>0.125</Dimtxt>
+	<Dimasz>0.075</Dimasz>
+	<Dimtad>1</Dimtad>
+	<Dimtih>false</Dimtih>
+	<Dimtxsty>RC-STANDARD</Dimtxsty>
+	<Dimexe>0.05</Dimexe>
+	<Dimexo>0</Dimexo>
+	<Dimgap>0.025</Dimgap>
+	<Dimdec>0</Dimdec>
+	<Dimlfac>1000</Dimlfac>
+</DimensionStyle>
+-->
