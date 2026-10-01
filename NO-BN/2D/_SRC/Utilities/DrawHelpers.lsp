@@ -154,7 +154,7 @@
 
 
 (defun DrawArcByCenter (layDef pointCenter pointA PointB / )
-	; An arc from A through B to C 
+	; An arc from A through B centered at C 
 	;
 	;    _____
 	;   /     \
