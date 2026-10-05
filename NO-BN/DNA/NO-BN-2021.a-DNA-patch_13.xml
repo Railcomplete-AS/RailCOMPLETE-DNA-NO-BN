@@ -3915,7 +3915,7 @@ end	</Data>
             <SortOption>None</SortOption>
             <Alignment>MiddleCenter</Alignment>
             <Data>
-						RcSection:filter(function(x) return x.RcType == "FE%-DIV Sporbruk" end)[0].Variant
+						RcSection:filter(function(x) return x.RcType == "JBTFE_DIV Sporbruk" end)[0].Variant
 					</Data>
             <Title>Sportype(fra)</Title>
           </ColumnSpecification>
@@ -4252,7 +4252,7 @@ end	</Data>
             <SortOption>None</SortOption>
             <Alignment>MiddleCenter</Alignment>
             <Data>
-							RcSection:filter(function(x) return x.RcType == "Sporbruk" end)[0].Variant
+							RcSection:filter(function(x) return x.RcType == "JBTFE_DIV Sporbruk" end)[0].Variant
 						</Data>
             <Title>Sportype(fra)</Title>
           </ColumnSpecification>
@@ -4518,10 +4518,10 @@ end	</Data>
         <ObjectTypeBrowser>false</ObjectTypeBrowser>
         <EnableLuaFilter>true</EnableLuaFilter>
         <LuaFilter>
-					RcType:sub(1,6) == "EH-MAS" 
+					RcType:sub(1,9) == "JBTEH_MAS" 
 					or RcType == "JBTEH_TUF Tunnelfeste" 
 					or (RcType == "JBTEH_AEH Avspenning" and Variant == "Fixpunkt")
-				</LuaFilter>
+		</LuaFilter>
         <UseDataSetFilter>false</UseDataSetFilter>
         <EnableCustomSettings>true</EnableCustomSettings>
         <TitleTextHeight>3.5</TitleTextHeight>
@@ -4870,7 +4870,7 @@ end</Data>
         <ObjectManagerFilterList />
         <ObjectTypeBrowser>false</ObjectTypeBrowser>
         <EnableLuaFilter>true</EnableLuaFilter>
-        <LuaFilter>RcType:sub(1,6) == "EH-MAS" and Alignment.name:match("1") ~= nil and isVisible() == true</LuaFilter>
+        <LuaFilter>RcType:sub(1,9) == "JBTEH_MAS" and Alignment.name:match("1") ~= nil and isVisible() == true</LuaFilter>
         <UseDataSetFilter>false</UseDataSetFilter>
         <EnableCustomSettings>true</EnableCustomSettings>
         <TitleTextHeight>3.5</TitleTextHeight>
@@ -5252,7 +5252,7 @@ end</Data>
 					opil = "↑"--"\8593"
 					hpil = "→" --"\8594"
 					npil = "↓"--"\8595"
-					ba = getClosestAlignments("JBTEH_KLO Kontaktledningsoppheng"):
+					ba = getClosestAlignments("JBTEH_BAR Bardun"):
 						filter(function  (x) return x.Variant:lower() == "bardun" and RC__getDistance2D(x.rcalignment.startpoint) &lt; 1.0 end )
 					nb = getCollectionLength(ba)
 					--if true then return nb, ba end
@@ -5261,12 +5261,13 @@ end</Data>
 					--if true then return tgt end
 					sporvinkel = math.atan(tgt.Y, tgt.X) * 180.0/math.pi 
 					--if true then return sporvinkel end
+					s = ""
 					first = true
 					for i = 0, nb-1 do
 						s = first and "" or s..", "
 						b = ba[i]
 						pe = b.RcAlignment.EndPoint
-						bf = getNearbyPointObjects2D(0.25, "EH-BAR Bardun", pe)[0]
+						bf = getNearbyPointObjects2D(0.25, "JBTEH_BAF Bardunfeste", pe)[0]
 						--if true then return bf end
 						tgb= b.RcAlignment.StartTangent
 						--if true then return tgb end
@@ -5284,12 +5285,12 @@ end</Data>
 						if (vkurve or hkurve or medrettet or motrettet) == false then 
 							return "Feil, ulovlig bardunvinkel ("..vinkel..")"
 						end
-						if hkurve and bf.Variant == "Enkel" then s = s..vpil
-						elseif vkurve and bf.Variant == "Enkel" then s = s..hpil
-						elseif motrettet and bf.Variant == "Enkel" then s = s..opil
-						elseif motrettet and bf.Variant == "Dobbel" then s = s..opil..opil
-						elseif medrettet and bf.Variant == "Enkel"  then s = s..npil
-						elseif medrettet and bf.Variant == "Dobbel" then s = s..npil..npil
+						if hkurve and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..vpil
+						elseif vkurve and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..hpil
+						elseif motrettet and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..opil
+						elseif motrettet and bf.Variant == "Bardunfeste fotplate, dobbel" then s = s..opil..opil
+						elseif medrettet and bf.Variant == "Bardunfeste fotplate, enkel"  then s = s..npil
+						elseif medrettet and bf.Variant == "Bardunfeste fotplate, dobbel" then s = s..npil..npil
 						else
 							return bf.Variant.."" --"Feil skal ikke skje" -- Har ingen Bardun
 						end
@@ -5308,26 +5309,19 @@ end</Data>
             <SortOption>None</SortOption>
             <Alignment>MiddleCenter</Alignment>
             <Data>tol = 0.25
-				avspenning = getClosestAlignments("JBTEH_KLO Kontaktledningsoppheng"):filter(
+				avspenning = getClosestAlignments("JBTEH_BAR Bardun"):filter(
 					function (x) 
 						return x.Variant:lower() == "bardun" and RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
 					end)
-				strever = getClosestAlignments("JBTEH_KLO Kontaktledningsoppheng"):filter(
+				strever = getClosestAlignments("JBTEH_BAR Bardun"):filter(
 					function (x) 
 						return x.Variant:lower() == "strever" and RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
 					end)
 					
-				fix = {}	
-					if getCollectionLength(Relations["Er kl-mast for utligger"]) ~= 0 and getCollectionLength(Relations["Er kl-mast for utligger"][0].Relations["Har kl-oppheng"]) ~= 0 then
-						fix = Relations["Er kl-mast for utligger"][0].Relations["Har kl-oppheng"]
-					end
 				
-				--fix = getNearbyPointObjects2D(5, "JBTEH_AEH Avspenning")
 				
-				--fix = Relations["Er kl-mast for utligger"][0].Relations["Har kl-oppheng"]
 				ta = avspenning and RC__identify(avspenning[0]) or ""
 				ts = strever and RC__identify(strever[0]) or ""
-				tf = fix and RC__identify(fix[0]) or ""
 				
 				
 				t = {}
@@ -5337,7 +5331,6 @@ end</Data>
 				if ObjectInfo ~= "" then table.insert(t, ObjectInfo) end
 				if avspenning.Count ~= 0 then table.insert(t, ta) end
 				if strever.Count ~= 0 then table.insert(t, ts) end
-				if fix.Count ~= nil then table.insert(t, tf) end
 				
 				--s = ""
 				--if #t == 1 then
@@ -34697,7 +34690,7 @@ function NOBN_sig_getSignalSightingRequirement()
 		end
 
 	
-	elseif RcType == "JBTSA_SIG PLO-signal" then
+	elseif RcType == "JBTSA_SIG Planovergangssignal" and Variant == "Planovergang, signal" then
 		-- Ref TRV Signal prosjektering, 2.1.2 "Hovedsignal"
 		if DesignSpeed &gt; 210 then
 			return 250, _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, and 250 m above 210 km/h.")
@@ -34706,7 +34699,7 @@ function NOBN_sig_getSignalSightingRequirement()
 			return RC__round(v/3.6 * 4, 0), _info(DesignSpeed.." km/h: Min. 150 m main signal unbroken sigthing, 4 seconds from 135 to 210 km/h, max. 250 m above 210 km/h.")
 		end
 
-	elseif RcType == "SA-SIG PLO-forsignal" then
+	elseif RcType == "JBTSA_SIG Planovergangssignal" and Variant == "Planovergang, forsignal" then
 		-- Ref TRV Signal prosjektering, 2.1.3 "Forsignal"
 		v = math.max(40, math.min(130, DesignSpeed))
 		return RC__round(v/3.6 * 7, 0), _info(DesignSpeed.." km/h: Min. 78 m distant signal unbroken sighting, 7 seconds from 40 to 130 km/h, max 250 m above 130 km/h.")
@@ -37437,8 +37430,7 @@ elseif RcType == "JBTSA_ERT ERTMS-signal" then
 	return NOBN_sig_getSignalShortName()
 end</TrainRoutesStartPointFilter>
     <TrainRoutesEndPointFilter>if ((RcType == "JBTSA_SIG Signal" and (MainSignal == 'Hs1'or MainSignal == 'Hs2' or MainSignal == 'Hs3'))
-	or (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei")
-	or (RcType == "JBTSA_SIG Togvei slutt"))
+	or (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei"))
 then
 	return NOBN_sig_getSignalShortName()
 elseif RcType == "JBTSA_ERT ERTMS-signal" then
@@ -37449,7 +37441,7 @@ end</TrainRoutesEndPointFilter>
     <ShuntingRoutesStartPointFilter>if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then return NOBN_sig_getSignalNumber() end</ShuntingRoutesStartPointFilter>
     <ShuntingRoutesEndPointFilter>if (RcType == "JBTSA_SIG Signal" and Dvergsignal == "Ja") then 
 	return NOBN_sig_getSignalNumber()
-elseif ((RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") or (RcType == "JBTSA_SIG Togvei slutt")) then
+elseif (RcType == "JBTSA_FIK Fiktivt punkt" and Variant == "Fiktivt sluttpunkt for togvei") then
 
 	return code
 end</ShuntingRoutesEndPointFilter>
