@@ -36419,13 +36419,23 @@ end
 							return 0, _warning, _info("Bad OCS mast Variant ["..mv.."].")
 						end
 						-- OCS mast and cantilever may belong to different tracks (when OCS mast is located between tracks):
-						mdist = getAlignmentInfo(alignment.id,
+						local mdist = getAlignmentInfo(Alignment.id,
 								mast.geoCoord.X, mast.geoCoord.Y).DistanceToAlignment --Distance from center OCS mast to *cantilever's* alignment
-						if mast.DistanceToAlignment &gt; 0 then 
-							return mdist - d
+						-- Mount cantilever on the mast face towards the cantilever's own track. Use the sign of mdist (mast relative to
+						-- the cantilever's track), not mast.DistanceToAlignment (mast relative to the mast's own track), so that cantilevers
+						-- on both sides of a mast between two tracks (e.g. a hengemast) are not placed inside / behind the mast.
+						local side
+						if math.abs(mdist) &lt; 4e-4 then
+							side = RightSided and 1 or -1 --Mast straight above cantilever's track: keep cantilever's current side
 						else
-							return mdist + d
+							side = mdist &gt; 0 and 1 or -1
 						end
+						local dist = mdist - side * d
+						if dist * side &lt;= 0 then
+							--Mast is closer to the track than its own half width: keep cantilever's side of alignment
+							return side * 4e-4, _warning, _info("OCS mast is too close to cantilever's track to offset cantilever by mast half width.")
+						end
+						return dist
 					end
 				end
 			end
