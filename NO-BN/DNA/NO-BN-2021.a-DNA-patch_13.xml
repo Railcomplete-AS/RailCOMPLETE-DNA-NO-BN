@@ -36333,16 +36333,26 @@ end
 							end
 						end
 					end
+					--Mast's reference mileage as seen from my own track. If I belong to another track than the mast (OCS mast between
+					--tracks), mast.ReferenceMileage is not abreast of the mast on my track. Project the mast onto my own track, then
+					--find that point's mileage along my reference alignment:
+					local m0 = mast.ReferenceMileage
+					if mast.Alignment.id ~= Alignment.id then
+						local ai = getAlignmentInfo(Alignment.id, mast.geoCoord.X, mast.geoCoord.Y)
+						local p = ai.Point
+						local refId = ai.ReferenceAlignmentId or Alignment.id
+						m0 = getAlignmentInfo(refId, p.X, p.Y).Mileage
+					end
 					if nPals == 0 then
-						return mast.ReferenceMileage 
+						return m0
 					elseif nPals == 1 then
-						if me &lt; myLastPal then 
-							return mast.ReferenceMileage - StandardCantileverSpacing
+						if me &lt; myLastPal then
+							return m0 - StandardCantileverSpacing
 						else
-							return mast.ReferenceMileage + StandardCantileverSpacing
+							return m0 + StandardCantileverSpacing
 						end
-					else 
-						return mast.ReferenceMileage, _warning, _info("Too many ["..(nPals+1).."] cantilevers on same side of OCS mast.")
+					else
+						return m0, _warning, _info("Too many ["..(nPals+1).."] cantilevers on same side of OCS mast.")
 					end
 				end
 			end
