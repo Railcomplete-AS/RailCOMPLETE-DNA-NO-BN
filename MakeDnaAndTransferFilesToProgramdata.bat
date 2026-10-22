@@ -11,7 +11,6 @@ call ..\..\_TOOLBOX\BatchFiles\CompileDna.bat
 
 Rem Move to ..\Customization\XX-YY folder:
 cd ..
-call ..\_TOOLBOX\BatchFiles\CopyDnaEtcToProgramdataRcBundle.bat
 call ..\_TOOLBOX\BatchFiles\CopyDnaEtcToSolutionsRcBundle.bat
 
 rem Deprecated?:
