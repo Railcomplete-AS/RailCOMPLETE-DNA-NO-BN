@@ -116,6 +116,7 @@
 		"._UNITS" 2 3 1 3 0 "_NO" ; Numbers=15.500, Angles=<45.000, 0 degrees=East, positive rotation=CCW
 		"._INSUNITS" 6 ; Insertion unit - 6=meters
 		"._LIGHTINGUNITS" 2 ; 2=International
+		"._CANNOSCALE" "1:1" ; An annotative block is stored at the current annotation scale: a 4:1 drawing would make every symbol four times too big
 
 		"._DIMZIN" 8 ; DIMZIN: Integer Saved in: Drawing Initial value: 0 (imperial) or 8 (metric) 
 		; Values 0-3 affect feet-and-inch dimensions only: Value Description 0 

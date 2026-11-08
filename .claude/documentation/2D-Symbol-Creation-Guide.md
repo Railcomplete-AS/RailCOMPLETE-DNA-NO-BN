@@ -129,6 +129,10 @@ Block counts are also stored as the names of three dummy blocks embedded in the 
 - `___Number_of_annotative_Blocks___NNN`
 - `___Number_of_Metric_Blocks___NNN`
 
+### Checking the symbol size
+
+Open one existing block in the Block Editor in both the new and the previous library: its extents (*View* → *Height* in the Properties palette) must match. AutoCAD stores an annotative block at the drawing's current annotation scale, and RailCOMPLETE starts its drawings at 4:1, so `(MkLib)` sets the annotation scale to 1:1 itself; a library built at 4:1 has every symbol four times too big.
+
 ---
 
 ## Block Types
