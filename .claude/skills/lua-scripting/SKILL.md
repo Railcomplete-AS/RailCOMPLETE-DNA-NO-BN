@@ -567,7 +567,7 @@ table.sort(items, function(a, b) return a.Mileage < b.Mileage end)
 ```lua
 local ai = getAlignmentInfo(alignment.id, point)
 if ai.NormalProjectionExists then
-    local pos = ai.RelativePosition
+    local distanceAlong = ai.DistanceAlong
     local mileage = ai.Mileage
 end
 local wcsVector = getWcsVectorFromAcsVector(obj, lateralOffset, longitudinalOffset)
