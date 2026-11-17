@@ -17892,23 +17892,28 @@ return s</Data>
 			return "WARNING - The highest track underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".", _warning
 		  end
 
-		  --Governing track and its centre height above the yoke's own alignment:
-		  local trackDetail = "the yoke's own track"
-		  if governingTrackOrReason ~= nil then trackDetail = "track '"..tostring(governingTrackOrReason).."'" end
-		  if trackAdjustment &gt; 0.0005 then
-			trackDetail = trackDetail..", lying "..RC__round(trackAdjustment, 3).." m above the yoke's own alignment"
-			if cantLift ~= nil and cantLift &gt; 0.0005 then
-			  trackDetail = trackDetail..", incl. "..RC__round(1000 * cantLift).." mm from cant"
-			end
+		  local clearance = yokeHeight - trackAdjustment
+		  local clearanceText = "Clearance of "..string.format("%.2f", clearance).."m above "
+		  if governingTrackOrReason ~= nil then
+			clearanceText = clearanceText.."track '"..tostring(governingTrackOrReason).."'"
 		  else
-			trackDetail = trackDetail..", at the height of the yoke's own alignment"
+			clearanceText = clearanceText.."the yoke's own track"
 		  end
 
-		  local clearance = yokeHeight - trackAdjustment
-		  if clearance &lt; requiredHeight - 0.001 then
-			return "WARNING - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath ("..trackDetail..") is less than "..requiredHeight.."m. Increase the yoke's relative elevation.", _warning
+		  --Governing track centre height above the yoke's own alignment:
+		  local heightText = ""
+		  if trackAdjustment &gt; 0.0005 then
+			heightText = " The track lies "..string.format("%.3f", trackAdjustment).."m above the yoke's own alignment"
+			if cantLift ~= nil and cantLift &gt; 0.0005 then
+			  heightText = heightText..", of which "..RC__round(1000 * cantLift).."mm is cant"
+			end
+			heightText = heightText.."."
 		  end
-		  return "OK - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath ("..trackDetail..").", _ok
+
+		  if clearance &lt; requiredHeight - 0.001 then
+			return "WARNING - "..clearanceText.." is less than "..string.format("%.2f", requiredHeight).."m."..heightText.." Increase the yoke's relative elevation.", _warning
+		  end
+		  return "OK - "..clearanceText.."."..heightText, _ok
 		end
 	  </Formula>
 	</LuaFunction>
