@@ -36,10 +36,10 @@
 		</Formula>
 	</LuaFunction>
 
-	<LuaFunction Name="_JBTEH_MAS_getSpanlengths()" ReturnType="Double" 
+	<LuaFunction Name="_JBTEH_MAS_getSpanlengths()" ReturnType="Table"
 			HideFromUser="false"
-			Description="Returns a collection of dictionaries {Spanlength = [String], Wirename = [String]}, one such dictionary for each cantilever / WTB present on this catenary pole. The spanlengths are measured as 2D straight-line distances along the contact wire from WTB / wire clamp position to the subsequent one.">
-		<Signature>Double _JBTEH_MAS_getSpanlengths()</Signature>
+			Description="Returns a Lua table of dictionaries {Spanlength = [Double], Wirename = [String]}, one such dictionary for each cantilever / WTB present on this catenary pole. The spanlengths are measured as 2D straight-line distances along the contact wire from WTB / wire clamp position to the subsequent one. Used by _JBTEH_MAS_getSpanlength() and _JBTEH_MAS_SpanlengthDisplay() - not suitable for binding directly to a property.">
+		<Signature>Table _JBTEH_MAS_getSpanlengths()</Signature>
 		<Formula>
 			function _JBTEH_MAS_getSpanlengths()
 				--[[
@@ -59,7 +59,7 @@
 				--Find all cantilevers and WTBs at this OCS pole, but skip WTBs serving midpoint anchor lines or AT conductors, earthing wires etc:
 				local rCnt = getRelatedObjects(rel_OcsPole_Has_Cantilever)
 				local rWtb = getNearbyPointObjects2D(tol, rctype_WireTensioningBalancer)
-								:filter(function (x) return x.Alignment.RcType == rctype_ContactWire end)
+								:filter(function (x) return x.Alignment ~= nil and x.Alignment.RcType == rctype_ContactWire end)
 				local items = getUnionOfCollections({rCnt, rWtb})
 				local nItems = getCollectionLength(items)
 			
@@ -77,7 +77,7 @@
 						else
 							--thisItem.RcType == rctype_Cantilever:
 							p1 = thisItem:NOBN_ocs_getWireClampPoint3D()
-							cow, nCow = thisItem:getRelatedObjects(rel_Cantilever_Holds_ContactWire)
+							local cow, nCow = thisItem:getRelatedObjects(rel_Cantilever_Holds_ContactWire)
 							if nCow == 0 then
 								--Cantilever has no relation to its contact wire yet:
 								cowName = "L?"
@@ -102,6 +102,32 @@
 					end
 				end
 				return result, _info(getCollectionLength(result) .. " spanlength(s)")
+			end
+		</Formula>
+	</LuaFunction>
+
+	<LuaFunction Name="_JBTEH_MAS_getSpanlength()" ReturnType="Double"
+			HideFromUser="false"
+			Description="Returns the longest span length [m] at this OCS pole, picked from the contact wire spans found by _JBTEH_MAS_getSpanlengths(). Returns 0 if no cantilever or wire tension balancer at this pole has a next cantilever or wire tension balancer.">
+		<Signature>Double _JBTEH_MAS_getSpanlength()</Signature>
+		<Formula>
+			function _JBTEH_MAS_getSpanlength()
+				local spanlengthItems = _JBTEH_MAS_getSpanlengths()
+				if #spanlengthItems == 0 then
+					return 0, _info("No spanlength - relate a cantilever or wire tension balancer at this pole to the next one with '" ..
+						rel_CantileverOrWtb_HasNext_CantileverOrWtb .. "'.")
+				end
+
+				-- Pick the longest span, and list all spans in the tooltip:
+				local longest = 0
+				local t = ""
+				for _, sl in ipairs(spanlengthItems) do
+					if sl.Spanlength &gt; longest then
+						longest = sl.Spanlength
+					end
+					t = t .. (t == "" and "" or ", ") .. string.format("%s:%.01f", sl.Wirename, sl.Spanlength)
+				end
+				return longest, _info("Longest of " .. #spanlengthItems .. " spanlength(s): " .. t)
 			end
 		</Formula>
 	</LuaFunction>
@@ -258,9 +284,9 @@
 <!-- Macro for use in JBTEH_MAS (ordinary pole, drop arm from bridge/tunnel and drop arm from portal): -->
 <xpp:define name="JBTEH_MAS_CUSTOMATTRIBUTE___SPANLENGTH">
 	<xpp:bloc>
-		<CustomProperty DataType="Collection" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0"
-			Description="The span length (sl) [m] denotes the distance traveled along the associated alignment's reference alignment (projected onto the XY plane) from this pole to the closest next pole, related using '&quot;..rel_OcsPole_HasNext_OcsPole..&quot;'/'&quot;..rel_OcsPole_HasPrevious_OcsPole..&quot;'."/>
-		<LuaExpression Name="Spanlength"><Formula>_JBTEH_MAS_getSpanlengths()</Formula></LuaExpression>
+		<CustomProperty DataType="Double" Name="Spanlength" DisplayName="Spennlengde" DefaultValue="0.0"
+			Description="The span length (sl) [m] is the longest 2D straight-line distance (projected onto the XY plane) from a contact wire clamp or wire tension balancer at this pole to the next one along the same contact wire, related using '&quot;..rel_CantileverOrWtb_HasNext_CantileverOrWtb..&quot;'. The tooltip lists the span length of every contact wire at this pole."/>
+		<LuaExpression Name="Spanlength"><Formula>_JBTEH_MAS_getSpanlength()</Formula></LuaExpression>
 
 		<CustomProperty DataType="Double" Name="SpanlengthTextLateralOffset" DisplayName="Sideveis spennlengdetekst offset" DefaultValue="0"
 			Description="The span length(s) text lateral offset [m] denotes the distance, transversal to the pole's local track direction, to offset the spanlength text."/>      
@@ -268,7 +294,7 @@
 			Description="The span length(s) text longitudinal offset [m] denotes the distance, along the pole's local track direction, to offset the spanlength text."/>
 
         <TextAttribute Annotative="true" Style="RC-ARIAL" BindingProperty="SpanlengthDisplay" CadAttributeTag="SPENNLENGDE" X="15" Y="5" 
-			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" ScalePosition="false"
+			Layer="JBTEH@SPENNLENGDE" Justify="MiddleCenter" Height="0.9" Width="0" Rotation="0" ObliqueAngle="0" MText="true" DoNotScalePosition="true"
 			IsMText="true"
 			Description="Spanlengths [m] are calculated as the 2D distance from one cantilever (or wire tension balancer) to the next along the contact wire that spans from one to the other."/>
 		<LuaExpression Name="TextAttribute_SPENNLENGDE.Content"><Formula>_JBTEH_MAS_SpanlengthDisplay()</Formula></LuaExpression>
