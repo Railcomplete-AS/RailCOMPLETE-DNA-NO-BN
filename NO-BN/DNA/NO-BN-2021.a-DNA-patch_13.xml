@@ -17892,21 +17892,23 @@ return s</Data>
 			return "WARNING - The highest track underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".", _warning
 		  end
 
-		  local cantNote = ""
-		  if cantLift ~= nil and cantLift &gt; 0.0005 then
-			cantNote = " (incl. "..RC__round(1000 * cantLift).." mm from cant)"
+		  --Governing track and its centre height above the yoke's own alignment:
+		  local trackDetail = "the yoke's own track"
+		  if governingTrackOrReason ~= nil then trackDetail = "track '"..tostring(governingTrackOrReason).."'" end
+		  if trackAdjustment &gt; 0.0005 then
+			trackDetail = trackDetail..", lying "..RC__round(trackAdjustment, 3).." m above the yoke's own alignment"
+			if cantLift ~= nil and cantLift &gt; 0.0005 then
+			  trackDetail = trackDetail..", incl. "..RC__round(1000 * cantLift).." mm from cant"
+			end
+		  else
+			trackDetail = trackDetail..", at the height of the yoke's own alignment"
 		  end
+
 		  local clearance = yokeHeight - trackAdjustment
 		  if clearance &lt; requiredHeight - 0.001 then
-			if governingTrackOrReason ~= nil then
-			  return "WARNING - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath (track '"..tostring(governingTrackOrReason).."', whose centre lies "..RC__round(trackAdjustment, 3).." m above the yoke's own gradient line"..cantNote..") is less than "..requiredHeight.."m. Increase the yoke's relative elevation.", _warning
-			end
-			return "WARNING - Clearance of "..string.format("%.2f", clearance).."m above the centre of the yoke's own track"..cantNote.." is less than "..requiredHeight.."m. Increase the yoke's relative elevation.", _warning
+			return "WARNING - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath ("..trackDetail..") is less than "..requiredHeight.."m. Increase the yoke's relative elevation.", _warning
 		  end
-		  if governingTrackOrReason ~= nil then
-			return "OK - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath (track '"..tostring(governingTrackOrReason).."'"..cantNote..").", _ok
-		  end
-		  return "OK - Clearance of "..string.format("%.2f", clearance).."m above the centre of the yoke's own track"..cantNote.." - no other track lies higher underneath.", _ok
+		  return "OK - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath ("..trackDetail..").", _ok
 		end
 	  </Formula>
 	</LuaFunction>
