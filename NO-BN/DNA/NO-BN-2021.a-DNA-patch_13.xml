@@ -17570,6 +17570,7 @@ return s</Data>
     </CustomProperty>
     <CustomProperty DataType="Boolean" Name="Strengthened" DisplayName="Forsterket" Description="The 'Strengthened' property [boolean] is true for strengthened (type 2) portals, where the portal frame has its full height at both ends. Legacy (type 1) portals are 'flat' at both ends. Used when computing the height of the yoke's support masts." DefaultValue="False" Category="General" ReadOnly="false" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <CustomProperty DataType="String" Name="mc_OtherObjectsToBeModelchecked" DisplayName="Other objects to be refreshed" Description="When this yoke is refreshed, then all of its support masts and suspension masts are modelchecked as well." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
+    <CustomProperty DataType="String" Name="mc_HeightAboveHighestTrack" DisplayName="Høyde over høyeste spor" Description="Checks that the yoke lies at least 7.9 m above the highest track passing underneath its span, measured to the track centre (gradient line plus half the cant). The yoke must be related to both of its support masts ('Er åk holdt oppe av kl-mast') for the highest track underneath to be determined." Category="Model check" ReadOnly="true" StandardValuesFromLuaFormula="false" StandardValuesExclusive="false" InvertOnAlignmentReverse="false" HideFromUser="false" />
     <SymbolDefinition RotationCenter="OwnPosition" DefaultBlockName="NO-BN-2D-JBTEH_AAK-KONTAKTLEDNINGSÅK-11000-Schematic" AllowSymbolMove="true" DoNotIncludeInSymbolFrame="false">
       <BlockNameFormat JoinBy="-">
 				NO-BN-2D-JBTEH_AAK
@@ -17670,6 +17671,10 @@ return s</Data>
     </LuaExpression>
     <LuaExpression Name="mc_OtherObjectsToBeModelchecked" IsModelCheck="true">
       <Formula>_JBTEH_AAK_otherObjectsToModelcheck()</Formula>
+      <Symbol>_noSymbol</Symbol>
+    </LuaExpression>
+    <LuaExpression Name="mc_HeightAboveHighestTrack" IsModelCheck="true">
+      <Formula>_JBTEH_AAK_chkHeightAboveHighestTrack()</Formula>
       <Symbol>_noSymbol</Symbol>
     </LuaExpression>
     <LuaExpression Name="name" IsModelCheck="false">
@@ -17925,6 +17930,125 @@ return s</Data>
 				end
 			</Formula>
     </LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_chkHeightAboveHighestTrack()" Description="Checks that the yoke lies at least 7.9 m above the highest track passing underneath its span, measured to the track centre (gradient line plus half the cant). The yoke's height above its own alignment's gradient line is given by its 'RelativeElevation' property. The yoke must be related to both of its support masts ('Er åk holdt oppe av kl-mast') for the highest track underneath to be determined." ReturnType="String" HideFromUser="false">
+	  <Signature>String _JBTEH_AAK_chkHeightAboveHighestTrack()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_chkHeightAboveHighestTrack()
+		  local requiredHeight = 7.9 --Minimum yoke underside height above the governing track centre [m]
+		  if Alignment == nil then return "UNFINISHED - Missing own alignment.", _error end
+		  local yokeHeight = RelativeElevation
+		  if yokeHeight == nil or RC__isNan(yokeHeight) then return "UNFINISHED - The yoke's relative elevation is unknown.", _error end
+
+		  --The highest track centre underneath the yoke governs the required yoke height:
+		  local trackAdjustment, governingTrackOrReason, cantLift = _JBTEH_AAK_HighestTrackAdjustment()
+		  if trackAdjustment == nil then
+			return "WARNING - The highest track underneath the yoke could not be determined: "..tostring(governingTrackOrReason)..".", _warning
+		  end
+
+		  local clearance = yokeHeight - trackAdjustment
+		  if clearance &gt;= requiredHeight - 0.001 then
+			return "OK - Clearance of "..string.format("%.2f", clearance).."m above the highest track underneath.", _ok
+		  end
+
+		  --Too low: name the governing track and its centre height above the yoke's own alignment:
+		  local clearanceText = "Clearance of "..string.format("%.2f", clearance).."m above "
+		  if governingTrackOrReason ~= nil then
+			clearanceText = clearanceText.."track '"..tostring(governingTrackOrReason).."'"
+		  else
+			clearanceText = clearanceText.."the yoke's own track"
+		  end
+
+		  local heightText = ""
+		  if trackAdjustment &gt; 0.0005 then
+			heightText = " The track lies "..string.format("%.3f", trackAdjustment).."m above the yoke's own alignment"
+			if cantLift ~= nil and cantLift &gt; 0.0005 then
+			  heightText = heightText..", of which "..string.format("%.3f", cantLift).."m is cant"
+			end
+			heightText = heightText.."."
+		  end
+
+		  return "WARNING - "..clearanceText.." is less than "..string.format("%.2f", requiredHeight).."m."..heightText.." Increase the yoke's relative elevation.", _warning
+		end
+	  </Formula>
+	</LuaFunction>
+	<LuaFunction Name="_JBTEH_AAK_HighestTrackAdjustment()" Description="Returns the height difference [m] between the centre of the highest track passing underneath the yoke and the gradient line of the yoke's own alignment at the yoke's position, plus the name of the governing track (nil when the yoke's own track governs) and that track's lift from cant [m]. A track centre lies half the cant above the gradient line (the lower rail) when the alignment system lifts with cant. The yoke's own track is always a candidate. Returns nil plus a reason when the yoke geometry cannot be determined." ReturnType="Double" HideFromUser="false">
+	  <Signature>Double _JBTEH_AAK_HighestTrackAdjustment()</Signature>
+	  <Formula>
+		function _JBTEH_AAK_HighestTrackAdjustment()
+		  if Alignment == nil then return nil, "the yoke has no alignment" end
+
+		  --A track centre lies half the cant [mm] above the gradient line (the lower rail), consistent with NOBN_trk_getLiftFromCant().
+		  --The yoke's own alignment system decides whether cant lifts the track (assumed shared by all tracks underneath):
+		  local liftWithCant = Alignment.AlignmentSystem ~= nil and Alignment.AlignmentSystem.QuickMode3DLiftWithCant
+		  local function centreLiftFromCant(ai)
+			if not liftWithCant then return 0 end
+			local cant = ai.Cant
+			if cant == nil or RC__isNan(cant) then return 0 end
+			return math.abs(cant) / 1000 / 2
+		  end
+
+		  --The yoke spans between its two support masts:
+		  local supportMasts, nSupportMasts = getRelatedObjects("Er åk holdt oppe av kl-mast")
+		  if nSupportMasts &lt; 2 then return nil, "the yoke is not related to both of its support masts with 'Er åk holdt oppe av kl-mast'" end
+
+		  local mast1 = supportMasts[0]
+		  local mast2 = supportMasts[1]
+		  local x1 = mast1.geoCoord.X
+		  local y1 = mast1.geoCoord.Y
+		  local x2 = mast2.geoCoord.X
+		  local y2 = mast2.geoCoord.Y
+		  local yokeSpan = math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+		  if yokeSpan &lt; 0.01 then return nil, "the two support masts stand at the same point" end
+
+		  local ownAi = getAlignmentInfo()
+		  local ownElevation = ownAi.Elevation
+		  if ownElevation == nil or RC__isNan(ownElevation) then return nil, "the elevation of the yoke's own alignment is unknown" end
+
+		  local midPoint = getPoint3D((x1 + x2) / 2, (y1 + y2) / 2)
+		  local tracks, nTracks = getNearbyAlignments(midPoint, "JBTKO_SPO Spor", 0.5 * yokeSpan + 1.0)
+
+		  --The yoke's own track centre at the yoke's position is always a candidate:
+		  local governingCantLift = centreLiftFromCant(ownAi)
+		  local highestElevation = ownElevation + governingCantLift
+		  local governingTrack = nil
+		  local nMeasuredTracks = 0 --Nearby tracks crossing the yoke span whose centre height was measured
+		  local nUncheckedTracks = 0 --Nearby tracks that might cross the yoke span but could not be measured
+		  for i = 0, nTracks - 1 do
+			local track = tracks[i]
+			local ai1 = getAlignmentInfo(track.id, x1, y1)
+			local ai2 = getAlignmentInfo(track.id, x2, y2)
+			if ai1 ~= nil and ai2 ~= nil and ai1.NormalProjectionExists and ai2.NormalProjectionExists then
+			  local d1 = ai1.DistanceToAlignment
+			  local d2 = ai2.DistanceToAlignment
+			  --The track passes underneath the yoke only if the two support masts stand on opposite sides of it:
+			  if d1 * d2 &lt;= 0 and (d1 ~= 0 or d2 ~= 0) then
+				local t = math.abs(d1) / (math.abs(d1) + math.abs(d2))
+				local crossing = getAlignmentInfo(track.id, x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+				if crossing ~= nil and crossing.Elevation ~= nil and not RC__isNan(crossing.Elevation) then
+				  nMeasuredTracks = nMeasuredTracks + 1
+				  local cantLift = centreLiftFromCant(crossing)
+				  local centreElevation = crossing.Elevation + cantLift
+				  if centreElevation &gt; highestElevation then
+					highestElevation = centreElevation
+					governingTrack = RC__identify(track)
+					governingCantLift = cantLift
+				  end
+				else
+				  nUncheckedTracks = nUncheckedTracks + 1 --Crosses the span, but no elevation at the crossing point
+				end
+			  end
+			else
+			  nUncheckedTracks = nUncheckedTracks + 1 --Cannot be projected onto from both support masts
+			end
+		  end
+
+		  if nMeasuredTracks == 0 and nUncheckedTracks &gt; 0 then
+			return nil, nUncheckedTracks.." nearby track(s) could not be checked against the yoke span"
+		  end
+		  return highestElevation - ownElevation, governingTrack, governingCantLift
+		end
+	  </Formula>
+	</LuaFunction>
     <LuaFunction Name="_JBTEH_AAK_Mileage()" Description="Deduces the galley's / yoke's mileage, based on relation to one or two yoke support masts." ReturnType="Double" HideFromUser="false">
       <Signature>Double _JBTEH_AAK_Mileage()</Signature>
       <Formula>
