@@ -3915,7 +3915,11 @@ end	</Data>
             <SortOption>None</SortOption>
             <Alignment>MiddleCenter</Alignment>
             <Data>
-						RcSection:filter(function(x) return x.RcType == "JBTFE_DIV Sporbruk" end)[0].Variant
+						d = getDownObject("JBTFE_DIV Sporbrukgrense")
+						if d and d.UpSections.Count ~= 0 then return d.UpSections[0].Variant end
+						u = getUpObject("JBTFE_DIV Sporbrukgrense")
+						if u and u.DownSections.Count ~= 0 then return u.DownSections[0].Variant end
+						return ""
 					</Data>
             <Title>Sportype(fra)</Title>
           </ColumnSpecification>
@@ -4252,7 +4256,11 @@ end	</Data>
             <SortOption>None</SortOption>
             <Alignment>MiddleCenter</Alignment>
             <Data>
-							RcSection:filter(function(x) return x.RcType == "JBTFE_DIV Sporbruk" end)[0].Variant
+							d = getDownObject("JBTFE_DIV Sporbrukgrense")
+							if d and d.UpSections.Count ~= 0 then return d.UpSections[0].Variant end
+							u = getUpObject("JBTFE_DIV Sporbrukgrense")
+							if u and u.DownSections.Count ~= 0 then return u.DownSections[0].Variant end
+							return ""
 						</Data>
             <Title>Sportype(fra)</Title>
           </ColumnSpecification>
@@ -4476,7 +4484,7 @@ end	</Data>
   <ObjectType DataType="RailCOMPLETETable" Class="RCTable" Name="FE-DIV KL-tabell" Layer="JBTFE_TABELLER" Color="ByLayer" DrawTail="false" DrawTailExtension="false" Group="Elektro Høyspent/Kontaktledningstabeller">
     <Variants DefaultValue="Master">
       <Variant Name="Master" />
-      <Variant Name="Mastetabell NOEIRH" />
+      <Variant Name="Mastetabell detaljert" />
       <Variant Name="Utliggere" />
       <Variant Name="Ledninger" />
       <Variant Name="Barduner" />
@@ -4859,7 +4867,7 @@ end</Data>
         <NewColumnWidth xsi:nil="true" />
       </TableSpecification>
     </InsertTable>
-    <InsertTable Name="Mastetabell NOEIRH" VariantName="Mastetabell NOEIRH" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-TABELL-Schematic">
+    <InsertTable Name="Mastetabell detaljert" VariantName="Mastetabell detaljert" DisplayBlockName="NO-BN-2D-JBTRC_THUMBNAIL-TABELL-Schematic">
       <TableSpecification>
         <ColumnSelectionSelf>true</ColumnSelectionSelf>
         <ColumnSelectionFromMasterTable>false</ColumnSelectionFromMasterTable>
@@ -4870,7 +4878,7 @@ end</Data>
         <ObjectManagerFilterList />
         <ObjectTypeBrowser>false</ObjectTypeBrowser>
         <EnableLuaFilter>true</EnableLuaFilter>
-        <LuaFilter>RcType:sub(1,9) == "JBTEH_MAS" and Alignment.name:match("1") ~= nil and isVisible() == true</LuaFilter>
+        <LuaFilter>RcType:sub(1,9) == "JBTEH_MAS" and isVisible() == true</LuaFilter>
         <UseDataSetFilter>false</UseDataSetFilter>
         <EnableCustomSettings>true</EnableCustomSettings>
         <TitleTextHeight>3.5</TitleTextHeight>
@@ -5267,7 +5275,11 @@ end</Data>
 						s = first and "" or s..", "
 						b = ba[i]
 						pe = b.RcAlignment.EndPoint
-						bf = getNearbyPointObjects2D(0.25, "JBTEH_BAF Bardunfeste", pe)[0]
+						bfs = getNearbyPointObjects2D(0.25, "JBTEH_BAF Bardunfeste", pe)
+						if getCollectionLength(bfs) == 0 then
+							return "Feil, mangler bardunfeste"
+						end
+						bf = bfs[0]
 						--if true then return bf end
 						tgb= b.RcAlignment.StartTangent
 						--if true then return tgb end
@@ -5283,7 +5295,7 @@ end</Data>
 						--if true then return vinkel, bf.Variant, end
 						--if true then return sporvinkel, bardunvinkel, vinkel, hkurve, vkurve medrettet, motrettet end
 						if (vkurve or hkurve or medrettet or motrettet) == false then 
-							return "Feil, ulovlig bardunvinkel ("..vinkel..")"
+							return "Feil, ulovlig bardunvinkel ("..string.format("%.2f", vinkel)..")"
 						end
 						if hkurve and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..vpil
 						elseif vkurve and bf.Variant == "Bardunfeste fotplate, enkel" then s = s..hpil
@@ -5309,52 +5321,27 @@ end</Data>
             <SortOption>None</SortOption>
             <Alignment>MiddleCenter</Alignment>
             <Data>tol = 0.25
+				t = {}
+				info = type(ObjectInfo) == "string" and ObjectInfo or ""
+				if info ~= "" then table.insert(t, info) end
+				beskrivelse = type(BaneNORBeskrivelse) == "string" and BaneNORBeskrivelse or ""
+				if beskrivelse ~= "" and beskrivelse ~= info then table.insert(t, beskrivelse) end
 				avspenning = getClosestAlignments("JBTEH_BAR Bardun"):filter(
-					function (x) 
+					function (x)
 						return x.Variant:lower() == "bardun" and RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
 					end)
 				strever = getClosestAlignments("JBTEH_BAR Bardun"):filter(
-					function (x) 
+					function (x)
 						return x.Variant:lower() == "strever" and RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
 					end)
-					
-				
-				
-				ta = avspenning and RC__identify(avspenning[0]) or ""
-				ts = strever and RC__identify(strever[0]) or ""
-				
-				
-				t = {}
-				
-				
-				
-				if ObjectInfo ~= "" then table.insert(t, ObjectInfo) end
-				if avspenning.Count ~= 0 then table.insert(t, ta) end
-				if strever.Count ~= 0 then table.insert(t, ts) end
-				
-				--s = ""
-				--if #t == 1 then
-				--	s = t[1]
-				--elseif #t &gt;= 1 then
-				--	for i = 1,#t do s = s..", "..t[i] end
-				--	string.gsub(s,)
-				--end
-				
-				s = ""
-				
-				first = true
-				
-				for i = 1,#t do
-				
-					if not first then s = s..", " else first = false end
-				
-					s = s..t[i]
-				
-				end
-				
-				return s
-				
-				--return Relations["Er kl-mast for utligger"][0].Relations["Har kontaktledningsoppheng"][0].Variant == "fixline" --Sjekk navn</Data>
+				streverSTR = getClosestAlignments("JBTEH_STR Strever"):filter(
+					function (x)
+						return RC__getDistance2D(x.RcAlignment.startpoint) &lt; tol
+					end)
+				if getCollectionLength(avspenning) ~= 0 then table.insert(t, RC__identify(avspenning[0])) end
+				if getCollectionLength(strever) ~= 0 then table.insert(t, RC__identify(strever[0]))
+				elseif getCollectionLength(streverSTR) ~= 0 then table.insert(t, RC__identify(streverSTR[0])) end
+				return table.concat(t, ", ")</Data>
           </ColumnSpecification>
         </Columns>
         <SortOrder>
